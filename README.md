@@ -19,6 +19,8 @@ export default function(){
 }
 ```
 
+As such, this specification treats **namespace imports** (which access default *and* named exports) as first-class citizens.
+
 ### Default Exports
 The `default` export defines the behavior of the Component.
 
