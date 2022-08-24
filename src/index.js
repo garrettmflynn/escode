@@ -5,12 +5,16 @@ const isNode = 'process' in globalThis
 class ESPlugin {
   tag;
   graph;
-  nested;
   parent;
 
   // Components
-  element;
-  parentNode;
+  set element(el) {
+      if (this.parentNode){
+        this.parentNode.appendChild(el); // add to DOM
+        if (typeof this.onrender === "function") this.onrender(); // onrender support
+      }
+  }  
+  
   tagName;
   style;
   attributes;
@@ -19,12 +23,32 @@ class ESPlugin {
 
   constructor(node, options={}) {
 
+    // Declare Private ParentNode Property
+    let parentNode;
+    Object.defineProperty(this, 'parentNode', {
+      get: () => parentNode,
+      set: (el) => {
+        parentNode = el
+
+        if (el) {
+          if (this.element){
+            parentNode.appendChild(this.element); // add to DOM
+            if (typeof this.onrender === "function") this.onrender(); // onrender support
+          } else {
+            
+          }
+        } else if (this.element) this.element.remove()
+        }
+    })
+
     this.tag = options.tag ?? 'graph' // or top-level graph;
     Object.assign(this, node);
     this.parent = options.parent;
 
+    const getParentNode = () => options.parentNode ?? this.parent?.parentNode
+    this.parentNode = getParentNode()
 
-    // Parse Nested Graphs
+    // Parse Graphs
     if (this.graph) {
       for (let tag in this.graph.nodes) {
         const node = this.graph.nodes[tag]
@@ -131,16 +155,13 @@ class ESPlugin {
       }
 
       // Basic Element Support
-      if (isNode){
-
-      } else {
-      if (!this.parentNode) this.parentNode = document.body;
+      if (isNode){} else {
 
       if (this.tagName) this.element = document.createElement(this.tagName);
 
-      if (this.element) {
-        this.parentNode.appendChild(this.element); // add to DOM
+      this.parentNode = getParentNode() ?? document.body
 
+      if (this.element) {
         if (this.attributes) {
           for (let attribute in this.attributes) {
             const value = this.attributes[attribute];
@@ -150,7 +171,6 @@ class ESPlugin {
             } else this.element[attribute] = value;
           }
         }
-        if (typeof this.onrender === "function") this.onrender(); // onrender support
       }
     }
 }
