@@ -19,6 +19,8 @@ class ESPlugin {
 
     // Private
     #toRun = false
+    #resolveReady
+    #ready = new Promise(resolve =>this.#resolveReady = resolve)
 
     constructor(node, options = {}) {
 
@@ -86,8 +88,6 @@ class ESPlugin {
         }
 
         // Parse ESPlugins (with default export)
-        // console.log('check', this.tag, options._arguments, this.default)
-
         if ('default' in this) {
 
             if (options._arguments !== false) {
@@ -237,6 +237,7 @@ class ESPlugin {
         if (edgesTarget) await runIfMatch(edgesTarget, this.tag);
 
         // ---------------------- Run at Initialization (if desired) ----------------------
+        this.#resolveReady(true)
         if (this.#toRun) this.run()
     }
 
@@ -245,6 +246,8 @@ class ESPlugin {
             default: {},
             children: {}
         };
+
+        await this.#ready // wait until all children have been resolved
 
         // Is a Graph
         if (!('default' in this) && this.graph) {

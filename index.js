@@ -5,7 +5,7 @@ import esplugin from './src/index.js'
 
 // ------------------- Basic Plugin Execution -------------------
 const examplePlugin = new esplugin(example)
-examplePlugin.init()
+await examplePlugin.init()
 await examplePlugin.run().then(res => {
     console.log('Not yet in a graph', res.default)
 })
