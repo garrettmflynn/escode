@@ -1,6 +1,6 @@
 {
   "name": "es-plugins",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A standard for transforming ES Modules into Web Components",
   "main": "src/index.js",
   "repository": "https://github.com/brainsatplay/es-plugins",
