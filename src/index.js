@@ -227,7 +227,7 @@ class ESPlugin {
                 for (let tag in found) {
                     let toRun = target;
                     tag.split(".").forEach((str) => (toRun = toRun.graph.nodes[str])); // drill based on separator
-                    this.children[toRun.tag] = toRun // resolve child
+                    this.children[tag] = toRun // resolve child
                 }
             }
 
