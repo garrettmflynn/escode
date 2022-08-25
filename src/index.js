@@ -11,7 +11,8 @@ class ESPlugin {
   tagName;
   style;
   attributes;
-
+  
+  children = {};
   #toRun = false
 
   constructor(node, options={}) {
@@ -186,7 +187,49 @@ class ESPlugin {
 
   }
 
-  init = () => {
+  init = async () => {
+
+    // ---------------------- Get All Children ----------------------
+    const edgesTarget = this.parent;
+    const runIfMatch = async (target, tag) => {
+      const newTag = target.tag ? (tag ? `${target.tag}.${tag}` : target.tag) : tag;
+
+      if (target?.graph?.edges) {
+
+        // Check If a Deep Output Port
+        const splitTags = tag.split('.')
+        let isOutput = target;
+        for (let i in splitTags.slice(0, -1)){
+          const str = splitTags[i]
+          const innerPorts = target.graph.nodes[str]?.graph?.ports
+          const plusOne = Number.parseInt(i)+1
+          if (innerPorts?.output === splitTags[plusOne]) isOutput = target.graph.nodes[str]
+          else {
+            isOutput = undefined
+            break;
+          }
+        }
+
+          const found = (
+            target.graph.edges[tag] ?? // reference with simple name
+            target.graph.edges[newTag] ?? // reference with complex nested name
+            ((isOutput) ? target.graph.edges[splitTags[0]] : undefined) // deep output port
+          )
+
+ 
+          for (let tag in found) {
+            let toRun = target;
+            tag.split(".").forEach((str) => (toRun = toRun.graph.nodes[str])); // drill based on separator
+            this.children[toRun.tag] = toRun // resolve child
+        }
+      }
+
+      if (target.parent) await runIfMatch(target.parent, newTag); // move upwards in the graph hierarchy
+    };
+
+    if (edgesTarget) await runIfMatch(edgesTarget, this.tag);
+
+    // ---------------------- Run at Initialization (if desired) ----------------------
     if (this.#toRun) this.run()
   }
 
@@ -204,6 +247,7 @@ class ESPlugin {
         const outputFallback = (this.graph.nodes[output].graph?.ports) ? `${output}.${this.graph.nodes[output].graph.ports.input}` : output;
 
         const node = this.graph.nodes[input];
+
         const res = await node.run(...args);
         results.children = Object.assign(results.children, res.children)
         results.default = (res.children[output] ?? res.children[outputFallback]).default
@@ -219,51 +263,15 @@ class ESPlugin {
     if ( results.default !== undefined) {
       // run children if defined
 
-      const edgesTarget = this.parent;
-      const runIfMatch = async (target, tag) => {
-        const newTag = target.tag ? (tag ? `${target.tag}.${tag}` : target.tag) : tag;
+      for (let tag in this.children) {
+        const args = !Array.isArray(results.default) ? [results.default] : results.default; // handle non-arrays
 
-        if (target?.graph?.edges) {
+        const res = await this.children[tag].run(...args); // run child
+        results.children[tag] = ('default' in res) ? res.default : res
 
-          // Check If a Deep Output Port
-          const splitTags = tag.split('.')
-          let isOutput = target;
-          for (let i in splitTags.slice(0, -1)){
-            const str = splitTags[i]
-            const innerPorts = target.graph.nodes[str]?.graph?.ports
-            const plusOne = Number.parseInt(i)+1
-            if (innerPorts?.output === splitTags[plusOne]) isOutput = target.graph.nodes[str]
-            else {
-              isOutput = undefined
-              break;
-            }
-          }
-
-
-            const found = (
-              target.graph.edges[tag] ?? // reference with simple name
-              target.graph.edges[newTag] ?? // reference with complex nested name
-              ((isOutput) ? target.graph.edges[splitTags[0]] : undefined) // deep output port
-              )
-
-   
-            for (let tag in found) {
-              let toRun = target;
-              tag.split(".").forEach((str) => (toRun = toRun.graph.nodes[str])); // drill based on separator
-
-              const args = !Array.isArray(results.default) ? [results.default] : results.default; // handle non-arrays
-              const res = await toRun.run(...args); // run children (without tracking)
-              results.children[tag] = ('default' in res) ? res.default : res
-
-              // flatten children
-              for (let child in res.children) results.children[child] = res.children[child]
-          }
-        }
-
-        if (target.parent) await runIfMatch(target.parent, newTag); // move upwards in the graph hierarchy
-      };
-
-      if (edgesTarget) await runIfMatch(edgesTarget, this.tag);
+        // flatten children
+        for (let child in res.children) results.children[child] = res.children[child]
+      }
     }
 
     this.#toRun = false
