@@ -8,13 +8,6 @@ class ESPlugin {
   parent;
 
   // Components
-  set element(el) {
-      if (this.parentNode){
-        this.parentNode.appendChild(el); // add to DOM
-        if (typeof this.onrender === "function") this.onrender(); // onrender support
-      }
-  }  
-  
   tagName;
   style;
   attributes;
@@ -38,7 +31,23 @@ class ESPlugin {
             
           }
         } else if (this.element) this.element.remove()
+        },
+        enumerable: true
+    })
+
+    // Declare Private Element Property
+    let element;
+    Object.defineProperty(this, 'element', {
+        get: () => element,
+        set: (el) => {
+            element = el
+
+        if (this.parentNode){
+            this.parentNode.appendChild(el); // add to DOM
+            if (typeof this.onrender === "function") this.onrender(); // onrender support
         }
+    },
+    enumerable: true
     })
 
     this.tag = options.tag ?? 'graph' // or top-level graph;
