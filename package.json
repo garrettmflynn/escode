@@ -2,13 +2,20 @@
   "name": "es-plugins",
   "version": "0.0.6",
   "description": "A standard for transforming ES Modules into Web Components",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
   "repository": "https://github.com/brainsatplay/es-plugins",
   "author": "Garrett Flynn <garrettmflynn@gmail.com>",
   "license": "AGPL-3.0-or-later",
   "private": false,
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "tinybuild --path tinybuild.demo.js",
+    "start:node": "node index.js"
   }
 }
