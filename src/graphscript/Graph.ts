@@ -1078,6 +1078,7 @@ export class Graph {
             for (let k in props) this[k] = props[k]; //set other props like flow properties in a nested graph
             this._initial = props;
         }
+
         if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
     }
 

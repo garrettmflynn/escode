@@ -1,4 +1,4 @@
-import { GraphNode } from "./graphscript/Graph";
+import { Graph } from "./graphscript/Graph";
 import { DOMService } from "./graphscript/services/dom/DOM.service";
 
 import transform from "./transform.js";
@@ -26,6 +26,7 @@ class ESPlugin {
         this.#initial = node;
         do { this.#initial = this.initial.initial ?? this.initial } while (this.initial instanceof ESPlugin)
         
+        const isFunction = typeof this.initial === 'function'
         const hasDefault = 'default' in this.initial
         let hasGraph = !!node.graph
 
@@ -36,16 +37,34 @@ class ESPlugin {
             hasGraph = true
         }
 
-        // console.log(this.initial)
+        // Parse ESPlugins (with default export)
+        if (hasDefault || isFunction) this.graphscript = this.#create(options.tag ?? 'defaultESPluginTag', this.initial)
 
         // Parse Graphs
         if (hasGraph) {
 
-            // create graph tree
+            // Instantiate Components First
+            for (let tag in this.initial.graph.nodes) {
+                const node2 = this.initial.graph.nodes[tag];
+                if (!(node2 instanceof ESPlugin)) {
+                    const clonedOptions = Object.assign({}, Object.assign(options));
+                    this.initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
+                    // console.log(tag, this.initial.graph.nodes[tag])
+                    if (typeof options.onPlugin === "function")
+                    options.onPlugin(this.initial.graph.nodes[tag]);
+                } else {
+                    console.error('Gotta compensate')
+                    const got = this.graphscript.nodes.get(tag);
+                    if (got)
+                    node2.graphscript = got;
+                }
+            }
+
+            // Compose Graph Tree from Components   
             let tree = {}
             for (let tag in this.initial.graph.nodes) {
-                const innerNode = this.initial.graph.nodes[tag]
-                tree[tag] = this.#create(tag, innerNode) // create new plugin (to be copied later)
+                const innerNode = this.#create(tag, this.initial.graph.nodes[tag]); // create new plugin
+                tree[tag] = innerNode.graphscript ?? innerNode;
             }
 
             const edges = this.initial.graph.edges
@@ -55,28 +74,9 @@ class ESPlugin {
                 for (let input in edges[output]) outNode.children[input] = true
             }
 
-            this.graphscript = (isNode) ? new Graph(tree) : new DOMService({ routes: tree }, options.parentNode)
-
-            // Create ES Plugins Inside the Graph
-            for (let tag in this.initial.graph.nodes) {
-                const node = this.initial.graph.nodes[tag]
-                if (!(node instanceof ESPlugin)) {
-                    const clonedOptions = Object.assign({}, Object.assign(options))
-                    this.initial.graph.nodes[tag] = new ESPlugin(node, Object.assign(clonedOptions, { tag }))
-
-                    if (typeof options.onPlugin === 'function') options.onPlugin(node.graph.nodes[tag])
-                }
-
-                // Transfer Essential Info
-                else {
-                    const got = this.graphscript.nodes.get(tag)
-                    if (got) node.graphscript = got
-                }
-            }
+            const props = this.#instance ?? node
+            this.graphscript = isNode ? new Graph(tree, options.tag, props) : new DOMService({ routes: tree, name: options.tag, props }, options.parentNode);
         }
-
-        // Parse ESPlugins (with default export)
-        if (hasDefault) this.graphscript = new GraphNode(this.#create(options.tag ?? 'defaultESPluginTag', this.initial))    
 
         Object.defineProperty(this, 'tag', {
             get: () => this.graphscript?.tag,
@@ -85,6 +85,10 @@ class ESPlugin {
     }
 
     #create = (tag, info) => {
+
+        if (typeof info === 'function') info = {default: info} // transform function
+        if (!("default" in info) || info instanceof Graph) return info; // just a graph
+        else {
 
         let activeInfo;
         if (info instanceof ESPlugin){
@@ -128,6 +132,7 @@ class ESPlugin {
         this.#instance = gsIn
 
         return transform(tag, gsIn) // add arguments as sub-graphs
+    }
     }
 
     run = async (...args) => await this.graphscript.run(...args) // Call Graphscript by Proxy

@@ -18,9 +18,9 @@ export default (tag, node) => {
       };
     });
 
+    const originalOperator = node.operator
     // Create Proper Global Operator for the Instance
-    const originalOperator = node.operator.bind(node)
-    node.operator = (...argsArr) => {
+    node.operator = function (...argsArr){
 
       let updatedArgs: any[] = [];
       let i = 0;
@@ -35,8 +35,9 @@ export default (tag, node) => {
       });
 
 
-        return originalOperator(...updatedArgs)
+        return originalOperator.call(this, ...updatedArgs) // bound to GraphNode later
     }
+    const graph = new Graph(instanceTree, tag, node)
 
-    return new Graph(instanceTree, tag, node)
+    return graph
   }

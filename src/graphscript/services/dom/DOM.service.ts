@@ -217,27 +217,7 @@ export class DOMService extends Service {
             window.addEventListener('resize', options.onresize as EventListener);
         }
 
-        
-        if(!elm.parentNode) {
-            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
-                if(typeof options.parentNode === 'string') 
-                    options.parentNode = document.getElementById(options.parentNode);
-                if(typeof options.parentNode === 'object') {
-                    // if(options.parentNode.shadowRoot) {
-                    //     console.log(options.parentNode.shadowRoot)
-                    //     options.parentNode.shadowRoot.appendChild(elm);
-                    // } else 
-                    options.parentNode.appendChild(elm);
-                }
-
-                // // TODO: Figure out why newNode and node don't match...
-                // const newNode = this.nodes.get(node.tag)
-                // this.elements[options.id].node = newNode
-                // // console.log(node.tag, node, newNode, newNode === node)
-
-                if(oncreate) oncreate(elm,this.elements[options.id]);
-            },0.01);
-        }
+        this.resolveParentNode(elm, options, oncreate)
 
 
         return this.elements[options.id] as ElementInfo;
@@ -384,17 +364,8 @@ export class DOMService extends Service {
         };
 
                 
-        if(!elm.parentNode) {
-            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync tree/route loading calls are finished
-                if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
-                if(typeof options.parentNode === 'object') {
-                    // if(options.parentNode.shadowRoot)
-                    //     options.parentNode.shadowRoot.appendChild(elm);
-                    // else 
-                    options.parentNode.appendChild(elm);
-                }
-            },0.01);
-        }
+        this.resolveParentNode(elm, options)
+
 
         return this.components[completeOptions.id] as ComponentInfo;
     }
@@ -510,22 +481,29 @@ export class DOMService extends Service {
         node.canvas = canvas; //make sure everything is accessible;
         node.context = context;
       
-        if(!elm.parentNode) {
-            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync tree/route loading calls are finished
-                if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
-                if(typeof options.parentNode === 'object') {
-                    // if(options.parentNode.shadowRoot)
-                    //     options.parentNode.shadowRoot.appendChild(elm);
-                    // else 
-                    options.parentNode.appendChild(elm);
-                }
-            },0.01);
-        }
+        this.resolveParentNode(elm, options)
         
         node.runAnimation(animation); //update the animation by calling this function again or setting node.animation manually
 
         return this.components[completeOptions.id] as CanvasElementInfo;
 
+    }
+
+    resolveParentNode = (elm, options, oncreate) => {
+        if(!elm.parentNode) {
+            setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
+                if(typeof options.parentNode === 'string') options.parentNode = document.getElementById(options.parentNode);
+                if(typeof options.parentNode === 'object') {
+                    // if(options.parentNode.shadowRoot) {
+                    //     console.log(options.parentNode.shadowRoot)
+                    //     options.parentNode.shadowRoot.appendChild(elm);
+                    // } else 
+                    options.parentNode.appendChild(elm);
+                }
+
+                if(oncreate) oncreate(elm,this.elements[options.id]);
+            },0.01);
+        }
     }
     
     terminate = (element:string|DOMElement|HTMLElement|ComponentInfo|CanvasElementInfo)=>{

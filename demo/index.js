@@ -2989,8 +2989,8 @@
         }
       };
     });
-    const originalOperator = node.operator.bind(node);
-    node.operator = (...argsArr) => {
+    const originalOperator = node.operator;
+    node.operator = function(...argsArr) {
       let updatedArgs = [];
       let i = 0;
       args.forEach((o, k) => {
@@ -3003,9 +3003,10 @@
         updatedArgs.push(...update);
         i++;
       });
-      return originalOperator(...updatedArgs);
+      return originalOperator.call(this, ...updatedArgs);
     };
-    return new Graph2(instanceTree, tag, node);
+    const graph = new Graph2(instanceTree, tag, node);
+    return graph;
   };
 
   // src/parse.js
@@ -3075,6 +3076,7 @@
       do {
         this.#initial = this.initial.initial ?? this.initial;
       } while (this.initial instanceof ESPlugin);
+      const isFunction = typeof this.initial === "function";
       const hasDefault = "default" in this.initial;
       let hasGraph = !!node.graph;
       if (!hasDefault && !hasGraph) {
@@ -3085,6 +3087,20 @@
         hasGraph = true;
       }
       if (hasGraph) {
+        for (let tag in this.initial.graph.nodes) {
+          const node2 = this.initial.graph.nodes[tag];
+          if (!(node2 instanceof ESPlugin)) {
+            const clonedOptions = Object.assign({}, Object.assign(options));
+            this.initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
+            if (typeof options.onPlugin === "function")
+              options.onPlugin(this.initial.graph.nodes[tag]);
+          } else {
+            console.error("Gotta compensate");
+            const got = this.graphscript.nodes.get(tag);
+            if (got)
+              node2.graphscript = got;
+          }
+        }
         let tree = {};
         for (let tag in this.initial.graph.nodes) {
           const innerNode = this.initial.graph.nodes[tag];
@@ -3098,65 +3114,57 @@
           for (let input in edges[output])
             outNode.children[input] = true;
         }
-        this.graphscript = isNode ? new Graph(tree) : new DOMService({ routes: tree }, options.parentNode);
-        for (let tag in this.initial.graph.nodes) {
-          const node2 = this.initial.graph.nodes[tag];
-          if (!(node2 instanceof ESPlugin)) {
-            const clonedOptions = Object.assign({}, Object.assign(options));
-            this.initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
-            if (typeof options.onPlugin === "function")
-              options.onPlugin(node2.graph.nodes[tag]);
-          } else {
-            const got = this.graphscript.nodes.get(tag);
-            if (got)
-              node2.graphscript = got;
-          }
-        }
-      }
-      if (hasDefault)
-        this.graphscript = new GraphNode(this.#create(options.tag ?? "defaultESPluginTag", this.initial));
+        this.graphscript = isNode ? new Graph(tree) : new DOMService({ routes: tree, name: options.tag }, options.parentNode);
+      } else if (hasDefault || isFunction)
+        this.graphscript = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
       Object.defineProperty(this, "tag", {
         get: () => this.graphscript?.tag,
         enumerable: true
       });
     }
     #create = (tag, info) => {
-      let activeInfo;
-      if (info instanceof ESPlugin) {
-        activeInfo = info.instance;
-        info = info.initial;
-      }
-      const args = parse_default(info.default) ?? /* @__PURE__ */ new Map();
-      if (args.size === 0)
-        args.set("default", {});
-      const input = args.keys().next().value;
-      if (info.arguments) {
-        for (let key in info.arguments) {
-          const o = args.get(key);
-          o.state = info.arguments[key];
-          if (input === key)
-            this.run();
+      if (typeof info === "function")
+        info = { default: info };
+      if (!("default" in info) || info instanceof Graph)
+        return info;
+      else {
+        let activeInfo;
+        if (info instanceof ESPlugin) {
+          activeInfo = info.instance;
+          info = info.initial;
         }
-      }
-      const gsIn = {
-        arguments: args,
-        operator: info.default,
-        tag
-      };
-      var props = Object.getOwnPropertyNames(info);
-      const onActive = ["arguments", "default", "tag", "operator"];
-      props.forEach((key) => {
-        if (!onActive.includes(key))
-          gsIn[key] = info[key];
-      });
-      if (activeInfo) {
-        for (let key in activeInfo) {
+        const args = parse_default(info.default) ?? /* @__PURE__ */ new Map();
+        if (args.size === 0)
+          args.set("default", {});
+        const input = args.keys().next().value;
+        if (info.arguments) {
+          for (let key in info.arguments) {
+            const o = args.get(key);
+            o.state = info.arguments[key];
+            if (input === key)
+              this.run();
+          }
+        }
+        const gsIn = {
+          arguments: args,
+          operator: info.default,
+          tag
+        };
+        var props = Object.getOwnPropertyNames(info);
+        const onActive = ["arguments", "default", "tag", "operator"];
+        props.forEach((key) => {
           if (!onActive.includes(key))
-            gsIn[key] = activeInfo[key];
+            gsIn[key] = info[key];
+        });
+        if (activeInfo) {
+          for (let key in activeInfo) {
+            if (!onActive.includes(key))
+              gsIn[key] = activeInfo[key];
+          }
         }
+        this.#instance = gsIn;
+        return transform_default(tag, gsIn);
       }
-      this.#instance = gsIn;
-      return transform_default(tag, gsIn);
     };
     run = async (...args) => await this.graphscript.run(...args);
   };
