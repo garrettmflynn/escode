@@ -8,10 +8,19 @@
   // plugins/example.js
   var example_exports = {};
   __export(example_exports, {
+    attributes: () => attributes,
     default: () => example_default,
-    nExecutions: () => nExecutions
+    nExecutions: () => nExecutions,
+    tagName: () => tagName
   });
   var nExecutions = 0;
+  var tagName = "button";
+  var attributes = {
+    innerHTML: "Click Me",
+    onclick: function() {
+      this.run();
+    }
+  };
   function example_default() {
     this.nExecutions++;
     return this.nExecutions;
@@ -26,7 +35,7 @@
     console.log(`[${this.tag}]`, ...args);
   }
 
-  // src/Graph.ts
+  // src/graphscript/Graph.ts
   function parseFunctionFromText(method = "") {
     let getFunctionBody = (methodString) => {
       return methodString.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, "$2$3$4");
@@ -704,7 +713,7 @@
                     let props = n.children[key].getProps();
                     delete props.parent;
                     delete props.graph;
-                    if (n.source instanceof Graph) {
+                    if (n.source instanceof Graph2) {
                       n.children[key] = new GraphNode(props, n, n.source);
                     } else {
                       n.children[key] = new GraphNode(props, n, n.graph);
@@ -805,7 +814,7 @@
       if (typeof properties === "object") {
         if (properties instanceof GraphNode && properties._initial)
           Object.assign(properties, properties._initial);
-        if (properties instanceof Graph) {
+        if (properties instanceof Graph2) {
           let source = properties;
           properties = {
             source,
@@ -880,15 +889,15 @@
             hasnode = parentNode.nodes.get(properties.tag);
           }
           if (hasnode) {
-            for (let k in properties)
+            for (let k in hasnode)
               this[k] = hasnode[k];
             if (!this.source)
               this.source = hasnode;
             let props = hasnode.getProps();
             delete props.graph;
             delete props.parent;
-            console.log(props);
-            Object.assign(properties, props);
+            for (let k in props)
+              properties[k] = props[k];
           }
         }
         if (properties?.operator) {
@@ -925,7 +934,7 @@
         }
         if (parentNode) {
           this.parent = parentNode;
-          if (parentNode instanceof GraphNode || parentNode instanceof Graph)
+          if (parentNode instanceof GraphNode || parentNode instanceof Graph2)
             parentNode.nodes.set(this.tag, this);
         }
         if (typeof properties.tree === "object") {
@@ -941,7 +950,7 @@
         }
         if (this.children)
           this.convertChildrenToNodes(this);
-        if (this.parent instanceof GraphNode || this.parent instanceof Graph)
+        if (this.parent instanceof GraphNode || this.parent instanceof Graph2)
           this.checkNodesHaveChildMapped(this.parent, this);
         if (typeof this.oncreate === "function")
           this.oncreate(this);
@@ -951,7 +960,7 @@
         return properties;
     }
   };
-  var Graph = class {
+  var Graph2 = class {
     constructor(tree, tag, props) {
       this.nNodes = 0;
       this.nodes = /* @__PURE__ */ new Map();
@@ -998,7 +1007,7 @@
             } else if (typeof tree[node] === "object") {
               if (tree[node] instanceof GraphNode) {
                 this.add(tree[node]);
-              } else if (tree[node] instanceof Graph) {
+              } else if (tree[node] instanceof Graph2) {
                 let source = tree[node];
                 let properties = {};
                 if (source.operator)
@@ -1471,6 +1480,1486 @@
     return new GraphNode({ operator }, parentNode, graph);
   }
 
+  // src/graphscript/services/dom/DOMElement.js
+  var DOMElement = class extends HTMLElement {
+    template = function(self = this, props) {
+      return `<div> Custom Fragment Props: ${JSON.stringify(props)} </div>`;
+    };
+    props = {};
+    useShadow = false;
+    styles;
+    oncreate;
+    onresize;
+    ondelete;
+    onchanged;
+    renderonchanged = false;
+    FRAGMENT;
+    STYLE;
+    attachedShadow = false;
+    obsAttributes = ["props", "options", "onchanged", "onresize", "ondelete", "oncreate", "template"];
+    get observedAttributes() {
+      return this.obsAttributes;
+    }
+    get obsAttributes() {
+      return this.obsAttributes;
+    }
+    set obsAttributes(att) {
+      if (typeof att === "string") {
+        this.obsAttributes.push(att);
+      } else if (Array.isArray(att))
+        this.obsAttributes = att;
+    }
+    static get tag() {
+      return this.name.toLowerCase() + "-";
+    }
+    static addElement(tag = this.tag, cls = this, extend = void 0) {
+      addCustomElement(cls, tag, extend);
+    }
+    attributeChangedCallback = (name, old, val) => {
+      if (name === "onchanged") {
+        let onchanged = val;
+        if (typeof onchanged === "string")
+          onchanged = parseFunctionFromText2(onchanged);
+        if (typeof onchanged === "function") {
+          this.onchanged = onchanged;
+          this.state.data.props = this.props;
+          this.state.unsubscribeTrigger("props");
+          this.state.subscribeTrigger("props", this.onchanged);
+          let changed = new CustomEvent("changed", { detail: { props: this.props, self: this } });
+          this.state.subscribeTrigger("props", () => {
+            this.dispatchEvent(changed);
+          });
+        }
+      } else if (name === "onresize") {
+        let onresize = val;
+        if (typeof onresize === "string")
+          onresize = parseFunctionFromText2(onresize);
+        if (typeof onresize === "function") {
+          if (this.ONRESIZE) {
+            try {
+              window.removeEventListener("resize", this.ONRESIZE);
+            } catch (err) {
+            }
+          }
+          this.ONRESIZE = (ev) => {
+            this.onresize(this.props, this);
+          };
+          this.onresize = onresize;
+          window.addEventListener("resize", this.ONRESIZE);
+        }
+      } else if (name === "ondelete") {
+        let ondelete = val;
+        if (typeof ondelete === "string")
+          ondelete = parseFunctionFromText2(ondelete);
+        if (typeof ondelete === "function") {
+          this.ondelete = () => {
+            if (this.ONRESIZE)
+              window.removeEventListener("resize", this.ONRESIZE);
+            this.state.unsubscribeTrigger("props");
+            if (ondelete)
+              ondelete(this.props, this);
+          };
+        }
+      } else if (name === "oncreate") {
+        let oncreate = val;
+        if (typeof oncreate === "string")
+          oncreate = parseFunctionFromText2(oncreate);
+        if (typeof oncreate === "function") {
+          this.oncreate = oncreate;
+        }
+      } else if (name === "renderonchanged") {
+        let rpc = val;
+        if (typeof this.renderonchanged === "number")
+          this.unsubscribeTrigger(this.renderonchanged);
+        if (typeof rpc === "string")
+          rpc = parseFunctionFromText2(rpc);
+        if (typeof rpc === "function") {
+          this.renderonchanged = this.state.subscribeTrigger("props", (p) => {
+            this.render(p);
+            rpc(this, p);
+          });
+        } else if (rpc != false)
+          this.renderonchanged = this.state.subscribeTrigger("props", this.render);
+      } else if (name === "props") {
+        let newProps = val;
+        if (typeof newProps === "string")
+          newProps = JSON.parse(newProps);
+        Object.assign(this.props, newProps);
+        this.state.setState({ props: this.props });
+      } else if (name === "template") {
+        let template = val;
+        this.template = template;
+        this.render(this.props);
+        let created = new CustomEvent("created", { detail: { props: this.props } });
+        this.dispatchEvent(created);
+      } else {
+        let parsed = val;
+        if (name.includes("eval_")) {
+          name = name.split("_");
+          name.shift();
+          name = name.join();
+          parsed = parseFunctionFromText2(val);
+        } else if (typeof val === "string") {
+          try {
+            parsed = JSON.parse(val);
+          } catch (err) {
+            parsed = val;
+          }
+        }
+        this[name] = parsed;
+        if (name !== "props" && this.props)
+          this.props[name] = parsed;
+      }
+    };
+    connectedCallback() {
+      if (!this.props)
+        this.props = {};
+      let newProps = this.getAttribute("props");
+      if (typeof newProps === "string")
+        newProps = JSON.parse(newProps);
+      Object.assign(this.props, newProps);
+      this.state.setState({ props: this.props });
+      Array.from(this.attributes).forEach((att) => {
+        let name = att.name;
+        let parsed = att.value;
+        if (name.includes("eval_") || name.includes("()")) {
+          if (name.includes("eval_"))
+            name = name.split("_");
+          else if (name.includes("()"))
+            name = name.substring(0, name.indexOf("("));
+          name.shift();
+          name = name.join();
+          parsed = parseFunctionFromText2(att.value);
+        } else if (typeof att.value === "string") {
+          try {
+            parsed = JSON.parse(att.value);
+          } catch (err) {
+            parsed = att.value;
+          }
+        }
+        if (!this[name]) {
+          Object.defineProperties(this, att, {
+            value: parsed,
+            writable: true,
+            get() {
+              return this[name];
+            },
+            set(val) {
+              this.setAttribute(name, val);
+            }
+          });
+        }
+        this[name] = parsed;
+        if (name !== "props")
+          this.props[name] = parsed;
+        this.obsAttributes.push(name);
+      });
+      let resizeevent = new CustomEvent("resized", { detail: { props: this.props, self: this } });
+      let changed = new CustomEvent("changed", { detail: { props: this.props, self: this } });
+      let deleted = new CustomEvent("deleted", { detail: { props: this.props, self: this } });
+      let created = new CustomEvent("created", { detail: { props: this.props, self: this } });
+      this.render(this.props);
+      this.dispatchEvent(created);
+      this.state.subscribeTrigger("props", () => {
+        this.dispatchEvent(changed);
+      });
+      if (typeof this.onresize === "function") {
+        if (this.ONRESIZE) {
+          try {
+            window.removeEventListener("resize", this.ONRESIZE);
+          } catch (err) {
+          }
+        }
+        this.ONRESIZE = (ev) => {
+          this.onresize(this, this.props);
+          this.dispatchEvent(resizeevent);
+        };
+        window.addEventListener("resize", this.ONRESIZE);
+      }
+      if (typeof this.ondelete === "function") {
+        let ondelete = this.ondelete;
+        this.ondelete = (props = this.props) => {
+          if (this.ONRESIZE)
+            window.removeEventListener("resize", this.ONRESIZE);
+          this.state.unsubscribeTrigger("props");
+          this.dispatchEvent(deleted);
+          ondelete(this, props);
+        };
+      }
+      if (typeof this.onchanged === "function") {
+        this.state.data.props = this.props;
+        this.state.subscribeTrigger("props", this.onchanged);
+      }
+      if (this.renderonchanged) {
+        let rpc = this.renderonchanged;
+        if (typeof this.renderonchanged === "number")
+          this.unsubscribeTrigger(this.renderonchanged);
+        if (typeof rpc === "string")
+          rpc = parseFunctionFromText2(rpc);
+        if (typeof rpc === "function") {
+          this.renderonchanged = this.state.subscribeTrigger("props", (p) => {
+            this.render(p);
+            rpc(this, p);
+          });
+        } else if (rpc !== false)
+          this.renderonchanged = this.state.subscribeTrigger("props", this.render);
+      }
+    }
+    constructor() {
+      super();
+    }
+    delete = () => {
+      this.remove();
+      if (typeof this.ondelete === "function")
+        this.ondelete(this.props);
+    };
+    render = (props = this.props) => {
+      if (typeof this.template === "function")
+        this.templateResult = this.template(this, props);
+      else
+        this.templateResult = this.template;
+      if (this.styles)
+        this.templateResult = `<style>${this.styles}</style>${this.templateResult}`;
+      const t = document.createElement("template");
+      if (typeof this.templateResult === "string")
+        t.innerHTML = this.templateResult;
+      else if (this.templateResult instanceof HTMLElement) {
+        if (this.templateResult.parentNode) {
+          this.templateResult.parentNode.removeChild(this.templateResult);
+        }
+        t.appendChild(this.templateResult);
+      }
+      const fragment = t.content;
+      if (this.FRAGMENT) {
+        if (this.useShadow) {
+          if (this.STYLE)
+            this.shadowRoot.removeChild(this.STYLE);
+          this.shadowRoot.removeChild(this.FRAGMENT);
+        } else
+          this.removeChild(this.FRAGMENT);
+      }
+      if (this.useShadow) {
+        if (!this.attachedShadow) {
+          this.attachShadow({ mode: "open" }).innerHTML = "<slot></slot>";
+          this.attachedShadow = true;
+        }
+        if (this.styles) {
+          let style = document.createElement("style");
+          style.textContent = this.styles;
+          this.shadowRoot.prepend(style);
+          this.STYLE = style;
+        }
+        this.shadowRoot.prepend(fragment);
+        this.FRAGMENT = this.shadowRoot.childNodes[0];
+      } else {
+        this.prepend(fragment);
+        this.FRAGMENT = this.childNodes[0];
+      }
+      let rendered = new CustomEvent("rendered", { detail: { props: this.props, self: this } });
+      this.dispatchEvent(rendered);
+      if (this.oncreate)
+        this.oncreate(this, props);
+    };
+    state = {
+      pushToState: {},
+      data: {},
+      triggers: {},
+      setState(updateObj) {
+        Object.assign(this.pushToState, updateObj);
+        if (Object.keys(this.triggers).length > 0) {
+          for (const prop of Object.getOwnPropertyNames(this.triggers)) {
+            if (this.pushToState[prop]) {
+              this.data[prop] = this.pushToState[prop];
+              delete this.pushToState[prop];
+              this.triggers[prop].forEach((obj) => {
+                obj.onchanged(this.data[prop]);
+              });
+            }
+          }
+        }
+        return this.pushToState;
+      },
+      subscribeTrigger(key, onchanged = (res) => {
+      }) {
+        if (key) {
+          if (!this.triggers[key]) {
+            this.triggers[key] = [];
+          }
+          let l = this.triggers[key].length;
+          this.triggers[key].push({ idx: l, onchanged });
+          return this.triggers[key].length - 1;
+        } else
+          return void 0;
+      },
+      unsubscribeTrigger(key, sub) {
+        let idx = void 0;
+        let triggers = this.triggers[key];
+        if (triggers) {
+          if (!sub)
+            delete this.triggers[key];
+          else {
+            let obj = triggers.find((o) => {
+              if (o.idx === sub) {
+                return true;
+              }
+            });
+            if (obj)
+              triggers.splice(idx, 1);
+            return true;
+          }
+        }
+      },
+      subscribeTriggerOnce(key = void 0, onchanged = (value) => {
+      }) {
+        let sub;
+        let changed = (value) => {
+          onchanged(value);
+          this.unsubscribeTrigger(key, sub);
+        };
+        sub = this.subscribeTrigger(key, changed);
+      }
+    };
+    get props() {
+      return this.props;
+    }
+    set props(newProps = {}) {
+      this.setAttribute("props", newProps);
+    }
+    get template() {
+      return this.template;
+    }
+    set template(template) {
+      this.setAttribute("template", template);
+    }
+    get render() {
+      return this.render;
+    }
+    get delete() {
+      return this.delete;
+    }
+    get state() {
+      return this.state;
+    }
+    get onchanged() {
+      return this.onchanged;
+    }
+    set onchanged(onchanged) {
+      this.setAttribute("onchanged", onchanged);
+    }
+    get styles() {
+      return this.styles;
+    }
+    set styles(templateStr) {
+      this.styles = templateStr;
+      if (this.querySelector("style")) {
+        this.querySelector("style").innerHTML = templateStr;
+      } else {
+        this.render();
+      }
+    }
+    get renderonchanged() {
+      return this.renderonchanged;
+    }
+    set renderonchanged(onchanged) {
+      this.setAttribute("renderonchanged", onchanged);
+    }
+    get onresize() {
+      return this.props;
+    }
+    set onresize(onresize) {
+      this.setAttribute("onresize", onresize);
+    }
+    get ondelete() {
+      return this.props;
+    }
+    set ondelete(ondelete) {
+      this.setAttribute("ondelete", ondelete);
+    }
+    get oncreate() {
+      return this.oncreate;
+    }
+    set oncreate(oncreate) {
+      this.setAttribute("oncreated", oncreate);
+    }
+  };
+  function addCustomElement(cls, tag, extend = null) {
+    try {
+      if (extend) {
+        if (tag)
+          window.customElements.define(tag, cls, { extends: extend });
+        else
+          window.customElements.define(cls.name.toLowerCase() + "-", cls, { extends: extend });
+      } else {
+        if (tag)
+          window.customElements.define(tag, cls);
+        else
+          window.customElements.define(cls.name.toLowerCase() + "-", cls);
+      }
+    } catch (err) {
+    }
+  }
+  function parseFunctionFromText2(method) {
+    let getFunctionBody = (methodString) => {
+      return methodString.replace(/^\W*(function[^{]+\{([\s\S]*)\}|[^=]+=>[^{]*\{([\s\S]*)\}|[^=]+=>(.+))/i, "$2$3$4");
+    };
+    let getFunctionHead = (methodString) => {
+      let startindex = methodString.indexOf(")");
+      return methodString.slice(0, methodString.indexOf("{", startindex) + 1);
+    };
+    let newFuncHead = getFunctionHead(method);
+    let newFuncBody = getFunctionBody(method);
+    let newFunc;
+    try {
+      if (newFuncHead.includes("function")) {
+        let varName = newFuncHead.split("(")[1].split(")")[0];
+        newFunc = new Function(varName, newFuncBody);
+      } else {
+        if (newFuncHead.substring(0, 6) === newFuncBody.substring(0, 6)) {
+          let varName = newFuncHead.split("(")[1].split(")")[0];
+          newFunc = new Function(varName, newFuncBody.substring(newFuncBody.indexOf("{") + 1, newFuncBody.length - 1));
+        } else {
+          try {
+            newFunc = (0, eval)(newFuncHead + newFuncBody + "}");
+          } catch (err) {
+            newFunc = (0, eval)(method);
+          }
+        }
+      }
+    } catch (err) {
+    }
+    return newFunc;
+  }
+
+  // src/graphscript/services/Service.ts
+  var Service = class extends Graph2 {
+    constructor(options = {}) {
+      super(void 0, options.name ? options.name : `service${Math.floor(Math.random() * 1e14)}`, options.props);
+      this.routes = {};
+      this.loadDefaultRoutes = false;
+      this.keepState = true;
+      this.firstLoad = true;
+      this.init = (options) => {
+        if (options)
+          options = Object.assign({}, options);
+        else
+          options = {};
+        if (options.customRoutes)
+          Object.assign(options.customRoutes, this.customRoutes);
+        else
+          options.customRoutes = this.customRoutes;
+        if (options.customChildren)
+          Object.assign(options.customChildren, this.customChildren);
+        else
+          options.customChildren = this.customChildren;
+        if (Array.isArray(options.routes)) {
+          options.routes.forEach((r) => {
+            this.load(r, options.includeClassName, options.routeFormat, options.customRoutes, options.customChildren);
+          });
+        } else if (options.routes || (Object.keys(this.routes).length > 0 || this.loadDefaultRoutes) && this.firstLoad)
+          this.load(options.routes, options.includeClassName, options.routeFormat, options.customRoutes, options.customChildren);
+      };
+      this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes, customChildren) => {
+        if (!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad))
+          return;
+        if (this.firstLoad)
+          this.firstLoad = false;
+        if (customRoutes)
+          customRoutes = Object.assign(this.customRoutes, customRoutes);
+        else
+          customRoutes = this.customRoutes;
+        if (customChildren)
+          customChildren = Object.assign(this.customChildren, customChildren);
+        let service;
+        let allRoutes = {};
+        if (routes) {
+          if (!(routes instanceof Graph2) && routes?.name) {
+            if (routes.module) {
+              let mod = routes;
+              routes = {};
+              Object.getOwnPropertyNames(routes.module).forEach((prop) => {
+                if (includeClassName)
+                  routes[mod.name + routeFormat + prop] = routes.module[prop];
+                else
+                  routes[prop] = routes.module[prop];
+              });
+            } else if (typeof routes === "function") {
+              service = new routes({ loadDefaultRoutes: this.loadDefaultRoutes });
+              service.load();
+              routes = service.routes;
+            }
+          } else if (routes instanceof Graph2 || routes.source instanceof Graph2) {
+            service = routes;
+            routes = {};
+            let name;
+            if (includeClassName) {
+              name = service.name;
+              if (!name) {
+                name = service.tag;
+                service.name = name;
+              }
+              if (!name) {
+                name = `graph${Math.floor(Math.random() * 1e15)}`;
+                service.name = name;
+                service.tag = name;
+              }
+            }
+            if (service.customRoutes && !this.customRoutes)
+              this.customRoutes = service.customRoutes;
+            else if (service.customRoutes && this.customRoutes)
+              Object.assign(this.customRoutes, service.customRoutes);
+            if (service.customChildren && !this.customChildren)
+              this.customChildren = service.customChildren;
+            else if (service.customChildren && this.customChildren)
+              Object.assign(this.customChildren, service.customChildren);
+            service.nodes.forEach((node) => {
+              routes[node.tag] = node;
+              let checked = {};
+              let checkChildGraphNodes = (nd, par) => {
+                if (!checked[nd.tag] || par && includeClassName && !checked[par?.tag + routeFormat + nd.tag]) {
+                  if (!par)
+                    checked[nd.tag] = true;
+                  else
+                    checked[par.tag + routeFormat + nd.tag] = true;
+                  if (nd instanceof Graph2 || nd.source instanceof Graph2) {
+                    if (includeClassName) {
+                      let nm = nd.name;
+                      if (!nm) {
+                        nm = nd.tag;
+                        nd.name = nm;
+                      }
+                      if (!nm) {
+                        nm = `graph${Math.floor(Math.random() * 1e15)}`;
+                        nd.name = nm;
+                        nd.tag = nm;
+                      }
+                    }
+                    nd.nodes.forEach((n) => {
+                      if (includeClassName && !routes[nd.tag + routeFormat + n.tag])
+                        routes[nd.tag + routeFormat + n.tag] = n;
+                      else if (!routes[n.tag])
+                        routes[n.tag] = n;
+                      checkChildGraphNodes(n, nd);
+                    });
+                  }
+                }
+              };
+              checkChildGraphNodes(node);
+            });
+          } else if (typeof routes === "object") {
+            let name = routes.constructor.name;
+            if (name === "Object") {
+              name = Object.prototype.toString.call(routes);
+              if (name)
+                name = name.split(" ")[1];
+              if (name)
+                name = name.split("]")[0];
+            }
+            if (name && name !== "Object") {
+              let module = routes;
+              routes = {};
+              Object.getOwnPropertyNames(module).forEach((route) => {
+                if (includeClassName)
+                  routes[name + routeFormat + route] = module[route];
+                else
+                  routes[route] = module[route];
+              });
+            }
+          }
+          if (service instanceof Graph2 && service.name && includeClassName) {
+            routes = Object.assign({}, routes);
+            for (const prop in routes) {
+              let route = routes[prop];
+              delete routes[prop];
+              routes[service.name + routeFormat + prop] = route;
+            }
+          }
+        }
+        if (this.loadDefaultRoutes) {
+          let rts = Object.assign({}, this.defaultRoutes);
+          if (routes) {
+            Object.assign(rts, this.routes);
+            routes = Object.assign(rts, routes);
+          } else
+            routes = Object.assign(rts, this.routes);
+          this.loadDefaultRoutes = false;
+        }
+        if (!routes)
+          routes = this.routes;
+        let incr = 0;
+        for (const tag in routes) {
+          incr++;
+          let childrenIter = (route, routeKey) => {
+            if (typeof route === "object") {
+              if (!route.tag)
+                route.tag = routeKey;
+              if (typeof route?.children === "object") {
+                nested:
+                  for (const key in route.children) {
+                    incr++;
+                    if (typeof route.children[key] === "object") {
+                      let rt = route.children[key];
+                      if (rt.tag && allRoutes[rt.tag])
+                        continue;
+                      if (customChildren) {
+                        for (const k2 in customChildren) {
+                          rt = customChildren[k2](rt, key, route, routes, allRoutes);
+                          if (!rt)
+                            continue nested;
+                        }
+                      }
+                      if (rt.id && !rt.tag) {
+                        rt.tag = rt.id;
+                      }
+                      let k;
+                      if (rt.tag) {
+                        if (allRoutes[rt.tag]) {
+                          let randkey = `${rt.tag}${incr}`;
+                          allRoutes[randkey] = rt;
+                          rt.tag = randkey;
+                          childrenIter(allRoutes[randkey], key);
+                          k = randkey;
+                        } else {
+                          allRoutes[rt.tag] = rt;
+                          childrenIter(allRoutes[rt.tag], key);
+                          k = rt.tag;
+                        }
+                      } else {
+                        if (allRoutes[key]) {
+                          let randkey = `${key}${incr}`;
+                          allRoutes[randkey] = rt;
+                          rt.tag = randkey;
+                          childrenIter(allRoutes[randkey], key);
+                          k = randkey;
+                        } else {
+                          allRoutes[key] = rt;
+                          childrenIter(allRoutes[key], key);
+                          k = key;
+                        }
+                      }
+                      if (service?.name && includeClassName) {
+                        allRoutes[service.name + routeFormat + k] = rt;
+                        delete allRoutes[k];
+                      } else
+                        allRoutes[k] = rt;
+                    }
+                  }
+              }
+            }
+          };
+          allRoutes[tag] = routes[tag];
+          childrenIter(routes[tag], tag);
+        }
+        top:
+          for (const route in allRoutes) {
+            if (typeof allRoutes[route] === "object") {
+              let r = allRoutes[route];
+              if (typeof r === "object") {
+                if (customRoutes) {
+                  for (const key in customRoutes) {
+                    r = customRoutes[key](r, route, allRoutes);
+                    if (!r)
+                      continue top;
+                  }
+                }
+                if (r.get) {
+                  if (typeof r.get == "object") {
+                  }
+                }
+                if (r.post) {
+                }
+                if (r.delete) {
+                }
+                if (r.put) {
+                }
+                if (r.head) {
+                }
+                if (r.patch) {
+                }
+                if (r.options) {
+                }
+                if (r.connect) {
+                }
+                if (r.trace) {
+                }
+                if (r.post && !r.operator) {
+                  allRoutes[route].operator = r.post;
+                } else if (!r.operator && typeof r.get == "function") {
+                  allRoutes[route].operator = r.get;
+                }
+              }
+            }
+          }
+        for (const route in routes) {
+          if (typeof routes[route] === "object") {
+            if (this.routes[route]) {
+              if (typeof this.routes[route] === "object")
+                Object.assign(this.routes[route], routes[route]);
+              else
+                this.routes[route] = routes[route];
+            } else
+              this.routes[route] = routes[route];
+          } else if (this.routes[route]) {
+            if (typeof this.routes[route] === "object")
+              Object.assign(this.routes[route], routes[route]);
+            else
+              this.routes[route] = routes[route];
+          } else
+            this.routes[route] = routes[route];
+        }
+        if (service) {
+          for (const key in this.routes) {
+            if (this.routes[key] instanceof GraphNode) {
+              this.nodes.set(key, this.routes[key]);
+              this.nNodes = this.nodes.size;
+            }
+          }
+        } else
+          this.setTree(this.routes);
+        for (const prop in this.routes) {
+          if (this.routes[prop]?.aliases) {
+            let aliases = this.routes[prop].aliases;
+            aliases.forEach((a) => {
+              if (service?.name && includeClassName)
+                routes[service.name + routeFormat + a] = this.routes[prop];
+              else
+                routes[a] = this.routes[prop];
+            });
+          }
+        }
+        return this.routes;
+      };
+      this.unload = (routes = this.routes) => {
+        if (!routes)
+          return;
+        let service;
+        if (!(routes instanceof Service) && typeof routes === "function") {
+          service = new Service();
+          routes = service.routes;
+        } else if (routes instanceof Service) {
+          routes = routes.routes;
+        }
+        for (const r in routes) {
+          delete this.routes[r];
+          if (this.nodes.get(r))
+            this.remove(r);
+        }
+        return this.routes;
+      };
+      this.handleMethod = (route, method, args) => {
+        let m = method.toLowerCase();
+        if (m === "get" && this.routes[route]?.get?.transform instanceof Function) {
+          if (Array.isArray(args))
+            return this.routes[route].get.transform(...args);
+          else
+            return this.routes[route].get.transform(args);
+        }
+        if (this.routes[route]?.[m]) {
+          if (!(this.routes[route][m] instanceof Function)) {
+            if (args)
+              this.routes[route][m] = args;
+            return this.routes[route][m];
+          } else
+            return this.routes[route][m](args);
+        } else
+          return this.handleServiceMessage({ route, args, method });
+      };
+      this.transmit = (...args) => {
+        if (typeof args[0] === "object") {
+          if (args[0].method) {
+            return this.handleMethod(args[0].route, args[0].method, args[0].args);
+          } else if (args[0].route) {
+            return this.handleServiceMessage(args[0]);
+          } else if (args[0].node) {
+            return this.handleGraphNodeCall(args[0].node, args[0].args);
+          } else if (this.keepState) {
+            if (args[0].route)
+              this.setState({ [args[0].route]: args[0].args });
+            if (args[0].node)
+              this.setState({ [args[0].node]: args[0].args });
+          }
+          return args;
+        } else
+          return args;
+      };
+      this.receive = (...args) => {
+        if (args[0]) {
+          if (typeof args[0] === "string") {
+            let substr = args[0].substring(0, 8);
+            if (substr.includes("{") || substr.includes("[")) {
+              if (substr.includes("\\"))
+                args[0] = args[0].replace(/\\/g, "");
+              if (args[0][0] === '"') {
+                args[0] = args[0].substring(1, args[0].length - 1);
+              }
+              ;
+              args[0] = JSON.parse(args[0]);
+            }
+          }
+        }
+        if (typeof args[0] === "object") {
+          if (args[0].method) {
+            return this.handleMethod(args[0].route, args[0].method, args[0].args);
+          } else if (args[0].route) {
+            return this.handleServiceMessage(args[0]);
+          } else if (args[0].node) {
+            return this.handleGraphNodeCall(args[0].node, args[0].args);
+          } else if (this.keepState) {
+            if (args[0].route)
+              this.setState({ [args[0].route]: args[0].args });
+            if (args[0].node)
+              this.setState({ [args[0].node]: args[0].args });
+          }
+          return args;
+        } else
+          return args;
+      };
+      this.pipe = (source, destination, endpoint, method, callback) => {
+        if (source instanceof GraphNode) {
+          if (callback)
+            return source.subscribe((res) => {
+              let mod = callback(res);
+              if (mod !== void 0)
+                this.transmit({ route: destination, args: mod, method });
+              else
+                this.transmit({ route: destination, args: res, method }, endpoint);
+            });
+          else
+            return this.subscribe(source, (res) => {
+              this.transmit({ route: destination, args: res, method }, endpoint);
+            });
+        } else if (typeof source === "string")
+          return this.subscribe(source, (res) => {
+            this.transmit({ route: destination, args: res, method }, endpoint);
+          });
+      };
+      this.pipeOnce = (source, destination, endpoint, method, callback) => {
+        if (source instanceof GraphNode) {
+          if (callback)
+            return source.state.subscribeTriggerOnce(source.tag, (res) => {
+              let mod = callback(res);
+              if (mod !== void 0)
+                this.transmit({ route: destination, args: mod, method });
+              else
+                this.transmit({ route: destination, args: res, method }, endpoint);
+            });
+          else
+            return this.state.subscribeTriggerOnce(source.tag, (res) => {
+              this.transmit({ route: destination, args: res, method }, endpoint);
+            });
+        } else if (typeof source === "string")
+          return this.state.subscribeTriggerOnce(source, (res) => {
+            this.transmit({ route: destination, args: res, method }, endpoint);
+          });
+      };
+      this.terminate = (...args) => {
+        this.nodes.forEach((n) => {
+          n.stopNode();
+        });
+      };
+      this.recursivelyAssign = (target, obj) => {
+        for (const key in obj) {
+          if (typeof obj[key] === "object") {
+            if (typeof target[key] === "object")
+              this.recursivelyAssign(target[key], obj[key]);
+            else
+              target[key] = this.recursivelyAssign({}, obj[key]);
+          } else
+            target[key] = obj[key];
+        }
+        return target;
+      };
+      this.defaultRoutes = {
+        "/": {
+          get: () => {
+            return this.print();
+          },
+          aliases: [""]
+        },
+        ping: () => {
+          console.log("ping");
+          return "pong";
+        },
+        echo: (...args) => {
+          this.transmit(...args);
+          return args;
+        },
+        assign: (source) => {
+          if (typeof source === "object") {
+            Object.assign(this, source);
+            return true;
+          }
+          return false;
+        },
+        recursivelyAssign: (source) => {
+          if (typeof source === "object") {
+            this.recursivelyAssign(this, source);
+            return true;
+          }
+          return false;
+        },
+        log: {
+          post: (...args) => {
+            console.log("Log: ", ...args);
+          },
+          aliases: ["info"]
+        },
+        error: (message) => {
+          let er = new Error(message);
+          console.error(message);
+          return er;
+        },
+        state: (key) => {
+          if (key) {
+            return this.state.data[key];
+          } else
+            return this.state.data;
+        },
+        printState: (key) => {
+          if (key) {
+            return stringifyWithCircularRefs(this.state.data[key]);
+          } else
+            return stringifyWithCircularRefs(this.state.data);
+        },
+        spliceTypedArray: this.spliceTypedArray,
+        transmit: this.transmit,
+        receive: this.receive,
+        load: this.load,
+        unload: this.unload,
+        pipe: this.pipe,
+        terminate: this.terminate,
+        run: this.run,
+        _run: this._run,
+        subscribe: this.subscribe,
+        subscribeNode: this.subscribeNode,
+        unsubscribe: this.unsubscribe,
+        stopNode: this.stopNode,
+        get: this.get,
+        add: this.add,
+        remove: this.remove,
+        setTree: this.setTree,
+        setState: this.setState,
+        print: this.print,
+        reconstruct: this.reconstruct,
+        handleMethod: this.handleMethod,
+        handleServiceMessage: this.handleServiceMessage,
+        handleGraphNodeCall: this.handleGraphNodeCall
+      };
+      if (options.name)
+        this.name = options.name;
+      else
+        options.name = this.tag;
+      if ("loadDefaultRoutes" in options) {
+        this.loadDefaultRoutes = options.loadDefaultRoutes;
+        this.routes = Object.assign(this.defaultRoutes, this.routes);
+      }
+      if (options || Object.keys(this.routes).length > 0)
+        this.init(options);
+    }
+    handleServiceMessage(message) {
+      let call;
+      if (typeof message === "object") {
+        if (message.route)
+          call = message.route;
+        else if (message.node)
+          call = message.node;
+      }
+      if (call) {
+        if (Array.isArray(message.args))
+          return this.run(call, ...message.args);
+        else
+          return this.run(call, message.args);
+      } else
+        return message;
+    }
+    handleGraphNodeCall(route, args) {
+      if (!route)
+        return args;
+      if (args?.args) {
+        this.handleServiceMessage(args);
+      } else if (Array.isArray(args))
+        return this.run(route, ...args);
+      else
+        return this.run(route, args);
+    }
+    isTypedArray(x) {
+      return ArrayBuffer.isView(x) && Object.prototype.toString.call(x) !== "[object DataView]";
+    }
+    spliceTypedArray(arr, start2, end) {
+      let s = arr.subarray(0, start2);
+      let e;
+      if (end) {
+        e = arr.subarray(end + 1);
+      }
+      let n;
+      if (s.length > 0 || e?.length > 0)
+        n = new arr.constructor(s.length + e.length);
+      if (s.length > 0)
+        n.set(s);
+      if (e && e.length > 0)
+        n.set(e, s.length);
+      return n;
+    }
+  };
+
+  // src/graphscript/services/dom/DOM.service.ts
+  var DOMService = class extends Service {
+    constructor(options, parentNode, interpreters) {
+      super({ props: options?.props, name: options?.name ? options.name : `dom${Math.floor(Math.random() * 1e15)}` });
+      this.loadDefaultRoutes = false;
+      this.keepState = true;
+      this.parentNode = document.body;
+      this.interpreters = {
+        md: (template, options) => {
+          if (typeof markdownit === "undefined") {
+            document.head.insertAdjacentHTML("beforeend", `
+                    <script src='https://unpkg.com/markdown-it@latest/dist/markdown-it.min.js'><\/script>`);
+          }
+          let md = globalThis.markdownit();
+          let html = md.render(template);
+          options.template = html;
+        },
+        jsx: (template, options) => {
+          if (!options.parentNode)
+            options.parentNode = this.parentNode;
+          if (typeof options.parentNode === "string")
+            options.parentNode = document.getElementById(options.parentNode);
+          if (typeof ReactDOM === "undefined") {
+            document.head.insertAdjacentHTML("beforeend", `
+                    <script src='https://unpkg.com/react@latest/umd/react.production.min.js'><\/script>
+                    <script src='https://unpkg.com/react-dom@latest/umd/react-dom.production.min.js'><\/script>`);
+          }
+          options.template = "";
+          let onrender = options.onrender;
+          options.onrender = (self, info) => {
+            const modal = ReactDOM.createPortal(template, options.id);
+            onrender(self, info);
+          };
+        }
+      };
+      this.customRoutes = {
+        "dom": (r, route, routes) => {
+          if (r.template) {
+            if (!r.tag)
+              r.tag = route;
+            this.addComponent(r, r.generateChildElementNodes);
+          } else if (r.context) {
+            if (!r.tag)
+              r.tag = route;
+            this.addCanvasComponent(r);
+          } else if (r.tagName || r.element) {
+            if (!r.tag)
+              r.tag = route;
+            this.addElement(r, r.generateChildElementNodes);
+          }
+          return r;
+        }
+      };
+      this.customChildren = {
+        "dom": (rt, routeKey, route, routes, checked) => {
+          if ((route.tag || route.id) && (route.template || route.context || route.tagName || route.element) && (rt.template || rt.context || rt.tagName || rt.element) && !rt.parentNode) {
+            if (route.tag)
+              rt.parentNode = route.tag;
+            if (route.id)
+              rt.parentNode = route.id;
+          }
+          return rt;
+        }
+      };
+      this.elements = {};
+      this.components = {};
+      this.templates = {};
+      this.resolveNode = (element, options) => {
+        let node;
+        if (this.nodes.get(options.id)?.element?.parentNode?.id === options.parentNode || this.nodes.get(options.id)?.parentNode === options.parentNode) {
+          node = this.nodes.get(options.id);
+          node.element = element;
+        } else {
+          node = new GraphNode(options, options.parentNode ? this.nodes.get(options.parentNode) : this.parentNode, this);
+        }
+        const initialOptions = options._initial ?? options;
+        for (let key in initialOptions) {
+          if (typeof initialOptions[key] === "function")
+            initialOptions[key] = initialOptions[key].bind(node);
+          else if (key === "attributes") {
+            for (let key2 in initialOptions.attributes) {
+              if (typeof initialOptions.attributes[key2] === "function") {
+                initialOptions.attributes[key2] = initialOptions.attributes[key2].bind(node);
+              }
+            }
+          }
+        }
+        return node;
+      };
+      this.addElement = (options, generateChildElementNodes = false) => {
+        let elm = this.createElement(options);
+        let oncreate = options.onrender;
+        if (!options.element)
+          options.element = elm;
+        if (!options.operator)
+          options.operator = function(props) {
+            if (typeof props === "object")
+              for (const key in props) {
+                if (this.element) {
+                  if (typeof this.element[key] === "function" && typeof props[key] !== "function") {
+                    if (Array.isArray(props[key]))
+                      this.element[key](...props[key]);
+                    else
+                      this.element[key](props[key]);
+                  } else if (key === "style") {
+                    Object.assign(this.element[key], props[key]);
+                  } else
+                    this.element[key] = props[key];
+                }
+              }
+            return props;
+          };
+        let node = this.resolveNode(elm, options);
+        elm.node = node;
+        let divs = Array.from(elm.querySelectorAll("*"));
+        if (generateChildElementNodes) {
+          divs = divs.map((d, i) => this.addElement({ element: d }));
+        }
+        this.elements[options.id] = { element: elm, node, parentNode: options.parentNode, divs };
+        if (!node.ondelete)
+          node.ondelete = (node2) => {
+            elm.remove();
+            if (options.onremove)
+              options.onremove(elm, this.elements[options.id]);
+          };
+        if (options.onresize) {
+          let onresize = options.onresize;
+          options.onresize = (ev) => {
+            onresize(ev, elm, this.elements[options.id]);
+          };
+          window.addEventListener("resize", options.onresize);
+        }
+        if (!elm.parentNode) {
+          setTimeout(() => {
+            if (typeof options.parentNode === "string")
+              options.parentNode = document.getElementById(options.parentNode);
+            if (typeof options.parentNode === "object") {
+              options.parentNode.appendChild(elm);
+            }
+            if (oncreate)
+              oncreate(elm, this.elements[options.id]);
+          }, 0.01);
+        }
+        return this.elements[options.id];
+      };
+      this.createElement = (options) => {
+        let elm;
+        if (options.element) {
+          if (typeof options.element === "string") {
+            elm = document.querySelector(options.element);
+            if (!elm)
+              elm = document.getElementById(options.element);
+          } else
+            elm = options.element;
+        } else if (options.tagName)
+          elm = document.createElement(options.tagName);
+        else if (options.id && document.getElementById(options.id))
+          elm = document.getElementById(options.id);
+        if (!elm)
+          return void 0;
+        this.updateOptions(options, elm);
+        return elm;
+      };
+      this.updateOptions = (options, element) => {
+        if (!options.id && options.tag)
+          options.id = options.tag;
+        if (!options.tag && options.id)
+          options.tag = options.id;
+        if (!options.id)
+          options.id = `${options.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
+        if (typeof options.parentNode === "string" && document.getElementById(options.parentNode))
+          options.parentNode = document.getElementById(options.parentNode);
+        if (!options.parentNode) {
+          if (!this.parentNode)
+            this.parentNode = document.body;
+          options.parentNode = this.parentNode;
+        }
+        element.id = options.id;
+        if (options.style)
+          Object.assign(element.style, options.style);
+        if (options.attributes) {
+          for (let key in options.attributes) {
+            if (typeof options.attributes[key] === "function")
+              element[key] = (...args) => options.attributes[key](...args);
+            else
+              element[key] = options.attributes[key];
+          }
+        }
+        return options;
+      };
+      this.addComponent = (options, generateChildElementNodes = true) => {
+        if (options.onrender) {
+          let oncreate = options.onrender;
+          options.onrender = (self) => {
+            oncreate(self, options);
+          };
+        }
+        if (options.onresize) {
+          let onresize = options.onresize;
+          options.onresize = (self) => {
+            onresize(self, options);
+          };
+        }
+        if (options.onremove) {
+          let ondelete = options.onremove;
+          options.onremove = (self) => {
+            ondelete(self, options);
+          };
+        }
+        if (typeof options.renderonchanged === "function") {
+          let renderonchanged = options.renderonchanged;
+          options.renderonchanged = (self) => {
+            renderonchanged(self, options);
+          };
+        }
+        if (options.interpreter && options.interpreter !== "wc") {
+          this.interpreters[options.interpreter](options.template, options);
+        }
+        class CustomElement extends DOMElement {
+          constructor() {
+            super(...arguments);
+            this.props = options.props;
+            this.styles = options.styles;
+            this.useShadow = options.useShadow;
+            this.template = options.template;
+            this.oncreate = options.onrender;
+            this.onresize = options.onresize;
+            this.ondelete = options.onremove;
+            this.renderonchanged = options.renderonchanged;
+          }
+        }
+        if (!options.tagName)
+          options.tagName = `custom-element${Math.random() * 1e15}`;
+        CustomElement.addElement(options.tagName);
+        let elm = document.createElement(options.tagName);
+        let completeOptions = this.updateOptions(options, elm);
+        this.templates[completeOptions.id] = completeOptions;
+        let divs = Array.from(elm.querySelectorAll("*"));
+        if (generateChildElementNodes) {
+          divs = divs.map((d) => this.addElement({ element: d }));
+        }
+        if (!options.element)
+          options.element = elm;
+        if (!options.operator)
+          options.operator = function op(props) {
+            if (typeof props === "object")
+              for (const key in props) {
+                if (this.element) {
+                  if (typeof this.element[key] === "function" && typeof props[key] !== "function") {
+                    if (Array.isArray(props[key]))
+                      this.element[key](...props[key]);
+                    else
+                      this.element[key](props[key]);
+                  } else if (key === "style") {
+                    Object.assign(this.element[key], props[key]);
+                  } else
+                    this.element[key] = props[key];
+                }
+              }
+            return props;
+          };
+        let node = this.resolveNode(elm, options);
+        if (!node.ondelete)
+          node.ondelete = (node2) => {
+            elm.delete();
+          };
+        elm.node = node;
+        this.components[completeOptions.id] = {
+          element: elm,
+          class: CustomElement,
+          node,
+          divs,
+          ...completeOptions
+        };
+        if (!elm.parentNode) {
+          setTimeout(() => {
+            if (typeof options.parentNode === "string")
+              options.parentNode = document.getElementById(options.parentNode);
+            if (typeof options.parentNode === "object") {
+              options.parentNode.appendChild(elm);
+            }
+          }, 0.01);
+        }
+        return this.components[completeOptions.id];
+      };
+      this.addCanvasComponent = (options) => {
+        if (!options.canvas) {
+          options.template = `<canvas `;
+          if (options.width)
+            options.template += `width="${options.width}"`;
+          if (options.height)
+            options.template += `height="${options.height}"`;
+          options.template += ` ></canvas>`;
+        } else
+          options.template = options.canvas;
+        if (options.onrender) {
+          let oncreate = options.onrender;
+          options.onrender = (self) => {
+            oncreate(self, options);
+          };
+        }
+        if (options.onresize) {
+          let onresize = options.onresize;
+          options.onresize = (self) => {
+            onresize(self, options);
+          };
+        }
+        if (options.ondelete) {
+          let ondelete = options.onremove;
+          options.onremove = (self) => {
+            ondelete(self, options);
+          };
+        }
+        if (typeof options.renderonchanged === "function") {
+          let renderonchanged = options.renderonchanged;
+          options.renderonchanged = (self) => {
+            renderonchanged(self, options);
+          };
+        }
+        class CustomElement extends DOMElement {
+          constructor() {
+            super(...arguments);
+            this.props = options.props;
+            this.styles = options.styles;
+            this.template = options.template;
+            this.oncreate = options.onrender;
+            this.onresize = options.onresize;
+            this.ondelete = options.onremove;
+            this.renderonchanged = options.renderonchanged;
+          }
+        }
+        if (!options.tagName)
+          options.tagName = `custom-element${Math.random() * 1e15}`;
+        CustomElement.addElement(options.tagName);
+        let elm = document.createElement(options.tagName);
+        const completeOptions = this.updateOptions(options, elm);
+        let animation = () => {
+          if (this.components[completeOptions.id]?.animating) {
+            this.components[completeOptions.id].draw(this.components[completeOptions.id].element, this.components[completeOptions.id]);
+            requestAnimationFrame(animation);
+          }
+        };
+        this.templates[completeOptions.id] = completeOptions;
+        if (!options.element)
+          options.element = elm;
+        if (!options.operator)
+          options.operator = function op(props) {
+            if (typeof props === "object")
+              for (const key in props) {
+                if (this.element) {
+                  if (typeof this.element[key] === "function" && typeof props[key] !== "function") {
+                    if (Array.isArray(props[key]))
+                      this.element[key](...props[key]);
+                    else
+                      this.element[key](props[key]);
+                  } else if (key === "style") {
+                    Object.assign(this.element[key], props[key]);
+                  } else
+                    this.element[key] = props[key];
+                }
+              }
+            return props;
+          };
+        let node = this.resolveNode(elm, options);
+        elm.node = node;
+        if (!node.ondelete)
+          node.ondelete = (node2) => {
+            elm.delete();
+          };
+        let canvas = elm.querySelector("canvas");
+        if (completeOptions.style)
+          Object.assign(canvas.style, completeOptions.style);
+        let context;
+        if (typeof completeOptions.context === "object")
+          context = options.context;
+        else if (typeof completeOptions.context === "string")
+          context = canvas.getContext(completeOptions.context);
+        this.components[completeOptions.id] = {
+          element: elm,
+          class: CustomElement,
+          template: completeOptions.template,
+          canvas,
+          node,
+          ...completeOptions
+        };
+        this.components[completeOptions.id].context = context;
+        elm.canvas = canvas;
+        elm.context = context;
+        node.canvas = canvas;
+        node.context = context;
+        if (!elm.parentNode) {
+          setTimeout(() => {
+            if (typeof options.parentNode === "string")
+              options.parentNode = document.getElementById(options.parentNode);
+            if (typeof options.parentNode === "object") {
+              options.parentNode.appendChild(elm);
+            }
+          }, 0.01);
+        }
+        node.runAnimation(animation);
+        return this.components[completeOptions.id];
+      };
+      this.terminate = (element) => {
+        if (typeof element === "object") {
+          if (element.animating)
+            element.animating = false;
+          if (element.element)
+            element = element.element;
+        } else if (typeof element === "string" && this.components[element]) {
+          if (this.components[element].node.isAnimating)
+            this.components[element].node.stopNode();
+          if (this.components[element].divs)
+            this.components[element].divs.forEach((d) => this.terminate(d));
+          let temp = this.components[element].element;
+          delete this.components[element];
+          element = temp;
+        } else if (typeof element === "string" && this.elements[element]) {
+          if (this.elements[element].divs)
+            this.elements[element].divs.forEach((d) => this.terminate(d));
+          let temp = this.elements[element].element;
+          if (this.elements[element].onresize)
+            window.removeEventListener("resize", this.elements[element].onresize);
+          if (this.elements[element].ondelete)
+            this.elements[element].ondelete(temp, this.elements[element]);
+          delete this.elements[element];
+          element = temp;
+        }
+        if (element) {
+          if (this.nodes.get(element.id)) {
+            this.removeTree(element.id);
+          }
+          if (element instanceof DOMElement)
+            element.delete();
+          else if (element?.parentNode) {
+            element.parentNode.removeChild(element);
+          }
+          return true;
+        }
+        return false;
+      };
+      this.defaultRoutes = {
+        addElement: this.addElement,
+        addComponent: this.addComponent,
+        addCanvasComponent: this.addCanvasComponent,
+        terminate: this.terminate
+      };
+      if (options?.parentNode)
+        parentNode = options.parentNode;
+      if (typeof parentNode === "string")
+        parentNode = document.getElementById(parentNode);
+      if (parentNode instanceof HTMLElement)
+        this.parentNode = parentNode;
+      if (interpreters) {
+        Object.assign(this.interpreters, interpreters);
+      }
+      this.init(options);
+    }
+  };
+
   // src/transform.ts
   var transform_default = (tag, node) => {
     const args = node.arguments;
@@ -1503,10 +2992,10 @@
       });
       return originalOperator(...updatedArgs);
     };
-    return new Graph(instanceTree, tag, node);
+    return new Graph2(instanceTree, tag, node);
   };
 
-  // src/old/parse.js
+  // src/parse.js
   var ARGUMENT_NAMES = /([^,]*)/g;
   function getFnParamInfo(fn) {
     var fstr = fn.toString();
@@ -1550,70 +3039,36 @@
   }
   var parse_default = getFnParamInfo;
 
-  // src/old/index.js
+  // src/index.js
   var isNode = "process" in globalThis;
   var ESPlugin = class {
-    tag;
-    graph;
-    parent;
-    element;
-    parentNode;
-    children = {};
-    tagName;
-    style;
-    attributes;
-    #toRun = false;
-    _initial;
-    _trueInitial;
-    _instance;
+    #initial;
+    #instance;
+    #graphscript;
+    get initial() {
+      return this.#initial;
+    }
+    get instance() {
+      return this.#instance;
+    }
+    get graphscript() {
+      return this.#graphscript;
+    }
+    set graphscript(v) {
+      this.#graphscript = v;
+    }
     constructor(node, options = {}) {
-      this._initial = node;
-      this._trueInitial = node;
+      this.#initial = node;
       do {
-        this._initial = this._initial._initial ?? this._initial;
-      } while (this._initial instanceof ESPlugin);
-      let parentNode;
-      Object.defineProperty(this, "parentNode", {
-        get: () => parentNode,
-        set: (el) => {
-          parentNode = el;
-          if (el) {
-            if (this.element) {
-              parentNode.appendChild(this.element);
-              if (typeof this.onrender === "function")
-                this.onrender();
-            } else {
-            }
-          } else if (this.element)
-            this.element.remove();
-        },
-        enumerable: true
-      });
-      let element;
-      Object.defineProperty(this, "element", {
-        get: () => element,
-        set: (el) => {
-          element = el;
-          if (this.parentNode) {
-            this.parentNode.appendChild(el);
-            if (typeof this.onrender === "function")
-              this.onrender();
-          }
-        },
-        enumerable: true
-      });
-      for (let k in node)
-        this[k] = node[k];
-      this.parent = options.parent;
-      const getParentNode = () => options.parentNode ?? this.parent?.parentNode;
-      this.parentNode = getParentNode();
-      if (this.graph) {
+        this.#initial = this.initial.initial ?? this.initial;
+      } while (this.initial instanceof ESPlugin);
+      if (node.graph) {
         let tree = {};
-        for (let tag in this._initial.graph.nodes) {
-          const innerNode = this._initial.graph.nodes[tag];
-          tree[tag] = this.#create(tag, innerNode);
+        for (let tag2 in this.initial.graph.nodes) {
+          const innerNode = this.initial.graph.nodes[tag2];
+          tree[tag2] = this.#create(tag2, innerNode);
         }
-        const edges = this._initial.graph.edges;
+        const edges = this.initial.graph.edges;
         for (let output in edges) {
           const outNode = tree[output];
           if (!outNode.children)
@@ -1621,87 +3076,48 @@
           for (let input in edges[output])
             outNode.children[input] = true;
         }
-        this._graphscript = new Graph(tree);
-        this.tag = this._graphscript.tag;
-        for (let tag in this._initial.graph.nodes) {
-          const node2 = this._initial.graph.nodes[tag];
+        this.graphscript = isNode ? new Graph(tree) : new DOMService({ routes: tree }, options.parentNode);
+        for (let tag2 in this.initial.graph.nodes) {
+          const node2 = this.initial.graph.nodes[tag2];
           if (!(node2 instanceof ESPlugin)) {
             const clonedOptions = Object.assign({}, Object.assign(options));
-            this._initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, {
-              tag,
-              parent: this
-            }));
+            this.initial.graph.nodes[tag2] = new ESPlugin(node2, Object.assign(clonedOptions, { tag: tag2 }));
             if (typeof options.onPlugin === "function")
-              options.onPlugin(this.graph.nodes[tag]);
+              options.onPlugin(node2.graph.nodes[tag2]);
           } else {
-            node2.tag = tag;
-            node2.parent = this;
-            node2.init();
+            const got = this.graphscript.nodes.get(tag2);
+            if (got)
+              node2.graphscript = got;
           }
         }
       }
-      if ("default" in this._initial) {
-        this.tag = options.tag ?? "defaultESPluginTag";
-        this._graphscript = new GraphNode(this.#create(this.tag, this._initial));
+      if ("default" in this.initial) {
+        this.graphscript = new GraphNode(this.#create(options.tag ?? "defaultESPluginTag", this.initial));
       }
-      if (options.activate !== false) {
-        if (typeof this.oncreate === "function")
-          this.oncreate();
-        if (this.loop) {
-          setInterval(() => {
-            this.run();
-          }, this.loop);
-        }
-        if (isNode) {
-        } else {
-          if (this.tagName)
-            this.element = document.createElement(this.tagName);
-          this.parentNode = getParentNode() ?? document.body;
-          if (this.element) {
-            if (this.attributes) {
-              for (let attribute in this.attributes) {
-                const value = this.attributes[attribute];
-                if (typeof value === "function") {
-                  const boundValue = value.bind(this);
-                  this.element[attribute] = (ev) => boundValue(ev);
-                } else
-                  this.element[attribute] = value;
-              }
-            }
-          }
-        }
-      }
+      let tag = this.graphscript?.tag;
+      Object.defineProperty(this, "tag", {
+        get: () => this.graphscript?.tag,
+        enumerable: true
+      });
     }
-    init = async () => {
-      if ("default" in this._initial) {
-        if (this.parent) {
-          const got = this.parent._graphscript.nodes.get(this.tag);
-          if (got)
-            this._graphscript = got;
-        }
-        if (this.#toRun)
-          await this.run();
-      }
-    };
     #create = (tag, info) => {
       let activeInfo;
       if (info instanceof ESPlugin) {
-        activeInfo = info._instance;
-        info = info._initial;
+        activeInfo = info.instance;
+        info = info.initial;
       }
       const args = parse_default(info.default) ?? /* @__PURE__ */ new Map();
       if (args.size === 0)
         args.set("default", {});
       const input = args.keys().next().value;
-      if (this.arguments) {
-        for (let key in this.arguments) {
+      if (info.arguments) {
+        for (let key in info.arguments) {
           const o = args.get(key);
-          o.state = this.arguments[key];
+          o.state = info.arguments[key];
           if (input === key)
-            this.#toRun = true;
+            this.run();
         }
       }
-      this.arguments = args;
       const gsIn = {
         arguments: args,
         operator: info.default,
@@ -1719,22 +3135,24 @@
             gsIn[key] = activeInfo[key];
         }
       }
-      this._instance = gsIn;
+      this.#instance = gsIn;
       return transform_default(tag, gsIn);
     };
-    run = async (...args) => await this._graphscript.run(...args);
+    run = async (...args) => await this.graphscript.run(...args);
   };
-  var old_default = ESPlugin;
+  var src_default = ESPlugin;
 
   // index.js
   var start = async () => {
-    const instance = new old_default(example_exports);
-    const secondInstance = new old_default(example_exports);
-    await instance.init();
-    await secondInstance.init();
+    const instance = new src_default(example_exports);
+    const e2 = Object.assign({}, example_exports);
+    e2.attributes = Object.assign({}, e2.attributes);
+    e2.attributes.innerHTML = "Click Me Too";
+    const secondInstance = new src_default(e2);
+    console.log(instance, secondInstance);
     const res = await instance.run();
     console.log("instance without graph context", res);
-    const esGraph = new old_default({
+    const esGraph = new src_default({
       graph: {
         nodes: {
           first: instance,
@@ -1747,7 +3165,6 @@
         }
       }
     });
-    await esGraph.init();
     await instance.run();
     await secondInstance.run();
   };

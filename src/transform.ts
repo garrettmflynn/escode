@@ -1,4 +1,4 @@
-import { Graph } from "./Graph";
+import { Graph } from "./graphscript/Graph";
 
 export default (tag, node) => {
 

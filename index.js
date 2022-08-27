@@ -1,16 +1,21 @@
 import * as example from './plugins/example.js'
 import * as log from './plugins/log.js'
 
-import esplugin from './src/old/index.js'
+import esplugin from './src/index.js'
 
 const start = async () => {
 
     // ------------------- Basic Plugin Execution -------------------
     const instance = new esplugin(example)
-    const secondInstance = new esplugin(example)
 
-    await instance.init()
-    await secondInstance.init()
+
+    // copy the plugin info
+    const e2 = Object.assign({}, example)
+    e2.attributes = Object.assign({}, e2.attributes)
+    e2.attributes.innerHTML = 'Click Me Too'
+    const secondInstance = new esplugin(e2)
+
+    console.log(instance, secondInstance)
 
     const res = await instance.run()
     console.log('instance without graph context', res)
@@ -30,7 +35,6 @@ const start = async () => {
         }
     })
 
-    await esGraph.init()
     await instance.run()
     await secondInstance.run()
 }

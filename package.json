@@ -16,6 +16,7 @@
   "type": "module",
   "scripts": {
     "start": "tinybuild --path tinybuild.demo.js",
-    "start:node": "node index.js"
+    "start:node": "node index.js",
+    "build": "tinybuild"
   }
 }

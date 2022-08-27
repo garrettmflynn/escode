@@ -254,7 +254,7 @@ export class GraphNode {
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
                 if(hasnode) {
-                    for (let k in properties)  this[k] = hasnode[k]; //set the node's props as this
+                    for (let k in hasnode)  this[k] = hasnode[k]; //set the node's props as this
 
                     if(!this.source) this.source = hasnode;
 
@@ -262,8 +262,7 @@ export class GraphNode {
                     delete props.graph;
                     delete props.parent;
 
-                    console.log(props)
-                    Object.assign(properties, props);
+                    for (let k in props)  properties[k] = props[k];
                 }
             }
 
