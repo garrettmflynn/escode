@@ -23,6 +23,8 @@ export default function(){
 
 As such, this specification treats **namespace imports** (which access default *and* named exports) as first-class citizens.
 
+However, **named exports** without a default function may also be passed. These are transformed into individual plugins within the same graph.
+
 ### Default Exports
 The `default` export defines the behavior of the Plugin.
 

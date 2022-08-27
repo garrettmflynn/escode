@@ -26,9 +26,20 @@ class ESPlugin {
         this.#initial = node;
         do { this.#initial = this.initial.initial ?? this.initial } while (this.initial instanceof ESPlugin)
         
+        const hasDefault = 'default' in this.initial
+        let hasGraph = !!node.graph
+
+        if (!hasDefault && !hasGraph) {
+            let newNode = {graph: {nodes: {}}}
+            for (let namedExport in node) newNode.graph.nodes[namedExport] = {default: node[namedExport]}
+            this.#initial = newNode
+            hasGraph = true
+        }
+
+        // console.log(this.initial)
 
         // Parse Graphs
-        if (node.graph) {
+        if (hasGraph) {
 
             // create graph tree
             let tree = {}
@@ -65,12 +76,8 @@ class ESPlugin {
         }
 
         // Parse ESPlugins (with default export)
-        if ('default' in this.initial) {
-            this.graphscript = new GraphNode(this.#create(options.tag ?? 'defaultESPluginTag', this.initial))    
-        }
+        if (hasDefault) this.graphscript = new GraphNode(this.#create(options.tag ?? 'defaultESPluginTag', this.initial))    
 
-
-        let tag = this.graphscript?.tag
         Object.defineProperty(this, 'tag', {
             get: () => this.graphscript?.tag,
             enumerable: true

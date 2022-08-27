@@ -35,6 +35,19 @@
     console.log(`[${this.tag}]`, ...args);
   }
 
+  // plugins/api.js
+  var api_exports = {};
+  __export(api_exports, {
+    add: () => add,
+    divide: () => divide,
+    multiply: () => multiply,
+    subtract: () => subtract
+  });
+  var add = (a, b) => a + b;
+  var subtract = (a, b) => a - b;
+  var multiply = (a, b) => a * b;
+  var divide = (a, b) => a / b;
+
   // src/graphscript/Graph.ts
   function parseFunctionFromText(method = "") {
     let getFunctionBody = (methodString) => {
@@ -3062,11 +3075,20 @@
       do {
         this.#initial = this.initial.initial ?? this.initial;
       } while (this.initial instanceof ESPlugin);
-      if (node.graph) {
+      const hasDefault = "default" in this.initial;
+      let hasGraph = !!node.graph;
+      if (!hasDefault && !hasGraph) {
+        let newNode = { graph: { nodes: {} } };
+        for (let namedExport in node)
+          newNode.graph.nodes[namedExport] = { default: node[namedExport] };
+        this.#initial = newNode;
+        hasGraph = true;
+      }
+      if (hasGraph) {
         let tree = {};
-        for (let tag2 in this.initial.graph.nodes) {
-          const innerNode = this.initial.graph.nodes[tag2];
-          tree[tag2] = this.#create(tag2, innerNode);
+        for (let tag in this.initial.graph.nodes) {
+          const innerNode = this.initial.graph.nodes[tag];
+          tree[tag] = this.#create(tag, innerNode);
         }
         const edges = this.initial.graph.edges;
         for (let output in edges) {
@@ -3077,24 +3099,22 @@
             outNode.children[input] = true;
         }
         this.graphscript = isNode ? new Graph(tree) : new DOMService({ routes: tree }, options.parentNode);
-        for (let tag2 in this.initial.graph.nodes) {
-          const node2 = this.initial.graph.nodes[tag2];
+        for (let tag in this.initial.graph.nodes) {
+          const node2 = this.initial.graph.nodes[tag];
           if (!(node2 instanceof ESPlugin)) {
             const clonedOptions = Object.assign({}, Object.assign(options));
-            this.initial.graph.nodes[tag2] = new ESPlugin(node2, Object.assign(clonedOptions, { tag: tag2 }));
+            this.initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
             if (typeof options.onPlugin === "function")
-              options.onPlugin(node2.graph.nodes[tag2]);
+              options.onPlugin(node2.graph.nodes[tag]);
           } else {
-            const got = this.graphscript.nodes.get(tag2);
+            const got = this.graphscript.nodes.get(tag);
             if (got)
               node2.graphscript = got;
           }
         }
       }
-      if ("default" in this.initial) {
+      if (hasDefault)
         this.graphscript = new GraphNode(this.#create(options.tag ?? "defaultESPluginTag", this.initial));
-      }
-      let tag = this.graphscript?.tag;
       Object.defineProperty(this, "tag", {
         get: () => this.graphscript?.tag,
         enumerable: true
@@ -3149,8 +3169,10 @@
     e2.attributes = Object.assign({}, e2.attributes);
     e2.attributes.innerHTML = "Click Me Too";
     const secondInstance = new src_default(e2);
-    console.log(instance, secondInstance);
+    const apiInstance = new src_default(api_exports);
     const res = await instance.run();
+    const apiRes = await apiInstance.run("add", 1, 2);
+    console.log("apiRes: 1 + 2 =", apiRes);
     console.log("instance without graph context", res);
     const esGraph = new src_default({
       graph: {
