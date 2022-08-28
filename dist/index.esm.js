@@ -2391,7 +2391,6 @@ var Service = class extends Graph {
       pipe: this.pipe,
       terminate: this.terminate,
       run: this.run,
-      _run: this._run,
       subscribe: this.subscribe,
       subscribeNode: this.subscribeNode,
       unsubscribe: this.unsubscribe,
@@ -2917,11 +2916,11 @@ var transform_default = (tag, node) => {
   Array.from(args.entries()).forEach(([arg], i) => {
     instanceTree[arg] = {
       tag: arg,
-      operator: (input) => {
+      operator: function(input) {
         const o = args.get(arg);
         o.state = input;
         if (i === 0)
-          return node.run();
+          return node.operator();
         return input;
       }
     };
@@ -2940,10 +2939,9 @@ var transform_default = (tag, node) => {
       updatedArgs.push(...update);
       i++;
     });
-    return originalOperator.call(this, ...updatedArgs);
+    return originalOperator.call(this ?? node, ...updatedArgs);
   };
-  const graph = new Graph(instanceTree, tag, node);
-  return graph;
+  return new Graph(instanceTree, tag, node);
 };
 
 // src/parse.js
@@ -2996,6 +2994,7 @@ var ESPlugin = class {
   #initial;
   #instance;
   #graphscript;
+  #toRun = false;
   get initial() {
     return this.#initial;
   }
@@ -3016,16 +3015,19 @@ var ESPlugin = class {
     const isFunction = typeof this.initial === "function";
     const hasDefault = "default" in this.initial;
     let hasGraph = !!node.graph;
+    let runProps = true;
     if (!hasDefault && !hasGraph) {
       let newNode = { graph: { nodes: {} } };
       for (let namedExport in node)
         newNode.graph.nodes[namedExport] = { default: node[namedExport] };
       this.#initial = newNode;
       hasGraph = true;
+      runProps = false;
     }
     if (hasDefault || isFunction)
       this.graphscript = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
     if (hasGraph) {
+      const hasGraphs = {};
       for (let tag in this.initial.graph.nodes) {
         const node2 = this.initial.graph.nodes[tag];
         if (!(node2 instanceof ESPlugin)) {
@@ -3033,16 +3035,18 @@ var ESPlugin = class {
           this.initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
           if (typeof options.onPlugin === "function")
             options.onPlugin(this.initial.graph.nodes[tag]);
-        } else {
-          console.error("Gotta compensate");
-          const got = this.graphscript.nodes.get(tag);
-          if (got)
-            node2.graphscript = got;
-        }
+        } else
+          hasGraphs[tag] = node2.graphscript;
       }
       let tree = {};
       for (let tag in this.initial.graph.nodes) {
-        const innerNode = this.#create(tag, this.initial.graph.nodes[tag]);
+        const thisNode = this.initial.graph.nodes[tag];
+        if (hasGraphs[tag]) {
+          const thisNode2 = hasGraphs[tag]._initial;
+          thisNode2.tag = tag;
+          thisNode2[tag].state.triggers = {};
+        }
+        const innerNode = this.#create(tag, thisNode);
         tree[tag] = innerNode.graphscript ?? innerNode;
       }
       const edges = this.initial.graph.edges;
@@ -3053,14 +3057,31 @@ var ESPlugin = class {
         for (let input in edges[output])
           outNode.children[input] = true;
       }
+      const ports = node.graph.ports;
       const props = this.#instance ?? node;
-      this.graphscript = isNode ? new Graph(tree, options.tag, props) : new DOMService({ routes: tree, name: options.tag, props }, options.parentNode);
+      this.graphscript = isNode ? new Graph(tree, options.tag, props) : new DOMService({ routes: tree, name: options.tag, props: runProps ? props : void 0 }, options.parentNode);
+      if (ports) {
+        let input = ports.input;
+        let output = ports.output;
+        node.operator = async function(...args) {
+          await this.run(input, ...args);
+        };
+        this.graphscript.state.triggers = {};
+        this.graphscript.subscribe(output, (...args) => {
+          for (let tag in this.graphscript.children)
+            this.#runGraph(this.graphscript.children[tag], ...args);
+        });
+      }
     }
     Object.defineProperty(this, "tag", {
       get: () => this.graphscript?.tag,
       enumerable: true
     });
   }
+  init = async () => {
+    if (this.#toRun)
+      await this.run();
+  };
   #create = (tag, info) => {
     if (typeof info === "function")
       info = { default: info };
@@ -3081,13 +3102,14 @@ var ESPlugin = class {
           const o = args.get(key);
           o.state = info.arguments[key];
           if (input === key)
-            this.run();
+            this.#toRun = true;
         }
       }
       const gsIn = {
         arguments: args,
         operator: info.default,
-        tag
+        tag,
+        default: info.default
       };
       var props = Object.getOwnPropertyNames(info);
       const onActive = ["arguments", "default", "tag", "operator"];
@@ -3105,7 +3127,23 @@ var ESPlugin = class {
       return transform_default(tag, gsIn);
     }
   };
-  run = async (...args) => await this.graphscript.run(...args);
+  #runGraph = async (graph = this.graphscript, ...args) => {
+    if (graph instanceof Graph) {
+      if (graph.node)
+        return graph.node.run(...args);
+      else {
+        if (args.length === 0)
+          return this.#runDefault(graph);
+        else if (graph.nodes.has(args[0]))
+          return graph.run(...args);
+        else
+          return this.#runDefault(graph, ...args);
+      }
+    } else
+      return await graph.run(...args);
+  };
+  #runDefault = (graph, ...args) => graph.run(graph.nodes.values().next().value, ...args);
+  run = async (...args) => this.#runGraph(this.graphscript, ...args);
 };
 var src_default = ESPlugin;
 export {

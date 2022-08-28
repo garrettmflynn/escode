@@ -726,7 +726,7 @@
                     let props = n.children[key].getProps();
                     delete props.parent;
                     delete props.graph;
-                    if (n.source instanceof Graph2) {
+                    if (n.source instanceof Graph) {
                       n.children[key] = new GraphNode(props, n, n.source);
                     } else {
                       n.children[key] = new GraphNode(props, n, n.graph);
@@ -827,7 +827,7 @@
       if (typeof properties === "object") {
         if (properties instanceof GraphNode && properties._initial)
           Object.assign(properties, properties._initial);
-        if (properties instanceof Graph2) {
+        if (properties instanceof Graph) {
           let source = properties;
           properties = {
             source,
@@ -947,7 +947,7 @@
         }
         if (parentNode) {
           this.parent = parentNode;
-          if (parentNode instanceof GraphNode || parentNode instanceof Graph2)
+          if (parentNode instanceof GraphNode || parentNode instanceof Graph)
             parentNode.nodes.set(this.tag, this);
         }
         if (typeof properties.tree === "object") {
@@ -963,7 +963,7 @@
         }
         if (this.children)
           this.convertChildrenToNodes(this);
-        if (this.parent instanceof GraphNode || this.parent instanceof Graph2)
+        if (this.parent instanceof GraphNode || this.parent instanceof Graph)
           this.checkNodesHaveChildMapped(this.parent, this);
         if (typeof this.oncreate === "function")
           this.oncreate(this);
@@ -973,7 +973,7 @@
         return properties;
     }
   };
-  var Graph2 = class {
+  var Graph = class {
     constructor(tree, tag, props) {
       this.nNodes = 0;
       this.nodes = /* @__PURE__ */ new Map();
@@ -1020,7 +1020,7 @@
             } else if (typeof tree[node] === "object") {
               if (tree[node] instanceof GraphNode) {
                 this.add(tree[node]);
-              } else if (tree[node] instanceof Graph2) {
+              } else if (tree[node] instanceof Graph) {
                 let source = tree[node];
                 let properties = {};
                 if (source.operator)
@@ -1944,7 +1944,7 @@
   }
 
   // src/graphscript/services/Service.ts
-  var Service = class extends Graph2 {
+  var Service = class extends Graph {
     constructor(options = {}) {
       super(void 0, options.name ? options.name : `service${Math.floor(Math.random() * 1e14)}`, options.props);
       this.routes = {};
@@ -1985,7 +1985,7 @@
         let service;
         let allRoutes = {};
         if (routes) {
-          if (!(routes instanceof Graph2) && routes?.name) {
+          if (!(routes instanceof Graph) && routes?.name) {
             if (routes.module) {
               let mod = routes;
               routes = {};
@@ -2000,7 +2000,7 @@
               service.load();
               routes = service.routes;
             }
-          } else if (routes instanceof Graph2 || routes.source instanceof Graph2) {
+          } else if (routes instanceof Graph || routes.source instanceof Graph) {
             service = routes;
             routes = {};
             let name;
@@ -2033,7 +2033,7 @@
                     checked[nd.tag] = true;
                   else
                     checked[par.tag + routeFormat + nd.tag] = true;
-                  if (nd instanceof Graph2 || nd.source instanceof Graph2) {
+                  if (nd instanceof Graph || nd.source instanceof Graph) {
                     if (includeClassName) {
                       let nm = nd.name;
                       if (!nm) {
@@ -2078,7 +2078,7 @@
               });
             }
           }
-          if (service instanceof Graph2 && service.name && includeClassName) {
+          if (service instanceof Graph && service.name && includeClassName) {
             routes = Object.assign({}, routes);
             for (const prop in routes) {
               let route = routes[prop];
@@ -2441,7 +2441,6 @@
         pipe: this.pipe,
         terminate: this.terminate,
         run: this.run,
-        _run: this._run,
         subscribe: this.subscribe,
         subscribeNode: this.subscribeNode,
         unsubscribe: this.unsubscribe,
@@ -2646,17 +2645,7 @@
           };
           window.addEventListener("resize", options.onresize);
         }
-        if (!elm.parentNode) {
-          setTimeout(() => {
-            if (typeof options.parentNode === "string")
-              options.parentNode = document.getElementById(options.parentNode);
-            if (typeof options.parentNode === "object") {
-              options.parentNode.appendChild(elm);
-            }
-            if (oncreate)
-              oncreate(elm, this.elements[options.id]);
-          }, 0.01);
-        }
+        this.resolveParentNode(elm, options, oncreate);
         return this.elements[options.id];
       };
       this.createElement = (options) => {
@@ -2788,15 +2777,7 @@
           divs,
           ...completeOptions
         };
-        if (!elm.parentNode) {
-          setTimeout(() => {
-            if (typeof options.parentNode === "string")
-              options.parentNode = document.getElementById(options.parentNode);
-            if (typeof options.parentNode === "object") {
-              options.parentNode.appendChild(elm);
-            }
-          }, 0.01);
-        }
+        this.resolveParentNode(elm, options);
         return this.components[completeOptions.id];
       };
       this.addCanvasComponent = (options) => {
@@ -2904,6 +2885,11 @@
         elm.context = context;
         node.canvas = canvas;
         node.context = context;
+        this.resolveParentNode(elm, options);
+        node.runAnimation(animation);
+        return this.components[completeOptions.id];
+      };
+      this.resolveParentNode = (elm, options, oncreate) => {
         if (!elm.parentNode) {
           setTimeout(() => {
             if (typeof options.parentNode === "string")
@@ -2911,10 +2897,10 @@
             if (typeof options.parentNode === "object") {
               options.parentNode.appendChild(elm);
             }
+            if (oncreate)
+              oncreate(elm, this.elements[options.id]);
           }, 0.01);
         }
-        node.runAnimation(animation);
-        return this.components[completeOptions.id];
       };
       this.terminate = (element) => {
         if (typeof element === "object") {
@@ -2980,11 +2966,11 @@
     Array.from(args.entries()).forEach(([arg], i) => {
       instanceTree[arg] = {
         tag: arg,
-        operator: (input) => {
+        operator: function(input) {
           const o = args.get(arg);
           o.state = input;
           if (i === 0)
-            return node.run();
+            return node.operator();
           return input;
         }
       };
@@ -3003,10 +2989,9 @@
         updatedArgs.push(...update);
         i++;
       });
-      return originalOperator.call(this, ...updatedArgs);
+      return originalOperator.call(this ?? node, ...updatedArgs);
     };
-    const graph = new Graph2(instanceTree, tag, node);
-    return graph;
+    return new Graph(instanceTree, tag, node);
   };
 
   // src/parse.js
@@ -3059,6 +3044,7 @@
     #initial;
     #instance;
     #graphscript;
+    #toRun = false;
     get initial() {
       return this.#initial;
     }
@@ -3079,14 +3065,19 @@
       const isFunction = typeof this.initial === "function";
       const hasDefault = "default" in this.initial;
       let hasGraph = !!node.graph;
+      let runProps = true;
       if (!hasDefault && !hasGraph) {
         let newNode = { graph: { nodes: {} } };
         for (let namedExport in node)
           newNode.graph.nodes[namedExport] = { default: node[namedExport] };
         this.#initial = newNode;
         hasGraph = true;
+        runProps = false;
       }
+      if (hasDefault || isFunction)
+        this.graphscript = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
       if (hasGraph) {
+        const hasGraphs = {};
         for (let tag in this.initial.graph.nodes) {
           const node2 = this.initial.graph.nodes[tag];
           if (!(node2 instanceof ESPlugin)) {
@@ -3094,17 +3085,18 @@
             this.initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
             if (typeof options.onPlugin === "function")
               options.onPlugin(this.initial.graph.nodes[tag]);
-          } else {
-            console.error("Gotta compensate");
-            const got = this.graphscript.nodes.get(tag);
-            if (got)
-              node2.graphscript = got;
-          }
+          } else
+            hasGraphs[tag] = node2.graphscript;
         }
         let tree = {};
         for (let tag in this.initial.graph.nodes) {
-          const innerNode = this.initial.graph.nodes[tag];
-          tree[tag] = this.#create(tag, innerNode);
+          const thisNode = this.initial.graph.nodes[tag];
+          if (hasGraphs[tag]) {
+            const thisNode2 = hasGraphs[tag]._initial;
+            thisNode2.tag = tag;
+          }
+          const innerNode = this.#create(tag, thisNode);
+          tree[tag] = innerNode.graphscript ?? innerNode;
         }
         const edges = this.initial.graph.edges;
         for (let output in edges) {
@@ -3114,14 +3106,18 @@
           for (let input in edges[output])
             outNode.children[input] = true;
         }
-        this.graphscript = isNode ? new Graph(tree) : new DOMService({ routes: tree, name: options.tag }, options.parentNode);
-      } else if (hasDefault || isFunction)
-        this.graphscript = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
+        const props = this.#instance ?? node;
+        this.graphscript = isNode ? new Graph(tree, options.tag, props) : new DOMService({ routes: tree, name: options.tag, props: runProps ? props : void 0 }, options.parentNode);
+      }
       Object.defineProperty(this, "tag", {
         get: () => this.graphscript?.tag,
         enumerable: true
       });
     }
+    init = async () => {
+      if (this.#toRun)
+        await this.run();
+    };
     #create = (tag, info) => {
       if (typeof info === "function")
         info = { default: info };
@@ -3142,13 +3138,14 @@
             const o = args.get(key);
             o.state = info.arguments[key];
             if (input === key)
-              this.run();
+              this.#toRun = true;
           }
         }
         const gsIn = {
           arguments: args,
           operator: info.default,
-          tag
+          tag,
+          default: info.default
         };
         var props = Object.getOwnPropertyNames(info);
         const onActive = ["arguments", "default", "tag", "operator"];
@@ -3166,21 +3163,40 @@
         return transform_default(tag, gsIn);
       }
     };
-    run = async (...args) => await this.graphscript.run(...args);
+    #runDefault = (...args) => this.graphscript.run(this.graphscript.nodes.values().next().value, ...args);
+    run = async (...args) => {
+      if (this.graphscript instanceof Graph) {
+        if (this.graphscript.node)
+          return this.graphscript.node.run(...args);
+        else {
+          if (args.length === 0)
+            return this.#runDefault();
+          else if (this.graphscript.nodes.has(args[0]))
+            return this.graphscript.run(...args);
+          else
+            return this.#runDefault(...args);
+        }
+      } else
+        return await this.graphscript.run(...args);
+    };
   };
   var src_default = ESPlugin;
 
   // index.js
   var start = async () => {
     const instance = new src_default(example_exports);
+    await instance.init();
+    console.log("example", example_exports);
     const e2 = Object.assign({}, example_exports);
     e2.attributes = Object.assign({}, e2.attributes);
     e2.attributes.innerHTML = "Click Me Too";
     const secondInstance = new src_default(e2);
+    await secondInstance.init();
     const apiInstance = new src_default(api_exports);
-    const res = await instance.run();
+    await apiInstance.init();
     const apiRes = await apiInstance.run("add", 1, 2);
     console.log("apiRes: 1 + 2 =", apiRes);
+    const res = await instance.run();
     console.log("instance without graph context", res);
     const esGraph = new src_default({
       graph: {
@@ -3195,6 +3211,7 @@
         }
       }
     });
+    await esGraph.init();
     await instance.run();
     await secondInstance.run();
   };

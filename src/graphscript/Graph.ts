@@ -1196,8 +1196,7 @@ export class Graph {
     //Should create a sync version with no promises (will block but be faster)
     run = (n:string|GraphNode,...args) => {
         if(typeof n === 'string') n = this.nodes.get(n);
-        if(n instanceof GraphNode)
-            return n.run(...args)
+        if(n instanceof GraphNode) return n.run(...args)
         else return undefined;
     }
     

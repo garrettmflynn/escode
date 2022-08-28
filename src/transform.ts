@@ -9,10 +9,10 @@ export default (tag, node) => {
     Array.from(args.entries()).forEach(([arg], i) => {
       instanceTree[arg] = {
         tag: arg,
-        operator: (input) => {
+        operator: function (input) {
           const o = args.get(arg)
           o.state = input
-          if (i === 0) return node.run();
+          if (i === 0) return node.operator(); // run the operator but pass to these connections
           return input;
         }
       };
@@ -35,9 +35,8 @@ export default (tag, node) => {
       });
 
 
-        return originalOperator.call(this, ...updatedArgs) // bound to GraphNode later
+        return originalOperator.call(this ?? node, ...updatedArgs) // bound to GraphNode later
     }
-    const graph = new Graph(instanceTree, tag, node)
 
-    return graph
+    return new Graph(instanceTree, tag, node)
   }

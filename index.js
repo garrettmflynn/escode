@@ -8,21 +8,24 @@ const start = async () => {
 
     // ------------------- Basic Plugin Execution -------------------
     const instance = new esplugin(example)
+    await instance.init()
 
     // copy the plugin info
+    console.log('example' ,example)
     const e2 = Object.assign({}, example)
     e2.attributes = Object.assign({}, e2.attributes)
     e2.attributes.innerHTML = 'Click Me Too'
     const secondInstance = new esplugin(e2)
+    await secondInstance.init()
 
     const apiInstance = new esplugin(api)
+    await apiInstance.init()
 
-    const res = await instance.run()
-
-    const apiRes = await apiInstance.run('add', 1,2)
+    const apiRes = await apiInstance.run('add', 1, 2) // as a graph, specify the node
     console.log('apiRes: 1 + 2 =', apiRes)
 
 
+    const res = await instance.run()
     console.log('instance without graph context', res)
 
     // ------------------- Basic Graph Support -------------------
@@ -39,6 +42,7 @@ const start = async () => {
             }
         }
     })
+    await esGraph.init()
 
     await instance.run()
     await secondInstance.run()

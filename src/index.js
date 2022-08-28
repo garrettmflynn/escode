@@ -12,7 +12,9 @@ class ESPlugin {
     #initial;
     #instance;
     #graphscript;
+    #toRun = false
 
+    // Restricted
     get initial() { return this.#initial }
 
     get instance() { return this.#instance }
@@ -29,12 +31,14 @@ class ESPlugin {
         const isFunction = typeof this.initial === 'function'
         const hasDefault = 'default' in this.initial
         let hasGraph = !!node.graph
+        let runProps = true
 
         if (!hasDefault && !hasGraph) {
             let newNode = {graph: {nodes: {}}}
             for (let namedExport in node) newNode.graph.nodes[namedExport] = {default: node[namedExport]}
             this.#initial = newNode
             hasGraph = true
+            runProps = false
         }
 
         // Parse ESPlugins (with default export)
@@ -43,39 +47,64 @@ class ESPlugin {
         // Parse Graphs
         if (hasGraph) {
 
+            const hasGraphs = {}
+
             // Instantiate Components First
             for (let tag in this.initial.graph.nodes) {
                 const node2 = this.initial.graph.nodes[tag];
                 if (!(node2 instanceof ESPlugin)) {
                     const clonedOptions = Object.assign({}, Object.assign(options));
                     this.initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
-                    // console.log(tag, this.initial.graph.nodes[tag])
                     if (typeof options.onPlugin === "function")
                     options.onPlugin(this.initial.graph.nodes[tag]);
-                } else {
-                    console.error('Gotta compensate')
-                    const got = this.graphscript.nodes.get(tag);
-                    if (got)
-                    node2.graphscript = got;
-                }
+                } else hasGraphs[tag] = node2.graphscript
             }
+
 
             // Compose Graph Tree from Components   
             let tree = {}
             for (let tag in this.initial.graph.nodes) {
-                const innerNode = this.#create(tag, this.initial.graph.nodes[tag]); // create new plugin
+
+                // Recreate Graph from Initial Values (stored here)
+                const thisNode = this.initial.graph.nodes[tag]
+                if (hasGraphs[tag]) {
+                    const thisNode =  hasGraphs[tag]._initial
+                    thisNode.tag = tag // adjust tag
+                    thisNode[tag].state.triggers = {} //remove subs
+                }
+                
+                const innerNode = this.#create(tag, thisNode); // create new plugin
                 tree[tag] = innerNode.graphscript ?? innerNode;
             }
 
             const edges = this.initial.graph.edges
             for (let output in edges) {
-                const outNode = tree[output]
+                const splitEdge = output.split('.')
+                const first = splitEdge.shift()
+                let outNode = tree[first]
+                splitEdge.forEach(str => outNode = outNode.nodes.get(str))
                 if (!outNode.children) outNode.children = {}
                 for (let input in edges[output]) outNode.children[input] = true
             }
 
+
+            const ports = node.graph.ports
             const props = this.#instance ?? node
-            this.graphscript = isNode ? new Graph(tree, options.tag, props) : new DOMService({ routes: tree, name: options.tag, props }, options.parentNode);
+            this.graphscript = isNode ? new Graph(tree, options.tag, props) : new DOMService({ routes: tree, name: options.tag, props: runProps ? props : undefined}, options.parentNode);
+
+            if (ports) {
+                let input = ports.input;
+                let output = ports.output;
+                node.operator = async function(...args) {
+                  await this.run(input, ...args);
+                };
+        
+                this.graphscript.state.triggers = {} // clearing subscriptions
+                this.graphscript.subscribe(output, (...args) => {
+                  for (let tag in this.graphscript.children) this.#runGraph(this.graphscript.children[tag], ...args);
+                });
+              }
+
         }
 
         Object.defineProperty(this, 'tag', {
@@ -83,6 +112,11 @@ class ESPlugin {
             enumerable: true
         })
     }
+
+    init = async () => {
+        if (this.#toRun) await this.run()
+    }
+    
 
     #create = (tag, info) => {
 
@@ -105,14 +139,15 @@ class ESPlugin {
             for (let key in info.arguments) {
                 const o = args.get(key);
                 o.state = info.arguments[key];
-                if (input === key) this.run()  // run on initialization if setting the trigger
+                if (input === key) this.#toRun = true
             }
         }
 
         const gsIn = {
             arguments: args,
             operator: info.default,
-            tag
+            tag,
+            default: info.default // to use for reconstruction
         }
 
 
@@ -135,7 +170,24 @@ class ESPlugin {
     }
     }
 
-    run = async (...args) => await this.graphscript.run(...args) // Call Graphscript by Proxy
+    // Handle GraphScript Run Syntax
+    #runGraph = async (graph=this.graphscript, ...args) => {
+        if (graph instanceof Graph) {
+          if (graph.node)
+            return graph.node.run(...args);
+          else {
+            if (args.length === 0)
+              return this.#runDefault(graph);
+            else if (graph.nodes.has(args[0]))
+              return graph.run(...args);
+            else
+              return this.#runDefault(graph, ...args);
+          }
+        } else return await graph.run(...args);
+      }
+    
+      #runDefault = (graph, ...args) => graph.run(graph.nodes.values().next().value, ...args);
+      run = async (...args) => this.#runGraph(this.graphscript, ...args)
 }
 
 export default ESPlugin;
