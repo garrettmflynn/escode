@@ -24,7 +24,6 @@ const start = async () => {
     const apiRes = await apiInstance.run('add', 1, 2) // as a graph, specify the node
     console.log('apiRes: 1 + 2 =', apiRes)
 
-
     const res = await instance.run()
     console.log('instance without graph context', res)
 
@@ -42,9 +41,11 @@ const start = async () => {
             }
         }
     })
-    await esGraph.init()
 
+    await esGraph.init()
+    
     await instance.run()
+
     await secondInstance.run()
 }
 

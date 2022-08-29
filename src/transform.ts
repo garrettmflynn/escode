@@ -1,4 +1,4 @@
-import { Graph } from "./graphscript/Graph";
+import { Graph, GraphNode } from "./graphscript/Graph";
 
 export default (tag, node) => {
 
@@ -12,7 +12,7 @@ export default (tag, node) => {
         operator: function (input) {
           const o = args.get(arg)
           o.state = input
-          if (i === 0) return node.operator(); // run the operator but pass to these connections
+          if (i === 0) return this.graph.node.run(); // run parent node
           return input;
         }
       };
@@ -38,5 +38,7 @@ export default (tag, node) => {
         return originalOperator.call(this ?? node, ...updatedArgs) // bound to GraphNode later
     }
 
-    return new Graph(instanceTree, tag, node)
+    const gGraph = new Graph(instanceTree, tag, node)
+    const gNode = new GraphNode(gGraph) // always have a node attached to the graph
+    return gNode
   }

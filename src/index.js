@@ -1,5 +1,6 @@
 import { Graph } from "./graphscript/Graph";
 import { DOMService } from "./graphscript/services/dom/DOM.service";
+import { Router } from "./graphscript/services/router/Router";
 
 import transform from "./transform.js";
 import getFnParamInfo from "./parse.js";
@@ -12,6 +13,8 @@ class ESPlugin {
     #initial;
     #instance;
     #graphscript;
+    #router;
+
     #toRun = false
 
     // Restricted
@@ -23,6 +26,9 @@ class ESPlugin {
     set graphscript(v) { this.#graphscript = v }
 
     constructor(node, options = {}) {
+
+        this.#router = options._router;
+
 
         // Get Base Initial Object
         this.#initial = node;
@@ -57,7 +63,7 @@ class ESPlugin {
                     this.initial.graph.nodes[tag] = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
                     if (typeof options.onPlugin === "function")
                     options.onPlugin(this.initial.graph.nodes[tag]);
-                } else hasGraphs[tag] = node2.graphscript
+                } else hasGraphs[tag] = node2
             }
 
 
@@ -66,15 +72,20 @@ class ESPlugin {
             for (let tag in this.initial.graph.nodes) {
 
                 // Recreate Graph from Initial Values (stored here)
-                const thisNode = this.initial.graph.nodes[tag]
+                let thisNode = this.initial.graph.nodes[tag]
                 if (hasGraphs[tag]) {
-                    const thisNode =  hasGraphs[tag]._initial
+                    const gs = hasGraphs[tag].graphscript
+                    thisNode =  gs._state
                     thisNode.tag = tag // adjust tag
-                    thisNode[tag].state.triggers = {} //remove subs
+                    gs.state.triggers = {} //remove subs
+                    thisNode.isNewKey = true
                 }
+
+                // console.log('THis Node', thisNode)
                 
                 const innerNode = this.#create(tag, thisNode); // create new plugin
                 tree[tag] = innerNode.graphscript ?? innerNode;
+                if (hasGraphs[tag]) hasGraphs[tag].graphscript = tree[tag] // update graphscript
             }
 
             const edges = this.initial.graph.edges
@@ -84,25 +95,38 @@ class ESPlugin {
                 let outNode = tree[first]
                 splitEdge.forEach(str => outNode = outNode.nodes.get(str))
                 if (!outNode.children) outNode.children = {}
-                for (let input in edges[output]) outNode.children[input] = true
+                for (let input in edges[output]) {
+                    const tag = input.split('.').pop()
+                    outNode.children[tag] = true
+                }
             }
 
 
-            const ports = node.graph.ports
+            const ports = node.graph?.ports
             const props = this.#instance ?? node
-            this.graphscript = isNode ? new Graph(tree, options.tag, props) : new DOMService({ routes: tree, name: options.tag, props: runProps ? props : undefined}, options.parentNode);
+            this.graphscript = (isNode ? new Graph(tree, options.tag, props) : new DOMService({ routes: tree, name: options.tag, props: runProps ? props : undefined}, options.parentNode))
+            
+            // Create One Router for the Plugin Set
+            if (!this.#router) this.#router = this.graphscript = new Router({
+                routes: this.graphscript, 
+                linkServices: false,
+                includeClassName: false,
+            })
 
             if (ports) {
                 let input = ports.input;
                 let output = ports.output;
                 node.operator = async function(...args) {
-                  await this.run(input, ...args);
-                };
-        
-                this.graphscript.state.triggers = {} // clearing subscriptions
-                this.graphscript.subscribe(output, (...args) => {
-                  for (let tag in this.graphscript.children) this.#runGraph(this.graphscript.children[tag], ...args);
-                });
+                    await this.nodes.get(input).run(...args);
+                  };
+                  
+                  this.graphscript.state.triggers = {}; // clearing subscriptions
+          
+                  const gotOutput = this.graphscript.get(output)
+                  gotOutput.subscribe((...args) => {
+                    for (let tag in this.graphscript.children)
+                      this.#runGraph(this.graphscript.children[tag], ...args);
+                  });
               }
 
         }
@@ -132,15 +156,24 @@ class ESPlugin {
 
         const args = getFnParamInfo(info.default) ?? new Map();
         if (args.size === 0) args.set("default", {});
-        const input = args.keys().next().value
 
         // merge with user-specified arguments
+        let argsArray = Array.from(args.entries())
+        const input = argsArray[0][0]
         if (info.arguments) {
-            for (let key in info.arguments) {
-                const o = args.get(key);
-                o.state = info.arguments[key];
-                if (input === key) this.#toRun = true
+          const isArray = Array.isArray(info.arguments);
+          let i = 0
+          for (let key in info.arguments) {
+            const v = info.arguments[key];
+            if (isArray) {
+              argsArray[i].state = v;
+              if (i == 0) this.#toRun = true;
+            } else {
+              args.get(key).state = v;
+              if (input === key) this.#toRun = true;
             }
+            i++
+          }
         }
 
         const gsIn = {
@@ -165,7 +198,6 @@ class ESPlugin {
         }
 
         this.#instance = gsIn
-
         return transform(tag, gsIn) // add arguments as sub-graphs
     }
     }
