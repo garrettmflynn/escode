@@ -55,6 +55,7 @@ export type ServiceOptions = {
     customChildren?:{ //modify child routes in the tree based on parent conditions
         [key:string]:(child:Route, childRouteKey:string, parent:Route, routes:Routes, checked:Routes)=>Route|any|void
     },
+    sharedState?:boolean, //share state between services? default is true
     [key:string]:any
 };
 
@@ -78,6 +79,8 @@ export class Service extends Graph {
     loadDefaultRoutes = false;
     keepState:boolean = true; //routes that don't trigger the graph on receive can still set state
     firstLoad = true;
+    customRoutes:any = {};
+    customChildren:any = {};
 
     constructor(options:ServiceOptions={}) {
         super(undefined,options.name ? options.name : `service${Math.floor(Math.random()*100000000000000)}`,options.props);
@@ -109,7 +112,8 @@ export class Service extends Graph {
                     options.includeClassName, 
                     options.routeFormat,
                     options.customRoutes,
-                    options.customChildren
+                    options.customChildren,
+                    options.sharedState
                 );
             });
         }
@@ -119,7 +123,8 @@ export class Service extends Graph {
                 options.includeClassName, 
                 options.routeFormat,
                 options.customRoutes,
-                options.customChildren
+                options.customChildren,
+                options.sharedState
             ); //now process the routes for the acyclic graph to load them as graph nodes :-D
     }
     
@@ -128,22 +133,20 @@ export class Service extends Graph {
         includeClassName:boolean=true, //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
         routeFormat:string='.',
         customRoutes?:ServiceOptions["customRoutes"],
-        customChildren?:ServiceOptions["customChildren"]
-    ) => {    
+        customChildren?:ServiceOptions["customChildren"],
+        sharedState:boolean = true
+    ) => { 
         if(!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad)) return;
         if(this.firstLoad) this.firstLoad = false;
 
         if(customRoutes) customRoutes = Object.assign(this.customRoutes,customRoutes);
         else customRoutes = this.customRoutes;
-        if(customChildren) customChildren = Object.assign(this.customChildren,customChildren);
-
-        //console.log(routes, customRoutes)
 
         //console.log(this.routes);
         let service;
         let allRoutes = {};
         if(routes) {
-            if(!(routes instanceof Graph) && (routes as any)?.name) { //class prototype
+            if(!(routes instanceof Graph) && (routes as any)?.name && !(routes.setTree)) { //class prototype
                 if(routes.module) {
                     let mod = routes;
                     routes = {};
@@ -154,15 +157,24 @@ export class Service extends Graph {
                 } else if (typeof routes === 'function') { //it's a service prototype... probably
                     service = new routes({loadDefaultRoutes:this.loadDefaultRoutes});
                     service.load();
+
+                    if(sharedState) service.state = this.state;
+
                     routes = service.routes;
-                }
+
+                    if(service.customRoutes && !this.customRoutes) this.customRoutes = service.customRoutes;
+                    else if (service.customRoutes && this.customRoutes) Object.assign(this.customRoutes,service.customRoutes);
+
+                    if(service.customChildren && !this.customChildren) this.customChildren = service.customChildren;
+                    else if (service.customChildren && this.customChildren) Object.assign(this.customChildren, service.customChildren);
+                } 
             } //we can instantiate a class and load the routes. Routes should run just fine referencing the classes' internal data structures without those being garbage collected.
-            else if (routes instanceof Graph || routes.source instanceof Graph) { //class instance
+            else if (routes instanceof Graph || routes.source instanceof Graph || routes.setTree) { //class instance
                 service = routes;
                 routes = {};
-                let name;
+                if(sharedState) service.state = this.state;
                 if(includeClassName) {
-                    name = service.name;
+                    let name = service.name;
                     if(!name) {
                         name = service.tag;
                         service.name = name;
@@ -191,7 +203,8 @@ export class Service extends Graph {
                             if(!par) checked[nd.tag] = true;
                             else checked[par.tag+routeFormat+nd.tag] = true;
 
-                            if(nd instanceof Graph || nd.source instanceof Graph) {
+                            if(nd instanceof Graph || nd.source instanceof Graph || nd.setTree) {
+                                if(sharedState) nd.state = this.state;
                                 if(includeClassName) {
                                     let nm = nd.name;
                                     if(!nm) {
@@ -233,7 +246,7 @@ export class Service extends Graph {
                 }
             }
 
-            if(service instanceof Graph && service.name && includeClassName) {     
+            if((service instanceof Graph || service?.setTree) && service.name && includeClassName) {     
                 //the routes provided from a service will add the route name in front of the route so like 'name/route' to minimize conflicts, 
                 //incl making generic service routes accessible per service. The services are still independently usable while the loader 
                 // service provides routes to the other services
@@ -382,7 +395,7 @@ export class Service extends Graph {
 
         if(service) {
             for(const key in this.routes) {
-                if(this.routes[key] instanceof GraphNode) {
+                if(this.routes[key] instanceof GraphNode || this.routes[key].constructor.name.includes('GraphNode')) {
                     this.nodes.set(key,this.routes[key]);
                     this.nNodes = this.nodes.size;
                 }
@@ -502,7 +515,7 @@ export class Service extends Graph {
                 args[0] = JSON.parse(args[0]); //parse stringified args
             }
         }
-        
+
         if(typeof args[0] === 'object') {
             if(args[0].method) { //run a route method directly, results not linked to graph
                 return this.handleMethod(args[0].route, args[0].method, args[0].args);

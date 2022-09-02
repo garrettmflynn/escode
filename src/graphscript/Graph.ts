@@ -77,6 +77,7 @@ export type GraphNodeProperties = {
     delay?:false|number, //ms delay to fire the node
     repeat?:false|number, // set repeat as an integer to repeat the input n times, cmd will be the number of times the operation has been repeated
     recursive?:false|number, //or set recursive with an integer to pass the output back in as the next input n times, cmd will be the number of times the operation has been repeated
+    reactive?:boolean|((_state:{[key:string]:any})=>void), //use a local state object to trigger state subscriptions, using the node's _unique properties
     frame?:boolean, //true or false. If repeating or recursing, execute on requestAnimationFrame? Careful mixing this with animate:true
     animate?:boolean, //true or false, run the operation on an animationFrame loop?
     loop?:false|number, //milliseconds or false, run the operation on a loop?
@@ -94,32 +95,36 @@ export type GraphNodeProperties = {
 //   relied on for absolute maximal performance concerns, those generally require custom solutions e.g. matrix math or clever indexing, but this can be used as a step toward that.
 
 //a graph representing a callstack of nodes which can be arranged arbitrarily with forward and backprop or propagation to wherever
-export const state = {
-    pushToState:{},
-    data:{},
-    triggers:{},
-    setState(updateObj:{[key:string]:any}){
-        Object.assign(state.data, updateObj);
+export class EventHandler {
+
+    pushToState={}
+    data={}
+    triggers={}
+
+    constructor() {}
+
+    setState = (updateObj:{[key:string]:any}) => {
+        Object.assign(this.data, updateObj);
         for (const prop of Object.getOwnPropertyNames(updateObj)) {
-            if (state.triggers[prop]) state.triggers[prop].forEach((obj) => obj.onchange(state.data[prop]));
+            if (this.triggers[prop]) this.triggers[prop].forEach((obj) => obj.onchange(this.data[prop]));
         }
-        return state.data;
-    },
-    subscribeTrigger(key:string,onchange:(res:any)=>void){
+        return this.data;
+    }
+    subscribeTrigger = (key:string,onchange:(res:any)=>void) => {
         if(key) {
-            if(!state.triggers[key]) {
-                state.triggers[key] = [];
+            if(!this.triggers[key]) {
+                this.triggers[key] = [];
             }
-            let l = state.triggers[key].length;
-            state.triggers[key].push({idx:l, onchange});
-            return state.triggers[key].length-1;
+            let l = this.triggers[key].length;
+            this.triggers[key].push({idx:l, onchange});
+            return this.triggers[key].length-1;
         } else return undefined;
-    },
-    unsubscribeTrigger(key:string,sub?:number){
+    }
+    unsubscribeTrigger = (key:string,sub?:number) => {
         let idx = undefined;
-        let triggers = state.triggers[key]
+        let triggers = this.triggers[key]
         if (triggers){
-            if(!sub) delete state.triggers[key];
+            if(!sub) delete this.triggers[key];
             else {
                 let obj = triggers.find((o)=>{
                     if(o.idx===sub) {return true;}
@@ -128,17 +133,20 @@ export const state = {
                 return true;
             }
         }
-    },
-    subscribeTriggerOnce(key:string,onchange:(res:any)=>void) {
+    }
+    subscribeTriggerOnce = (key:string,onchange:(res:any)=>void) => {
         let sub;
         
         let changed = (value) => {
             onchange(value);
-            state.unsubscribeTrigger(key,sub);
+            this.unsubscribeTrigger(key,sub);
         }
-        sub = state.subscribeTrigger(key,changed);
+        sub = this.subscribeTrigger(key,changed);
     }
+
 }
+
+export const state = new EventHandler();
 
 
   /**
@@ -151,23 +159,32 @@ export const state = {
    */
 
 
-//set the node's props as this
-function merge(props) {
-    //  this._state = props._state;
-    // else {
-        for (let k in props) {
-            if (k === '_state') continue;
-            else {
-                this[k] = props[k];
-                this._state[k] = props[k];
-                Object.defineProperty(this, k, {
-                    get: () => this._state[k],
-                    set: (v) => this._state[k] = v,
-                    enumerable: true
-                })
-            }
-        }
-}
+// //set the node's props as this
+//const restrictedKeys = ['_state', 'graph']
+
+// added to GraphNode and Graph
+function addLocalState(props) {
+    if(!this._state) this._state = {};
+    for (let k in props) {
+      if (k === '_state' || k === 'graph') continue;
+    //   else if (!(k in this._initial)) continue
+      else {
+        this._state[k] = props[k];
+        if (k in this) this[k] = props[k];
+        else Object.defineProperty(this, k, {
+            get: () => {
+                this._state[k];
+            },
+            set: (v) => {
+                this._state[k] = v;
+                if(this.state.triggers[this._unique]) this.setState({[this._unique]:this._state}); //trigger subscriptions, if any
+            },
+            enumerable: true,
+            configurable: true
+        });
+      }
+    }
+  }
 
 
 
@@ -175,7 +192,8 @@ export class GraphNode {
 
     nodes:Map<any,any> = new Map()
     _initial:{[key:string]:any} = {}; //keep track of custom _initial properties added that aren't default on the current class object
-    _state:{[key:string]:any} = {}; //keep track of custom _initial properties added that aren't default on the current class object
+    //_state:{[key:string]:any} = {}; //keep track of custom properties added that aren't default on the current class object, subscribe by the _unique tag to get state updates whenever props are set 
+    _unique=`${Math.random()}`; //mostly-guaranteed unique id
 
     tag:string;
     parent:GraphNode|Graph;
@@ -188,6 +206,7 @@ export class GraphNode {
     animation = undefined; //animation function, uses operator if undefined (with cmd 'animate')
     forward:boolean = true; /// propagate outputs to children?
     backward:boolean = false; //propagate outputs to parents?
+    reactive: boolean|((_state:{[key:string]:any})=>void) = false; //does the node proxy custom props through a local _state? Subscribe by the _unique id or pass a callback in GraphNodeProperties 
     runSync:boolean = false;
     firstRun:boolean = true;
     DEBUGNODE:boolean = false; //prints a console.time and console.timeEnd on each runOp call
@@ -277,7 +296,10 @@ export class GraphNode {
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
                 if(hasnode) {
-                    this.merge(hasnode)
+                    //this.merge(hasnode)
+                    if(this.reactive) {
+                        this.addLocalState(hasnode);
+                    }
 
                     if(!this.source) this.source = hasnode;
 
@@ -320,8 +342,8 @@ export class GraphNode {
                 if(!keys.includes(key)) this._initial[key] = properties[key]; //get custom _initial values 
             }
             if(properties.children) this._initial.children = Object.assign({},properties.children); //preserve the prototypes
-
-            this.merge(properties)
+            
+            Object.assign(this,properties);
 
 
             if(!this.tag) {
@@ -339,6 +361,15 @@ export class GraphNode {
                 }
                 graph.nodes.set(this.tag,this);
                 graph.nNodes++;
+                this.state = graph.state; //use the parent graph's unique state object to prevent overlap on common node names
+            }
+
+
+            if(this.reactive) {
+                addLocalState(properties);
+                if(typeof this.reactive === 'function') {
+                    this.state.subscribeTrigger(this._unique,this.reactive);
+                }
             }
 
             if(parentNode) {
@@ -362,13 +393,13 @@ export class GraphNode {
         
             if(typeof this.oncreate === 'function') this.oncreate(this);
             if(!this.firstRun) this.firstRun = true; 
+            if(this.animation && !this.animate) this.animate = true;
         }
         else return properties;
       
     }
 
-    merge = merge
-
+    addLocalState = addLocalState;
     
     // I/O scheme for this node in the graph
     operator:OperatorType = (...args:any[]) => {
@@ -715,7 +746,8 @@ export class GraphNode {
     add = (n:GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
         if(typeof n === 'function') n = { operator:n as any};
 
-        if(!(n instanceof GraphNode)) n = new GraphNode(n,this,this.graph); 
+        if (n?.node instanceof GraphNode) n = n.node
+        if(!(n instanceof GraphNode)) n = new GraphNode(n.node ?? n,this,this.graph); 
         this.nodes.set(n.tag,n);
         if(this.graph) {
             this.graph.nodes.set(n.tag,n);
@@ -743,6 +775,10 @@ export class GraphNode {
             
             if((n as GraphNode).ondelete) (n as GraphNode).ondelete(n);
         }
+
+        if(typeof this._state === 'object') {
+            this.state.unsubscribeTrigger(this._unique);
+        }
     }
     
     //append a node as a child to a parent node (this by default)
@@ -755,15 +791,35 @@ export class GraphNode {
     }      
             
     //subscribe an output with an arbitrary callback
-    subscribe = (callback:GraphNode|((res)=>void),tag:string=this.tag) => {
-        if((callback as GraphNode).run) {
-            return this.subscribeNode((callback as GraphNode));
-        } else return this.state.subscribeTrigger(tag,callback as any);
+    subscribe = (callback:string|GraphNode|((res)=>void),tag:string=this.tag) => {
+        console.log(this.state);
+        if(typeof callback === 'string') {
+            if(this.graph) callback = this.graph.get(callback);
+            else callback = this.nodes.get(callback);
+        }
+        if(typeof callback === 'function') {
+            return this.state.subscribeTrigger(tag, callback);
+        } else if(callback) return this.state.subscribeTrigger(tag, (res:any)=>{ (callback as any).run(res); })
     }
     
     //unsub the callback
     unsubscribe = (sub?:number,tag=this.tag) => {
         return this.state.unsubscribeTrigger(tag,sub);
+    }
+
+    subscribeState = (callback:string|GraphNode|((res)=>void)) => {
+        if(!this.reactive) {
+            return undefined;
+        }
+        else {
+            if(typeof callback === 'string') {
+                if(this.graph) callback = this.graph.get(callback);
+                else callback = this.nodes.get(callback);
+            }
+            if(typeof callback === 'function') {
+                return this.state.subscribeTrigger(this._unique, callback);
+            } else if(callback) return this.state.subscribeTrigger(this._unique, (_state:any)=>{ (callback as any).run(_state); })
+        }
     }
 
     //append child
@@ -802,25 +858,53 @@ export class GraphNode {
         return result;
     }
 
-    getProps = (n=this) => {
-       return {
-         tag:n.tag,
-         operator:n.operator,
-         graph:n.graph,
-         children:n.children, //will return the original prototypes kept in this._initial if they exist
-         parent:n.parent,
-         forward:n.forward,
-         backward:n.bacward,
-         loop:n.loop,
-         animate:n.animate,
-         frame:n.frame,
-         delay:n.delay,
-         recursive:n.recursive,
-         repeat:n.repeat,
-         branch:n.branch,
-         oncreate:n.oncreate,
-         DEBUGNODE:n.DEBUGNODE,
-         ...this._initial
+    getProps = (n=this, getInitial:boolean=true) => {
+        let baseprops = {
+            tag:n.tag,
+            operator:n.operator,
+            graph:n.graph,
+            children:n.children, //will return the original prototypes kept in this._initial if they exist
+            parent:n.parent,
+            forward:n.forward,
+            backward:n.bacward,
+            loop:n.loop,
+            animate:n.animate,
+            frame:n.frame,
+            delay:n.delay,
+            recursive:n.recursive,
+            repeat:n.repeat,
+            branch:n.branch,
+            oncreate:n.oncreate,
+            reactive:n.reactive,
+            DEBUGNODE:n.DEBUGNODE
+        }
+       if(!getInitial) { //get current props
+            let uniqueprops = {};
+            for(const key in this._initial) {
+                uniqueprops[key] = this[key];
+            }
+            return Object.assign(baseprops,uniqueprops)
+       }
+       else 
+        return {
+            tag:n.tag,
+            operator:n.operator,
+            graph:n.graph,
+            children:n.children, //will return the original prototypes kept in this._initial if they exist
+            parent:n.parent,
+            forward:n.forward,
+            backward:n.bacward,
+            loop:n.loop,
+            animate:n.animate,
+            frame:n.frame,
+            delay:n.delay,
+            recursive:n.recursive,
+            repeat:n.repeat,
+            branch:n.branch,
+            oncreate:n.oncreate,
+            reactive:n.reactive,
+            DEBUGNODE:n.DEBUGNODE,
+            ...this._initial
        };
     }
     
@@ -1048,7 +1132,7 @@ export class GraphNode {
         if(parsed) return this.add(parsed);
     }
 
-    setState = this.state.setState; //little simpler
+    setState = (data:{[key:string]:any}) => { this.state.setState(data); };
 
     DEBUGNODES = (debugging:boolean=true) => {
         this.DEBUGNODE = debugging;
@@ -1066,9 +1150,11 @@ export class Graph {
     nNodes = 0
     tag:string;
     nodes:Map<any,any> = new Map();
-    state=state;
+    state=new EventHandler();
+    reactive:boolean|((_state:{[key:string]:any})=>void)
     _initial:any;
-    _state: any = {};
+    //_state: any = {};
+    _unique=`${Math.random()}`; //mostly-guaranteed unique id
 
     //can create preset node trees on the graph
     tree:Tree = {};
@@ -1078,20 +1164,25 @@ export class Graph {
     constructor( tree?:Tree, tag?:string, props?:{[key:string]:any} ) {
         this.tag = tag ? tag : `graph${Math.floor(Math.random()*100000000000)}`;
 
-
         if(props) {
-            this.merge(props)
+            if(props.reactive) {
+                this.addLocalState(props);
+            } else Object.assign(this,props);
             this._initial = props;
         }
         if(tree || Object.keys(this.tree).length > 0) this.setTree(tree);
     }
 
-    merge = merge
+    addLocalState = addLocalState;
 
     //converts all children nodes and tag references to GraphNodes also
     add = (n:GraphNode|GraphNodeProperties|OperatorType|((...args)=>any|void)={}) => {
+        
+        if ((n as GraphNode)?.node instanceof GraphNode) n = (n as GraphNode).node
+
         let props = n;
-        if(!(n instanceof GraphNode)) n = new GraphNode(props,this,this); 
+
+        if(!(n instanceof GraphNode)) n = new GraphNode((props as GraphNode)?.node ?? props,this,this); 
         else {
             this.nNodes = this.nodes.size;
             if(n.tag) {
@@ -1313,6 +1404,21 @@ export class Graph {
         return this.state.unsubscribeTrigger(tag,sub);
     }
 
+    subscribeState = (callback:string|GraphNode|((res)=>void)) => {
+        if(!this.reactive) {
+            return undefined;
+        }
+        else {
+            if(typeof callback === 'string') {
+                if(this.graph) callback = this.graph.get(callback);
+                else callback = this.nodes.get(callback);
+            }
+            if(typeof callback === 'function') {
+                return this.state.subscribeTrigger(this._unique, callback);
+            } else if(callback) return this.state.subscribeTrigger(this._unique, (_state:any)=>{ (callback as any).run(_state); })
+        }
+    }
+
     //subscribe a node to this node that isn't a child of this node
     subscribeNode = (inputNode:string|GraphNode, outputNode:GraphNode|string) => {
         let tag;
@@ -1360,7 +1466,7 @@ export class Graph {
         return createNode(operator,parentNode,props,this);
     }
 
-    setState = this.state.setState;
+    setState = (data:{[key:string]:any}) => { this.state.setState(data); };
 
     DEBUGNODES = (debugging:boolean=true) => {
         this.nodes.forEach((n:GraphNode) => {
