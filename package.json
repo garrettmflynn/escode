@@ -1,6 +1,6 @@
 {
   "name": "es-plugins",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "A standard for transforming ES Modules into Web Components",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,6 +17,7 @@
   "scripts": {
     "start": "tinybuild --path tinybuild.demo.js",
     "start:node": "node index.js",
-    "build": "tinybuild"
+    "build": "tinybuild",
+    "transfer": "mkdir -p src/graphscript && cp ../graphscript/Graph.ts src/graphscript && mkdir -p src/graphscript/services && cp ../graphscript/services/Service.ts src/graphscript/services && cp -r ../graphscript/services/dom src/graphscript/services && cp -r ../graphscript/services/router src/graphscript/services && cp -r ../graphscript/services/struct src/graphscript/services"
   }
 }
