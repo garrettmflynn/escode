@@ -1,4 +1,4 @@
-import { Graph } from "./graphscript/Graph";
+import { Graph, GraphNode } from "./graphscript/Graph";
 import { DOMService } from "./graphscript/services/dom/DOM.service";
 import { Router } from "./graphscript/services/router/Router";
 
@@ -17,6 +17,8 @@ class ESPlugin {
     #router;
     #cache = {}
     #plugins = {}
+    #active = false
+
     plugins = {}
 
     #toRun = false
@@ -115,18 +117,71 @@ class ESPlugin {
 
             tree[tag] = this.#create(tag, thisNode); // create new plugin
         }
+        
 
+        let listeningFor = {}
+        let quickLookup = {}
+
+        let resolve = (path) => {
+            if (quickLookup[path] === undefined) {
+                const splitEdge = path.split('.')
+                const first = splitEdge.shift()
+                const lastKey = splitEdge.pop()
+                let last = tree[first]
+                if (!last) console.error('last', last, first, tree, path)
+                splitEdge.forEach(str => last = last.nodes.get(str))
+                const resolved = lastKey ? last.nodes.get(lastKey) : last
+                quickLookup[path] = { resolved, last, lastKey }
+            }
+
+            return quickLookup[path]
+        }
+
+        let activate = async (edges, data) => {
+
+            for (let input in edges) {
+                let {resolved, last, lastKey} = resolve(input)
+
+                // Will pass to children natively
+                if (resolved) {
+                    const target = resolved.node ?? resolved
+                    if (Array.isArray(data)) target.run(...data); 
+                    else target.run(data); 
+                } 
+                
+                // Set values / run functions + pass to registered listeners
+                else {
+                    const target = last.node ?? last
+                    let res;
+                    if (typeof target[lastKey] === 'function') {
+                        if (Array.isArray(data)) res = await target[lastKey](...data); 
+                        else res = await target[lastKey](data); 
+                    } else res = target[lastKey] = data
+                    if (listeningFor[input]) activate(listeningFor[input], res)
+                } 
+            }
+        }
+
+        // Subscribe to Edges
         const edges = this.initial.graph.edges
         for (let output in edges) {
-            const splitEdge = output.split('.')
-            const first = splitEdge.shift()
-            let outNode = tree[first]
-            splitEdge.forEach(str => outNode = outNode.nodes.get(str))
-            if (!outNode.children) outNode.children = {}
-            for (let input in edges[output]) {
-                const tag = input.split('.').pop()
-                outNode.children[tag] = true
-            }
+            let {resolved} = resolve(output)
+
+            // For Conventional Edges
+            if (resolved) {
+                if (!resolved.children) resolved.children = {}
+
+                // Update (and listen to) any ESM export  
+                const callback = (data) => activate(edges[output], data)
+                if (resolved instanceof GraphNode) resolved.subscribe(callback)
+                else this.#router.state.subscribeTrigger(resolved.tag, callback)
+
+                // Maintain Native Children (to pass info and utilize graphscript core)
+                // for (let input in edges[output]) resolved.children[input.split('.').pop()] = true
+            } 
+            
+            // For Listening to ESM Attribute Assignment
+            else listeningFor[output] = edges[output]
         }
 
         return tree
@@ -140,6 +195,7 @@ class ESPlugin {
         if (this.initial.graph) {
             let tree = this.#createTree()
             const props = this.#instance ?? this.initial
+
             this.graph = (isNode ? new Graph(tree, this.#options.tag, props) : new DOMService({ routes: tree, name: this.#options.tag, props: this.#runProps ? props : undefined }, this.#options.parentNode))
 
             this.#router.load(this.graph)
@@ -153,6 +209,9 @@ class ESPlugin {
     }
 
     start = async (defer) => {
+
+        if (this.#active === false){
+        this.#active = true
 
         // Initialize Plugins
         const activateFuncs = []
@@ -188,7 +247,7 @@ class ESPlugin {
     
             // Subscribe to last node with a unique identifier
             if (lastNode) lastNode.subscribe((...args) => {
-                for (let tag in lastNode.parent.children) this.#runGraph(lastNode.parent.children[tag], ...args);
+                for (let tag in lastNode.graph.children) this.#runGraph(lastNode.graph.children[tag], ...args);
             });
     
             // Proxy the first node (if no default behavior?)
@@ -197,18 +256,24 @@ class ESPlugin {
               };
         }
 
-        if (typeof defer === "function")defer(f);
+        if (typeof defer === "function") defer(f);
         else await f();
+    }
 
     }
 
     stop = () => {
-        for (let k in this.nested) this.nested[k].stop()
-        if (this.graph) this.graph.nodes.forEach((n) => {
-            this.graph.removeTree(n) // remove from tree
-            n.stopNode() // stop animating
-            this.graph.state.triggers = {} //remove subs
-        }) // destroy existing graph
+        if (this.#active === true){
+            for (let k in this.nested) this.nested[k].stop()
+            if (this.graph) this.graph.nodes.forEach((n) => {
+                this.graph.removeTree(n) // remove from tree
+                n.stopNode() // stop animating
+                this.graph.state.triggers = {} //remove subs
+            }) // destroy existing graph
+
+            this.#active = false
+        }
+
     }
 
 

@@ -1,6 +1,7 @@
 import * as example from './plugins/example.js'
 import * as log from './plugins/log.js'
 import * as api from './plugins/api.js'
+// import * as readout from './plugins/readout.js'
 
 import esplugin from './src/index.js'
 
@@ -22,7 +23,8 @@ const startExecution = async () => {
     console.log('example' ,example)
     const e2 = Object.assign({}, example)
     e2.attributes = Object.assign({}, e2.attributes)
-    e2.attributes.innerHTML = 'Click Me Too'
+    e2.attributes.innerHTML = 'Increment'
+    e2.nExecutions = -1
     const secondInstance = new esplugin(e2, options)
     await secondInstance.start()
 
@@ -35,20 +37,84 @@ const startExecution = async () => {
     const res = await instance.run()
     console.log('instance without graph context', res)
 
+    let set = async () => {
+        instance.graph.set.call(instance.graph.node)
+        secondInstance.graph.set.call(secondInstance.graph.node)
+    }
+
+    let initialize = async () => {
+        await secondInstance.run() // must run first to seed increment
+    }
+
     // ------------------- Basic Graph Support -------------------
     const esGraph = new esplugin({
+        tagName: "div",
+        style: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100px',
+            height: '100px',
+            background: 'red'
+        },
         graph: {
             nodes: {
                 first: instance,
                 second: secondInstance,
-                log
+                log,
+                test: {
+                    tagName: "div",
+                    style: {
+                        width: '100px',
+                        height: '100px',
+                        background: 'red'
+                    },
+                    graph: {
+                        nodes: {
+                            inner: {
+                                tagName: "button",
+                                attributes: {
+                                    innerText: "Reset",
+                                    onclick: function() {
+                                        this.run()
+                                    }
+                                },
+                                reset: (v) => {
+                                    console.log('reset!', v)
+                                    setTimeout(set, 10)
+                                    return v
+                                },
+                                default: () => {
+                                    return 0
+                                },
+                            },
+                        }
+                    }
+                 }
             },
             edges: {
-                first: {log: {}},
-                second: {log: {}}
+                "test.inner": {
+                    'test.inner.sideshow': {}
+                },
+                "test.inner.sideshow": {
+                    'first.nExecutions': {},
+                    'second.nExecutions': {}
+                },
+                'first.nExecutions': {'log': {}},
+                'second.nExecutions': {
+                    'log': {},
+                    'first.increment': {},
+                },
+                'second': {
+                    'first.increment': {},
+                    'log': {}
+                },
+                'first': {'log': {}},
             }
         }
-    })
+    }, options)
+
+
 
     await esGraph.start()
     
@@ -70,7 +136,9 @@ const startExecution = async () => {
         esGraph.stop()
     }
 
-    run.click()
+    await initialize()
+    await instance.run()
+
 }
 
 startExecution()

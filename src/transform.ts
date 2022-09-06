@@ -4,22 +4,10 @@ export default (tag, node) => {
 
     const args = node.arguments as Map<string, any>
 
+    let graph;
+
     // Create Instance Argument Tree
-    const instanceTree = {};
-    Array.from(args.entries()).forEach(([arg], i) => {
-      instanceTree[arg] = {
-        tag: arg,
-        operator: function (input) {
-          const o = args.get(arg)
-          o.state = input
-          if (i === 0) {
-            const ifParent = this.graph.node
-            return ifParent ? ifParent.run(input) : this.graph.operator(input); // run parent node
-          }
-          return input;
-        }
-      };
-    });
+    Array.from(args.keys()).forEach((arg, i) => node[`${arg}`] = args.get(arg).state) // transfer argument states
 
     const originalOperator = node.operator
     if (typeof originalOperator === 'function'){
@@ -31,9 +19,11 @@ export default (tag, node) => {
         let i = 0;
         args.forEach((o, k) => {
           const argO = args.get(k)
+          const proxy = `${k}`
           const currentArg = argO.spread ? argsArr.slice(i) : argsArr[i];
-          let update = currentArg !== void 0 ? currentArg : o.state;
-          argO.state = update
+          const target = graph.node ?? graph
+          let update = currentArg !== void 0 ? currentArg : target[proxy];
+          target[proxy] = update // updating state on graph
           if (!argO.spread)  update = [update];
           updatedArgs.push(...update);
           i++;
@@ -47,5 +37,6 @@ export default (tag, node) => {
       node.operator = (...args) => args
     }
 
-    return new Graph(instanceTree, tag, node)
+    graph = new Graph({}, tag, node) // no internal nodes
+    return graph
   }

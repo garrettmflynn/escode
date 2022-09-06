@@ -77,7 +77,7 @@ export type GraphNodeProperties = {
     delay?:false|number, //ms delay to fire the node
     repeat?:false|number, // set repeat as an integer to repeat the input n times, cmd will be the number of times the operation has been repeated
     recursive?:false|number, //or set recursive with an integer to pass the output back in as the next input n times, cmd will be the number of times the operation has been repeated
-    reactive?:boolean|((_state:{[key:string]:any})=>void), //use a local state object to trigger state subscriptions, using the node's _unique properties
+    reactive?:boolean|((_state:{[key:string]:any})=>void), //use a local state object to trigger state subscriptions, using the node's _unique tag to subscribe
     frame?:boolean, //true or false. If repeating or recursing, execute on requestAnimationFrame? Careful mixing this with animate:true
     animate?:boolean, //true or false, run the operation on an animationFrame loop?
     loop?:false|number, //milliseconds or false, run the operation on a loop?
@@ -100,6 +100,7 @@ export class EventHandler {
     pushToState={}
     data={}
     triggers={}
+    id=Math.random()
 
     constructor() {}
 
@@ -116,6 +117,7 @@ export class EventHandler {
                 this.triggers[key] = [];
             }
             let l = this.triggers[key].length;
+
             this.triggers[key].push({idx:l, onchange});
             return this.triggers[key].length-1;
         } else return undefined;
@@ -217,7 +219,7 @@ export class GraphNode {
 
     constructor(
         properties:GraphNodeProperties|Graph|OperatorType|((...args:any[])=>any|void)={}, 
-        parentNode?:GraphNode|Graph, 
+        parent?:GraphNode|Graph|string, 
         graph?:Graph
     ) {    
 
@@ -265,10 +267,10 @@ export class GraphNode {
                 if(source.looper) properties.looper = source.looper;
                 if(source.animation) properties.animation = source.animation;
                 if(source.delay) properties.delay = source.delay;
-                if(source.tag) properties.tag = source.tag;
                 if(source.oncreate) properties.oncreate = source.oncreate;
                 if(source.node) if(source.node._initial) Object.assign(properties,source.node._initial);
                 if(source._initial) Object.assign(properties,source._initial);
+                if(source.tag) properties.tag = source.tag; // ensure tag swap
 
                 this.nodes = source.nodes;
                 source.node = this;
@@ -283,7 +285,13 @@ export class GraphNode {
                 } //make sure node references get passed around correctly
             }
 
-            if(properties.tag && (graph || parentNode)) {
+            if( typeof parent === 'string') {
+                if(graph) parent = graph.nodes.get(parent);
+                else parent = undefined;
+            }
+            
+
+            if(properties.tag && (graph || parent)) {
                 let hasnode;
                 if(graph?.nodes) {
                     hasnode = graph.nodes.get(properties.tag);
@@ -291,8 +299,8 @@ export class GraphNode {
                     //     hasnode = new Graph(hasnode.source.tree,`${hasnode.tag}${graph.nNodes+1}`, properties);
                     // }
                 }
-                if(!hasnode && parentNode?.nodes) {
-                    hasnode = parentNode.nodes.get(properties.tag);
+                if(!hasnode && (parent as any)?.nodes) {
+                    hasnode = (parent as any).nodes.get(properties.tag);
                     //if(hasnode) return hasnode; 
                 } //return a different node if it already exists (implying we're chaining it in a flow graph using objects)
                 if(hasnode) {
@@ -372,9 +380,9 @@ export class GraphNode {
                 }
             }
 
-            if(parentNode) {
-                this.parent=parentNode;
-                if(parentNode instanceof GraphNode || parentNode instanceof Graph) parentNode.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
+            if(typeof parent === 'object') {
+                this.parent=parent;
+                if(parent instanceof GraphNode || parent instanceof Graph) parent.nodes.set(this.tag,this); //parentNode should get a mapped version with the original tag still
             }
             
             if(typeof properties.tree === 'object') { //can generate node maps from trees in nodes that will be available for use in the main graph, and the main graph will index them by tag
@@ -792,7 +800,6 @@ export class GraphNode {
             
     //subscribe an output with an arbitrary callback
     subscribe = (callback:string|GraphNode|((res)=>void),tag:string=this.tag) => {
-        console.log(this.state);
         if(typeof callback === 'string') {
             if(this.graph) callback = this.graph.get(callback);
             else callback = this.nodes.get(callback);
