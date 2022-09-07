@@ -80,7 +80,7 @@ const startExecution = async () => {
                                     }
                                 },
                                 reset: (v) => {
-                                    console.log('reset!', v)
+                                    console.warn('reset!', v)
                                     setTimeout(set, 10)
                                     return v
                                 },
@@ -94,9 +94,9 @@ const startExecution = async () => {
             },
             edges: {
                 "test.inner": {
-                    'test.inner.sideshow': {}
+                    'test.inner.reset': {}
                 },
-                "test.inner.sideshow": {
+                "test.inner.reset": {
                     'first.nExecutions': {},
                     'second.nExecutions': {}
                 },

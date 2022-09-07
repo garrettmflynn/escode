@@ -37,7 +37,6 @@ var EventHandler = class {
     this.pushToState = {};
     this.data = {};
     this.triggers = {};
-    this.id = Math.random();
     this.setState = (updateObj) => {
       Object.assign(this.data, updateObj);
       for (const prop of Object.getOwnPropertyNames(updateObj)) {
@@ -58,14 +57,15 @@ var EventHandler = class {
         return void 0;
     };
     this.unsubscribeTrigger = (key, sub) => {
-      let idx = void 0;
       let triggers = this.triggers[key];
       if (triggers) {
         if (!sub)
           delete this.triggers[key];
         else {
-          let obj = triggers.find((o) => {
+          let idx = void 0;
+          let obj = triggers.find((o, i) => {
             if (o.idx === sub) {
+              idx = i;
               return true;
             }
           });
@@ -969,6 +969,9 @@ var GraphNode = class {
       }
       if (properties.children)
         this._initial.children = Object.assign({}, properties.children);
+      if (properties.run) {
+        console.log("Transferring", properties, "to", this);
+      }
       Object.assign(this, properties);
       if (!this.tag) {
         if (graph) {
@@ -1881,14 +1884,15 @@ var DOMElement = class extends HTMLElement {
         return void 0;
     },
     unsubscribeTrigger(key, sub) {
-      let idx = void 0;
       let triggers = this.triggers[key];
       if (triggers) {
         if (!sub)
           delete this.triggers[key];
         else {
-          let obj = triggers.find((o) => {
+          let idx = void 0;
+          let obj = triggers.find((o, i) => {
             if (o.idx === sub) {
+              idx = i;
               return true;
             }
           });
@@ -2807,7 +2811,7 @@ var DOMService = class extends Service {
         let parent;
         if (parentId)
           parent = this.nodes.get(parentId);
-        node = new GraphNode(options, parent, this);
+        node = new GraphNode(options instanceof Graph ? options : Object.assign({}, options), parent, this);
       }
       delete node.parentNode;
       Object.defineProperty(node, "parentNode", {
@@ -4065,11 +4069,12 @@ var ESPlugin = class {
         const first = splitEdge.shift();
         const lastKey = splitEdge.pop();
         let last = tree[first];
-        if (!last)
-          console.error("last", last, first, tree, path);
-        splitEdge.forEach((str) => last = last.nodes.get(str));
-        const resolved = lastKey ? last.nodes.get(lastKey) : last;
-        quickLookup[path] = { resolved, last, lastKey };
+        if (last) {
+          splitEdge.forEach((str) => last = last.nodes.get(str));
+          const resolved = lastKey ? last.nodes.get(lastKey) : last;
+          quickLookup[path] = { resolved, last, lastKey };
+        } else
+          console.error(`Target associated with ${path} was not found`);
       }
       return quickLookup[path];
     };
@@ -4103,7 +4108,9 @@ var ESPlugin = class {
       if (resolved) {
         if (!resolved.children)
           resolved.children = {};
-        const callback = (data) => activate(edges[output], data);
+        const callback = (data) => {
+          activate(edges[output], data);
+        };
         if (resolved instanceof GraphNode)
           resolved.subscribe(callback);
         else

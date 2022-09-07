@@ -128,10 +128,11 @@ class ESPlugin {
                 const first = splitEdge.shift()
                 const lastKey = splitEdge.pop()
                 let last = tree[first]
-                if (!last) console.error('last', last, first, tree, path)
-                splitEdge.forEach(str => last = last.nodes.get(str))
-                const resolved = lastKey ? last.nodes.get(lastKey) : last
-                quickLookup[path] = { resolved, last, lastKey }
+                if (last) {
+                    splitEdge.forEach(str => last = last.nodes.get(str))
+                    const resolved = lastKey ? last.nodes.get(lastKey) : last
+                    quickLookup[path] = { resolved, last, lastKey }
+                } else console.error(`Target associated with ${path} was not found`)
             }
 
             return quickLookup[path]
@@ -172,7 +173,9 @@ class ESPlugin {
                 if (!resolved.children) resolved.children = {}
 
                 // Update (and listen to) any ESM export  
-                const callback = (data) => activate(edges[output], data)
+                const callback = (data) => {
+                    activate(edges[output], data)
+                }
                 if (resolved instanceof GraphNode) resolved.subscribe(callback)
                 else this.#router.state.subscribeTrigger(resolved.tag, callback)
 

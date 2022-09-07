@@ -100,7 +100,6 @@ export class EventHandler {
     pushToState={}
     data={}
     triggers={}
-    id=Math.random()
 
     constructor() {}
 
@@ -123,13 +122,16 @@ export class EventHandler {
         } else return undefined;
     }
     unsubscribeTrigger = (key:string,sub?:number) => {
-        let idx = undefined;
         let triggers = this.triggers[key]
         if (triggers){
             if(!sub) delete this.triggers[key];
             else {
-                let obj = triggers.find((o)=>{
-                    if(o.idx===sub) {return true;}
+                let idx = undefined;
+                let obj = triggers.find((o,i)=>{
+                    if(o.idx===sub) {
+                        idx = i;
+                        return true;
+                    }
                 });
                 if(obj) triggers.splice(idx,1);
                 return true;
@@ -351,6 +353,9 @@ export class GraphNode {
             }
             if(properties.children) this._initial.children = Object.assign({},properties.children); //preserve the prototypes
             
+            if (properties.run){
+                console.log('Transferring', properties, 'to', this);
+            }
             Object.assign(this,properties);
 
 
