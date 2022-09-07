@@ -166,21 +166,21 @@ class ESPlugin {
         // Subscribe to Edges
         const edges = this.initial.graph.edges
         for (let output in edges) {
-            let {resolved} = resolve(output)
+            let o = resolve(output)
 
             // For Conventional Edges
-            if (resolved) {
-                if (!resolved.children) resolved.children = {}
+            if (o?.resolved) {
+                if (!o.resolved.children) o.resolved.children = {}
 
                 // Update (and listen to) any ESM export  
                 const callback = (data) => {
                     activate(edges[output], data)
                 }
-                if (resolved instanceof GraphNode) resolved.subscribe(callback)
-                else this.#router.state.subscribeTrigger(resolved.tag, callback)
+                if (o.resolved instanceof GraphNode) o.resolved.subscribe(callback)
+                else this.#router.state.subscribeTrigger(o.resolved.tag, callback)
 
                 // Maintain Native Children (to pass info and utilize graphscript core)
-                // for (let input in edges[output]) resolved.children[input.split('.').pop()] = true
+                // for (let input in edges[output]) o.resolved.children[input.split('.').pop()] = true
             } 
             
             // For Listening to ESM Attribute Assignment
