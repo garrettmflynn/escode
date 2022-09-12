@@ -8,7 +8,7 @@
 
 The **es-plugins** library uses [graphscript](https://github.com/brainsatplay/graphscript) to compose plugins—as well as its `DOMService` class to transform plugins into Web Components.
 
-> **Note:** **es-plugins** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/README.md)
+> **Note:** **es-plugins** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 
 ## The Specification
 Each Plugin contains one `default` export and any number of `named` exports.
