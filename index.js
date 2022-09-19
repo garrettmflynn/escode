@@ -53,12 +53,14 @@ const startExecution = async () => {
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '100px',
-            height: '100px',
-            background: 'red'
+            width: '500px',
+            height: '500px',
+            background: 'green'
         },
-        graph: {
-            nodes: {
+        oncreate: function() {
+            console.log('Created', this)
+        },
+        components: {
                 first: instance,
                 second: secondInstance,
                 log,
@@ -69,50 +71,57 @@ const startExecution = async () => {
                         height: '100px',
                         background: 'red'
                     },
-                    graph: {
-                        nodes: {
-                            inner: {
-                                tagName: "button",
-                                attributes: {
-                                    innerText: "Reset",
-                                    onclick: function() {
-                                        this.run()
-                                    }
-                                },
-                                reset: (v) => {
-                                    console.warn('reset!', v)
-                                    setTimeout(set, 10)
-                                    return v
-                                },
-                                default: () => {
-                                    return 0
-                                },
+                    components: {
+                        inner: {
+                            tagName: "button",
+                            attributes: {
+                                innerText: "Reset",
+                                onclick: function() {
+                                    this.run()
+                                }
                             },
-                        }
+                            reset: (v) => {
+                                console.warn('reset!', v)
+                                setTimeout(set, 10)
+                                return v
+                            },
+                            default: () => {
+                                return 0
+                            },
+
+                            children: {
+                                "reset": true,
+                            },
+
+                            listeners: {
+                                "reset": {
+                                    'first.nExecutions': true,
+                                    'second.nExecutions': true
+                                }
+                            }
+                        },
                     }
-                 }
+                 },
             },
-            edges: {
-                "test.inner": {
-                    'test.inner.reset': {}
+
+            listeners: {
+                "first.nExecutions": {
+                    'log': true,
                 },
-                "test.inner.reset": {
-                    'first.nExecutions': {},
-                    'second.nExecutions': {}
-                },
-                'first.nExecutions': {'log': {}},
-                'second.nExecutions': {
-                    'log': {},
-                    'first.increment': {},
+                "second.nExecutions": {
+                    'first.increment': true,
                 },
                 'second': {
-                    'first.increment': {},
-                    'log': {}
+                    'first.increment': true,
+                    'log': true
                 },
-                'first': {'log': {}},
+                'first': {
+                    'log': true
+                },
             }
-        }
     }, options)
+
+    console.log('graph', esGraph)
 
 
 

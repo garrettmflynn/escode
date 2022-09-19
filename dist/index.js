@@ -679,9 +679,11 @@
                   this.nodes.forEach((n2) => {
                     if (n2.nodes.get(node.children[key].tag))
                       n2.nodes.delete(node.children[key].tag);
-                    if (n2.children[key] instanceof GraphNode)
+                    if (n2.children?.[key] instanceof GraphNode)
                       delete n2.children[key];
                   });
+                  if (node.children[key].ondelete && !this.graph)
+                    node.children[key].ondelete(node.children[key]);
                   recursivelyRemove(node.children[key]);
                 }
               }
@@ -691,7 +693,7 @@
             n.stopNode();
           if (n.tag) {
             this.nodes.delete(n.tag);
-            if (this.children[n.tag])
+            if (this.children?.[n.tag])
               delete this.children[n.tag];
             if (this.parent?.tag === n.tag)
               delete this.parent;
@@ -701,7 +703,7 @@
               if (n2?.tag) {
                 if (n2.nodes.get(n2.tag))
                   n2.nodes.delete(n2.tag);
-                if (n2.children[n2.tag] instanceof GraphNode)
+                if (n2.children?.[n2.tag] instanceof GraphNode)
                   delete n2.children[n2.tag];
               }
             });
@@ -963,8 +965,13 @@
             let props = hasnode.getProps();
             delete props.graph;
             delete props.parent;
-            for (let k in props)
-              properties[k] = props[k];
+            for (let k in props) {
+              const desc = Object.getOwnPropertyDescriptor(properties, k);
+              if (desc && desc.get && !desc.set)
+                properties = Object.assign({}, properties);
+              else
+                properties[k] = props[k];
+            }
           }
         }
         if (properties?.operator) {
@@ -982,9 +989,6 @@
         }
         if (properties.children)
           this._initial.children = Object.assign({}, properties.children);
-        if (properties.run) {
-          console.log("Transferring", properties, "to", this);
-        }
         Object.assign(this, properties);
         if (!this.tag) {
           if (graph) {
@@ -1181,40 +1185,31 @@
           });
       };
       this.removeTree = (n, checked) => {
-        if (typeof n === "string")
-          n = this.nodes.get(n);
+        if (n) {
+          if (typeof n === "string")
+            n = this.nodes.get(n);
+        }
         if (n?.nodes) {
-          if (!checked)
-            checked = {};
+          let checked2 = {};
           const recursivelyRemove = (node) => {
-            if (node.children && !checked[node.tag]) {
-              checked[node.tag] = true;
-              if (Array.isArray(node.children)) {
-                node.children.forEach((c) => {
-                  if (c.stopNode)
-                    c.stopNode();
-                  if (c.tag) {
-                    if (this.nodes.get(c.tag))
-                      this.nodes.delete(c.tag);
-                  }
+            if (typeof node.children === "object" && !checked2[node.tag]) {
+              checked2[node.tag] = true;
+              for (const key in node.children) {
+                if (node.children[key]?.stopNode)
+                  node.children[key].stopNode();
+                if (node.children[key]?.tag) {
+                  if (this.nodes.get(node.children[key].tag))
+                    this.nodes.delete(node.children[key].tag);
                   this.nodes.forEach((n2) => {
-                    if (n2.nodes.get(c.tag))
-                      n2.nodes.delete(c.tag);
+                    if (n2.nodes.get(node.children[key].tag))
+                      n2.nodes.delete(node.children[key].tag);
+                    if (n2.children?.[key] instanceof GraphNode)
+                      delete n2.children[key];
                   });
-                  recursivelyRemove(c);
-                });
-              } else if (typeof node.children === "object") {
-                if (node.stopNode)
-                  node.stopNode();
-                if (node.tag) {
-                  if (this.nodes.get(node.tag))
-                    this.nodes.delete(node.tag);
+                  if (node.children[key].ondelete)
+                    node.children[key].ondelete(node.children[key]);
+                  recursivelyRemove(node.children[key]);
                 }
-                this.nodes.forEach((n2) => {
-                  if (n2.nodes.get(node.tag))
-                    n2.nodes.delete(node.tag);
-                });
-                recursivelyRemove(node);
               }
             }
           };
@@ -1222,17 +1217,23 @@
             n.stopNode();
           if (n.tag) {
             this.nodes.delete(n.tag);
+            if (this.parent?.tag === n.tag)
+              delete this.parent;
+            if (this[n.tag] instanceof GraphNode)
+              delete this[n.tag];
             this.nodes.forEach((n2) => {
-              if (n2.nodes.get(n2.tag))
-                n2.nodes.delete(n2.tag);
+              if (n2?.tag) {
+                if (n2.nodes.get(n2.tag))
+                  n2.nodes.delete(n2.tag);
+                if (n2.children?.[n2.tag] instanceof GraphNode)
+                  delete n2.children[n2.tag];
+              }
             });
-            this.nNodes = this.nodes.size;
             recursivelyRemove(n);
+            if (n.ondelete)
+              n.ondelete(n);
           }
-          if (n.ondelete)
-            n.ondelete(n);
         }
-        return n;
       };
       this.remove = (n) => {
         if (typeof n === "string")
@@ -1358,6 +1359,7 @@
       };
       this.tag = tag ? tag : `graph${Math.floor(Math.random() * 1e11)}`;
       if (props) {
+        console.log(props, props.constructor.name);
         if (props.reactive) {
           this.addLocalState(props);
         } else
@@ -2066,7 +2068,7 @@
         } else if (options.routes || (Object.keys(this.routes).length > 0 || this.loadDefaultRoutes) && this.firstLoad)
           this.load(options.routes, options.includeClassName, options.routeFormat, options.customRoutes, options.customChildren, options.sharedState);
       };
-      this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes, customChildren, sharedState = true) => {
+      this.load = (routes, includeClassName = true, routeFormat = ".", customRoutes = this.customRoutes, customChildren = this.customChildren, sharedState = true) => {
         if (!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad))
           return;
         if (this.firstLoad)
@@ -2334,7 +2336,7 @@
           }
         } else
           this.setTree(this.routes);
-        for (const prop in this.routes) {
+        for (const prop in routes) {
           if (this.routes[prop]?.aliases) {
             let aliases = this.routes[prop].aliases;
             aliases.forEach((a) => {
@@ -2852,11 +2854,14 @@
         });
         node.element = element;
         element.node = node;
-        const initialOptions = options._initial ?? options;
+        let initialOptions = options._initial ?? options;
         for (let key in initialOptions) {
-          if (typeof initialOptions[key] === "function")
+          if (typeof initialOptions[key] === "function") {
+            const desc = Object.getOwnPropertyDescriptor(initialOptions, key);
+            if (desc && desc.get && !desc.set)
+              initialOptions = Object.assign({}, initialOptions);
             initialOptions[key] = initialOptions[key].bind(node);
-          else if (key === "attributes") {
+          } else if (key === "attributes") {
             for (let key2 in initialOptions.attributes) {
               if (typeof initialOptions.attributes[key2] === "function") {
                 initialOptions.attributes[key2] = initialOptions.attributes[key2].bind(node);
@@ -3992,6 +3997,14 @@
     #cache = {};
     #plugins = {};
     #active = false;
+    listeners = {
+      pool: {
+        in: {},
+        out: {}
+      },
+      active: {},
+      includeParent: {}
+    };
     plugins = {};
     #toRun = false;
     #runProps = true;
@@ -4019,23 +4032,22 @@
       } while (this.initial instanceof ESPlugin);
       const isFunction = typeof this.initial === "function";
       const hasDefault = "default" in this.initial;
-      let hasGraph = !!node.graph;
-      if (!hasDefault && !hasGraph) {
-        let newNode = { graph: { nodes: {} } };
+      let hasComponents = !!node.components;
+      if (!hasDefault && !hasComponents) {
+        let newNode = { components: {} };
         for (let namedExport in node)
-          newNode.graph.nodes[namedExport] = { default: node[namedExport] };
+          newNode.components[namedExport] = { default: node[namedExport] };
         this.#initial = newNode;
-        hasGraph = true;
+        hasComponents = true;
         this.#runProps = false;
       }
-      if (hasDefault || isFunction) {
+      if (hasDefault || isFunction)
         this.graph = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
-      }
-      if (hasGraph) {
+      if (hasComponents) {
         const toNotify = [];
-        const nodes = this.initial.graph.nodes;
-        for (let tag in nodes) {
-          const node2 = nodes[tag];
+        const components = this.initial.components;
+        for (let tag in components) {
+          const node2 = components[tag];
           if (!(node2 instanceof ESPlugin)) {
             const clonedOptions = Object.assign({}, Object.assign(options));
             const plugin = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
@@ -4074,67 +4086,10 @@
         }
         tree[tag] = this.#create(tag, thisNode);
       }
-      let listeningFor = {};
-      let quickLookup = {};
-      let resolve = (path) => {
-        if (quickLookup[path] === void 0) {
-          const splitEdge = path.split(".");
-          const first = splitEdge.shift();
-          const lastKey = splitEdge.pop();
-          let last = tree[first];
-          if (last) {
-            splitEdge.forEach((str) => last = last.nodes.get(str));
-            const resolved = lastKey ? last.nodes.get(lastKey) : last;
-            quickLookup[path] = { resolved, last, lastKey };
-          } else
-            console.error(`Target associated with ${path} was not found`);
-        }
-        return quickLookup[path];
-      };
-      let activate = async (edges2, data) => {
-        for (let input in edges2) {
-          let { resolved, last, lastKey } = resolve(input);
-          if (resolved) {
-            const target = resolved.node ?? resolved;
-            if (Array.isArray(data))
-              target.run(...data);
-            else
-              target.run(data);
-          } else {
-            const target = last.node ?? last;
-            let res;
-            if (typeof target[lastKey] === "function") {
-              if (Array.isArray(data))
-                res = await target[lastKey](...data);
-              else
-                res = await target[lastKey](data);
-            } else
-              res = target[lastKey] = data;
-            if (listeningFor[input])
-              activate(listeningFor[input], res);
-          }
-        }
-      };
-      const edges = this.initial.graph.edges;
-      for (let output in edges) {
-        let { resolved } = resolve(output);
-        if (resolved) {
-          if (!resolved.children)
-            resolved.children = {};
-          const callback = (data) => {
-            activate(edges[output], data);
-          };
-          if (resolved instanceof GraphNode)
-            resolved.subscribe(callback);
-          else
-            this.#router.state.subscribeTrigger(resolved.tag, callback);
-        } else
-          listeningFor[output] = edges[output];
-      }
       return tree;
     };
     #activate = () => {
-      if (this.initial.graph) {
+      if (this.initial.components) {
         let tree = this.#createTree();
         const props = this.#instance ?? this.initial;
         this.graph = isNode ? new Graph(tree, this.#options.tag, props) : new DOMService({ routes: tree, name: this.#options.tag, props: this.#runProps ? props : void 0 }, this.#options.parentNode);
@@ -4157,13 +4112,86 @@
           });
         }
         this.#activate();
-        const f = async () => {
+        const f = async (top) => {
           for (let f2 of activateFuncs)
-            await f2();
+            await f2(top);
+          const listeners = [{ reference: {} }, { reference: {} }];
+          if (this.initial.listeners)
+            Object.entries(this.initial.listeners).forEach(([key, value]) => {
+              for (let target in value)
+                listeners[1].reference[target] = true;
+              listeners[0].reference[key] = true;
+            });
+          const targets = [
+            {
+              reference: this.initial.children,
+              condition: (child) => child === void 0
+            },
+            ...listeners
+          ];
+          targets.forEach((o) => {
+            for (let path in o.reference) {
+              if (!o.condition || o.condition(o.reference[path])) {
+                const updated = `${top.graph.name}.${path}`;
+                let split = updated.split(".");
+                const lastKey = split.pop();
+                let absolute, relative;
+                let last = top.graph;
+                let resolved = this.#router.nodes.get(updated);
+                if (resolved)
+                  last = this.#router.nodes.get(split.join(".")) ?? top.graph;
+                else {
+                  const get = (str, target) => target.nodes.get(str) ?? target[str];
+                  const basePath = this.getPath();
+                  absolute = path.split(".").slice(0, -1);
+                  relative = [...basePath ? basePath.split(".") : [], ...absolute];
+                  split = relative;
+                  try {
+                    split.forEach((str) => last = get(str, last));
+                    resolved = lastKey ? get(lastKey, last) : last;
+                  } catch {
+                    last = top.graph;
+                    split = absolute;
+                    absolute.forEach((str) => last = get(str, last));
+                    resolved = lastKey ? get(lastKey, last) : last;
+                  }
+                }
+                o.reference[path] = { resolved, last, lastKey, path: {
+                  used: split.join("."),
+                  absolute: absolute ? absolute.join(".") : null,
+                  relative: relative ? relative.join(".") : null
+                } };
+              }
+            }
+          });
+          let listenerPool = {
+            in: listeners[1].reference,
+            out: listeners[0].reference
+          };
+          for (let key in this.initial.listeners)
+            top.listeners.active[key] = this.initial.listeners[key];
+          for (let key in this.listeners.includeParent)
+            top.listeners.includeParent[key] = this.listeners.includeParent[key];
+          for (let type in listenerPool) {
+            top.listeners.pool[type] = {
+              ...listenerPool[type],
+              ...top.listeners.pool[type]
+            };
+          }
+          this.listeners = top.listeners;
+          for (let key in listenerPool.out) {
+            const node = listenerPool.out[key].resolved;
+            if (node instanceof GraphNode) {
+              const path = this.getPath(node, true);
+              if (this.listeners.includeParent[path])
+                this.listeners.includeParent[path] = true;
+              this.subscribe(node);
+            }
+          }
           if (this.#toRun)
             await this.run();
         };
-        const graph = this.initial.graph;
+        const graph = this.initial.components;
         if (graph) {
           const ports = graph.ports;
           let firstNode, lastNode;
@@ -4175,11 +4203,10 @@
             firstNode = nodes[0];
             lastNode = nodes.slice(-1)[0];
           }
-          if (lastNode)
-            lastNode.subscribe((...args) => {
-              for (let tag in lastNode.graph.children)
-                this.#runGraph(lastNode.graph.children[tag], ...args);
-            });
+          if (lastNode) {
+            const path = this.getPath(lastNode, true);
+            this.listeners.includeParent[path] = lastNode;
+          }
           if (firstNode)
             this.#initial.operator = async function(...args) {
               await firstNode.run(...args);
@@ -4187,8 +4214,77 @@
         }
         if (typeof defer === "function")
           defer(f);
+        else {
+          await f(this);
+          for (let key in this.listeners.includeParent) {
+            const toResolve = this.listeners.includeParent[key];
+            if (toResolve !== true) {
+              this.subscribe(toResolve);
+              this.listeners.includeParent[key] = true;
+            }
+          }
+        }
+      }
+    };
+    getPath = (graph = this.graph, includeTag = false) => {
+      const basePath = [];
+      let target = graph;
+      do {
+        if (target.node) {
+          basePath.push(target.node.name);
+          target = target.node.graph;
+        }
+      } while (target.node);
+      if (includeTag)
+        return [...basePath.reverse(), graph.tag].join(".");
+      else
+        return basePath.reverse().join(".");
+    };
+    subscribe = (node) => {
+      const path = this.getPath(node) || node.tag;
+      const targets = [node.children];
+      for (let key in this.listeners.active[path]) {
+        const res = this.listeners.pool.in[key];
+        if (res)
+          this.listeners.active[path][key] = res;
         else
-          await f();
+          delete this.listeners.active[path][key];
+      }
+      targets.push(this.listeners.active[path]);
+      node.subscribe((args) => {
+        const thisTargets = [...targets];
+        if (path in this.listeners.includeParent)
+          thisTargets.push(node.graph.children);
+        thisTargets.forEach((target) => {
+          for (let tag in target) {
+            let info = target[tag];
+            this.resolve(args, info);
+          }
+        });
+      });
+    };
+    resolve = (args, info) => {
+      if (info.resolved instanceof GraphNode)
+        info = info.resolved;
+      if (info instanceof GraphNode) {
+        if (Array.isArray(args))
+          this.#runGraph(info, ...args);
+        else
+          this.#runGraph(info, args);
+      } else {
+        let res;
+        if (typeof info.resolved === "function") {
+          if (Array.isArray(args))
+            res = info.resolved(...args);
+          else
+            res = info.resolved(args);
+        } else
+          res = info.resolved = info.last[info.lastKey] = args;
+        let resolved = this.listeners.active[`${info.path.used}.${info.lastKey}`];
+        if (!resolved)
+          resolved = this.listeners.active[info.lastKey];
+        for (let key in resolved)
+          this.resolve(res, this.listeners.pool.in[key]);
       }
     };
     stop = () => {

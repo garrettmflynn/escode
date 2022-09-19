@@ -132,8 +132,8 @@ export class Service extends Graph {
         routes?:Service|Graph|Routes|{name:string,module:{[key:string]:any}}|any, 
         includeClassName:boolean=true, //enumerate routes with the service or class name so they are run as e.g. 'http/createServer' so services don't accidentally overlap
         routeFormat:string='.',
-        customRoutes?:ServiceOptions["customRoutes"],
-        customChildren?:ServiceOptions["customChildren"],
+        customRoutes:ServiceOptions["customRoutes"]=this.customRoutes,
+        customChildren:ServiceOptions["customChildren"]=this.customChildren,
         sharedState:boolean = true
     ) => { 
         if(!routes && !this.loadDefaultRoutes && (Object.keys(this.routes).length > 0 || this.firstLoad)) return;
@@ -352,6 +352,7 @@ export class Service extends Graph {
 
                     if(customRoutes) { //mutate routes or run custom node creation functions
                         for(const key in customRoutes) {
+                            //console.log(r, r.constructor.name)
                             r = customRoutes[key](r,route,allRoutes);
                             if(!r) continue top; //nothing returned so continue
                         }
@@ -403,16 +404,14 @@ export class Service extends Graph {
         }
         else this.setTree(this.routes);
 
-        for(const prop in this.routes) { //now set the aliases on the routes, the aliases share the same node otherwise
+        for(const prop in routes) { //now set the aliases on the routes, the aliases share the same node otherwise
             if((this.routes[prop] as any)?.aliases) {
                 let aliases = (this.routes[prop] as any).aliases;
                 aliases.forEach((a:string) => {
                     if(service?.name && includeClassName) routes[service.name+routeFormat+a] = this.routes[prop]; //we're just gonna copy the routes to the aliases for simplicity 
                     else routes[a] = this.routes[prop];
                 });
-
             }
-            
         }
 
         //console.log(this.name,this.routes);
