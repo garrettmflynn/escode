@@ -1186,8 +1186,6 @@ export class Graph {
 
         if(props) {
 
-            console.log(props, props.constructor.name)
-
             if(props.reactive) {
                 this.addLocalState(props);
             } else Object.assign(this,props);

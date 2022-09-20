@@ -167,7 +167,8 @@ class ESPlugin {
 
         const f = async (top) => {
 
-            for (let f of activateFuncs) await f(top); // activate nested plugins
+            const toRun = []
+            for (let f of activateFuncs) toRun.push(...await f(top)); // activate nested plugins
             
             // resolve missing children
             const listeners = [{reference: {}}, {reference: {}}]
@@ -262,7 +263,8 @@ class ESPlugin {
                 }
             }
 
-            if (this.#toRun) await this.run(); // run on initialization
+            if (this.#toRun) toRun.push(this.run) // run on initialization
+            return toRun
         }
 
         // Subscribe to Ports
@@ -298,7 +300,7 @@ class ESPlugin {
 
         // Top-Level Plugin
         else {
-            await f(this);
+            const toRun = await f(this);
 
             for (let key in this.listeners.includeParent) {
                 const toResolve = this.listeners.includeParent[key]
@@ -307,6 +309,8 @@ class ESPlugin {
                     this.listeners.includeParent[key] = true
                 }
             }
+
+            await Promise.all(toRun.map((f) => f()));
         }
     }
 
@@ -316,6 +320,7 @@ class ESPlugin {
         const basePath = []
         let target = graph
         do {
+            if (target instanceof GraphNode) target = { node: target } // start correctly
             if (target.node){
                 basePath.push(target.node.name)
                 target = target.node.graph
@@ -339,24 +344,44 @@ class ESPlugin {
             else delete this.listeners.active[path][key]
         }
 
-        targets.push(this.listeners.active[path])
-
+        targets.push(this.listeners.active[path]);
+    
+        // Aggregate Targets
+        let aggregatedParent = false
+        const aggregate = (arr) => {
+          const aggregate = {}
+          arr.forEach(o => {
+            for (let key in o) {
+              if (!(key in aggregate)) aggregate[key] = [ o[key] ];
+              else {
+                const ref1 = aggregate[key]
+                const ref2 = o[key]
+                console.warn(`Both children and listeners are declared for ${key}`)
+                // delete o[key]
+    
+                const getId = (o) => o._unique ?? o.resolved._unique ?? o.last._unique
+                const aggregateIds = ref1.map(getId)
+                if (!aggregateIds.includes(getId(ref2))) ref1.push(ref2)
+              }
+            }
+          })
+    
+          return aggregate
+        }
+    
+        let aggregated = aggregate(targets)
         // Subscribe to Node
         node.subscribe((args) => {
-
-            // Add parent if necessary
-            const thisTargets = [...targets]
-            if (path in this.listeners.includeParent) thisTargets.push(node.graph.children)
-
+    
+          // Add Parent to Aggregate
+          if (path in this.listeners.includeParent && !aggregatedParent) {
+            aggregated = aggregate([aggregated, node.graph.children])
+            aggregatedParent = true
+          }
+    
             // Iterate through Multiple Targets
-            thisTargets.forEach(target => {
-                for (let tag in target) {
-                    let info = target[tag] // assigned info
-                    this.resolve(args, info)
-                }
-            })
-
-        })
+          for (let tag in aggregated)  aggregated[tag].forEach(info => this.resolve(args, info))
+        });
     }
 
 

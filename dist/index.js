@@ -1359,7 +1359,6 @@
       };
       this.tag = tag ? tag : `graph${Math.floor(Math.random() * 1e11)}`;
       if (props) {
-        console.log(props, props.constructor.name);
         if (props.reactive) {
           this.addLocalState(props);
         } else
@@ -4113,8 +4112,9 @@
         }
         this.#activate();
         const f = async (top) => {
+          const toRun = [];
           for (let f2 of activateFuncs)
-            await f2(top);
+            toRun.push(...await f2(top));
           const listeners = [{ reference: {} }, { reference: {} }];
           if (this.initial.listeners)
             Object.entries(this.initial.listeners).forEach(([key, value]) => {
@@ -4189,7 +4189,8 @@
             }
           }
           if (this.#toRun)
-            await this.run();
+            toRun.push(this.run);
+          return toRun;
         };
         const graph = this.initial.components;
         if (graph) {
@@ -4215,7 +4216,7 @@
         if (typeof defer === "function")
           defer(f);
         else {
-          await f(this);
+          const toRun = await f(this);
           for (let key in this.listeners.includeParent) {
             const toResolve = this.listeners.includeParent[key];
             if (toResolve !== true) {
@@ -4223,6 +4224,7 @@
               this.listeners.includeParent[key] = true;
             }
           }
+          await Promise.all(toRun.map((f2) => f2()));
         }
       }
     };
