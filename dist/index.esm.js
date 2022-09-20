@@ -4103,12 +4103,23 @@ var ESPlugin = class {
         for (let f2 of activateFuncs)
           toRun.push(...await f2(top));
         const listeners = [{ reference: {} }, { reference: {} }];
-        if (this.initial.listeners)
-          Object.entries(this.initial.listeners).forEach(([key, value]) => {
-            for (let target in value)
-              listeners[1].reference[target] = true;
-            listeners[0].reference[key] = true;
-          });
+        let toListenTo = {
+          ...this.initial.listeners
+        };
+        let listenTo = false;
+        for (let key in this.initial.children) {
+          if (!(this.initial.children[key] instanceof GraphNode))
+            listenTo = true;
+        }
+        const basePath = this.getPath();
+        if (listenTo) {
+          toListenTo[basePath] = true;
+        }
+        Object.entries(toListenTo).forEach(([key, value]) => {
+          for (let target in value)
+            listeners[1].reference[target] = true;
+          listeners[0].reference[key] = true;
+        });
         const targets = [
           {
             reference: this.initial.children,
@@ -4129,7 +4140,6 @@ var ESPlugin = class {
                 last = this.#router.nodes.get(split.join(".")) ?? top.graph;
               else {
                 const get = (str, target) => target.nodes.get(str) ?? target[str];
-                const basePath = this.getPath();
                 absolute = path.split(".").slice(0, -1);
                 relative = [...basePath ? basePath.split(".") : [], ...absolute];
                 split = relative;
@@ -4155,8 +4165,8 @@ var ESPlugin = class {
           in: listeners[1].reference,
           out: listeners[0].reference
         };
-        for (let key in this.initial.listeners)
-          top.listeners.active[key] = this.initial.listeners[key];
+        for (let key in toListenTo)
+          top.listeners.active[key] = toListenTo[key];
         for (let key in this.listeners.includeParent)
           top.listeners.includeParent[key] = this.listeners.includeParent[key];
         for (let type in listenerPool) {
@@ -4219,6 +4229,8 @@ var ESPlugin = class {
     const basePath = [];
     let target = graph;
     do {
+      if (target instanceof GraphNode)
+        target = { node: target };
       if (target.node) {
         basePath.push(target.node.name);
         target = target.node.graph;
@@ -4240,16 +4252,37 @@ var ESPlugin = class {
         delete this.listeners.active[path][key];
     }
     targets.push(this.listeners.active[path]);
-    node.subscribe((args) => {
-      const thisTargets = [...targets];
-      if (path in this.listeners.includeParent)
-        thisTargets.push(node.graph.children);
-      thisTargets.forEach((target) => {
-        for (let tag in target) {
-          let info = target[tag];
-          this.resolve(args, info);
+    let aggregatedParent = false;
+    const aggregate = (arr) => {
+      const aggregate2 = {};
+      arr.forEach((o) => {
+        for (let key in o) {
+          if (!(key in aggregate2))
+            aggregate2[key] = [o[key]];
+          else {
+            const ref1 = aggregate2[key];
+            const ref2 = o[key];
+            const message = `Both children and listeners are declared for ${key}`;
+            const getId = (o2) => o2._unique ?? o2.resolved._unique ?? o2.last._unique;
+            const aggregateIds = ref1.map(getId);
+            if (!aggregateIds.includes(getId(ref2))) {
+              console.warn(`${message}. Aggregating`, ref1, ref2);
+              ref1.push(ref2);
+            } else
+              console.warn(`${message}. Removing`, ref2);
+          }
         }
       });
+      return aggregate2;
+    };
+    let aggregated = aggregate(targets);
+    node.subscribe((args) => {
+      if (path in this.listeners.includeParent && !aggregatedParent) {
+        aggregated = aggregate([aggregated, node.graph.children]);
+        aggregatedParent = true;
+      }
+      for (let tag in aggregated)
+        aggregated[tag].forEach((info) => this.resolve(args, info, aggregated));
     });
   };
   resolve = (args, info) => {
@@ -4264,9 +4297,9 @@ var ESPlugin = class {
       let res;
       if (typeof info.resolved === "function") {
         if (Array.isArray(args))
-          res = info.resolved(...args);
+          res = info.resolved.call(info.last, ...args);
         else
-          res = info.resolved(args);
+          res = info.resolved.call(info.last, args);
       } else
         res = info.resolved = info.last[info.lastKey] = args;
       let resolved = this.listeners.active[`${info.path.used}.${info.lastKey}`];

@@ -172,10 +172,27 @@ class ESPlugin {
             
             // resolve missing children
             const listeners = [{reference: {}}, {reference: {}}]
-            if (this.initial.listeners) Object.entries(this.initial.listeners).forEach(([key, value]) => {
-                for (let target in value) listeners[1].reference[target] = true // receive input
-                listeners[0].reference[key] = true // send output
-            })
+
+            // listen to children if they exist
+            let toListenTo = {
+                ...this.initial.listeners
+            }
+
+            let listenTo = false
+            for (let key in this.initial.children) {
+                if (!(this.initial.children[key] instanceof GraphNode)) listenTo = true
+            }
+
+            const basePath = this.getPath()
+            if (listenTo) {
+                toListenTo[basePath] = true
+            }
+    
+            Object.entries(toListenTo).forEach(([key, value]) => {
+                for (let target in value)
+                listeners[1].reference[target] = true;
+                listeners[0].reference[key] = true;
+            });
 
             const targets = [
                 {
@@ -205,7 +222,6 @@ class ESPlugin {
                     else { 
                         const get = (str, target) => target.nodes.get(str) ?? target[str]
 
-                        const basePath = this.getPath()
                         absolute = path.split('.').slice(0,-1) // specified an absolute path
                         relative = [...(basePath) ? basePath.split('.') : [], ...absolute] // specified relative to current position
                         split = relative
@@ -235,7 +251,7 @@ class ESPlugin {
             }
             
             // Inherit Listeners
-            for (let key in this.initial.listeners) top.listeners.active[key] = this.initial.listeners[key]
+            for (let key in toListenTo) top.listeners.active[key] = toListenTo[key]
 
             for (let key in this.listeners.includeParent) top.listeners.includeParent[key] = this.listeners.includeParent[key]
 
@@ -356,12 +372,15 @@ class ESPlugin {
               else {
                 const ref1 = aggregate[key]
                 const ref2 = o[key]
-                console.warn(`Both children and listeners are declared for ${key}`)
-                // delete o[key]
+
+                const message = `Both children and listeners are declared for ${key}`
     
                 const getId = (o) => o._unique ?? o.resolved._unique ?? o.last._unique
                 const aggregateIds = ref1.map(getId)
-                if (!aggregateIds.includes(getId(ref2))) ref1.push(ref2)
+                if (!aggregateIds.includes(getId(ref2))) {
+                    console.warn(`${message}. Aggregating`, ref1, ref2)
+                    ref1.push(ref2)
+                } else console.warn(`${message}. Removing`, ref2)
               }
             }
           })
@@ -380,7 +399,7 @@ class ESPlugin {
           }
     
             // Iterate through Multiple Targets
-          for (let tag in aggregated)  aggregated[tag].forEach(info => this.resolve(args, info))
+          for (let tag in aggregated)  aggregated[tag].forEach(info => this.resolve(args, info, aggregated))
         });
     }
 
@@ -395,10 +414,15 @@ class ESPlugin {
             else this.#runGraph(info, args)
         } else {
             let res;
+
+            // Call Function (with node)
             if (typeof info.resolved === "function") {
-                if (Array.isArray(args)) res = info.resolved(...args);
-                else res = info.resolved(args);
-            } else res = info.resolved = info.last[info.lastKey] = args;
+                if (Array.isArray(args)) res = info.resolved.call(info.last, ...args);
+                else res = info.resolved.call(info.last, args);
+            }
+            
+            // Replace Value
+            else res = info.resolved = info.last[info.lastKey] = args;
 
             let resolved = this.listeners.active[`${info.path.used}.${info.lastKey}`] // absolute reference
             if (!resolved) resolved = this.listeners.active[info.lastKey] // relative reference
