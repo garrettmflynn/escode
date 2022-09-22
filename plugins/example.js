@@ -13,11 +13,14 @@ export function set(text=this.nExecutions) {
 }
 
 export function onrender() {
+    console.log('Runin', this)
     set.call(this)
 }
 
 export default function(_, increment = 1){ // actually uses this.increment
     this.nExecutions += increment
+
+    console.log('Runin', this)
     set.call(this)
     return this.nExecutions
 }

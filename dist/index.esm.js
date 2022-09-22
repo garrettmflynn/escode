@@ -3920,9 +3920,6 @@ var transform_default = (tag, node) => {
       });
       return originalOperator.call(this ?? node, ...updatedArgs);
     };
-  } else {
-    console.error("Operator is not a function for", node.tag, node, originalOperator);
-    node.operator = (...args2) => args2;
   }
   graph = new Graph({}, tag, node);
   return graph;
@@ -4006,7 +4003,7 @@ var ESPlugin = class {
   set graph(v) {
     this.#graph = v;
   }
-  constructor(node, options = {}) {
+  constructor(node, options = {}, parent) {
     this.#initial = node;
     this.#options = options;
     this.#router = options._router ? options._router : options._router = new Router({
@@ -4016,10 +4013,11 @@ var ESPlugin = class {
     do {
       this.#initial = this.initial.initial ?? this.initial;
     } while (this.initial instanceof ESPlugin);
-    const isFunction = typeof this.initial === "function";
     const hasDefault = "default" in this.initial;
     let hasComponents = !!node.components;
-    if (!hasDefault && !hasComponents) {
+    const parentHasComponents = !!parent?.components;
+    const isFunctionCollection = !parentHasComponents && !hasDefault && !hasComponents;
+    if (isFunctionCollection) {
       let newNode = { components: {} };
       for (let namedExport in node)
         newNode.components[namedExport] = { default: node[namedExport] };
@@ -4027,8 +4025,6 @@ var ESPlugin = class {
       hasComponents = true;
       this.#runProps = false;
     }
-    if (hasDefault || isFunction)
-      this.graph = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
     if (hasComponents) {
       const toNotify = [];
       const components = this.initial.components;
@@ -4036,7 +4032,7 @@ var ESPlugin = class {
         const node2 = components[tag];
         if (!(node2 instanceof ESPlugin)) {
           const clonedOptions = Object.assign({}, Object.assign(options));
-          const plugin = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
+          const plugin = new ESPlugin(node2, Object.assign(clonedOptions, { tag }), node);
           this.#plugins[tag] = plugin;
           toNotify.push(plugin);
         } else
@@ -4051,7 +4047,8 @@ var ESPlugin = class {
         if (typeof options.onPlugin === "function")
           options.onPlugin(tag, o);
       });
-    }
+    } else
+      this.graph = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
     Object.defineProperty(this, "tag", {
       get: () => this.graph?.tag,
       enumerable: true
@@ -4325,7 +4322,7 @@ var ESPlugin = class {
   #create = (tag, info) => {
     if (typeof info === "function")
       info = { default: info };
-    if (!("default" in info) || info instanceof Graph)
+    if (!info || info instanceof Graph)
       return info;
     else {
       let activeInfo;
@@ -4333,7 +4330,7 @@ var ESPlugin = class {
         activeInfo = info.instance;
         info = info.initial;
       }
-      const args = parse_default(info.default) ?? /* @__PURE__ */ new Map();
+      const args = info.default instanceof Function ? parse_default(info.default) ?? /* @__PURE__ */ new Map() : /* @__PURE__ */ new Map();
       if (args.size === 0)
         args.set("default", {});
       let argsArray = Array.from(args.entries());
@@ -4381,6 +4378,7 @@ var ESPlugin = class {
     }
   };
   #runGraph = async (graph = this.graph, ...args) => {
+    console.log("runGraph", graph, args);
     if (graph instanceof Graph) {
       if (graph.node)
         return graph.node.run(...args);

@@ -59,7 +59,7 @@ class ESPlugin {
         let hasComponents = !!node.components
         const parentHasComponents = !!parent?.components
 
-        const isFunctionCollection = parentHasComponents && !hasDefault && !hasComponents
+        const isFunctionCollection = !parentHasComponents && !hasDefault && !hasComponents
         if (isFunctionCollection) {
             let newNode = { components: {} }
             for (let namedExport in node) newNode.components[namedExport] = { default: node[namedExport] }
@@ -513,6 +513,7 @@ class ESPlugin {
 
     // Handle graph Run Syntax
     #runGraph = async (graph = this.graph, ...args) => {
+        console.log('runGraph', graph, args)
         if (graph instanceof Graph) {
             if (graph.node) return graph.node.run(...args);
             else {

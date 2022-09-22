@@ -78,7 +78,6 @@ export class DOMService extends Service {
 
     customRoutes:ServiceOptions["customRoutes"] = {
         'dom':(r:DOMServiceRoute|any, route:string, routes:DOMRoutes|any) => {
-            // console.log(r)
             if(!(r instanceof GraphNode)) {
 
                 if(r.element?.parentNode?.id && r.graph?.parentNode?.id) {
