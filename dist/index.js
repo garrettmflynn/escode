@@ -4361,9 +4361,12 @@
               if (i == 0)
                 this.#toRun = true;
             } else {
-              args.get(key).state = v;
-              if (input === key)
-                this.#toRun = true;
+              const got = args.get(key);
+              if (got) {
+                got.state = v;
+                if (input === key)
+                  this.#toRun = true;
+              }
             }
             i++;
           }

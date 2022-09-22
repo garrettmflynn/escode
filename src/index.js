@@ -41,7 +41,7 @@ class ESPlugin {
     get graph() { return this.#graph }
     set graph(v) { this.#graph = v }
 
-    constructor(node, options = {}) {
+    constructor(node, options = {}, parent) {
 
         // Get Base Initial Object
         this.#initial = node;
@@ -55,20 +55,18 @@ class ESPlugin {
 
         do { this.#initial = this.initial.initial ?? this.initial } while (this.initial instanceof ESPlugin)
 
-        const isFunction = typeof this.initial === 'function'
         const hasDefault = 'default' in this.initial
         let hasComponents = !!node.components
-        if (!hasDefault && !hasComponents) {
+        const parentHasComponents = !!parent?.components
+
+        const isFunctionCollection = parentHasComponents && !hasDefault && !hasComponents
+        if (isFunctionCollection) {
             let newNode = { components: {} }
             for (let namedExport in node) newNode.components[namedExport] = { default: node[namedExport] }
             this.#initial = newNode
             hasComponents = true
             this.#runProps = false
         }
-
-        // Parse ESPlugins (with default export)
-
-        if (hasDefault || isFunction) this.graph = this.#create(options.tag ?? 'defaultESPluginTag', this.initial)
 
         // Parse Graphs
         if (hasComponents) {
@@ -81,7 +79,7 @@ class ESPlugin {
                 const node2 = components[tag];
                 if (!(node2 instanceof ESPlugin)) {
                     const clonedOptions = Object.assign({}, Object.assign(options));
-                    const plugin = new ESPlugin(node2, Object.assign(clonedOptions, { tag }));
+                    const plugin = new ESPlugin(node2, Object.assign(clonedOptions, { tag }), node);
                     this.#plugins[tag] = plugin
                     toNotify.push(plugin)
                 } else this.#cache[tag] = this.#plugins[tag] = node2
@@ -99,7 +97,10 @@ class ESPlugin {
                 if (typeof options.onPlugin === "function") options.onPlugin(tag, o)
             })
 
-        }
+        } 
+
+        // Parse ESPlugins (with default export)
+        else this.graph = this.#create(options.tag ?? 'defaultESPluginTag', this.initial)
 
         Object.defineProperty(this, 'tag', {
             get: () => this.graph?.tag,
@@ -449,7 +450,7 @@ class ESPlugin {
     #create = (tag, info) => {
 
         if (typeof info === 'function') info = { default: info } // transform function
-        if (!("default" in info) || info instanceof Graph) return info; // just a graph
+        if (!info || info instanceof Graph) return info; // just a graph
         else {
 
             let activeInfo;
@@ -458,7 +459,8 @@ class ESPlugin {
                 info = info.initial
             }
 
-            const args = getFnParamInfo(info.default) ?? new Map();
+
+            const args = (info.default instanceof Function) ? getFnParamInfo(info.default) ?? new Map() : new Map();
             if (args.size === 0) args.set("default", {});
 
             // merge with user-specified arguments
@@ -473,8 +475,11 @@ class ESPlugin {
                         argsArray[i].state = v;
                         if (i == 0) this.#toRun = true;
                     } else {
-                        args.get(key).state = v;
-                        if (input === key) this.#toRun = true;
+                        const got = args.get(key)
+                        if (got) {
+                            got.state = v;
+                            if (input === key) this.#toRun = true;
+                        }
                     }
                     i++
                 }

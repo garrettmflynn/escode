@@ -32,9 +32,6 @@ export default (tag, node) => {
 
           return originalOperator.call(this ?? node, ...updatedArgs) // bound to GraphNode later
       }
-    } else {
-      console.error('Operator is not a function for', node.tag, node, originalOperator)
-      node.operator = (...args) => args
     }
 
     graph = new Graph({}, tag, node) // no internal nodes
