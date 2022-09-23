@@ -4227,10 +4227,12 @@ var ESPlugin = class {
           const path = this.getPath(lastNode, true);
           this.listeners.includeParent[path] = lastNode;
         }
-        if (firstNode)
+        if (firstNode && !this.#initial.default)
           this.#initial.operator = async function(...args) {
             await firstNode.run(...args);
           };
+        else
+          this.#initial.operator = this.#initial.default;
       }
       if (typeof defer === "function")
         defer(f);
