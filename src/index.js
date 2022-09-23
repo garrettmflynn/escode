@@ -512,7 +512,6 @@ class ESPlugin {
 
     // Handle graph Run Syntax
     #runGraph = async (graph = this.graph, ...args) => {
-        console.log('runGraph', graph, args)
         if (graph instanceof Graph) {
             if (graph.node) return graph.node.run(...args);
             else {
