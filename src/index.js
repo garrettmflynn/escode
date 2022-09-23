@@ -198,7 +198,8 @@ class ESPlugin {
             const targets = [
                 {
                 reference: this.initial.children,
-                condition: (child) => child === undefined
+                condition: (child) => child === undefined,
+                map: false // exclude children for path maps
                 }, 
                 ...listeners
             ]
@@ -214,7 +215,9 @@ class ESPlugin {
                     // Common
                     const lastKey = split.pop()
 
-                    let absolute, relative
+                    const absolute = path.split(".").slice(0, -1); // specified an absolute path
+                    const relative = [...basePath ? basePath.split(".") : [], ...absolute]; // specified relative to current position
+                    
                     let last = top.graph
                     let resolved = this.#router.nodes.get(updated);
                     if (resolved) last = this.#router.nodes.get(split.join('.')) ?? top.graph
@@ -222,9 +225,6 @@ class ESPlugin {
                     // Backup Resolution
                     else { 
                         const get = (str, target) => target.nodes.get(str) ?? target[str]
-
-                        absolute = path.split('.').slice(0,-1) // specified an absolute path
-                        relative = [...(basePath) ? basePath.split('.') : [], ...absolute] // specified relative to current position
                         split = relative
                         try {
                             split.forEach(str => last = get(str, last))
@@ -236,11 +236,15 @@ class ESPlugin {
                             resolved = lastKey ? get(lastKey, last) : last
                         }
                     } 
+                    const used = split.join(".")
+                    const relJoin = relative.join(".")
+                    const isSame = basePath === path
+                    const mainPath = (basePath && !isSame && o.map !== false) ? `${basePath}.${path}` : path
 
-                    o.reference[path] = { resolved, last, lastKey, path: {
-                        used: split.join('.'),
+                    o.reference[mainPath] = { resolved, last, lastKey, path: {
+                        used,
                         absolute: (absolute) ? absolute.join('.') : null,
-                        relative: (relative) ? relative.join('.') : null
+                        relative: (relative) ? relJoin : null
                     } }
                 }
             } 
@@ -251,10 +255,20 @@ class ESPlugin {
                 out: listeners[0].reference
             }
             
-            // Inherit Listeners
-            for (let key in toListenTo) top.listeners.active[key] = toListenTo[key]
+            // Inherit Listeners (use full paths)
+            const getKey = (key) => basePath ? `${basePath}.${key}` : key;
+            for (let key in toListenTo) {
+              const mainKey = getKey(key);
+              const base = top.listeners.active[mainKey] = {}
 
-            for (let key in this.listeners.includeParent) top.listeners.includeParent[key] = this.listeners.includeParent[key]
+              for (let inner in toListenTo[key]) {
+                const newKey = getKey(inner)
+                base[newKey] = toListenTo[key][inner];
+              }
+            }
+
+            for (let key in this.listeners.includeParent) top.listeners.includeParent[key] = this.listeners.includeParent[key];
+
 
             for (let type in listenerPool) {
                 top.listeners.pool[type] = {

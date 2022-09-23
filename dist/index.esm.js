@@ -4120,7 +4120,8 @@ var ESPlugin = class {
         const targets = [
           {
             reference: this.initial.children,
-            condition: (child) => child === void 0
+            condition: (child) => child === void 0,
+            map: false
           },
           ...listeners
         ];
@@ -4130,15 +4131,14 @@ var ESPlugin = class {
               const updated = `${top.graph.name}.${path}`;
               let split = updated.split(".");
               const lastKey = split.pop();
-              let absolute, relative;
+              const absolute = path.split(".").slice(0, -1);
+              const relative = [...basePath ? basePath.split(".") : [], ...absolute];
               let last = top.graph;
               let resolved = this.#router.nodes.get(updated);
               if (resolved)
                 last = this.#router.nodes.get(split.join(".")) ?? top.graph;
               else {
                 const get = (str, target) => target.nodes.get(str) ?? target[str];
-                absolute = path.split(".").slice(0, -1);
-                relative = [...basePath ? basePath.split(".") : [], ...absolute];
                 split = relative;
                 try {
                   split.forEach((str) => last = get(str, last));
@@ -4150,10 +4150,14 @@ var ESPlugin = class {
                   resolved = lastKey ? get(lastKey, last) : last;
                 }
               }
-              o.reference[path] = { resolved, last, lastKey, path: {
-                used: split.join("."),
+              const used = split.join(".");
+              const relJoin = relative.join(".");
+              const isSame = basePath === path;
+              const mainPath = basePath && !isSame && o.map !== false ? `${basePath}.${path}` : path;
+              o.reference[mainPath] = { resolved, last, lastKey, path: {
+                used,
                 absolute: absolute ? absolute.join(".") : null,
-                relative: relative ? relative.join(".") : null
+                relative: relative ? relJoin : null
               } };
             }
           }
@@ -4162,8 +4166,15 @@ var ESPlugin = class {
           in: listeners[1].reference,
           out: listeners[0].reference
         };
-        for (let key in toListenTo)
-          top.listeners.active[key] = toListenTo[key];
+        const getKey = (key) => basePath ? `${basePath}.${key}` : key;
+        for (let key in toListenTo) {
+          const mainKey = getKey(key);
+          const base = top.listeners.active[mainKey] = {};
+          for (let inner in toListenTo[key]) {
+            const newKey = getKey(inner);
+            base[newKey] = toListenTo[key][inner];
+          }
+        }
         for (let key in this.listeners.includeParent)
           top.listeners.includeParent[key] = this.listeners.includeParent[key];
         for (let type in listenerPool) {

@@ -14,13 +14,13 @@ const container = document.getElementById('container')
 
 const startExecution = async () => {
 
-    const options = {parentNode: container}
+    const options = { parentNode: container }
     // ------------------- Basic Plugin Execution -------------------
     const instance = new esplugin(example, options)
     await instance.start()
 
     // copy the plugin info
-    console.log('example' ,example)
+    console.log('example', example)
     const e2 = Object.assign({}, example)
     e2.attributes = Object.assign({}, e2.attributes)
     e2.attributes.innerHTML = 'Increment'
@@ -48,77 +48,61 @@ const startExecution = async () => {
 
     // ------------------- Basic Graph Support -------------------
     const esGraph = new esplugin({
-        tagName: "div",
-        style: {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '500px',
-            height: '500px',
-            background: 'green'
-        },
-        oncreate: function() {
-            console.log('Created', this)
-        },
         components: {
-                first: instance,
-                second: secondInstance,
-                log,
-                test: {
-                    tagName: "div",
-                    style: {
-                        width: '100px',
-                        height: '100px',
-                        background: 'red'
-                    },
-                    components: {
-                        inner: {
-                            tagName: "button",
-                            attributes: {
-                                innerText: "Reset",
-                                onclick: function() {
-                                    this.run()
-                                }
-                            },
-                            reset: (v) => {
-                                console.warn('reset!', v)
-                                setTimeout(set, 10)
-                                return v
-                            },
-                            default: () => {
-                                return 0
-                            },
-
-                            children: {
-                                "reset": true,
-                            },
-
-                            listeners: {
-                                "reset": {
-                                    'first.nExecutions': true,
-                                    'second.nExecutions': true
-                                }
+            first: instance,
+            second: secondInstance,
+            log,
+            test: {
+                tagName: "div",
+                style: {
+                    width: '100px',
+                    height: '100px',
+                    background: 'red'
+                },
+                components: {
+                    inner: {
+                        tagName: "button",
+                        attributes: {
+                            innerText: "Reset",
+                            onclick: function () {
+                                this.run()
                             }
                         },
-                    }
-                 },
-            },
+                        reset: (v) => {
+                            setTimeout(set, 10)
+                            return v
+                        },
+                        default: () => {
+                            return 0
+                        },
 
-            listeners: {
-                "first.nExecutions": {
-                    'log': true,
-                },
-                "second.nExecutions": {
-                    'first.increment': true,
-                },
-                'second': {
-                    'first.increment': true,
-                    'log': true
-                },
-                'first': {
-                    'log': true
-                },
-            }
+                        children: {
+                            "reset": true,
+                        }
+                    },
+                }
+            },
+        },
+
+        listeners: {
+            "first.nExecutions": {
+                'log': true,
+            },
+            "second.nExecutions": {
+                'first.increment': true,
+            },
+            'second': {
+                'first.increment': true,
+                'log': true
+            },
+            'first': {
+                'log': true
+            },
+            'test.inner.reset': {
+                'first.nExecutions': true,
+                'second.nExecutions': true
+            },
+        }
     }, options)
 
     console.log('graph', esGraph)
@@ -126,7 +110,7 @@ const startExecution = async () => {
 
 
     await esGraph.start()
-    
+
     start.onclick = () => {
         esGraph.start()
     }

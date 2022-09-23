@@ -4181,7 +4181,8 @@
           const targets = [
             {
               reference: this.initial.children,
-              condition: (child) => child === void 0
+              condition: (child) => child === void 0,
+              map: false
             },
             ...listeners
           ];
@@ -4191,15 +4192,14 @@
                 const updated = `${top.graph.name}.${path}`;
                 let split = updated.split(".");
                 const lastKey = split.pop();
-                let absolute, relative;
+                const absolute = path.split(".").slice(0, -1);
+                const relative = [...basePath ? basePath.split(".") : [], ...absolute];
                 let last = top.graph;
                 let resolved = this.#router.nodes.get(updated);
                 if (resolved)
                   last = this.#router.nodes.get(split.join(".")) ?? top.graph;
                 else {
                   const get = (str, target) => target.nodes.get(str) ?? target[str];
-                  absolute = path.split(".").slice(0, -1);
-                  relative = [...basePath ? basePath.split(".") : [], ...absolute];
                   split = relative;
                   try {
                     split.forEach((str) => last = get(str, last));
@@ -4211,10 +4211,14 @@
                     resolved = lastKey ? get(lastKey, last) : last;
                   }
                 }
-                o.reference[path] = { resolved, last, lastKey, path: {
-                  used: split.join("."),
+                const used = split.join(".");
+                const relJoin = relative.join(".");
+                const isSame = basePath === path;
+                const mainPath = basePath && !isSame && o.map !== false ? `${basePath}.${path}` : path;
+                o.reference[mainPath] = { resolved, last, lastKey, path: {
+                  used,
                   absolute: absolute ? absolute.join(".") : null,
-                  relative: relative ? relative.join(".") : null
+                  relative: relative ? relJoin : null
                 } };
               }
             }
@@ -4223,8 +4227,15 @@
             in: listeners[1].reference,
             out: listeners[0].reference
           };
-          for (let key in toListenTo)
-            top.listeners.active[key] = toListenTo[key];
+          const getKey = (key) => basePath ? `${basePath}.${key}` : key;
+          for (let key in toListenTo) {
+            const mainKey = getKey(key);
+            const base = top.listeners.active[mainKey] = {};
+            for (let inner in toListenTo[key]) {
+              const newKey = getKey(inner);
+              base[newKey] = toListenTo[key][inner];
+            }
+          }
           for (let key in this.listeners.includeParent)
             top.listeners.includeParent[key] = this.listeners.includeParent[key];
           for (let type in listenerPool) {
@@ -4263,10 +4274,12 @@
             const path = this.getPath(lastNode, true);
             this.listeners.includeParent[path] = lastNode;
           }
-          if (firstNode)
+          if (firstNode && !this.#initial.default)
             this.#initial.operator = async function(...args) {
               await firstNode.run(...args);
             };
+          else
+            this.#initial.operator = this.#initial.default;
         }
         if (typeof defer === "function")
           defer(f);
@@ -4439,7 +4452,6 @@
       }
     };
     #runGraph = async (graph = this.graph, ...args) => {
-      console.log("runGraph", graph, args);
       if (graph instanceof Graph) {
         if (graph.node)
           return graph.node.run(...args);
@@ -4490,18 +4502,6 @@
       await secondInstance.run();
     };
     const esGraph = new src_default({
-      tagName: "div",
-      style: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "500px",
-        height: "500px",
-        background: "green"
-      },
-      oncreate: function() {
-        console.log("Created", this);
-      },
       components: {
         first: instance,
         second: secondInstance,
@@ -4523,7 +4523,6 @@
                 }
               },
               reset: (v) => {
-                console.warn("reset!", v);
                 setTimeout(set2, 10);
                 return v;
               },
@@ -4532,12 +4531,6 @@
               },
               children: {
                 "reset": true
-              },
-              listeners: {
-                "reset": {
-                  "first.nExecutions": true,
-                  "second.nExecutions": true
-                }
               }
             }
           }
@@ -4556,6 +4549,10 @@
         },
         "first": {
           "log": true
+        },
+        "test.inner.reset": {
+          "first.nExecutions": true,
+          "second.nExecutions": true
         }
       }
     }, options);
