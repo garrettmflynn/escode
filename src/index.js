@@ -306,10 +306,9 @@ class ESPlugin {
                 // this.subscribe(lastNode, {target: 'parent'});
             }
     
-            // Proxy the first node (if no default behavior?)
-              if (firstNode) this.#initial.operator = async function (...args) {
-                  await firstNode.run(...args);
-              };
+            // Proxy the first node (if no default behavior)
+              if (firstNode && !this.#initial.default) this.#initial.operator = async function (...args) {  await firstNode.run(...args) };
+              else this.#initial.operator = this.#initial.default
         }
 
         // Nested Plugins
