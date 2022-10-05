@@ -7,7 +7,7 @@ import getFnParamInfo from "./parse.js";
 
 const isNode = 'process' in globalThis
 
-class ESPlugin {
+class ESComponent {
 
     // Private
     #initial;
@@ -16,7 +16,7 @@ class ESPlugin {
     #graph;
     #router;
     #cache = {}
-    #plugins = {}
+    #components = {}
     #active = false
 
     listeners = {
@@ -28,7 +28,7 @@ class ESPlugin {
         includeParent: {}
     }
 
-    plugins = {}
+    components = {}
 
     #toRun = false
     #runProps = true
@@ -47,13 +47,13 @@ class ESPlugin {
         this.#initial = node;
         this.#options = options;
 
-        // Create One Router for the Plugin Set
+        // Create One Router for the Component Set
         this.#router = (options._router) ? options._router : options._router = new Router({
                 linkServices: false,
                 includeClassName: false,
             })
 
-        do { this.#initial = this.initial.initial ?? this.initial } while (this.initial instanceof ESPlugin)
+        do { this.#initial = this.initial.initial ?? this.initial } while (this.initial instanceof ESComponent)
 
         const hasDefault = 'default' in this.initial
         let hasComponents = !!node.components
@@ -77,30 +77,30 @@ class ESPlugin {
             const components = this.initial.components
             for (let tag in components) {
                 const node2 = components[tag];
-                if (!(node2 instanceof ESPlugin)) {
+                if (!(node2 instanceof ESComponent)) {
                     const clonedOptions = Object.assign({}, Object.assign(options));
-                    const plugin = new ESPlugin(node2, Object.assign(clonedOptions, { tag }), node);
-                    this.#plugins[tag] = plugin
-                    toNotify.push(plugin)
-                } else this.#cache[tag] = this.#plugins[tag] = node2
+                    const component = new ESComponent(node2, Object.assign(clonedOptions, { tag }), node);
+                    this.#components[tag] = component
+                    toNotify.push(component)
+                } else this.#cache[tag] = this.#components[tag] = node2
             }
 
-            // Store Plugins with Unique Names ("Graph Paths")
+            // Store Components with Unique Names ("Graph Paths")
             const thisTag = this.#options.tag
             toNotify.forEach((o) => {
 
                 let tag = o.#options.tag
                 if (thisTag) tag = `${thisTag}.${tag}`
-                this.plugins[o.#options.tag] = o // basic tag
+                this.components[o.#options.tag] = o // basic tag
 
-                // Notify User of New Plugins
-                if (typeof options.onPlugin === "function") options.onPlugin(tag, o)
+                // Notify User of New Components
+                if (typeof options.onComponent === "function") options.onComponent(tag, o)
             })
 
         } 
 
-        // Parse ESPlugins (with default export)
-        else this.graph = this.#create(options.tag ?? 'defaultESPluginTag', this.initial)
+        // Parse ESComponents (with default export)
+        else this.graph = this.#create(options.tag ?? 'defaultESComponentTag', this.initial)
 
         Object.defineProperty(this, 'tag', {
             get: () => this.graph?.tag,
@@ -110,10 +110,10 @@ class ESPlugin {
 
     #createTree = () => {
         let tree = {}
-        for (let tag in this.#plugins) {
+        for (let tag in this.#components) {
 
             // Recreate Graph from Initial Values (stored here)
-            let thisNode = this.#plugins[tag].graph
+            let thisNode = this.#components[tag].graph
             if (this.#cache[tag]) {
                 let gs = this.#cache[tag].graph
                 const ref = (gs.node) ? gs.node : gs
@@ -122,7 +122,7 @@ class ESPlugin {
                 thisNode.tag = tag // adjust tag
                 gs.state.triggers = {} //remove subs
             }
-            tree[tag] = this.#create(tag, thisNode); // create new plugin
+            tree[tag] = this.#create(tag, thisNode); // create new component
         }
 
         return tree
@@ -141,7 +141,7 @@ class ESPlugin {
 
             this.#router.load(this.graph)
 
-            for (let tag in this.#plugins) {
+            for (let tag in this.#components) {
                 const cache = this.#cache[tag]
                 if (cache)  cache.graph = tree[tag] // update graph
             }
@@ -154,10 +154,10 @@ class ESPlugin {
         if (this.#active === false){
         this.#active = true
 
-        // Initialize Plugins
+        // Initialize Components
         const activateFuncs = []
-        for (let key in this.plugins) {
-            const o = this.plugins[key];
+        for (let key in this.components) {
+            const o = this.components[key];
             await o.start((f) => {
                 activateFuncs.push(f)
             });
@@ -169,7 +169,7 @@ class ESPlugin {
         const f = async (top) => {
 
             const toRun = []
-            for (let f of activateFuncs) toRun.push(...await f(top)); // activate nested plugins
+            for (let f of activateFuncs) toRun.push(...await f(top)); // activate nested components
             
             // resolve missing children
             const listeners = [{reference: {}}, {reference: {}}]
@@ -325,10 +325,10 @@ class ESPlugin {
               else this.#initial.operator = this.#initial.default
         }
 
-        // Nested Plugins
+        // Nested Components
         if (typeof defer === "function") defer(f);
 
-        // Top-Level Plugin
+        // Top-Level Component
         else {
             const toRun = await f(this);
 
@@ -467,7 +467,7 @@ class ESPlugin {
         else {
 
             let activeInfo;
-            if (info instanceof ESPlugin) {
+            if (info instanceof ESComponent) {
                 activeInfo = info.instance
                 info = info.initial
             }
@@ -540,4 +540,4 @@ class ESPlugin {
     run = async (...args) => this.#runGraph(this.graph, ...args)
 }
 
-export default ESPlugin;
+export default ESComponent;

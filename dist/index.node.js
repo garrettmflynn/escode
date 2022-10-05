@@ -2853,16 +2853,17 @@ var DOMService = class extends Service {
         enumerable: true,
         configurable: true
       });
-      Object.defineProperty(node, "element", {
-        get: () => element,
-        set: (v) => {
-          element = v;
-          node.nodes.forEach((n) => {
-            if (node.source?._unique === n.graph?._unique)
-              n.parentNode = element;
-          });
-        }
-      });
+      if (!node["element"])
+        Object.defineProperty(node, "element", {
+          get: () => element,
+          set: (v) => {
+            element = v;
+            node.nodes.forEach((n) => {
+              if (node.source?._unique === n.graph?._unique)
+                n.parentNode = element;
+            });
+          }
+        });
       node.element = element;
       element.node = node;
       let initialOptions = options._initial ?? options;
@@ -3996,14 +3997,14 @@ var parse_default = getFnParamInfo;
 
 // src/index.js
 var isNode = "process" in globalThis;
-var ESPlugin = class {
+var ESComponent = class {
   #initial;
   #options;
   #instance;
   #graph;
   #router;
   #cache = {};
-  #plugins = {};
+  #components = {};
   #active = false;
   listeners = {
     pool: {
@@ -4013,7 +4014,7 @@ var ESPlugin = class {
     active: {},
     includeParent: {}
   };
-  plugins = {};
+  components = {};
   #toRun = false;
   #runProps = true;
   get initial() {
@@ -4037,7 +4038,7 @@ var ESPlugin = class {
     });
     do {
       this.#initial = this.initial.initial ?? this.initial;
-    } while (this.initial instanceof ESPlugin);
+    } while (this.initial instanceof ESComponent);
     const hasDefault = "default" in this.initial;
     let hasComponents = !!node.components;
     const parentHasComponents = !!parent?.components;
@@ -4055,25 +4056,25 @@ var ESPlugin = class {
       const components = this.initial.components;
       for (let tag in components) {
         const node2 = components[tag];
-        if (!(node2 instanceof ESPlugin)) {
+        if (!(node2 instanceof ESComponent)) {
           const clonedOptions = Object.assign({}, Object.assign(options));
-          const plugin = new ESPlugin(node2, Object.assign(clonedOptions, { tag }), node);
-          this.#plugins[tag] = plugin;
-          toNotify.push(plugin);
+          const component = new ESComponent(node2, Object.assign(clonedOptions, { tag }), node);
+          this.#components[tag] = component;
+          toNotify.push(component);
         } else
-          this.#cache[tag] = this.#plugins[tag] = node2;
+          this.#cache[tag] = this.#components[tag] = node2;
       }
       const thisTag = this.#options.tag;
       toNotify.forEach((o) => {
         let tag = o.#options.tag;
         if (thisTag)
           tag = `${thisTag}.${tag}`;
-        this.plugins[o.#options.tag] = o;
-        if (typeof options.onPlugin === "function")
-          options.onPlugin(tag, o);
+        this.components[o.#options.tag] = o;
+        if (typeof options.onComponent === "function")
+          options.onComponent(tag, o);
       });
     } else
-      this.graph = this.#create(options.tag ?? "defaultESPluginTag", this.initial);
+      this.graph = this.#create(options.tag ?? "defaultESComponentTag", this.initial);
     Object.defineProperty(this, "tag", {
       get: () => this.graph?.tag,
       enumerable: true
@@ -4081,8 +4082,8 @@ var ESPlugin = class {
   }
   #createTree = () => {
     let tree = {};
-    for (let tag in this.#plugins) {
-      let thisNode = this.#plugins[tag].graph;
+    for (let tag in this.#components) {
+      let thisNode = this.#components[tag].graph;
       if (this.#cache[tag]) {
         let gs = this.#cache[tag].graph;
         const ref = gs.node ? gs.node : gs;
@@ -4102,7 +4103,7 @@ var ESPlugin = class {
       const props = this.#instance ?? this.initial;
       this.graph = isNode ? new Graph(tree, this.#options.tag, props) : new DOMService({ routes: tree, name: this.#options.tag, props: this.#runProps ? props : void 0 }, this.#options.parentNode);
       this.#router.load(this.graph);
-      for (let tag in this.#plugins) {
+      for (let tag in this.#components) {
         const cache = this.#cache[tag];
         if (cache)
           cache.graph = tree[tag];
@@ -4113,8 +4114,8 @@ var ESPlugin = class {
     if (this.#active === false) {
       this.#active = true;
       const activateFuncs = [];
-      for (let key in this.plugins) {
-        const o = this.plugins[key];
+      for (let key in this.components) {
+        const o = this.components[key];
         await o.start((f2) => {
           activateFuncs.push(f2);
         });
@@ -4364,7 +4365,7 @@ var ESPlugin = class {
       return info;
     else {
       let activeInfo;
-      if (info instanceof ESPlugin) {
+      if (info instanceof ESComponent) {
         activeInfo = info.instance;
         info = info.initial;
       }
@@ -4433,6 +4434,6 @@ var ESPlugin = class {
   #runDefault = (graph, ...args) => graph.run(graph.nodes.values().next().value, ...args);
   run = async (...args) => this.#runGraph(this.graph, ...args);
 };
-var src_default = ESPlugin;
+var src_default = ESComponent;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {});

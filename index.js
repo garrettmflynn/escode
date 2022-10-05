@@ -1,9 +1,9 @@
-import * as example from './plugins/example.js'
-import * as log from './plugins/log.js'
-import * as api from './plugins/api.js'
-// import * as readout from './plugins/readout.js'
+import * as example from './components/example.js'
+import * as log from './components/log.js'
+import * as api from './components/api.js'
+// import * as readout from './components/readout.js'
 
-import esplugin from './src/index.js'
+import escompose from './src/index.js'
 
 const start = document.getElementById('start')
 const stop = document.getElementById('stop')
@@ -15,20 +15,20 @@ const container = document.getElementById('container')
 const startExecution = async () => {
 
     const options = { parentNode: container }
-    // ------------------- Basic Plugin Execution -------------------
-    const instance = new esplugin(example, options)
+    // ------------------- Basic Component Execution -------------------
+    const instance = new escompose(example, options)
     await instance.start()
 
-    // copy the plugin info
+    // copy the component info
     console.log('example', example)
     const e2 = Object.assign({}, example)
     e2.attributes = Object.assign({}, e2.attributes)
     e2.attributes.innerHTML = 'Increment'
     e2.nExecutions = -1
-    const secondInstance = new esplugin(e2, options)
+    const secondInstance = new escompose(e2, options)
     await secondInstance.start()
 
-    const apiInstance = new esplugin(api, options)
+    const apiInstance = new escompose(api, options)
     await apiInstance.start()
 
     const apiRes = await apiInstance.run('add', 1, 2) // as a graph, specify the node
@@ -47,7 +47,7 @@ const startExecution = async () => {
     }
 
     // ------------------- Basic Graph Support -------------------
-    const esGraph = new esplugin({
+    const esGraph = new escompose({
         components: {
             first: instance,
             second: secondInstance,

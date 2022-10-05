@@ -1,17 +1,17 @@
-## ECMAScript Plugins (ES Plugins)
-[![Npm package version](https://badgen.net/npm/v/es-plugins)](https://npmjs.com/package/es-plugins)
-[![Npm package monthly downloads](https://badgen.net/npm/dm/es-plugins)](https://npmjs.ccom/package/es-plugins)
+## escompose
+[![Npm package version](https://badgen.net/npm/v/escompose)](https://npmjs.com/package/escompose)
+[![Npm package monthly downloads](https://badgen.net/npm/dm/escompose)](https://npmjs.ccom/package/escompose)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-**ES Plugins** is a standard for transforming ES Modules into standardized Web Components to simplify the process of authoring composable web applications.
+**ES Components** is a standard for transforming ES Modules into standardized Web Components to simplify the process of authoring composable web applications.
 
-The **es-plugins** library uses [graphscript](https://github.com/brainsatplay/graphscript) to compose plugins—as well as its `DOMService` class to transform plugins into Web Components.
+The **escompose** library uses [graphscript](https://github.com/brainsatplay/graphscript) to compile ES Components into Web Components that respond to each other. 
 
-> **Note:** **es-plugins** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
+> **escompose** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 
 ## The Specification
-Each Plugin contains one `default` export and any number of `named` exports.
+Each Component contains one `default` export and any number of `named` exports.
 
 ``` javascript
 export let nExecutions = 0
@@ -25,12 +25,12 @@ export default function(){
 As such, this specification treats **namespace imports** (which access default *and* named exports) as first-class citizens.
 
 ### Default Exports
-The `default` export defines the behavior of the Plugin.
+The `default` export defines the behavior of the Component.
 
 ### Named Exports
- `named` exports define the states of the Plugin. 
+ `named` exports define the states of the Component. 
 
- However, **multiple named exports** without a default function may also be passed. These are transformed into individual plugins within the same graph.
+ However, **multiple named exports** without a default function may also be passed. These are transformed into individual Components within the same graph.
 
 
 ## Acknowledgments
