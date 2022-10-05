@@ -1,7 +1,7 @@
 {
-  "name": "es-plugins",
-  "version": "0.0.26",
-  "description": "A standard for transforming ES Modules into Web Components",
+  "name": "escompose",
+  "version": "0.0.27",
+  "description": "A standard for transforming ES Modules into linked Web Components",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -9,7 +9,7 @@
     "dist/**/*.js",
     "dist/**/*.d.ts"
   ],
-  "repository": "https://github.com/brainsatplay/es-plugins",
+  "repository": "https://github.com/brainsatplay/escompose",
   "author": "Garrett Flynn <garrettmflynn@gmail.com>",
   "license": "AGPL-3.0-or-later",
   "private": false,
