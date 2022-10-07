@@ -9,19 +9,19 @@
 > **ESC** is a core specification of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 
 ## Libraries
-### components
-`components` contains the official repository of ESCompose Components.
+### [components](./components/README.md)
+`components` contains the official repository of ES Components (ESC).
 
-### escompose
+### [escompose](./libraries/escompose/README.md)
 `escompose` uses [graphscript](https://github.com/brainsatplay/graphscript) to compile ES Components into standardized Web Components that respond to each other. 
 
-### esmonitor
+### [esmonitor](./libraries/esmonitor/README.md)
 `esmonitor` allows for notification of any changes to ES Module variables during runtime.
 
-### esmpile
+### [esmpile](./libraries/esmpile/README.md)
 `esmpile` compiles ES Module code from standard import uris.
 
-### escomposer
+### [escomposer](./libraries/escomposer/README.md)
 `escomposer` is a visual programming system for ESC.
 
 
