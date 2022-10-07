@@ -6,7 +6,7 @@
 
 **escomposer** is live visual programming system for ESM / [ESC](../../README.md) projects.
 
-> **escomposer** is the centerpiece of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/README.md), as it allows users to understand the big picture (i.e. rapid prototyping of high-performance web applications) before slowly peeling back each layer of the Framework.
+> **escomposer** is the centerpiece of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/blob/main/README.md), as it allows users to understand the big picture (i.e. rapid prototyping of high-performance web applications) before slowly peeling back each layer of the Framework.
 
 ### The Layers
 #### Flow Graph
