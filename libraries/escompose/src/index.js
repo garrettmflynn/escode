@@ -7,7 +7,7 @@ import getFnParamInfo from "./parse.js";
 
 const isNode = 'process' in globalThis
 
-class ESComponent {
+class Component {
 
     // Private
     #initial;
@@ -53,7 +53,7 @@ class ESComponent {
                 includeClassName: false,
             })
 
-        do { this.#initial = this.initial.initial ?? this.initial } while (this.initial instanceof ESComponent)
+        do { this.#initial = this.initial.initial ?? this.initial } while (this.initial instanceof Component)
 
         const hasDefault = 'default' in this.initial
         let hasComponents = !!node.components
@@ -77,9 +77,9 @@ class ESComponent {
             const components = this.initial.components
             for (let tag in components) {
                 const node2 = components[tag];
-                if (!(node2 instanceof ESComponent)) {
+                if (!(node2 instanceof Component)) {
                     const clonedOptions = Object.assign({}, Object.assign(options));
-                    const component = new ESComponent(node2, Object.assign(clonedOptions, { tag }), node);
+                    const component = new Component(node2, Object.assign(clonedOptions, { tag }), node);
                     this.#components[tag] = component
                     toNotify.push(component)
                 } else this.#cache[tag] = this.#components[tag] = node2
@@ -99,8 +99,8 @@ class ESComponent {
 
         } 
 
-        // Parse ESComponents (with default export)
-        else this.graph = this.#create(options.tag ?? 'defaultESComponentTag', this.initial)
+        // Parse Components (with default export)
+        else this.graph = this.#create(options.tag ?? 'defaultComponentTag', this.initial)
 
         Object.defineProperty(this, 'tag', {
             get: () => this.graph?.tag,
@@ -467,7 +467,7 @@ class ESComponent {
         else {
 
             let activeInfo;
-            if (info instanceof ESComponent) {
+            if (info instanceof Component) {
                 activeInfo = info.instance
                 info = info.initial
             }
@@ -540,4 +540,4 @@ class ESComponent {
     run = async (...args) => this.#runGraph(this.graph, ...args)
 }
 
-export default ESComponent;
+export default Component;

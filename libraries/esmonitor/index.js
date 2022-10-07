@@ -1,4 +1,4 @@
-import safeImport from "./node_modules/remote-esm/index.js"
+import safeImport from "remote-esm/index.js"
 
 const isSame = (a,b) => {
     if (a && typeof a === 'object') {
@@ -9,7 +9,7 @@ const isSame = (a,b) => {
 }
 
 
-export default class ESMonitor {
+export default class Monitor {
 
     dependencies = {}
     subscriptions = {}

@@ -3,7 +3,7 @@ import * as log from './components/log.js'
 import * as api from './components/api.js'
 // import * as readout from './components/readout.js'
 
-import escompose from './src/index.js'
+import Component from './src/index.js'
 
 const start = document.getElementById('start')
 const stop = document.getElementById('stop')
@@ -16,7 +16,7 @@ const startExecution = async () => {
 
     const options = { parentNode: container }
     // ------------------- Basic Component Execution -------------------
-    const instance = new escompose(example, options)
+    const instance = new Component(example, options)
     await instance.start()
 
     // copy the component info
@@ -25,10 +25,10 @@ const startExecution = async () => {
     e2.attributes = Object.assign({}, e2.attributes)
     e2.attributes.innerHTML = 'Increment'
     e2.nExecutions = -1
-    const secondInstance = new escompose(e2, options)
+    const secondInstance = new Component(e2, options)
     await secondInstance.start()
 
-    const apiInstance = new escompose(api, options)
+    const apiInstance = new Component(api, options)
     await apiInstance.start()
 
     const apiRes = await apiInstance.run('add', 1, 2) // as a graph, specify the node
@@ -47,7 +47,7 @@ const startExecution = async () => {
     }
 
     // ------------------- Basic Graph Support -------------------
-    const esGraph = new escompose({
+    const esGraph = new Component({
         components: {
             first: instance,
             second: secondInstance,
