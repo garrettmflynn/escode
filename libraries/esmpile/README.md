@@ -4,9 +4,9 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-This library allows for you to **compile ESM source files** using standard import paths. For instance, you can compile https://raw.githubusercontent.com/brainsatplay/esmpile/main/index.js!
+This library allows for you to **compile ESM source files** using standard import paths. For instance, you can compile https://raw.githubusercontent.com/brainsatplay/escompose/blob/main/libraries/esmpile/index.js!
 
-> **Note:** **esmpile** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/README.md)
+> **esmpile** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/blob/main/README.md)
  
 ## Getting Started
 ### The List of Options
