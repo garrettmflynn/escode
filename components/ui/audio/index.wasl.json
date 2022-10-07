@@ -1,0 +1,24 @@
+{
+    "tagName": "div",
+    "components": {
+        "sounds": {
+            "src": "../select.js",
+            "options": []
+        },
+        "button": {
+            "src": "../button.js",
+            "innerText": "Play"
+        },
+        "toggle": {
+            "src": "../../audio/toggle.js"
+        }
+    },
+    "listeners": {
+        "sounds": {
+            "button": true
+        },
+        "button": {
+            "toggle": true
+        }
+    }
+}

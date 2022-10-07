@@ -1,0 +1,12 @@
+{
+    "components": {
+        "start" : {
+            "src": "./components/start.js"
+        }
+    },
+
+    "ports": { 
+        "input": "start",
+        "output": "start"
+    }
+}

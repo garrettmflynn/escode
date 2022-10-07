@@ -1,0 +1,23 @@
+{
+  "name": "escompose",
+  "version": "0.0.27",
+  "description": "A standard for transforming ES Modules into linked Web Components",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "repository": "https://github.com/brainsatplay/escompose",
+  "author": "Garrett Flynn <garrettmflynn@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "start": "tinybuild --path tinybuild.demo.js",
+    "start:node": "node index.js",
+    "build": "tinybuild",
+    "transfer": "mkdir -p src/graphscript && cp ../graphscript/Graph.ts src/graphscript && mkdir -p src/graphscript/services && cp ../graphscript/services/Service.ts src/graphscript/services && cp -r ../graphscript/services/dom src/graphscript/services && cp -r ../graphscript/services/router src/graphscript/services"
+  }
+}

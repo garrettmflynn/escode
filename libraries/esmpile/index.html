@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESMpile</title>
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        nav {
+            padding: 20px 35px;
+            background-color: black;
+            color: white;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        section {
+            padding: 25px;
+        }
+
+        li {
+            padding: 10px;
+        }
+
+        #tests {
+            padding: 10px;
+        }
+
+
+        #tests > div {
+            border: 1px solid black;
+            margin-bottom: 15px;
+        }
+
+        .h2-div {
+            cursor: pointer;
+        }
+
+        .h2-div h2 {
+            margin: 0;
+            font-size: 15px;
+        }
+
+        .path {
+            margin: 0;
+        }
+        
+        .buttons button {
+            padding: 5px 10px;
+            color: white;
+            border: 1px solid white;
+            background: transparent;
+            border-radius: 5px;
+            margin-left: 10px;
+            font-size: 70%;
+            cursor: pointer;
+        }
+
+        button.inactive {
+            cursor: default;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        #tests .header {
+            width: 100%;
+            padding: 10px;
+            background: black;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: height 0.5s;
+        }
+
+        .error {
+            padding: 10px 15px;
+            background:rgb(255, 191, 191);
+            font-size: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 80%;
+            overflow: hidden;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        li > div > * {
+            margin-left: 10px;
+        }
+
+        li > div {
+            display: flex;
+            align-items: center;
+        }
+
+
+        .progress-div {
+            display: flex;
+            align-items: center;
+        }
+
+        .progress-div span {
+            margin-left: 10px;
+            font-size: 65%;
+        }
+
+        .progress-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: black;
+            border: 1px solid rgb(193, 193, 193);
+            margin-right: 10px;
+        }
+
+        .progress-circle.resolving {
+            border: none;
+            background: rgb(255, 237, 123);
+        }
+
+        .progress-circle.failed {
+            border: none;
+            background: rgb(255, 123, 123);
+        }
+
+        .progress-circle.resolved {
+            border: none;
+            background: rgb(141, 255, 123);
+        }
+
+
+
+
+    </style>
+</head>
+
+<body>
+    <nav><h1>ESMpile</h1></nav>
+    <section>
+        <div id="tests"></div>
+    </section>
+</body>
+<script type="module">
+
+    import * as library from './src/index.js';
+
+    let esm = library
+
+    // ---------------- Preload the Typescript Service ----------------
+    await esm.load.script('./extensions/typescriptServices.min.js');
+
+    // ---------------- Set Global Variables ----------------
+    const testDiv = document.getElementById('tests')
+    const entries = {}
+    const displays = {}
+
+    const createDisplay = (label, info) => {
+
+        if (!displays[label]) {
+            const div = document.createElement('div')
+            const header = document.createElement('div')
+            const error = document.createElement('div')
+            error.classList.add('error')
+            error.style.display = 'none'
+            header.classList.add('header')
+
+            const ul = document.createElement('ul')
+
+            const h2 = document.createElement('h2')
+            const pathEl = document.createElement('span')
+            pathEl.classList.add('path')
+            const progressCircle = document.createElement('div')
+            progressCircle.classList.add('progress-circle')
+            const time = document.createElement('span')
+
+            const h2Div = document.createElement('div')
+            h2Div.classList.add('h2-div')
+            h2Div.appendChild(h2)
+
+            // Toggle List View
+            h2Div.onclick = () => {
+                if (ul.style.height === '0px') ul.style.height = ``
+                else ul.style.height = `0px`
+            }
+            // h2Div.appendChild(pathEl)
+
+
+            const headerDiv = document.createElement('div')
+            headerDiv.classList.add('progress-div')
+
+            const buttonDiv = document.createElement('div')
+            buttonDiv.classList.add('buttons')
+            const button = document.createElement('button')
+            const compile = document.createElement('button')
+
+            h2.innerText = label
+            pathEl.innerText = info.uri
+
+            button.innerText = 'Import'
+            compile.innerText = 'Compile'
+
+            headerDiv.appendChild(progressCircle)
+            headerDiv.appendChild(h2Div)
+            headerDiv.appendChild(pathEl)
+            headerDiv.appendChild(time)
+
+            buttonDiv.appendChild(button)
+            buttonDiv.appendChild(compile)
+
+            header.appendChild(headerDiv)
+            header.appendChild(buttonDiv)
+
+            div.appendChild(header)
+            div.appendChild(error)
+            div.appendChild(ul)
+            testDiv.appendChild(div)
+
+            const display = displays[label] = {
+                name: label,
+                list: ul, 
+                progress: progressCircle, 
+                time, 
+                buttons: {
+                    direct: button,
+                    compile,
+                },
+                error,
+                entries: {}
+            }
+
+        }
+
+        return displays[label]
+    }
+
+    const createEntry = (path, display) => {
+
+        let entry = display.entries[path]
+        
+        if (!entry && display?.list) {
+            const li = document.createElement('li')
+            const div = document.createElement('div')
+            const name = document.createElement('span')
+            const amount = document.createElement('span')
+            const status = document.createElement('span')
+
+            const download = document.createElement('button')
+            download.classList.add('inactive')
+            download.innerText = 'Download'
+
+            display.list.appendChild(li)
+            div.appendChild(status)
+            div.appendChild(amount)
+            div.appendChild(download)
+
+            li.appendChild(name)
+            li.appendChild(div)
+
+            entry = display.entries[path] = {
+                li, 
+                name, 
+                amount, 
+                status, 
+                path, 
+                display,
+                download,
+                reset: () => {
+                    name.innerText = path
+                    download.classList.add('inactive')
+                    display.list.style.height = ''
+                },
+                bundle: null
+            }
+
+            entry.reset()
+
+            download.onclick = () => {
+                if (entry.bundle) entry.bundle.download()
+            }
+
+            if (!entries[path]) entries[path] = []
+            entries[path].push(entry)
+        }
+
+        return entry
+    }
+    
+
+    const circular = './tests/circular/index.js'
+    const executable= './tests/basic/index.js'
+    const sourceURI = './dist/index.esm.js'
+    const selfURI = './src/index.js'
+    const wavFile = './tests/kalimba.wav'
+
+
+    const bundled = './tests/bundled/index.esmpile.js'
+
+    // ---------------- Set Options ----------------
+    const options = {}
+
+    options.relativeTo = import.meta.url // Ensure appropriate relative paths are used
+    options.collection = null //'global' // Specify which bundle to reference. Specify 'global' to use same bundle across all imports. Don't specify to create a new bundle
+    options.debug = false // Show debug messages
+    options.callbacks = {progress: {}}
+    options.fallback = false
+
+    const forEachFile = async (bundle) => {
+
+        const path = bundle.name
+
+        // Add Link to Entry
+        const result = await bundle.result
+        const encoded = await bundle.encoded
+
+        const entriesForPath = entries[path]
+        if (entriesForPath) {
+            entriesForPath.forEach(entry => {
+                entry.bundle = bundle
+
+                // Can be accessed with a link
+                if (bundle.encodings.objecturl)  entry.name.innerHTML = `<a href="${bundle.encodings.objecturl}" target="_blank">${path}</a>`
+
+                entry.download.classList.remove('inactive') // activate download button
+
+            }) // Provide a link
+        }
+
+        //---------------- Import Self and Use That as the Core Library ----------------
+        if (bundle.uri === selfURI || bundle.uri === bundled) esm = result
+
+        // Resolve a Source Map
+
+        if (bundle.uri === sourceURI) {
+            if (bundle.info.text) {
+                const sourcemap = await bundle.sources()
+                if (sourcemap) {
+                    console.log('source map!', sourcemap)
+                } else console.log('No source map at specified location:', sourceURI)
+            } else console.log('No text has been fetched to search for source map...')
+        }
+
+        // Execute a function
+        if (bundle.uri === executable) {
+            result.imports.default()
+        }
+
+        if (bundle.uri === circular) {
+            result.chicken.default()
+            result.egg.default()
+        }
+
+        // Create a worker
+        if (bundle.uri.includes('worker')) {
+            console.log('Creating a dummy worker!', new Worker(bundle.objecturl, { type: "module" }))
+        }
+
+        if (bundle.uri === wavFile) {
+            const audio = document.createElement('audio')
+            audio.autoplay = true
+            audio.src = await encoded
+            audio.onended = () => {
+                audio.remove()
+            }
+        }
+    }
+
+    const tests = {
+
+        self: {
+            uri: selfURI
+        },
+
+        remote: {
+            uri: 'https://raw.githubusercontent.com/brainsatplay/esmpile/main/index.js'
+        },
+
+        //---------------- Test Source Map Resolution for Self Distribution ----------------
+        sourcemap: {
+            uri: sourceURI
+        },
+
+        executable: {
+            uri: executable,
+        },
+
+        circular: {
+            uri: circular,
+        },
+
+        wav: {
+            uri: wavFile
+        },
+
+        bundled: {
+            uri: bundled
+        },
+    }
+
+
+    const dependsOnNodeModules = {
+
+        node_module: {
+            uri: 'device-decoder',
+        },
+
+        ['typescript + worker']: {
+            uri: 'device-decoder/stream.big.worker.ts',
+        }
+
+    }
+
+    const hasNodeModules = (await fetch('./node_modules/device-decoder/package.json')).ok
+    if (hasNodeModules) Object.assign(tests, dependsOnNodeModules)
+    else console.warn('node_modules folder has not been found. Tests that rely on node_modules have been removed...', dependsOnNodeModules)
+
+
+    const verbs = {
+        default: 'Import',
+        objecturl: 'Compil',
+        datauri: 'Bundl'
+    }
+    
+    // ---------------- Run Tests ----------------
+    for (let label in tests) {
+
+        let test = tests[label]
+        const display = createDisplay(label, test)
+        const entries = display.entries
+
+        const onClick = async (override) => {
+
+            // Reset Display
+            for (let name in display.entries) display.entries[name].reset(true)
+
+            display.progress.classList.add('resolving')
+
+            const selectedOptions = test.options ?? options
+
+            const handleProcess = (path, i, total, range, message) => {
+                entries[path].status.innerText = message
+                let value = i;
+                if (total) value = `${(100*value/total).toFixed(1)}%`
+                entries[path].amount.innerText = `${value}${range ? ` of ${range}` : ''}`
+            }
+            const handleFailed = (path, failed) => {
+                entries[path].status.innerText = (failed.message.includes('The user aborted a request.')) ? `Aborted` : `Failed`
+            }
+
+            // Specify Callbacks Internally (to update ui)
+            options.callbacks.progress.file = (path, i, total, done, failed) => {
+                if (!entries[path]) createEntry(path, display)
+                if (done) {
+                    const verb = verbs[done.bundler] ?? verbs.default
+                    entries[path].status.innerText = `${verb}ed`
+                }
+                else if (failed) handleFailed(path, failed)
+                else handleProcess(path, i, total, null, `Resolving`)
+            }
+
+            options.callbacks.progress.fetch = (path, i, total, done, failed, range) => {
+                if (!entries[path]) createEntry(path, display)
+                if (done) entries[path].status.innerText = `Fetched`
+                else if (failed) handleFailed(path, failed)
+                else handleProcess(path, i, total, range, `Fetching`)
+            }
+
+            const fullOptions = Object.assign(Object.assign({}, options), override)
+
+            const tic = performance.now()
+
+            const catchError = e => {
+                    display.error.innerText = `Compilation Error: ${e.message}`
+                    display.error.style.display = ""
+                    display.progress.classList.add('failed') // resolution failed
+                }
+
+            if (!test.bundle) {
+                test.bundle = new esm.Bundle(test.uri, fullOptions)
+                await test.bundle.resolve().catch(catchError)
+
+            } else {
+                
+                // Resetting Bundler Options
+                const bundler = fullOptions.bundler
+                fullOptions.bundler = test.bundle.bundler // ignore change...
+                try {
+                    test.bundle.options = fullOptions
+                    await test.bundle.setBundler(bundler) // ensure you can wait
+                } 
+                
+                // Catch Any Bundling Errors
+                catch(e){ catchError(e) }
+            }
+
+
+            // await test.bundle.encoded
+            const result = await test.bundle.result
+            if (result !== undefined) {
+                display.error.style.display = "none"
+                display.progress.classList.add('resolved')
+            }
+
+            const toc = performance.now()
+            display.time.innerHTML = `${(toc-tic).toFixed(3)}ms`
+
+
+            forEachFile(test.bundle)
+            test.bundle.entries.forEach(forEachFile)
+            return result
+        }
+
+        display.buttons.direct.onclick = () => onClick()
+        display.buttons.compile.onclick = () => onClick({ bundler: 'objecturl' })
+
+        if (label === 'self') display.buttons.direct.click() // auto-import self
+    }
+
+
+</script>
+
+</html>

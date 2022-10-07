@@ -1,0 +1,50 @@
+{
+    "components": {
+        "list": {
+            "src": "../../../components/ui/ul.js"
+        },
+        "form": {
+            "tagName": "form",
+            "attributes": {
+                "onsubmit": {
+                    "src": "./scripts/onSubmit.js"
+                }
+            },
+            "components": {}
+        },
+        "input": {
+            "src": "../../../components/ui/input.js"
+        },
+        "button": {
+            "attributes": {
+                "innerHTML": "Add Todo",
+                "type": "submit"
+            },
+            "src": "../../../components/ui/button.js"
+        },
+        "store": {
+            "src": "../../../components/storage/local/set.js"
+        },
+        "load": {
+            "arguments": {
+                "key": "todos"
+            },
+            "src": "../../../components/storage/local/get.js"
+        }
+    },
+    "listeners": {
+        "load": {
+            "list": true
+        },
+        "input": {
+            "button": true
+        },
+        "button": {
+            "log": true,
+            "list": true
+        },
+        "list": {
+            "store": true
+        }
+    }
+}

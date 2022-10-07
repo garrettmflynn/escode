@@ -1,0 +1,45 @@
+{
+  "name": "escomposer",
+  "version": "0.0.1",
+  "description": "A visual programming system for ESM files",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/src/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "start": "tinybuild --path tinybuild.demo.js",
+    "build": "tinybuild build",
+    "serve": "tinybuild serve",
+    "init": "node tinybuild/init.js",
+    "concurrent": "concurrently \"npm run python\" \"npm start\"",
+    "dev": "npm run pip && npm i --save-dev concurrently && npm i --save-dev nodemon && npm run concurrent",
+    "startdev": "nodemon --exec \"node tinybuild.js\" -e ejs,js,ts,jsx,tsx,css,html,jpg,png,scss,txt,csv",
+    "python": "python python/server.py",
+    "pip": "pip install quart && pip install websockets",
+    "pwa": "npm i workbox-cli && workbox generateSW node_server/pwa/workbox-config.js && npm run build && npm start"
+  },
+  "keywords": [
+    "esbuild"
+  ],
+  "author": "Garrett Flynn",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "lit": "^2.2.7",
+    "node-fetch": "^3.2.10",
+    "resize-observer-polyfill": "^1.5.1",
+    "webgl-plot": "^0.7.0"
+  },
+  "nodemonConfig": {
+    "env": {
+      "NODEMON": true
+    },
+    "ignore": [
+      "dist/",
+      ".temp/"
+    ]
+  },
+  "devDependencies": {
+    "tinybuild": "^0.3.149",
+    "typescript": "4.6.4"
+  }
+}

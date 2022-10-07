@@ -1,14 +1,29 @@
-## escompose
+## ECMAScript Components (ESC)
 [![Npm package version](https://badgen.net/npm/v/escompose)](https://npmjs.com/package/escompose)
 [![Npm package monthly downloads](https://badgen.net/npm/dm/escompose)](https://npmjs.com/package/escompose)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-**ES Components** is a standard for transforming ES Modules into standardized Web Components to simplify the process of authoring composable web applications.
+**ECMAScript Components (ESC)** is a specification for developing composable ES Modules.
 
-The **escompose** library uses [graphscript](https://github.com/brainsatplay/graphscript) to compile ES Components into Web Components that respond to each other. 
+> **ESC** is a core specification of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 
-> **escompose** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
+## Libraries
+### components
+`components` contains the official repository of ESCompose Components.
+
+### escompose
+`escompose` uses [graphscript](https://github.com/brainsatplay/graphscript) to compile ES Components into standardized Web Components that respond to each other. 
+
+### esmonitor
+`esmonitor` allows for notification of any changes to ES Module variables during runtime.
+
+### esmpile
+`esmpile` compiles ES Module code from standard import uris.
+
+### escomposer
+`escomposer` is a visual programming system for ESC.
+
 
 ## The Specification
 Each Component contains one `default` export and any number of `named` exports.
@@ -32,6 +47,9 @@ The `default` export defines the behavior of the Component.
 
  However, **multiple named exports** without a default function may also be passed. These are transformed into individual Components within the same graph.
 
+
+ ## Roadmap
+ - Declare ESC with similar detail to [ESM](https://tc39.es/ecma262/#sec-modules).
 
 ## Acknowledgments
 This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.

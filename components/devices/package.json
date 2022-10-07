@@ -1,0 +1,11 @@
+{
+  "name": "devices",
+  "version": "0.0.0",
+  "main": "index.js",
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "device-decoder": "~0.2.10",
+    "device-decoder.third-party": "^0.0.7"
+  }
+}

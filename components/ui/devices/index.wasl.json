@@ -1,0 +1,49 @@
+{
+    "tagName": "div",
+    "components": {
+        "connectmode": {
+            "src": "../select.js"
+        },
+        "selectUSB": {
+            "src": "../select.js"
+        },
+        "selectBLE": {
+            "src": "../select.js"
+        },
+        "selectBLEOther": {
+            "src": "../select.js"
+        },
+        "selectOther": {
+            "src": "../select.js"
+        },
+        "connect": {
+            "src": "../../devices/connect.js"
+        },
+        "toConnect": {
+            "attributes": {
+                "innerHTML": "Connect Device"
+            },
+            "src": "../button.js"
+        }
+    },
+    "listeners": {
+        "selectBLE": {
+            "toConnect": true
+        },
+        "selectUSB": {
+            "toConnect": true
+        },
+        "selectBLEOther": {
+            "toConnect": true
+        },
+        "selectOther": {
+            "toConnect": true
+        },
+        "connectmode": {
+            "connect.mode": true
+        },
+        "toConnect": {
+            "connect": true
+        }
+    }
+}

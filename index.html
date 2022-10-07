@@ -4,15 +4,268 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>WASL Components</title>
+    <style>
+
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw; 
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        nav {
+            background: black;
+            color: white;
+            padding: 15px 40px;
+            border-bottom: 1px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+
+        nav h1 {
+            margin: 0;
+        }
+
+        /* Demos */
+        #demos {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            height: 100%;
+            width: 100%;
+            flex-grow: 1;
+            overflow: scroll;
+            align-content: flex-start;
+        }
+
+        #demos > div {
+            height: 200px;
+            flex: 1 1 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: bottom; /* Center the image */
+        }
+
+        /* App Demonstration */
+        #demo {
+            flex-grow: 1;
+            width: 100%;
+            display: none;
+        }
+
+        #container {
+            width: 100%; 
+            height: 100%; 
+        }
+
+        #loader {
+            flex-grow: 1;
+            height: 5px;
+            padding: 0px 25px;
+        }
+
+        #loader > div {
+            width: 100%;
+            height: 100%;
+            background: rgb(75,75,75);
+        }
+
+        #loader > div > div {
+            width: 0%;
+            height: 100%;
+            background: rgb(127, 223, 255);
+            transition: 1s;
+        }
+
+        #progress {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: black;
+            color: white;
+            transition: opacity 1s;
+            pointer-events: none;
+            padding: 50px;
+            opacity: 0;
+        }
+
+        #backButton {
+            display: none;
+        }
+
+    </style>
 </head>
 <body>
-    <button id="stop">Stop</button>
-    <button id="start">Start</button>
-    <button id="run">Run</button>
-    <button id="runInGraph">Run from Graph</button>
 
-    <div id="container"></div>
+    <!-- Demos -->
+    <nav>
+        <div>
+            <h1>WASL Components</h1><span id="appname"></span>
+        </div>
+        <button id="backButton">Back</button>
+    </nav>
+    <div id="demos">
+    </div>
+
+    <!-- Overlay -->
+    <div id="progress">
+        <p id="graphs"><b>Loading WASL Graphs:</b> <span id="nGraphs">0</span></p>
+        <div id="loader"><div><div></div></div></div>
+    </div>
+
+    <!-- Demo Display -->
+    <div id="demo">
+        <div id="container"></div>
+    </div>
 </body>
-<script src="./demo/index.js" type="module"></script>
+<script type="module">
+import WASL from "./drafts/external/wasl/dist/index.esm.js";
+import validate from "./drafts/external/wasl-validate/dist/index.esm.js";
+
+const demos = {
+    "Todo List": {
+        "path": "./drafts/demos/todo/index.wasl.json",
+        "img": "./drafts/assets/todo.png"
+    },
+    // "Phaser Demo": {
+    //     "path": "./drafts/demos/phaser/index.wasl.json",
+    //     "img": "./drafts/assets/phaser.png"
+    // },
+    "Phaser - Multiplayer": {
+        "path": "./drafts/demos/phaser/versions/multiplayer.wasl.json",
+        "img": "./drafts/assets/phaser-multiplayer.png"
+    },
+    "HEG": {
+        "path": "./drafts/demos/devices/audiofeedback/index.wasl.json",
+        "img": "./drafts/assets/heg.png"
+    },
+    "EEG": {
+        "path": "./drafts/demos/devices/eegnfb/index.wasl.json",
+        "img": "./drafts/assets/eeg.png"
+    }
+};
+
+const demoContainer = document.getElementById('demos')
+const backButton = document.getElementById('backButton')
+const demo = document.getElementById('demo')
+
+const appName = document.getElementById('appname')
+
+const loader = document.getElementById('loader').children[0].children[0]
+const nGraphs = document.getElementById('nGraphs')
+const progress = document.getElementById('progress')
+
+for (let name in demos) {
+    const o = demos[name]
+    const div = document.createElement('div');
+    demoContainer.appendChild(div)
+    if (o.img){
+        div.style.backgroundImage = `linear-gradient(rgba(0,0,0,.40), rgba(0,0,0,.40)), url(${o.img})`
+        div.style.color = 'white'
+    }
+    div.innerHTML = `<h3>${name}</h3>`;
+    div.onclick = async () => {
+        demoContainer.style.display = 'none'
+        progress.style.opacity = 1
+        demo.style.display = 'block'
+        setTimeout(() => {
+            backButton.style.display = 'block'
+            appName.innerHTML = name
+        }, 100)
+        await loadDemo(o);
+    };
+}
+
+const loadDemo = async (info) => {
+
+    const options = {
+        relativeTo: import.meta.url, // allows you to resolve the project,
+        nodeModules: 'node_modules',
+        filesystem: {
+            _fallbacks: {
+                'browserfs': window.BrowserFS,
+            }
+        },
+        callbacks: {
+            progress: {
+                source: (label, i, total) => {
+                    const ratio = (i / total)
+                    loader.style.width = `${ratio * 100}%`
+                    if (ratio === 1) setTimeout(() => progress.style.opacity = 0, 100)
+                },
+                components: (label, i, graph) => {
+                    nGraphs.innerHTML = i
+                },
+                fetch: (label, i, total) => {
+                    console.log('Fetch', label, i, total)
+                },
+            }
+        }
+    }
+
+    options.parentNode = document.getElementById('container') 
+    options.activate = true // use internal graph system
+    options.debug = true
+    options.errors = []
+    options.warnings = []
+
+    // ------------------- Import Mode -------------------
+    const schemaValid = await validate(info.path, options)
+    if (schemaValid) {
+        let wasl = new WASL(info.path, options)
+         await wasl.init()
+         const loadValid = await validate(wasl, options)
+         if (loadValid) {
+            await wasl.start()
+            console.log('WASL', wasl)
+            backButton.onclick = () => reset(wasl)
+         } else console.error('Invalid Loaded WASL Object')
+    } else console.error('Invalid WASL Schema')
+
+    printError(options.errors, 'import')
+    printError(options.warnings, 'import', "Warning")
+}
+
+function printError(arr, type, severity='Error'){
+    arr.forEach(e => {
+        const log = (severity === 'Warning') ? console.warn : console.error
+        log(`${severity} (${type})`, e)
+    })
+}
+
+function reset(wasl) {
+    if (wasl) wasl.stop()
+    demoContainer.style.display = ''
+    backButton.style.display = ''
+    progress.style.opacity = 0
+    appName.innerHTML = ''
+    demo.style.display = ''
+    loader.style.width = `0%`
+            
+}
+
+</script>
 </html>
