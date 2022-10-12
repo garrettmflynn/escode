@@ -12,8 +12,6 @@ This library uses three different methods for recognizing changes:
 ```js
 const monitor = new Monitor()
 
-
-
 // ---------------- Register Object ----------------
 const id = 'object'
 const reference = {
@@ -25,14 +23,14 @@ const reference = {
 
 monitor.set(id, reference)
 
-// ---------------- Create Listeners for an Entire Object ----------------
+// ---------------- Create Listeners for the Entire Object ----------------
 const functionPath = ['nested', 'function']
 
 const testSubs = monitor.on(id, (path, ...args) => {
     console.log(`Update Object (${path}) - ${args}`)
 })
 
-// ---------------- Selectively Listen to  Object Properties ----------------
+// ---------------- Selectively Listen to Object Property ----------------
 const fSubs = monitor.on([id, ...functionPath], (path, ...args) => {
     console.log(`Update Function (${path}) - ${args}`)
 })
@@ -64,4 +62,4 @@ const monitor = new Monitor({
 This may also be set directly on the `Poller` object:
 ```js
 monitor.poller.sps = 60
-=```
+```

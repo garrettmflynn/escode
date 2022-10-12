@@ -1,10 +1,7 @@
 
-import * as button from './components/button.js'
+import * as button from '../components/ui/button.js'
 import * as container from './components/container.js'
-
-// import Monitor from '../libraries/esmonitor/src/index'
 import createComponent from '../libraries/escompose/src/index'
-
 import * as test from '../libraries/esmpile/tests/basic/index.js'
 
 const app = document.getElementById('app')

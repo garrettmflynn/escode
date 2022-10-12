@@ -42,13 +42,13 @@ export const oncreate = function() {
     // Hide Dependent Elements
     element.onchange = (ev) => {
         if (show) showHide(ev.target.value, options, element)
-        this.run(ev.target.value)
+        this.default(ev.target.value)
     }
 
     const first = options?.[0]?.value
     setTimeout(() => {
         if (show) showHide(first, options, element) // initialize show / hide
-        this.run(first)
+        this.default(first)
     }, show ? 100 : 10) // wait longer to override other select compoents
 }
 

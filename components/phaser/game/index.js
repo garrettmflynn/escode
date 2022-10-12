@@ -29,7 +29,7 @@ export const config = defaultConfig
 export let game;
 
 export function oncreate() {
-    if (window.Phaser) this.run() // run node if phaser exists
+    if (window.Phaser) this.default() // run node if phaser exists
      else nodes[this._unique] = this // set link to node
 }
 

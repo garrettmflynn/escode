@@ -52,7 +52,7 @@ export default async function (selected, o) {
                     workerUrl: this.workerUrl,
                     ondecoded: (...args) => {
                         if (this.ondecoded) this.ondecoded(...args)
-                        this.run(args, {_internal: true})
+                        this.default(args, {_internal: true})
                     },
                 }
             );

@@ -3,9 +3,9 @@ export const tagName = 'button' // Attach this component to a button element
 export const attributes = {
     innerHTML: 'Click Me',  // Set default text
     onmousedown: function () {
-        this.run({value: true, _internal: true}) // Run the default function of the WASL Component
+        this.default({value: true, _internal: true}) // Run the default function of the WASL Component
         const onMouseUp = () => {
-            this.run({value: false, _internal: true}) // Notify when the mouse has been released
+            this.default({value: false, _internal: true}) // Notify when the mouse has been released
             globalThis.removeEventListener('mouseup', onMouseUp) // Stop monitoring for the mouseup event
         }
         globalThis.addEventListener('mouseup', onMouseUp) // Monitor when the user releases the mouse

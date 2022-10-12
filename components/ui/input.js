@@ -3,7 +3,7 @@ export const tagName = 'input'
 export const attributes = {
     placeholder: 'Insert text here',
     oninput: function (ev) {
-        this.run({value: ev.target.value, _internal: true})
+        this.default({value: ev.target.value, _internal: true})
     }
 }
 

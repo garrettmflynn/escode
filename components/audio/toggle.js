@@ -30,7 +30,7 @@
                 Howler.masterGain.connect(this.audioState.analyser);
                 this.audioState.analyser.connect(Howler.ctx.destination);
                 this.audioState.audioFFTBuffer = new Uint8Array(this.fftSize)
-                this.run(true, {_internal: true})
+                this.default(true, {_internal: true})
             }
         });
     }
