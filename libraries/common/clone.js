@@ -11,7 +11,6 @@ export const deep = (obj) => {
             if (val && typeof val === 'object') {
                 const name = val.constructor.name
                 if (name === 'Object' || name === 'Array') {
-                    console.log('Cnstructor', val.constructor.name)
                     const idx = seen.indexOf(val)
                     if (idx !== -1) acc[key] =fromSeen[idx]
                     else {
