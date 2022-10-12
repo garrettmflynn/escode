@@ -4,7 +4,7 @@ import { Router } from "./graphscript/services/router/Router";
 
 import transform from "./transform";
 import getFnParamInfo from "./parse";
-import * as clone from "../../common/clone"
+import create from "./create";
 
 const isNode = 'process' in globalThis
 
@@ -132,7 +132,7 @@ class Component {
                 const node2 = components[tag];
                 if (!(node2 instanceof Component)) {
                     const clonedOptions = Object.assign({}, Object.assign(options));
-                    const component = new Component(node2, Object.assign(clonedOptions, { tag }), esm);
+                    const component = create(node2, Object.assign(clonedOptions, { tag }), esm);
                     this.#components[tag] = component
                     toNotify.push(component)
                 } else this.#cache[tag] = this.#components[tag] = node2

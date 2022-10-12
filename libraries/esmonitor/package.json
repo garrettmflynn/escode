@@ -1,12 +1,10 @@
 {
   "name": "esmonitor",
   "version": "0.0.0",
-  "description": "Monitor ESM files for changes",
-  "main": "index.js",
+  "description": "Monitor ESM objects for changes",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "type": "module",
   "author": "Garrett Flynn <garrettmflynn@gmail.com>",
-  "license": "AGPL-3.0-or-later",
-  "private": false,
-  "dependencies": {
-    "remote-esm": "0.0.15"  
-  }
+  "license": "AGPL-3.0-or-later"
 }

@@ -1,114 +1,147 @@
 
 import create from '../libraries/escompose/src/create/index'
-import * as button from '../components/ui/button.js'
+import * as button from './components/button.js'
+import * as container from './components/container.js'
 
-import Monitor from '../libraries/esmonitor/index'
+import Monitor from '../libraries/esmonitor/src/index'
 import * as test from '../libraries/esmpile/tests/basic/index.js'
 
+const app = document.getElementById('app')
+const statesDiv = document.getElementById('states')
 
-const section = document.querySelector('section')
-
-// ------------------ Basic Component Execution ------------------
-const movingButton = create('button', button)
-
-
-const copy = Object.assign({}, button)
-copy.attributes = Object.assign({}, copy.attributes)
-copy.attributes.innerHTML = 'Remove Listeners'
-const removeButton = create('remove', copy)
-
-let counter = 0
-const createContainer = () => {
-    const container = create(`container${counter}`, {
-        tagName: 'div',
-        attributes: {
-            innerHTML: `Click Me to Reparent Button`,
-            onclick: () => {
-                movingButton.parentNode = container
-            }
-        }
-    })
-
-    counter++
-    return container
-}
-const container1 = createContainer()
-const container2 = createContainer()
-const container3 = createContainer()
-
-
-container1.parentNode = section
-container2.parentNode = section
-container3.parentNode = section
-removeButton.parentNode = section
-
-movingButton.parentNode = container1
-
-// ------------------ Basic Component Link ------------------
-
-// ------------------ Manual ESM Monitoring ------------------
+const removeButton = Object.assign({}, button)
+removeButton.attributes = Object.assign({}, removeButton.attributes)
+removeButton.attributes.innerHTML = 'Remove Listeners'
 
 const monitor = new Monitor({
+    pathFormat: 'absolute',
     polling: {
         sps: 60
     }
 })
 
-// Subscribe to All Changes
-
-const callback = (id, path, update) => {
-    const p = document.createElement('p')
-    p.innerHTML = `<b>${id}.${path}:</b> ${JSON.stringify(update)}`
-    section.appendChild(p)
-}
-
+// Declare Paths
 const id = 'test'
-const testSubs = monitor.listen(id, (...args) => {
-    callback(id, ...args)
-}, {
-    reference: test, 
-    // path: ['imports', 'nExecution'],
-})
+const esmId = 'testESM'
+const moveButtonId = 'button'
+
 // for (let file in monitor.dependencies) {
 //     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
 // }
 
-// ------------------ Subscribe to Button Click ------------------
-const buttonSubs = monitor.listen(movingButton.instance.id, (...args) => {
-    if (args[0] === 'attributes.onmousedown') test.imports.default() // Run test when button is clicked
-    callback(movingButton.instance.id, ...args)
-}, {
-    reference: movingButton.instance, 
-    path: ['attributes', 'onmousedown'],
-})
+// Monitor Raw ESM
+monitor.set(esmId, test)
 
-const objectId = 'object'
-const object = {
-    test: true
-}
-const objectSubs = monitor.listen(objectId, (...args) => {
-    callback(objectId, ...args)
-}, {
-    reference: object, 
-})
-
-object.test = false
-
-
-const removeSubs = monitor.listen(removeButton.instance.id, (...args) => {
-    if (args[0] === 'attributes.onmousedown') {
-        monitor.stop(testSubs)
-        monitor.stop(buttonSubs)
-        monitor.stop(objectSubs)
-        monitor.stop(removeSubs)
-        object.test = true
+let paragraphs = {}
+const logUpdate = (path, update) => {
+    let p = paragraphs[path]
+    if(!p) {
+        p = paragraphs[path] = document.createElement('p')
+        statesDiv.appendChild(p)
     }
-    callback(removeButton.instance.id, ...args)
-}, {
-    reference: removeButton.instance, 
-    path: ['attributes', 'onmousedown'],
-})
+    p.innerHTML = `<b>${path}:</b> ${JSON.stringify(update)}`
+}
+
+// monitor.on(esmId, (path, ...args) => {
+//     console.log(esmId, path, ...args)
+//     logUpdate(path, ...args)
+// })
+
+// Replicate in a WASL Tree
+const wasl = {
+    components: {
+        [id]: {
+            esSrc: test
+        }, 
+        ['container1']: {
+            componentToMove: moveButtonId,
+            esSrc: container,
+            parentNode: app
+        },
+        ['container2']: {
+            componentToMove: moveButtonId,
+            esSrc: container,
+            parentNode: app
+        },
+        ['container3']: {
+            componentToMove: moveButtonId,
+            esSrc: container,
+            parentNode: app
+        },
+        [moveButtonId]: {
+            esSrc: button,
+            parentNode: 'container1'
+        },
+    },
+    listeners: {
+        [`${moveButtonId}.attributes.onmousedown`]: {
+            [`${id}.imports`]: true
+        },
+    }
+}
+
+for (let name in wasl.components) {
+
+    // Instance the Component
+    const copy = Object.assign({}, wasl.components[name])
+    const esSrc = copy.esSrc
+    delete copy.esSrc
+    const merged = Object.assign(Object.assign({}, esSrc), copy)
+    const instance = create(name, merged)
+    monitor.set(name, instance)
+    wasl.components[name] = instance
+
+    // monitor.on(name, logUpdate) // TODO: Fix infinite loop
+}
 
 
+const onOutput = (name, ...args) => {
 
+    logUpdate(name, ...args)
+
+    for (let key in wasl.listeners[name]) {
+
+        let target = wasl.listeners[name][key]
+        const type = typeof target
+        const noDefault = type !== 'function' && !target?.default
+
+        // ------------------ Grab Correct Target to Listen To ------------------
+        // Get From Passed String
+        if (type === 'string') target = wasl.listeners[name][key] = wasl.components[listening]
+        
+        // Get From Listener Key 
+        else if (noDefault) {
+            // const options = listening
+            const path = key.split('.')
+            target = wasl.components
+            path.forEach(str => target = target[str])
+        }
+
+        // ------------------ Handle Target ------------------
+        // Direct Object with Default Function
+        if (target?.default) target.default(...args)
+
+        // Direct Function
+        else if (typeof target === 'function') target(...args)
+
+        else console.log('Unsupported listener...', target)
+    }
+}
+
+for (let path in wasl.listeners) {
+
+    // Assign Top-Level Listeners
+    monitor.on(path, onOutput)
+
+    // Always Subscribe to Default
+    const id = path.split('.')[0]
+    const defaultPath = `${id}.default`
+    monitor.on(`${id}.default`, onOutput)
+
+    logUpdate(path, undefined)
+    logUpdate(defaultPath, undefined)
+}
+
+const component = create('wasl', wasl)
+console.log('WASL', component)
 

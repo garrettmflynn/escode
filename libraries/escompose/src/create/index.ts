@@ -8,15 +8,15 @@ export default (id, esm, parent) => {
 
         // ------------------ Produce a Complete ESM Element ------------------
         esm = element.add(id, esm, parent);
-
-        // ------------------ Produce a Component ------------------
-        const component = new Component(
-            esm,
-            parent?.options,
-            parent
-        );
+        
+        // // ------------------ Produce a Component ------------------
+        // const component = new Component(
+        //     esm,
+        //     parent?.options,
+        //     parent
+        // );
     
-        esm.element.component = component; // Bind component to the element
+        if (esm.element) esm.element.component = esm; // Bind component to the element
         
         // -------- Bind Functions to GraphNode --------
         let initialesm = esm._initial ?? esm
@@ -24,15 +24,23 @@ export default (id, esm, parent) => {
             if (typeof initialesm[key] === 'function') {
                 const desc = Object.getOwnPropertyDescriptor(initialesm, key)
                 if (desc && desc.get && !desc.set) initialesm = Object.assign({}, initialesm) // Support ESM Modules: Only make a copy if a problem
-                initialesm[key] = initialesm[key].bind(component)
+                const og = initialesm[key]
+                initialesm[key] = (...args) => og.call(esm, ...args)
+
+                // Try
+                // og.call(esm) 
             } else if (key === 'attributes') {
                 for (let key2 in initialesm.attributes) {
                     if (typeof initialesm.attributes[key2] === 'function') {
-                        initialesm.attributes[key2] = initialesm.attributes[key2].bind(component)
+                        const og = initialesm.attributes[key2]
+                        initialesm.attributes[key2] = (...args) => og.call(esm, ...args)
+
+                        // Try
+                        // og.call(esm) 
                     }
                 }
             }
         }
     
-        return component;
+        return esm;
 }

@@ -45,7 +45,7 @@ export function create(id, esm: ESComponent, parent){
         if (elm) esm.element = elm;
     }
 
-    if (!(esm.element instanceof Element)) throw new Error('Invalid element');
+    if (!(esm.element instanceof Element)) console.warn('Element not found for', id);
     update(id, esm, parent);
     return esm.element;
 }
