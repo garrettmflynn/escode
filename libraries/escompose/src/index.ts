@@ -2,8 +2,9 @@ import { Graph, GraphNode } from "./graphscript/Graph";
 import { DOMService } from "./graphscript/services/dom/DOM.service";
 import { Router } from "./graphscript/services/router/Router";
 
-import transform from "./transform.js";
-import getFnParamInfo from "./parse.js";
+import transform from "./transform";
+import getFnParamInfo from "./parse";
+import * as clone from "../../common/clone"
 
 const isNode = 'process' in globalThis
 
@@ -33,7 +34,56 @@ class Component {
     #toRun = false
     #runProps = true
 
-    // Restricted
+    // ----------- Specification -----------
+    ondelete?: Function
+    parent?: Component;
+
+    get parentNode(){
+        if (this.#instance.element instanceof Element) return this.#instance.element.parentNode
+    }
+
+    set parentNode(v){
+        if (v instanceof Component) v = v.element
+        if (this.#instance.element instanceof Element) {
+            if(this.#instance.element.parentNode) this.#instance.element.remove();
+            if (v) v.appendChild(this.#instance.element);
+        } else console.error('No element specified...')
+    }
+
+    get element(){
+        if (this.#instance.element instanceof Element) return this.#instance.element
+    }
+
+    set element(v){
+        if (this.#instance.element instanceof Element) {
+            this.#instance.element = v
+            for (let name in this.components) this.components[name].parentNode = v
+        } else console.error('No element specified...')
+    }
+
+    // TODO: Run this on ondelete...
+    #ondelete = () => {
+        this.element.remove(); 
+        if(
+            this.#instance.onremove
+            && this.#instance.element instanceof Element
+        ) this.#instance.onremove.call(this); 
+    }
+
+
+    #onresize;
+    set onresize(foo) {
+        if (this.#onresize) window.removeEventListener('resize', this.#onresize) // Stop previous listener
+        this.#onresize = (ev) => { 
+            if (
+                onresize
+                && this.#instance.element instanceof Element
+            ) foo.call(this, ev) 
+        };
+        window.addEventListener('resize', this.#onresize);
+    }
+
+    // ----------- Restricted -----------
     get initial() { return this.#initial }
 
     get instance() { return this.#instance }
@@ -41,10 +91,10 @@ class Component {
     get graph() { return this.#graph }
     set graph(v) { this.#graph = v }
 
-    constructor(node, options = {}, parent) {
+    constructor(esm, options = {}, parent) {
 
         // Get Base Initial Object
-        this.#initial = node;
+        this.#initial = esm; // Has been deep cloned in the create() factory function.
         this.#options = options;
 
         // Create One Router for the Component Set
@@ -55,14 +105,17 @@ class Component {
 
         do { this.#initial = this.initial.initial ?? this.initial } while (this.initial instanceof Component)
 
+        if (parent) parent.components[this.#initial.id] = this // Add to Parent Components
+
         const hasDefault = 'default' in this.initial
-        let hasComponents = !!node.components
+        let hasComponents = !!esm.components
         const parentHasComponents = !!parent?.components
+        this.parent = parent
 
         const isFunctionCollection = !parentHasComponents && !hasDefault && !hasComponents
         if (isFunctionCollection) {
             let newNode = { components: {} }
-            for (let namedExport in node) newNode.components[namedExport] = { default: node[namedExport] }
+            for (let namedExport in esm) newNode.components[namedExport] = { default: esm[namedExport] }
             this.#initial = newNode
             hasComponents = true
             this.#runProps = false
@@ -79,7 +132,7 @@ class Component {
                 const node2 = components[tag];
                 if (!(node2 instanceof Component)) {
                     const clonedOptions = Object.assign({}, Object.assign(options));
-                    const component = new Component(node2, Object.assign(clonedOptions, { tag }), node);
+                    const component = new Component(node2, Object.assign(clonedOptions, { tag }), esm);
                     this.#components[tag] = component
                     toNotify.push(component)
                 } else this.#cache[tag] = this.#components[tag] = node2

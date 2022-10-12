@@ -1,5 +1,5 @@
-import * as importTypes from './importTypes.js'
-export const imports = importTypes
+import * as update from './update.js'
+export const imports = update
 
 // console.log('------------------ inside test ------------------')
 // onlyNamespace.default()
