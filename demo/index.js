@@ -1,16 +1,11 @@
 
 import * as button from '../components/ui/button.js'
-import * as container from './components/container.js'
 import createComponent from '../libraries/escompose/src/index'
 import * as test from '../libraries/esmpile/tests/basic/index.js'
 import { getExecutionInfo } from '../libraries/esmonitor/src/listeners.js'
 
 const app = document.getElementById('app')
 const statesDiv = document.getElementById('states')
-
-const removeButton = Object.assign({}, button)
-removeButton.attributes = Object.assign({}, removeButton.attributes)
-removeButton.attributes.innerHTML = 'Remove Listeners'
 
 // Declare Paths
 const id = 'test'
@@ -81,27 +76,27 @@ const logUpdate = async (path, info, update) => {
 const wasl = {
     components: {
         [id]: {
-            esSrc: test
+            esCompose: test
         }, 
-        ['container1']: {
+        container: {
             componentToMove: moveButtonId,
-            esSrc: container,
+            esCompose: {
+                tagName: 'div',
+                components: {
+                    header: {
+                        tagName: 'h1',
+                        attributes: {
+                            innerText: 'ESCompose Demo'
+                        }
+                    },
+                    [moveButtonId]: {
+                        esCompose: button,
+                        // parentNode: 'container'
+                    },
+                }
+            },
             parentNode: app
-        },
-        ['container2']: {
-            componentToMove: moveButtonId,
-            esSrc: container,
-            parentNode: app
-        },
-        ['container3']: {
-            componentToMove: moveButtonId,
-            esSrc: container,
-            parentNode: app
-        },
-        [moveButtonId]: {
-            esSrc: button,
-            parentNode: 'container1'
-        },
+        }
     },
     listeners: {
         [`${moveButtonId}.attributes.onmousedown`]: {

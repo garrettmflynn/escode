@@ -6,6 +6,11 @@ type attributeKeys = keyof HTMLElement['attributes']
 export type ESComponent = {
     
     default: Function,
+    esCompose: ESComponent // Is Merged into this component
+
+    components: {
+        [x:string]: ESComponent
+    }
     
     // HTML-Specific
     id: string;

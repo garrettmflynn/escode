@@ -6,27 +6,6 @@ export default (id: string, esm: ESComponent, parent?:ESComponent) => {
 
     if (esm.element instanceof Element) {
         let p = esm.parentNode;
-        delete esm.parentNode;
-        Object.defineProperty(esm,'parentNode',{
-            get:function () { 
-                if (esm.element instanceof Element) return esm.element.parentNode; 
-            },
-            set:(v) => { 
-                if (typeof v === 'string') {
-                    const newValue = document.querySelector(v);
-                    if (newValue) v = newValue
-                    else v = document.getElementById(v);
-                }
-
-                if (v?.element instanceof Element) v = v.element
-                if (esm.element instanceof Element) {
-                    if(esm.element.parentNode) esm.element.remove()
-                    if (v) v.appendChild(esm.element);
-                }
-            },
-            enumerable:true,
-            configurable:true
-        });
         
         const parentEl = (parent?.element instanceof Element) ? parent.element : undefined;
         esm.parentNode = p ? p : parentEl;

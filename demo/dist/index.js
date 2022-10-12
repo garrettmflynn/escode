@@ -39,31 +39,6 @@
       this.cache = value;
   }
 
-  // components/container.js
-  var container_exports = {};
-  __export(container_exports, {
-    attributes: () => attributes2,
-    componentToMove: () => componentToMove,
-    tagName: () => tagName2
-  });
-  var tagName2 = "div";
-  var componentToMove;
-  var attributes2 = {
-    innerHTML: `Click Me to Reparent Button`,
-    onclick: function() {
-      if (this.componentToMove) {
-        if (typeof this.componentToMove === "string") {
-          const el = document.getElementById(this.componentToMove);
-          if (el.component)
-            this.componentToMove = el.component;
-          else
-            return console.error("component not found");
-        }
-        this.componentToMove.parentNode = this.element;
-      }
-    }
-  };
-
   // ../libraries/common/check.js
   var moduleStringTag = "[object Module]";
   var esm = (object) => {
@@ -483,32 +458,6 @@
       esm2.id = `${esm2.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
     if (esm2.element instanceof Element) {
       let p = esm2.parentNode;
-      delete esm2.parentNode;
-      Object.defineProperty(esm2, "parentNode", {
-        get: function() {
-          if (esm2.element instanceof Element)
-            return esm2.element.parentNode;
-        },
-        set: (v) => {
-          if (typeof v === "string") {
-            const newValue = document.querySelector(v);
-            if (newValue)
-              v = newValue;
-            else
-              v = document.getElementById(v);
-          }
-          if (v?.element instanceof Element)
-            v = v.element;
-          if (esm2.element instanceof Element) {
-            if (esm2.element.parentNode)
-              esm2.element.remove();
-            if (v)
-              v.appendChild(esm2.element);
-          }
-        },
-        enumerable: true,
-        configurable: true
-      });
       const parentEl = parent?.element instanceof Element ? parent.element : void 0;
       esm2.parentNode = p ? p : parentEl;
       esm2.element.id = esm2.id;
@@ -610,6 +559,75 @@
   var create_default = (id2, esm2, parent) => {
     esm2 = deep(esm2);
     esm2 = add(id2, esm2, parent);
+    let el = esm2.element;
+    delete esm2.element;
+    Object.defineProperty(esm2, "element", {
+      get: function() {
+        if (el instanceof Element)
+          return el;
+      },
+      set: function(v) {
+        if (v instanceof Element) {
+          el = v;
+          for (let name in esm2.components)
+            v.appendChild(esm2.components[name].element);
+        }
+      },
+      enumerable: true
+    });
+    esm2.element = el;
+    const parentNode = esm2.parentNode;
+    delete esm2.parentNode;
+    Object.defineProperty(esm2, "parentNode", {
+      get: function() {
+        if (esm2.element instanceof Element)
+          return esm2.element.parentNode;
+      },
+      set: (v) => {
+        if (typeof v === "string") {
+          const newValue = document.querySelector(v);
+          if (newValue)
+            v = newValue;
+          else
+            v = document.getElementById(v);
+        }
+        if (v?.element instanceof Element)
+          v = v.element;
+        if (esm2.element instanceof Element) {
+          if (esm2.element.parentNode)
+            esm2.element.remove();
+          if (v)
+            v.appendChild(esm2.element);
+        }
+      },
+      enumerable: true
+    });
+    esm2.parentNode = parentNode;
+    esm2.delete = function() {
+      this.element.remove();
+      if (this.onremove && this.element instanceof Element)
+        this.onremove.call(this);
+    };
+    let onresize = esm2.onresize;
+    let onresizeEventCallback = null;
+    Object.defineProperty(esm2, "onresize", {
+      get: function() {
+        return onresize;
+      },
+      set: function(foo) {
+        onresize = onresize;
+        if (onresizeEventCallback)
+          window.removeEventListener("resize", onresizeEventCallback);
+        if (onresize) {
+          onresizeEventCallback = (ev) => {
+            if (onresize && esm2.element instanceof Element)
+              foo.call(this, ev);
+          };
+          window.addEventListener("resize", onresizeEventCallback);
+        }
+      }
+    });
+    esm2.onresize = onresize;
     if (esm2.element)
       esm2.element.component = esm2;
     let initialesm = esm2._initial ?? esm2;
@@ -637,20 +655,22 @@
     let monitor = options2.monitor;
     if (!(monitor instanceof src_default))
       monitor = options2.monitor = new src_default(options2);
-    const drill = (o, parent) => {
-      if (o.components) {
-        for (let name in config.components) {
-          const base = config.components[name];
-          drill(base, o);
-          const copy = Object.assign({}, base);
-          const esSrc = copy.esSrc;
-          delete copy.esSrc;
-          const merged = Object.assign(Object.assign({}, esSrc), copy);
-          const instance = create_default(name, merged, parent);
+    const drill = (o) => {
+      const copy = o;
+      const esCompose = copy.esCompose ?? {};
+      const merged = esCompose;
+      for (let key in copy)
+        merged[key] = copy[key];
+      if (merged.components) {
+        for (let name in merged.components) {
+          const base = merged.components[name];
+          const converted = drill(base);
+          const instance = create_default(name, converted, merged);
           monitor.set(name, instance);
-          config.components[name] = instance;
+          merged.components[name] = instance;
         }
       }
+      return merged;
     };
     drill(config);
     const onOutput = (name, info, ...args) => {
@@ -724,9 +744,6 @@
   // index.js
   var app = document.getElementById("app");
   var statesDiv = document.getElementById("states");
-  var removeButton = Object.assign({}, button_exports);
-  removeButton.attributes = Object.assign({}, removeButton.attributes);
-  removeButton.attributes.innerHTML = "Remove Listeners";
   var id = "test";
   var moveButtonId = "button";
   var states = {};
@@ -771,26 +788,25 @@
   var wasl = {
     components: {
       [id]: {
-        esSrc: basic_exports
+        esCompose: basic_exports
       },
-      ["container1"]: {
+      container: {
         componentToMove: moveButtonId,
-        esSrc: container_exports,
+        esCompose: {
+          tagName: "div",
+          components: {
+            header: {
+              tagName: "h1",
+              attributes: {
+                innerText: "ESCompose Demo"
+              }
+            },
+            [moveButtonId]: {
+              esCompose: button_exports
+            }
+          }
+        },
         parentNode: app
-      },
-      ["container2"]: {
-        componentToMove: moveButtonId,
-        esSrc: container_exports,
-        parentNode: app
-      },
-      ["container3"]: {
-        componentToMove: moveButtonId,
-        esSrc: container_exports,
-        parentNode: app
-      },
-      [moveButtonId]: {
-        esSrc: button_exports,
-        parentNode: "container1"
       }
     },
     listeners: {

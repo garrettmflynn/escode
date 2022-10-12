@@ -7,26 +7,36 @@ const create = (config, options) => {
     let monitor = options.monitor
     if (!(monitor instanceof Monitor)) monitor = options.monitor = new Monitor(options)
 
-    const drill = (o, parent?) => {
-        if (o.components) {
-            for (let name in config.components) {
+    const drill = (o) => {
 
-                const base = config.components[name]
-                drill(base, o)
+        // const copy = Object.assign({}, o)
+        const copy = o
+        const esCompose = copy.esCompose ?? {}
+
+        // const merged = Object.assign(Object.assign({}, esCompose), copy)
+        const merged = esCompose
+        for (let key in copy) merged[key] = copy[key]
+
+        if (merged.components) {
+            for (let name in merged.components) {
+
+                const base = merged.components[name]
+
+                // Convert from Bottom to Top
+                const converted = drill(base)
 
                 // Instance the Component
-                const copy = Object.assign({}, base)
-                const esSrc = copy.esSrc
-                delete copy.esSrc
-                const merged = Object.assign(Object.assign({}, esSrc), copy)
-                const instance = createComponent(name, merged, parent)
+                const instance = createComponent(name, converted, merged)
+                
                 monitor.set(name, instance)
-                config.components[name] = instance // replace in config
+                merged.components[name] = instance // replace in config
                     
         
                 // monitor.on(name, logUpdate) // TODO: Fix infinite loop
             }
         }
+
+        return merged
     }
 
     drill(config)
