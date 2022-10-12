@@ -5,7 +5,7 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // components/button.js
+  // ../components/ui/button.js
   var button_exports = {};
   __export(button_exports, {
     attributes: () => attributes,
@@ -112,7 +112,8 @@
         iterateSymbols(listeners, (sym, value) => {
           let { path, callback, current, history } = value;
           if (!isSame(current, history)) {
-            callback(path.output, current);
+            const info = {};
+            callback(path.output, info, current);
             if (typeof current === "object") {
               if (Array.isArray(current))
                 history = [...current];
@@ -159,14 +160,54 @@
   var listeners_exports = {};
   __export(listeners_exports, {
     functions: () => functions,
+    getExecutionInfo: () => getExecutionInfo,
     getters: () => getters
   });
+
+  // ../libraries/esmonitor/src/info.ts
+  var info_exports = {};
+  __export(info_exports, {
+    performance: () => performance
+  });
+  var performance = async (callback, args) => {
+    const tic = globalThis.performance.now();
+    const output = await callback(...args);
+    const toc = globalThis.performance.now();
+    return {
+      output,
+      value: toc - tic
+    };
+  };
+
+  // ../libraries/esmonitor/src/listeners.ts
   var register = (info, collection) => {
     if (!collection[info.path.absolute])
       collection[info.path.absolute] = {};
     collection[info.path.absolute][info.sub] = info;
   };
   var get = (info, collection) => collection[info.path.absolute];
+  var getExecutionInfo = async (func, args, info) => {
+    let result = {
+      value: {
+        function: func,
+        arguments: args,
+        info
+      },
+      output: void 0
+    };
+    for (let key in info) {
+      if (info[key] && info_exports[key]) {
+        const ogFunc = func;
+        func = async (...args2) => {
+          const o = await info_exports[key](ogFunc, args2);
+          result.value[key] = o.value;
+          return o.output;
+        };
+      }
+    }
+    result.output = await func(...args);
+    return result;
+  };
   var handler = (info, collection, subscribeCallback) => {
     if (!get(info, collection)) {
       let parent = info.parent;
@@ -182,7 +223,8 @@
         get: () => val,
         set: async (v) => {
           const listeners = Object.assign({}, collection[info.path.absolute]);
-          await iterateSymbols(listeners, (_, o) => o.callback(o.path.output, v));
+          const executionInfo = {};
+          await iterateSymbols(listeners, (_, o) => o.callback(o.path.output, executionInfo, v));
           val = v;
         },
         enumerable: true
@@ -193,9 +235,8 @@
     handler(info, collection, (_, parent) => {
       parent[info.last] = async function(...args) {
         const listeners = Object.assign({}, collection[info.path.absolute]);
-        const output = await info.original.call(this, ...args);
-        await iterateSymbols(listeners, (_2, o) => o.callback(o.path.output, output));
-        return output;
+        const executionInfo = await getExecutionInfo(async (...args2) => await info.original.call(this, ...args2), args, info.infoToOutput);
+        await iterateSymbols(listeners, (_2, o) => o.callback(o.path.output, executionInfo.value, executionInfo.output));
       };
     });
   };
@@ -258,14 +299,29 @@
         const refs = this.references;
         const get2 = this.get;
         const set = this.set;
+        let onUpdate = this.options.onUpdate;
+        let infoToOutput = {};
+        if (onUpdate && typeof onUpdate === "object" && onUpdate.callback instanceof Function) {
+          infoToOutput = onUpdate.info ?? {};
+          onUpdate = onUpdate.callback;
+        }
+        let pathInfo = {
+          absolute: [id2, ...path].join("."),
+          relative: relativePath,
+          parent: [id2, ...path.slice(0, -1)].join(".")
+        };
+        pathInfo.output = pathInfo[this.options.pathFormat];
+        const completePathInfo = pathInfo;
         const info = {
           id: id2,
-          path: {
-            absolute: [id2, ...path].join("."),
-            relative: relativePath,
-            parent: [id2, ...path.slice(0, -1)].join(".")
+          path: completePathInfo,
+          infoToOutput,
+          callback: async (...args) => {
+            const output = await callback(...args);
+            if (onUpdate instanceof Function)
+              onUpdate(...args);
+            return output;
           },
-          callback,
           get current() {
             return get2(info.path.absolute);
           },
@@ -286,7 +342,6 @@
           sub: Symbol("subscription"),
           last: path.slice(-1)[0]
         };
-        info.path.output = info.path[this.options.pathFormat];
         this.listenerLookup[info.sub] = info.path.absolute;
         return info;
       };
@@ -310,8 +365,8 @@
           else
             return !Array.isArray(val);
         };
+        let subs = {};
         if (toMonitorInternally(ref, true)) {
-          let subs = {};
           const drill = (obj, path2 = []) => {
             for (let key in obj) {
               const val = obj[key];
@@ -335,7 +390,6 @@
             }
           };
           drill(ref);
-          return subs;
         } else {
           const info = this.createInfo(id2, callback, path, ref);
           try {
@@ -349,9 +403,13 @@
             console.warn("Fallback to polling", e);
             this.poller.add(info);
           }
-          return {
-            [info.path.absolute]: info.sub
-          };
+          subs[info.path.absolute] = info.sub;
+          if (this.options.onInit instanceof Function) {
+            const executionInfo = {};
+            for (let key in info.infoToOutput)
+              executionInfo[key] = void 0;
+            this.options.onInit(info.path.output, executionInfo);
+          }
         }
       };
       this.add = (type, info) => {
@@ -578,7 +636,7 @@
   var create2 = (config, options2) => {
     let monitor = options2.monitor;
     if (!(monitor instanceof src_default))
-      monitor = options2.monitor = new src_default(options2.monitor);
+      monitor = options2.monitor = new src_default(options2);
     const drill = (o, parent) => {
       if (o.components) {
         for (let name in config.components) {
@@ -595,9 +653,7 @@
       }
     };
     drill(config);
-    const onOutput = (name, ...args) => {
-      if (options2.onListen instanceof Function)
-        options2.onListen(name, ...args);
+    const onOutput = (name, info, ...args) => {
       for (let key in config.listeners[name]) {
         let target = config.listeners[name][key];
         const type = typeof target;
@@ -620,12 +676,7 @@
     for (let path in config.listeners) {
       monitor.on(path, onOutput);
       const id2 = path.split(".")[0];
-      const defaultPath = `${id2}.default`;
       monitor.on(`${id2}.default`, onOutput);
-      if (options2.onInit instanceof Function) {
-        options2.onInit(path);
-        options2.onInit(defaultPath);
-      }
     }
     return config;
   };
@@ -678,14 +729,44 @@
   removeButton.attributes.innerHTML = "Remove Listeners";
   var id = "test";
   var moveButtonId = "button";
-  var paragraphs = {};
-  var logUpdate = (path, update) => {
-    let p = paragraphs[path];
-    if (!p) {
-      p = paragraphs[path] = document.createElement("p");
-      statesDiv.appendChild(p);
+  var states = {};
+  var add2 = (arr) => arr.reduce((a, b) => a + b, 0);
+  var average = (arr) => add2(arr) / arr.length;
+  var logUpdate = async (path, info, update) => {
+    let tAdded = void 0;
+    let state = states[path];
+    if (!state) {
+      state = states[path] = {};
+      state.div = document.createElement("div");
+      state.t = document.createElement("p");
+      state.tAdded = document.createElement("p");
+      state.value = document.createElement("p");
+      state.averages = {
+        t: [],
+        tAdded: []
+      };
+      state.div.appendChild(state.value);
+      state.div.appendChild(state.t);
+      state.div.appendChild(state.tAdded);
+      statesDiv.appendChild(state.div);
     }
-    p.innerHTML = `<b>${path}:</b> ${JSON.stringify(update)}`;
+    state.value.innerHTML = `<h4>${path}</h4> ${JSON.stringify(update)}`;
+    const active = info.function && info.arguments && info.info;
+    const o = active ? await getExecutionInfo(info.function, info.arguments, info.info) : { output: update, value: {} };
+    if (info.hasOwnProperty("performance")) {
+      const executionTime = info.performance;
+      tAdded = executionTime - o.value.performance;
+      if (tAdded)
+        state.averages.tAdded.push(tAdded);
+      if (executionTime)
+        state.averages.t.push(executionTime);
+      state.t.innerHTML = `<span style="font-size: 80%;"><b>Execution Time:</b> ${average(state.averages.t).toFixed(3)}</span>`;
+      state.tAdded.innerHTML = `<span style="font-size: 80%;"><b>Execution Time Difference:</b> ${average(state.averages.tAdded).toFixed(3)}</span>`;
+    }
+    for (let key in state.averages) {
+      if (state.averages[key].length > 100)
+        state.averages[key].shift();
+    }
   };
   var wasl = {
     components: {
@@ -720,7 +801,12 @@
   };
   var options = {
     onInit: logUpdate,
-    onListen: logUpdate,
+    onUpdate: {
+      callback: logUpdate,
+      info: {
+        performance: true
+      }
+    },
     monitor: {
       pathFormat: "absolute",
       polling: {

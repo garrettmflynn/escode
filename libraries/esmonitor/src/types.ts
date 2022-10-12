@@ -1,5 +1,5 @@
 export type MonitorOptions = {
-    pathFormat?: 'absolute' | 'relative',
+    pathFormat: 'absolute' | 'relative',
     polling?: PollingOptions
 }
 
@@ -12,11 +12,23 @@ export type InternalOptions = {
     poll?: boolean,
 }
 
+export type Info = {
+    performance?: boolean
+}
+
+export type ActiveInfo = {
+    function?: Function,
+    args?: any[],
+    info?: Info,
+    performance?: number
+}
+
+
 export type ListenerInfo = {
     id: string
     last: string,
-
-    callback: Function,
+    infoToOutput: Info,
+    callback: (path: string, info:ActiveInfo, output: any[]) => void,
     path: {
         relative: string,
         absolute: string,

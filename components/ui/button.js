@@ -19,7 +19,6 @@ export default function (input){
     const value = input?.value ?? input // Grab the passed value
     const isInternal = input?._internal // Check if the input was internal or external
 
-    console.log('Clickied', value, isInternal)
     // Pass the cached value for the Component when it is pressed
     if (isInternal) {
         if (this.cache) {
@@ -29,4 +28,5 @@ export default function (input){
     
     // Set the cache with external values
     else if (value) this.cache = value
+
 }

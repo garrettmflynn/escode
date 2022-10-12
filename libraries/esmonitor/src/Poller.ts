@@ -55,7 +55,9 @@ export default class Poller {
         utils.iterateSymbols(listeners, (sym, value) => {
             let { path, callback, current, history } = value
             if (!utils.isSame(current, history)){
-                callback(path.output, current)
+
+                const info = {}
+                callback(path.output, info, current)
                 if (typeof current === 'object') {
                     if (Array.isArray(current)) history = [...current]
                     else history = {...current}

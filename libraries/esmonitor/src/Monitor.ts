@@ -1,6 +1,8 @@
 import * as check from '../../common/check.js'
 import Poller from './Poller.js'
-import { ListenerInfo, InternalOptions, MonitorOptions, ListenerPool, ListenerLookup } from './types'
+
+import { Options } from '../../common/types'
+import { ListenerInfo, InternalOptions, ListenerPool, ListenerLookup } from './types'
 import * as listeners from './listeners'
 import { iterateSymbols } from './utils.js'
 
@@ -9,7 +11,7 @@ export default class Monitor {
 
     poller = new Poller()
 
-    options = {
+    options: Options = {
         pathFormat: 'relative',
     }
     
@@ -26,7 +28,7 @@ export default class Monitor {
 
     references = {}
 
-    constructor(opts:MonitorOptions={}){
+    constructor(opts:Partial<Options>={}){
         Object.assign(this.options, opts)
         this.poller.setOptions(opts.polling)
     }
@@ -82,14 +84,34 @@ export default class Monitor {
         const get = this.get
         const set = this.set
 
+        // Derive onUpdate Function
+        let onUpdate = this.options.onUpdate
+        let infoToOutput = {}
+
+        if (onUpdate && typeof onUpdate === 'object' && onUpdate.callback instanceof Function) {
+            infoToOutput = onUpdate.info ?? {}
+            onUpdate = onUpdate.callback
+        }
+
+        let pathInfo = {
+            absolute: [id, ...path].join('.'),
+            relative: relativePath,
+            parent: [id, ...path.slice(0,-1)].join('.')
+        } as Partial<ListenerInfo['path']>
+
+        pathInfo.output =  pathInfo[this.options.pathFormat]
+        const completePathInfo = pathInfo as ListenerInfo['path']
+
         const info = {
             id, 
-            path: {
-                absolute: [id, ...path].join('.'),
-                relative: relativePath,
-                parent: [id, ...path.slice(0,-1)].join('.')
+            path: completePathInfo, 
+
+            infoToOutput,
+            callback: async (...args) => {
+                const output = await callback(...args)
+                if (onUpdate instanceof Function) onUpdate(...args)
+                return output
             }, 
-            callback, 
             get current() { return get(info.path.absolute) },
             set current(val) { set(info.path.absolute, val) },
             get parent() { return get(info.path.parent) },
@@ -100,8 +122,6 @@ export default class Monitor {
             sub: Symbol('subscription'),
             last: path.slice(-1)[0],
         } as ListenerInfo
-
-        info.path.output = info.path[this.options.pathFormat]
 
         this.listenerLookup[info.sub] = info.path.absolute
 
@@ -136,8 +156,9 @@ export default class Monitor {
         // ------------------ Create Subscription ------------------
 
         // Option #1: Subscribe to each object property individually
+
+        let subs = {}
         if (toMonitorInternally(ref, true)) {
-            let subs = {}
 
             const drill = (
                 obj, 
@@ -165,7 +186,6 @@ export default class Monitor {
             }
 
             drill(ref)
-            return subs
         } 
 
         // Option #2: Subscribe to specific property
@@ -189,10 +209,16 @@ export default class Monitor {
             }
             
 
-            return {
-                [info.path.absolute]: info.sub
+            subs[info.path.absolute] = info.sub
+
+            // Notify User of Initialization
+            if (this.options.onInit instanceof Function) {
+                const executionInfo = {}
+                for (let key in info.infoToOutput) executionInfo[key] = undefined
+                this.options.onInit(info.path.output, executionInfo)
             }
         }
+        
     }
 
     add = (type, info) => {

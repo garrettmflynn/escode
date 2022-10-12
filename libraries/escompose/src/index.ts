@@ -5,7 +5,7 @@ const create = (config, options) => {
 
     // Get Monitor
     let monitor = options.monitor
-    if (!(monitor instanceof Monitor)) monitor = options.monitor = new Monitor(options.monitor)
+    if (!(monitor instanceof Monitor)) monitor = options.monitor = new Monitor(options)
 
     const drill = (o, parent?) => {
         if (o.components) {
@@ -31,9 +31,7 @@ const create = (config, options) => {
 
     drill(config)
 
-    const onOutput = (name, ...args) => {
-
-        if (options.onListen instanceof Function) options.onListen(name, ...args)
+    const onOutput = (name, info, ...args) => {
 
         for (let key in config.listeners[name]) {
 
@@ -71,14 +69,7 @@ const create = (config, options) => {
 
         // Always Subscribe to Default
         const id = path.split('.')[0]
-        const defaultPath = `${id}.default`
         monitor.on(`${id}.default`, onOutput)
-
-        // Notify User of Initialization
-        if (options.onInit instanceof Function){
-            options.onInit(path)
-            options.onInit(defaultPath)
-        }
     }
 
     return config
