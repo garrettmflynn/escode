@@ -4577,7 +4577,6 @@
         if (val && typeof val === "object") {
           const name2 = val.constructor.name;
           if (name2 === "Object" || name2 === "Array") {
-            console.log("Cnstructor", val.constructor.name);
             const idx = seen.indexOf(val);
             if (idx !== -1)
               acc[key] = fromSeen[idx];
