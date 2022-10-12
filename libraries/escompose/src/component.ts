@@ -1,12 +1,11 @@
-import Component from "./index";
 
-type ComponentElement = Element & { component?: Component }
+type ComponentElement = Element & { [x:string]: any }
+
+type attributeKeys = keyof HTMLElement['attributes']
 
 export type ESComponent = {
     
-    
     default: Function,
-    
     
     // HTML-Specific
     id: string;
@@ -14,8 +13,8 @@ export type ESComponent = {
     element?: string | ComponentElement,
     parentNode?: Element,
     style: {[key:string]:any},
-    attributes: {
-
+    attributes:{
+        [x in attributeKeys] : any
     }
     onresize: Function,
     onrender: Function

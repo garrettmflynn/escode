@@ -13,7 +13,7 @@
 `components` contains the official repository of ES Components (ESC).
 
 ### [escompose](./libraries/escompose/README.md)
-`escompose` uses [graphscript](https://github.com/brainsatplay/graphscript) to compile ES Components into standardized Web Components that respond to each other. 
+`escompose` compiles ES Components into standardized Web Components that respond to each other.
 
 ### [esmonitor](./libraries/esmonitor/README.md)
 `esmonitor` allows for notification of any changes to ES Module variables during runtime.
@@ -23,7 +23,6 @@
 
 ### [escomposer](./libraries/escomposer/README.md)
 `escomposer` is a visual programming system for ESC.
-
 
 ## The Specification
 Each Component contains one `default` export and any number of `named` exports.

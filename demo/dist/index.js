@@ -5,163 +5,6 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // ../libraries/escompose/src/create/utils/update.ts
-  var update_default = (id2, esm2, parent) => {
-    if (!esm2.id && id2)
-      esm2.id = id2;
-    if (!esm2.id)
-      esm2.id = `${esm2.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
-    if (esm2.element instanceof Element) {
-      let p = esm2.parentNode;
-      delete esm2.parentNode;
-      Object.defineProperty(esm2, "parentNode", {
-        get: function() {
-          if (esm2.element instanceof Element)
-            return esm2.element.parentNode;
-        },
-        set: (v) => {
-          if (typeof v === "string") {
-            const newValue = document.querySelector(v);
-            if (newValue)
-              v = newValue;
-            else
-              v = document.getElementById(v);
-          }
-          if (v?.element instanceof Element)
-            v = v.element;
-          if (esm2.element instanceof Element) {
-            if (esm2.element.parentNode)
-              esm2.element.remove();
-            if (v)
-              v.appendChild(esm2.element);
-          }
-        },
-        enumerable: true,
-        configurable: true
-      });
-      const parentEl = parent?.element instanceof Element ? parent.element : void 0;
-      esm2.parentNode = p ? p : parentEl;
-      esm2.element.id = esm2.id;
-      if (esm2.attributes) {
-        for (let key in esm2.attributes) {
-          if (typeof esm2.attributes[key] === "function")
-            esm2.element[key] = (...args) => esm2.attributes[key](...args);
-          else
-            esm2.element[key] = esm2.attributes[key];
-        }
-      }
-      if (esm2.element instanceof HTMLElement) {
-        if (esm2.style)
-          Object.assign(esm2.element.style, esm2.style);
-      }
-    }
-    return esm2;
-  };
-
-  // ../libraries/escompose/src/create/element.ts
-  function add(id2, esm2, parent) {
-    let elm = create(id2, esm2, parent);
-    if (!esm2.element)
-      esm2.element = elm;
-    if (!esm2.default)
-      esm2.default = function(props) {
-        if (typeof props === "object")
-          for (const key in props) {
-            if (this.element) {
-              if (typeof this.element[key] === "function" && typeof props[key] !== "function") {
-                if (Array.isArray(props[key]))
-                  this.element[key](...props[key]);
-                else
-                  this.element[key](props[key]);
-              } else if (key === "style") {
-                Object.assign(this.element[key], props[key]);
-              } else
-                this.element[key] = props[key];
-            }
-          }
-        return props;
-      };
-    return esm2;
-  }
-  function create(id2, esm2, parent) {
-    if (esm2.element) {
-      if (typeof esm2.element === "string") {
-        const elm = document.querySelector(esm2.element);
-        if (!elm) {
-          const elm2 = document.getElementById(esm2.element);
-          if (elm2)
-            esm2.element = elm2;
-        } else
-          esm2.element = elm;
-      }
-    } else if (esm2.tagName)
-      esm2.element = document.createElement(esm2.tagName);
-    else if (esm2.id) {
-      const elm = document.getElementById(esm2.id);
-      if (elm)
-        esm2.element = elm;
-    }
-    if (!(esm2.element instanceof Element))
-      console.warn("Element not found for", id2);
-    update_default(id2, esm2, parent);
-    return esm2.element;
-  }
-
-  // ../libraries/common/clone.js
-  var deep = (obj) => {
-    const seen = [];
-    const fromSeen = [];
-    let drill = (obj2, acc = {}) => {
-      for (let key in obj2) {
-        const val = obj2[key];
-        if (val && typeof val === "object") {
-          const name = val.constructor.name;
-          if (name === "Object" || name === "Array") {
-            const idx = seen.indexOf(val);
-            if (idx !== -1)
-              acc[key] = fromSeen[idx];
-            else {
-              seen.push(val);
-              acc[key] = Array.isArray(val) ? [] : {};
-              fromSeen.push(acc[key]);
-              acc[key] = drill(val, acc[key]);
-            }
-          } else
-            acc[key] = val;
-        } else
-          acc[key] = val;
-      }
-      return acc;
-    };
-    return drill(obj);
-  };
-
-  // ../libraries/escompose/src/create/index.ts
-  var create_default = (id2, esm2, parent) => {
-    esm2 = deep(esm2);
-    esm2 = add(id2, esm2, parent);
-    if (esm2.element)
-      esm2.element.component = esm2;
-    let initialesm = esm2._initial ?? esm2;
-    for (let key in initialesm) {
-      if (typeof initialesm[key] === "function") {
-        const desc = Object.getOwnPropertyDescriptor(initialesm, key);
-        if (desc && desc.get && !desc.set)
-          initialesm = Object.assign({}, initialesm);
-        const og = initialesm[key];
-        initialesm[key] = (...args) => og.call(esm2, ...args);
-      } else if (key === "attributes") {
-        for (let key2 in initialesm.attributes) {
-          if (typeof initialesm.attributes[key2] === "function") {
-            const og = initialesm.attributes[key2];
-            initialesm.attributes[key2] = (...args) => og.call(esm2, ...args);
-          }
-        }
-      }
-    }
-    return esm2;
-  };
-
   // components/button.js
   var button_exports = {};
   __export(button_exports, {
@@ -574,6 +417,220 @@
   // ../libraries/esmonitor/src/index.ts
   var src_default = Monitor;
 
+  // ../libraries/escompose/src/create/utils/update.ts
+  var update_default = (id2, esm2, parent) => {
+    if (!esm2.id && id2)
+      esm2.id = id2;
+    if (!esm2.id)
+      esm2.id = `${esm2.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
+    if (esm2.element instanceof Element) {
+      let p = esm2.parentNode;
+      delete esm2.parentNode;
+      Object.defineProperty(esm2, "parentNode", {
+        get: function() {
+          if (esm2.element instanceof Element)
+            return esm2.element.parentNode;
+        },
+        set: (v) => {
+          if (typeof v === "string") {
+            const newValue = document.querySelector(v);
+            if (newValue)
+              v = newValue;
+            else
+              v = document.getElementById(v);
+          }
+          if (v?.element instanceof Element)
+            v = v.element;
+          if (esm2.element instanceof Element) {
+            if (esm2.element.parentNode)
+              esm2.element.remove();
+            if (v)
+              v.appendChild(esm2.element);
+          }
+        },
+        enumerable: true,
+        configurable: true
+      });
+      const parentEl = parent?.element instanceof Element ? parent.element : void 0;
+      esm2.parentNode = p ? p : parentEl;
+      esm2.element.id = esm2.id;
+      if (esm2.attributes) {
+        for (let key in esm2.attributes) {
+          if (typeof esm2.attributes[key] === "function")
+            esm2.element[key] = (...args) => esm2.attributes[key](...args);
+          else
+            esm2.element[key] = esm2.attributes[key];
+        }
+      }
+      if (esm2.element instanceof HTMLElement) {
+        if (esm2.style)
+          Object.assign(esm2.element.style, esm2.style);
+      }
+    }
+    return esm2;
+  };
+
+  // ../libraries/escompose/src/create/element.ts
+  function add(id2, esm2, parent) {
+    let elm = create(id2, esm2, parent);
+    if (!esm2.element)
+      esm2.element = elm;
+    if (!esm2.default)
+      esm2.default = function(props) {
+        if (typeof props === "object")
+          for (const key in props) {
+            if (this.element) {
+              if (typeof this.element[key] === "function" && typeof props[key] !== "function") {
+                if (Array.isArray(props[key]))
+                  this.element[key](...props[key]);
+                else
+                  this.element[key](props[key]);
+              } else if (key === "style") {
+                Object.assign(this.element[key], props[key]);
+              } else
+                this.element[key] = props[key];
+            }
+          }
+        return props;
+      };
+    return esm2;
+  }
+  function create(id2, esm2, parent) {
+    if (esm2.element) {
+      if (typeof esm2.element === "string") {
+        const elm = document.querySelector(esm2.element);
+        if (!elm) {
+          const elm2 = document.getElementById(esm2.element);
+          if (elm2)
+            esm2.element = elm2;
+        } else
+          esm2.element = elm;
+      }
+    } else if (esm2.tagName)
+      esm2.element = document.createElement(esm2.tagName);
+    else if (esm2.id) {
+      const elm = document.getElementById(esm2.id);
+      if (elm)
+        esm2.element = elm;
+    }
+    if (!(esm2.element instanceof Element))
+      console.warn("Element not found for", id2);
+    update_default(id2, esm2, parent);
+    return esm2.element;
+  }
+
+  // ../libraries/common/clone.js
+  var deep = (obj) => {
+    const seen = [];
+    const fromSeen = [];
+    let drill = (obj2, acc = {}) => {
+      for (let key in obj2) {
+        const val = obj2[key];
+        if (val && typeof val === "object") {
+          const name = val.constructor.name;
+          if (name === "Object" || name === "Array") {
+            const idx = seen.indexOf(val);
+            if (idx !== -1)
+              acc[key] = fromSeen[idx];
+            else {
+              seen.push(val);
+              acc[key] = Array.isArray(val) ? [] : {};
+              fromSeen.push(acc[key]);
+              acc[key] = drill(val, acc[key]);
+            }
+          } else
+            acc[key] = val;
+        } else
+          acc[key] = val;
+      }
+      return acc;
+    };
+    return drill(obj);
+  };
+
+  // ../libraries/escompose/src/create/index.ts
+  var create_default = (id2, esm2, parent) => {
+    esm2 = deep(esm2);
+    esm2 = add(id2, esm2, parent);
+    if (esm2.element)
+      esm2.element.component = esm2;
+    let initialesm = esm2._initial ?? esm2;
+    for (let key in initialesm) {
+      if (typeof initialesm[key] === "function") {
+        const desc = Object.getOwnPropertyDescriptor(initialesm, key);
+        if (desc && desc.get && !desc.set)
+          initialesm = Object.assign({}, initialesm);
+        const og = initialesm[key];
+        initialesm[key] = (...args) => og.call(esm2, ...args);
+      } else if (key === "attributes") {
+        for (let key2 in initialesm.attributes) {
+          if (typeof initialesm.attributes[key2] === "function") {
+            const og = initialesm.attributes[key2];
+            initialesm.attributes[key2] = (...args) => og.call(esm2, ...args);
+          }
+        }
+      }
+    }
+    return esm2;
+  };
+
+  // ../libraries/escompose/src/index.ts
+  var create2 = (config, options2) => {
+    let monitor = options2.monitor;
+    if (!(monitor instanceof src_default))
+      monitor = options2.monitor = new src_default(options2.monitor);
+    const drill = (o, parent) => {
+      if (o.components) {
+        for (let name in config.components) {
+          const base = config.components[name];
+          drill(base, o);
+          const copy = Object.assign({}, base);
+          const esSrc = copy.esSrc;
+          delete copy.esSrc;
+          const merged = Object.assign(Object.assign({}, esSrc), copy);
+          const instance = create_default(name, merged, parent);
+          monitor.set(name, instance);
+          config.components[name] = instance;
+        }
+      }
+    };
+    drill(config);
+    const onOutput = (name, ...args) => {
+      if (options2.onListen instanceof Function)
+        options2.onListen(name, ...args);
+      for (let key in config.listeners[name]) {
+        let target = config.listeners[name][key];
+        const type = typeof target;
+        const noDefault = type !== "function" && !target?.default;
+        if (type === "string")
+          target = config.listeners[name][key] = config.components[target];
+        else if (noDefault) {
+          const path = key.split(".");
+          target = config.components;
+          path.forEach((str) => target = target[str]);
+        }
+        if (target?.default)
+          target.default(...args);
+        else if (typeof target === "function")
+          target(...args);
+        else
+          console.log("Unsupported listener...", target);
+      }
+    };
+    for (let path in config.listeners) {
+      monitor.on(path, onOutput);
+      const id2 = path.split(".")[0];
+      const defaultPath = `${id2}.default`;
+      monitor.on(`${id2}.default`, onOutput);
+      if (options2.onInit instanceof Function) {
+        options2.onInit(path);
+        options2.onInit(defaultPath);
+      }
+    }
+    return config;
+  };
+  var src_default2 = create2;
+
   // ../libraries/esmpile/tests/basic/index.js
   var basic_exports = {};
   __export(basic_exports, {
@@ -619,16 +676,8 @@
   var removeButton = Object.assign({}, button_exports);
   removeButton.attributes = Object.assign({}, removeButton.attributes);
   removeButton.attributes.innerHTML = "Remove Listeners";
-  var monitor = new src_default({
-    pathFormat: "absolute",
-    polling: {
-      sps: 60
-    }
-  });
   var id = "test";
-  var esmId = "testESM";
   var moveButtonId = "button";
-  monitor.set(esmId, basic_exports);
   var paragraphs = {};
   var logUpdate = (path, update) => {
     let p = paragraphs[path];
@@ -669,44 +718,16 @@
       }
     }
   };
-  for (let name in wasl.components) {
-    const copy = Object.assign({}, wasl.components[name]);
-    const esSrc = copy.esSrc;
-    delete copy.esSrc;
-    const merged = Object.assign(Object.assign({}, esSrc), copy);
-    const instance = create_default(name, merged);
-    monitor.set(name, instance);
-    wasl.components[name] = instance;
-  }
-  var onOutput = (name, ...args) => {
-    logUpdate(name, ...args);
-    for (let key in wasl.listeners[name]) {
-      let target = wasl.listeners[name][key];
-      const type = typeof target;
-      const noDefault = type !== "function" && !target?.default;
-      if (type === "string")
-        target = wasl.listeners[name][key] = wasl.components[listening];
-      else if (noDefault) {
-        const path = key.split(".");
-        target = wasl.components;
-        path.forEach((str) => target = target[str]);
+  var options = {
+    onInit: logUpdate,
+    onListen: logUpdate,
+    monitor: {
+      pathFormat: "absolute",
+      polling: {
+        sps: 60
       }
-      if (target?.default)
-        target.default(...args);
-      else if (typeof target === "function")
-        target(...args);
-      else
-        console.log("Unsupported listener...", target);
     }
   };
-  for (let path in wasl.listeners) {
-    monitor.on(path, onOutput);
-    const id2 = path.split(".")[0];
-    const defaultPath = `${id2}.default`;
-    monitor.on(`${id2}.default`, onOutput);
-    logUpdate(path, void 0);
-    logUpdate(defaultPath, void 0);
-  }
-  var component = create_default("wasl", wasl);
+  var component = src_default2(wasl, options);
   console.log("WASL", component);
 })();

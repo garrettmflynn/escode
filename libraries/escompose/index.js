@@ -3,7 +3,7 @@ import * as log from './components/log.js'
 import * as api from './components/api.js'
 // import * as readout from './components/readout.js'
 
-import Component from './src/index.js'
+import Component from './src/old/index_old.js'
 
 const start = document.getElementById('start')
 const stop = document.getElementById('stop')

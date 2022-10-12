@@ -1,5 +1,3 @@
-import Component from "../../index";
-
 export const parentNode = (esm, parentNode) => {
 
     const oncreate = esm.onrender

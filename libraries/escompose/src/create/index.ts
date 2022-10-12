@@ -1,20 +1,12 @@
-import Component from '../index';
 import * as element from './element'
 import * as clone from "../../../common/clone.js"
 
-export default (id, esm, parent) => {
+export default (id, esm, parent?) => {
     
         esm = clone.deep(esm);
 
         // ------------------ Produce a Complete ESM Element ------------------
         esm = element.add(id, esm, parent);
-        
-        // // ------------------ Produce a Component ------------------
-        // const component = new Component(
-        //     esm,
-        //     parent?.options,
-        //     parent
-        // );
     
         if (esm.element) esm.element.component = esm; // Bind component to the element
         
