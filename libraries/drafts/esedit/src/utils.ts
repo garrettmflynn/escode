@@ -27,8 +27,8 @@ export const noProtocol = (path) => {
     return path.split('://').slice(-1)[0]
 }
 
-export const isWASL = (path) => {
-    return path.slice(-5) === '.wasl'
+export const isESC = (path) => {
+    return path.slice(-5) === '.esc'
 }
 
 export const getBase = (path) => {

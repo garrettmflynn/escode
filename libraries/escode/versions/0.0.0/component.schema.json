@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.github.com/brainsatplay/wasl/versions/0.0.0/component.schema.json",
+  "title": "Component",
+  "description": "A component for the Web Application Specification Language",
+  "type": "object",
+  "anyOf": [
+    {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^([^.]+)(.[^.]+)*?$"
+        },
+        "author": {
+          "type": "string"
+        },
+        "main": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^(module|commonjs)$"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri"
+        },
+
+
+
+        "components": {
+          "type": "object",
+          "patternProperties": {
+            "^(.+)$": {
+              "$ref": "module.schema.json"
+            }
+          }
+        },
+
+        "listeners": {
+          "description": "Listeners for internal events",
+          "type": "object",
+          "patternProperties": {
+            "^([^.]+)(.[^.]+)*?$": {
+              "type": "object",
+              "patternProperties": {
+                "^([^.]+)(.[^.]+)*?$": {
+                  "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+        }
+      }
+      
+    }
+  ]
+}

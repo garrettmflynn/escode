@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.github.com/brainsatplay/wasl/versions/0.0.0/graph.schema.json",
+  "title": "Graph",
+  "description": "The logic of the application to assemble.",
+    "type": "object",
+    "properties": {
+      "nodes": {
+        "$ref": "nodes.schema.json"
+      },
+      "edges": {
+        "$ref": "edges.schema.json"
+      },
+      "ports": {
+        "$ref": "ports.schema.json"
+      }
+    },
+    "required": ["nodes"]
+}

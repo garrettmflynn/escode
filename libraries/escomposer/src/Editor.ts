@@ -67,7 +67,7 @@ export class Editor extends LitElement {
     }
 
     app: any
-    wasl: any
+    esc: any
 
     modal = new Modal()
     ui = document.createElement('visualscript-tab') 
@@ -107,7 +107,7 @@ export class Editor extends LitElement {
       }
 
       this.graph.onnodeadded = async (node) => {
-        const activeGraph = this.wasl.graph
+        const activeGraph = this.esc.graph
         activeGraph.add(node.info)
       }
 
@@ -126,23 +126,23 @@ export class Editor extends LitElement {
       }
 
       this.graph.onnoderemoved = async (node) => {
-        const activeGraph = this.wasl.graph
+        const activeGraph = this.esc.graph
         activeGraph.graph.removeTree(node.name)
       }
 
     }
 
-    set = async (wasl) => {
-      console.log('setting wasl', wasl, wasl.constructor?.name)
-      this.wasl = (wasl.constructor?.name) ? wasl.original : wasl
-      console.log('WASL', this.wasl)
-      this.setPlugins(this.wasl.graph.nodes)
-      await this.graph.set(this.wasl.graph) // Set tree on graph
+    set = async (esc) => {
+      console.log('setting esc', esc, esc.constructor?.name)
+      this.esc = (esc.constructor?.name) ? esc.original : esc
+      console.log('ESCode', this.esc)
+      this.setPlugins(this.esc.graph.nodes)
+      await this.graph.set(this.esc.graph) // Set tree on graph
     }
 
     setApp = (app) => {
       this.app = app // keep app reference
-      this.set(app.wasl) // forward to wasl setter
+      this.set(app.esc) // forward to ESCode setter
     }
 
     setPlugins = (plugins) => {
@@ -152,9 +152,9 @@ export class Editor extends LitElement {
     getEdgeInfo = (edge: any) => {
 
       // access the right nodes through their parents
-      let output = this.wasl.graph.nodes.get(edge.output.node.info.tag)
+      let output = this.esc.graph.nodes.get(edge.output.node.info.tag)
       output =  output.nodes.get(edge.output.tag) ?? output 
-      let input = this.wasl.graph.nodes.get(edge.input.node.info.tag)
+      let input = this.esc.graph.nodes.get(edge.input.node.info.tag)
       input =  input.nodes.get(edge.input.tag) ?? input 
 
       return {

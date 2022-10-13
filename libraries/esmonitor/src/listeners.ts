@@ -2,13 +2,16 @@ import { ActiveInfo, ListenerInfo, ListenerPool } from "./types"
 import * as utils from './utils'
 import * as infoFunctions from './info'
 
+
+
 const register = (info, collection) => {
     // Place in Function Registry
-    if (!collection[info.path.absolute]) collection[info.path.absolute] = {}
-    collection[info.path.absolute][info.sub] = info
+    const absolute = utils.getPath('absolute', info)
+    if (!collection[absolute]) collection[absolute] = {}
+    collection[absolute][info.sub] = info
 }
 
-const get = (info, collection) => collection[info.path.absolute]
+const get = (info, collection) => collection[utils.getPath('absolute', info)]
 
 export const getExecutionInfo = async (func, args, info) => {
 
@@ -54,19 +57,29 @@ const handler = (info, collection, subscribeCallback) => {
     register(info, collection)
 }
 
+
 export const getters = (info: ListenerInfo, collection: ListenerPool) => {
     handler(info, collection, (value, parent) => {
         let val = value
-        Object.defineProperty(parent, info.last, {
-            get: () => val,
-            set: async (v) => {
-                const listeners = Object.assign({}, collection[info.path.absolute])
-                const executionInfo = {}
-                await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => o.callback(o.path.output, executionInfo, v))
-                val = v
-            },
-            enumerable: true
-        })
+
+        delete parent[info.last] // removing original definition
+
+        try {
+
+            console.log('Definigin', info.path.absolute)
+            Object.defineProperty(parent, info.last, {
+                get: () => val,
+                set: async (v) => {
+                    const listeners = Object.assign({}, collection[utils.getPath('absolute', info)])
+                    const executionInfo = {}
+                    await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => o.callback(utils.getPath('output', info), executionInfo, v))
+                    val = v
+                },
+                enumerable: true
+            })
+        } catch (e) {
+            throw e
+        }
     })
 }
 
@@ -76,12 +89,13 @@ export const getters = (info: ListenerInfo, collection: ListenerPool) => {
 export const functions = (info: ListenerInfo, collection: ListenerPool) => {
     handler(info, collection, (_, parent) => {        
         parent[info.last] = async function(...args) {
-            const listeners = Object.assign({}, collection[info.path.absolute])
-
+            const listeners = Object.assign({}, collection[utils.getPath('absolute', info)])
 
             const executionInfo = await getExecutionInfo(async (...args) => await info.original.call(this, ...args), args, info.infoToOutput)
-            await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => o.callback(o.path.output, executionInfo.value, executionInfo.output))
+
+            await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => {
+                o.callback(utils.getPath('output', info), executionInfo.value, executionInfo.output)
+            })
         }
     })
-    
 }

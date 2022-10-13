@@ -1,15 +1,25 @@
 export type MonitorOptions = {
     pathFormat: 'absolute' | 'relative',
-    polling?: PollingOptions
+    polling?: PollingOptions,
+    keySeparator: '.' | string
 }
+
+export type ArrayPath = (string | symbol)[]
+export type PathFormat = string | symbol | (string | symbol)[]
 
 export type PollingOptions = {
     force?: boolean,
     sps?: number
 }
 
+
+export type ListenerOptions = {
+    static?: boolean
+}
+
 export type InternalOptions = {
-    poll?: boolean,
+    poll: boolean,
+    seen: any[] // Check for circular references
 }
 
 export type Info = {
@@ -30,10 +40,10 @@ export type ListenerInfo = {
     infoToOutput: Info,
     callback: (path: string, info:ActiveInfo, output: any[]) => void,
     path: {
-        relative: string,
-        absolute: string,
-        output: string,
-        parent: string
+        relative: ArrayPath,
+        absolute: ArrayPath,
+        output: ArrayPath,
+        parent: ArrayPath
     }
     sub: symbol,
 

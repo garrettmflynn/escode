@@ -12505,7 +12505,7 @@ var defaultOptions = {
   ignore: [".DS_Store", ".git"],
   debug: false,
   autosync: [
-    "*.wasl.json"
+    "*.esc.json"
   ]
 };
 var _input2, _sameRoot;
@@ -12525,7 +12525,7 @@ var App = class {
     };
     this.compile = async () => {
       const packageContents = await (await this.filesystem.open("package.json")).body;
-      let mainPath = packageContents?.main ?? "index.wasl.json";
+      let mainPath = packageContents?.main ?? "index.esc.json";
       const file = await this.filesystem.open(mainPath);
       let filesystem = {};
       if (file) {
@@ -12555,7 +12555,7 @@ var App = class {
       } else if (packageContents?.main)
         console.error('The "main" field in the supplied package.json is not pointing to an appropriate entrypoint.');
       else
-        console.error("No index.wasl.json file found at the expected root location.");
+        console.error("No index.esc.json file found at the expected root location.");
     };
     this.join = join;
     this.createFilesystem = async (input, options = this.options) => {

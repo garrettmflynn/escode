@@ -2,9 +2,13 @@ import * as check from '../../common/check.js'
 import Poller from './Poller.js'
 
 import { Options } from '../../common/types'
-import { ListenerInfo, InternalOptions, ListenerPool, ListenerLookup } from './types'
+import { PathFormat, ListenerInfo, InternalOptions, ListenerPool, ListenerLookup, ArrayPath, ListenerOptions } from './types'
 import * as listeners from './listeners'
-import { iterateSymbols } from './utils.js'
+import { iterateSymbols, getPath } from './utils.js'
+import { drillSimple } from '../../common/drill.js'
+import { getFromPath, setFromPath } from '../../common/pathHelpers.js'
+import { isProxy } from './inspectable/handlers.js'
+import Inspectable from './inspectable/index.js'
 
 
 export default class Monitor {
@@ -13,6 +17,7 @@ export default class Monitor {
 
     options: Options = {
         pathFormat: 'relative',
+        keySeparator: '.',
     }
     
     listenerLookup: ListenerLookup = {}
@@ -26,59 +31,40 @@ export default class Monitor {
         getters: {},
     }
 
-    references = {}
+    references: {
+        [x:string | symbol]: {
+            [x:string | symbol]: any
+        }
+    } = {}
 
     constructor(opts:Partial<Options>={}){
         Object.assign(this.options, opts)
         this.poller.setOptions(opts.polling)
     }
 
-    get = (path) => {
-        if (typeof path === 'string') path = path.split('.')
-        path = [...path]
+    get = (path) => getFromPath(this.references, path, {
+        keySeparator: this.options.keySeparator,
+        fallbacks: ['esComponents']
+    })
 
-        let ref =  this.references
-        path.forEach(str => {
-            if (str in ref) ref = ref[str]
-            else {
-                console.error(`Could not get path: ${path.join('.')}`)
-                return
-            }
-        })
-        return ref
-    }
-
-    set = (path, value) => {
-
-        if (typeof path === 'string') path = path.split('.')
-        path = [...path]
-
-        let ref =  this.references
-
-        const copy = [...path]
-        const last = copy.pop()
-        copy.forEach(str => {
-            if (str in ref) ref = ref[str]
-            else {
-                console.error(`Could not set path: ${path.join('.')}`)
-                return
-            }
-        })
-
-        ref[last] = value
-    }
+    set = (path, value, ref:any = this.references, opts = {}) => setFromPath(path, value, ref, opts)
 
     // A simple wrapper for listen()
-    on = (absPath, callback) => {
-        const split = absPath.split('.')
-        const id = split[0]
-        return this.listen(id, callback, split.slice(1))
+    on = (absPath: PathFormat, callback, options: ListenerOptions = {}) => {
+
+        let splitPath = absPath
+        if (typeof absPath === 'string') splitPath = absPath.split(this.options.keySeparator)
+        else if (typeof absPath === 'symbol') splitPath = [absPath]
+
+        const id = splitPath[0]
+
+        return this.listen(id, callback, (splitPath as ArrayPath).slice(1), options)
     }
 
 
     createInfo = (id, callback, path, original) => {
-        if (typeof path === 'string') path = path.split('.')
-        const relativePath = path.join('.')
+        if (typeof path === 'string') path = path.split(this.options.keySeparator)
+        const relativePath = path.join(this.options.keySeparator)
 
         const refs = this.references
         const get = this.get
@@ -93,10 +79,11 @@ export default class Monitor {
             onUpdate = onUpdate.callback
         }
 
+        const absolute = [id, ...path]
         let pathInfo = {
-            absolute: [id, ...path].join('.'),
-            relative: relativePath,
-            parent: [id, ...path.slice(0,-1)].join('.')
+            absolute,
+            relative: relativePath.split(this.options.keySeparator),
+            parent: absolute.slice(0,-1)
         } as Partial<ListenerInfo['path']>
 
         pathInfo.output =  pathInfo[this.options.pathFormat]
@@ -105,6 +92,7 @@ export default class Monitor {
         const info = {
             id, 
             path: completePathInfo, 
+            keySeparator: this.options.keySeparator,
 
             infoToOutput,
             callback: async (...args) => {
@@ -123,33 +111,70 @@ export default class Monitor {
             last: path.slice(-1)[0],
         } as ListenerInfo
 
-        this.listenerLookup[info.sub] = info.path.absolute
+        this.listenerLookup[info.sub] = getPath('absolute', info)
 
         return info
     }
 
-    listen = (id, callback, path: string | string[] = [], __internal: InternalOptions = {}) => {
+    listen = (id, callback, path: PathFormat = [], options: ListenerOptions, __internal: Partial<InternalOptions> = {}) => {
 
-        const reference = this.references[id]
 
-        if (!reference) {
+        let isDynamic = options.static ? !options.static : true
+
+        if (typeof path === 'string') path = path.split(this.options.keySeparator)
+        else if (typeof path === 'symbol') path = [path]
+
+        const arrayPath = path as ArrayPath
+
+        let baseRef = this.references[id]
+        if (!baseRef) {
             console.error(`Reference ${id} does not exist.`)
             return
         }
 
-        if (!__internal.poll) __internal.poll = check.esm(reference) // Inherit ESM status
+        if (isDynamic && !globalThis.Proxy) {
+            isDynamic = false
+            console.warn('Falling back to using getters and setters...')
+        }
+
+
+
+        if (isDynamic && !baseRef[isProxy]) {
+            const inspector = new Inspectable(baseRef, {
+                callback: (path, info, update) => {
+                    console.log('Handling internal calls', path, info, update)
+                },
+                keySeparator: this.options.keySeparator,
+            })
+
+            this.set(id, inspector) // reset reference
+            baseRef = inspector
+        }
+
+
+        if (!__internal.poll) __internal.poll = check.esm(baseRef) // Inherit ESM status
+        if (!__internal.seen) __internal.seen = []
+
+        const __internalComplete = __internal as InternalOptions
 
         // Set Reference
-        if (!this.references[id]) this.references[id] = reference // Setting base reference
+        if (!this.references[id]) this.references[id] = baseRef // Setting base reference
 
         // Drill Reference based on Path
-        let ref = this.get([id, ...path])
+        let ref = this.get([id, ...arrayPath])
 
         // Create listeners for Objects
         const toMonitorInternally = (val, allowArrays=false) => {
             const first = val && typeof val === 'object'
+            
+            // Only Objects
             if (!first) return false
-            else if (allowArrays) return true
+
+            // No Elements
+            const isEl = val instanceof Element
+            if(isEl) return false
+
+            if (allowArrays) return true
             else return !Array.isArray(val)
         }
 
@@ -160,43 +185,42 @@ export default class Monitor {
         let subs = {}
         if (toMonitorInternally(ref, true)) {
 
-            const drill = (
-                obj, 
-                path: string[] = []
-            ) => {
-                for (let key in obj) {
-                    const val = obj[key]
-                    const newPath = [...path, key]
-                    if (toMonitorInternally(val)) drill(val, newPath) 
-                    else {
-                        if (typeof val === 'function') {
-                            if (__internal.poll) {
-                                console.warn(`Skipping subscription to ${[id, ...newPath].join('.')} since its parent is ESM.`)
-                            } else {
-                                const info = this.createInfo(id, callback, newPath, val)
-                                this.add('functions', info)
-                                subs[info.path.absolute] = info.sub
-                            }
+            // TODO: Ensure that this doesn't have a circular reference
+            const drillOptions = {
+                condition: (_, val) => toMonitorInternally(val)
+            }
+            drillSimple(ref, (key, val, drillInfo) => {
+                if (drillInfo.pass) return 
+                else {
+
+                    const fullPath = [...arrayPath, ...drillInfo.path]
+                    if (typeof val === 'function') {
+                        if (__internalComplete.poll) {
+                            console.warn(`Skipping subscription to ${fullPath.join(this.options.keySeparator)} since its parent is ESM.`)
                         } else {
-                            const internalSubs = this.listen(id, callback, newPath, __internal) // subscribe to all
-                            Object.assign(subs, internalSubs)
+                            const info = this.createInfo(id, callback, fullPath, val)
+                            this.add('functions', info)
+                            const abs = getPath('absolute', info)
+                            subs[abs] = info.sub
                         }
+                    } else {
+                        const internalSubs = this.listen(id, callback, fullPath, options, __internalComplete) // subscribe to all
+                        Object.assign(subs, internalSubs)
                     }
                 }
-            }
-
-            drill(ref)
+            }, drillOptions) 
+            
         } 
 
         // Option #2: Subscribe to specific property
         else {
 
-            const info = this.createInfo(id, callback, path, ref)
+            const info = this.createInfo(id, callback, arrayPath, ref)
 
             try {
 
                 // Force Polling
-                if (__internal.poll) this.poller.add(info)
+                if (__internalComplete.poll) this.poller.add(info)
 
                 // Intercept Function Calls
                 else if (typeof ref === 'function')  this.add('functions', info)
@@ -204,26 +228,25 @@ export default class Monitor {
                 // Trigger Getters
                 else this.add('getters', info)
             } catch (e) {
-                console.warn('Fallback to polling', e)
+                console.warn('Falling to polling:', path, e)
                 this.poller.add(info)
             }
             
 
-            subs[info.path.absolute] = info.sub
+            subs[getPath('absolute', info)] = info.sub
 
             // Notify User of Initialization
             if (this.options.onInit instanceof Function) {
                 const executionInfo = {}
                 for (let key in info.infoToOutput) executionInfo[key] = undefined
-                this.options.onInit(info.path.output, executionInfo)
+                this.options.onInit(getPath('output', info), executionInfo)
             }
         }
-        
     }
 
     add = (type, info) => {
         if (listeners[type])  listeners[type](info, this.listeners[type])
-        else this.listeners[type][info.path.absolute][info.sub] = info
+        else this.listeners[type][getPath('absolute', info)][info.sub] = info
     }
 
     // Unsubscribe from a subscription
@@ -231,7 +254,6 @@ export default class Monitor {
 
         // Clear All Subscriptions if None Specified
         if (!subs) {
-
             subs = 
             subs = {
                 ...this.listeners.functions,

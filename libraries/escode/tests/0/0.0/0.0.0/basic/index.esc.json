@@ -1,0 +1,55 @@
+{
+    "name": "My Application",
+    "components": {
+            "plugin": {
+                "src": "../../../plugins/plugin/index.esc.json",
+                "overrides": {
+                    "add": {
+                        "arguments": {
+                            "input": 15
+                        },
+                        "toAdd": {
+                            "src": "./number.js"
+                        }
+                    }
+                },
+                "children": {
+                    "log": true,
+                    "math": true
+                }
+            },
+            "math": {
+                "src": "../../../plugins/math/index.esc.json",
+                "children": {
+                    "external": true,
+                    "log": true
+                }
+            },
+            "external": {
+                "components": {
+                    "secondaddition": {
+                        "src": "../../../plugins/math/add2.js",
+                        "children": {
+                            "secondmultiplication": true
+                        }
+                    },
+                    "secondmultiplication": {
+                        "src": "../../../plugins/math/multiply2.js"
+                    }
+                }, 
+                
+                "ports": {
+                    "input": "secondaddition",
+                    "output": "secondmultiplication"
+                },
+
+                "children": {
+                    "log": true
+                }
+            },
+
+            "log": {
+                "src": "../../../plugins/log.js"
+            }
+        }
+}

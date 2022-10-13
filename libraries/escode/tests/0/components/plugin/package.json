@@ -1,0 +1,7 @@
+{
+    "name": "plugin",
+    "description": "A basic ES Component",
+    "author": "Garrett Flynn <garrettmflynn@gmail.com>",
+    "type": "module",
+    "main": "index.js"
+}

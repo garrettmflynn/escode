@@ -19,7 +19,7 @@ export default class Plugins {
     list: Set<string> = new Set()
 
     // Expected File Organization
-    regexp : RegExp = new RegExp(`(.+).wasl`, 'g')
+    regexp : RegExp = new RegExp(`(.+).esc.json`, 'g')
 
 
     constructor(source:string | freerange.System ='https://raw.githubusercontent.com/brainsatplay/plugins/index.js') {
@@ -128,7 +128,7 @@ export default class Plugins {
 
             if (
                 this.#plugins[name] && 
-                !utils.isWASL(path) && // Don't get for .wasl files
+                !utils.isESC(path) && // Don't get for .esc files
                 path.slice(-12) !== ("package.json") // Don't get for package.json files
             ){
                 
@@ -182,7 +182,7 @@ export default class Plugins {
             const fullFileName = splitPath.pop()
             if (fullFileName){
                 const filePrefix = fullFileName.split('.').at(-2)
-                return  `${splitPath.join('/')}/${filePrefix}.wasl`
+                return  `${splitPath.join('/')}/${filePrefix}.esc.json`
             } else {
                 console.warn('Something went wrong...')
                 return path

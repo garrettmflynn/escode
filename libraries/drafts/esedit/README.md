@@ -4,7 +4,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-**brainsatplay** extends the [Web Application Specification Language](https://github.com/brainsatplay/wasl) (WASL) to allow for editing high-performance web applications at runtime—as well as saving changes to the local filesystem using the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API).
+**brainsatplay** extends the [ESCode](https://github.com/brainsatplay/escompose/tree/main/libraries/escode) (ESCode) to allow for editing high-performance web applications at runtime—as well as saving changes to the local filesystem using the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API).
 
 > **Note:** **brainsatplay** is a core library of the [Brains@Play Framework](../../README.md)
 
@@ -15,17 +15,17 @@
 import * as brainsatplay from 'https://cdn.jsdelivr.com/npm/brainsatplay/dist/index.esm.js'
 
  let app = new brainsatplay.App(
-         'https://raw.githubusercontent.com/brainsatplay/wasl/main/tests/0/0.0/0.0.0/external/index.wasl.json', // undefine to select from filesystem | object to load directly | string for url imports
+         'https://raw.githubusercontent.com/brainsatplay/wasl/main/tests/0/0.0/0.0.0/external/index.esc.json', // undefine to select from filesystem | object to load directly | string for url imports
         {
             edit: true
         }
     )
-        const wasl = await app.start(undefined, optionsToPass)
+        const esc = await app.start(undefined, optionsToPass)
 
-        if (wasl){
+        if (esc){
             console.log('App', app)
-            console.log('Errors', wasl.errors)
-            console.log('Warnings', wasl.warnings)
+            console.log('Errors', esc.errors)
+            console.log('Warnings', esc.warnings)
         }
 
 ```

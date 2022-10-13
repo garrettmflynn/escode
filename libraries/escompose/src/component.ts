@@ -8,10 +8,13 @@ export type ESComponent = {
     default: Function,
     esCompose: ESComponent // Is Merged into this component
 
-    components: {
+    esComponents: {
         [x:string]: ESComponent
     }
-    
+
+    esInit: Function
+    esDelete: Function
+
     // HTML-Specific
     id: string;
     tagName: string;

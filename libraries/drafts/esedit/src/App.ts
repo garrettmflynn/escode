@@ -1,7 +1,6 @@
 // An integrated freerange + brainsatplay App class
 
-// import WASL from 'wasl/dist/index.esm'
-import WASL from '../external/wasl/index.esm'
+import ESC from 'wasl'
 import * as freerange from '../external/freerange/index.esm'
 // import * as freerange from 'freerange/dist/index.esm'
 import { AppOptions } from './types';
@@ -12,7 +11,7 @@ let defaultOptions = {
     ignore: ['.DS_Store', '.git'],
     debug: false,
     autosync: [
-        '*.wasl.json'
+        '*.esc.json'
     ],
 }
 
@@ -20,7 +19,7 @@ export default class App {
 
     #input: any;
 
-    wasl: WASL; // active wasl instance
+    esc: ESC; // active esc instance
     plugins: Plugins
     filesystem?: string | freerange.System;
     onstart: any
@@ -44,12 +43,12 @@ export default class App {
 
     compile = async () => {
         const packageContents = await (await this.filesystem.open('package.json')).body
-        let mainPath = packageContents?.main ?? 'index.wasl.json'
+        let mainPath = packageContents?.main ?? 'index.esc.json'
 
             // Get main file
             const file = await this.filesystem.open(mainPath)
 
-            // Get WASL files in reference mode
+            // Get ESC files in reference mode
             let filesystem = {}
 
 
@@ -81,10 +80,10 @@ export default class App {
                     filesystem[path] = await file.body // loading in
                 }))
 
-                this.wasl = await this.create(body, Object.assign(this.options, {filesystem, _modeOverride: 'reference', _overrideRemote: true}))
-                return this.wasl
+                this.esc = await this.create(body, Object.assign(this.options, {filesystem, _modeOverride: 'reference', _overrideRemote: true}))
+                return this.esc
             } else if (packageContents?.main) console.error('The "main" field in the supplied package.json is not pointing to an appropriate entrypoint.')
-            else console.error('No index.wasl.json file found at the expected root location.')
+            else console.error('No index.esc.json file found at the expected root location.')
     }
 
     join = utils.join
@@ -99,15 +98,15 @@ export default class App {
 
         this.editable = true
 
-        // Load WASL Files Locally
-        if (this.wasl){
+        // Load ESC Files Locally
+        if (this.esc){
 
             let pkg = system.open('package.json', false); // don't create
 
             // create actual files
             let createPkg = !pkg || input === null // input was null
-            for (let path in this.wasl.files)  {
-                await system.addExternal(path, this.wasl.files[path].text) // note: does not recognize xxx:// formats when loading into a native filesystem
+            for (let path in this.esc.files)  {
+                await system.addExternal(path, this.esc.files[path].text) // note: does not recognize xxx:// formats when loading into a native filesystem
                 if (path === 'package.json') createPkg = false
             }
 
@@ -122,10 +121,10 @@ export default class App {
     }
 
     create = async (input, options, toStart = true) => {
-        let wasl = new WASL(input, options)
-        await wasl.init()
-        if (toStart) await wasl.start()
-        return wasl
+        let esc = new ESC(input, options)
+        await esc.init()
+        if (toStart) await esc.start()
+        return esc
     }
 
     start = async (input=this.#input, options=this.options, fromSave) => {
@@ -144,9 +143,9 @@ export default class App {
 
             const isObject = typeof input === 'object'
 
-            // Base WASL Application
+            // Base ESC Application
             if (isObject || isUrl) {
-                this.wasl = await this.create(input, options, !options.edit)
+                this.esc = await this.create(input, options, !options.edit)
                 this.filesystem  = await this.createFilesystem(null)
             }
             
@@ -155,7 +154,7 @@ export default class App {
         
 
             // Check if Editable
-            if (this.wasl && Object.keys(this.wasl.files).length === 0) {
+            if (this.esc && Object.keys(this.esc.files).length === 0) {
                 console.warn('No files have been loaded. Cannot edit files loaded in Reference Mode.')
                 this.editable = false
             }
@@ -164,11 +163,11 @@ export default class App {
         // compile from filesystem
         if (this.editable) await this.compile()
 
-        return this.wasl
+        return this.esc
     }   
 
     stop = async () => {
-        if (this.wasl) await this.wasl.stop()
+        if (this.esc) await this.esc.stop()
     }
     
     
@@ -180,6 +179,6 @@ export default class App {
             await this.compile() // recompile
         }
 
-        if (restart && this.wasl) await this.start(undefined, undefined, true)
+        if (restart && this.esc) await this.start(undefined, undefined, true)
     }
 }

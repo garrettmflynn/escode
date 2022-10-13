@@ -1,0 +1,20 @@
+{
+    "name": "Math Plugin",
+
+    "components": {
+        "addition": {
+            "src": "./add2.js",
+            "children": {
+                "multiplication": true
+            }
+        },
+        "multiplication": {
+            "src": "./multiply2.js"
+        }
+    }, 
+
+    "ports": {
+        "input": "addition",
+        "output": "multiplication"
+    }
+}

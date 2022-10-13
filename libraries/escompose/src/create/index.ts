@@ -1,10 +1,7 @@
 import * as element from './element'
-import * as clone from "../../../common/clone.js"
 
 export default (id, esm, parent?) => {
     
-        esm = clone.deep(esm);
-
         // ------------------ Produce a Complete ESM Element ------------------
         esm = element.add(id, esm, parent);
 
@@ -22,7 +19,10 @@ export default (id, esm, parent?) => {
                     el = v
 
                     // TODO: Fix so that this triggers the parentNode setter...
-                    for (let name in esm.components) v.appendChild(esm.components[name].element) // Manually carry to new parent node
+                    for (let name in esm.esComponents) {
+                        const el = esm.esComponents[name].element
+                        if (el instanceof Element) v.appendChild(el) // Manually carry to new parent node
+                    }
                 }
             },
             enumerable:true
@@ -56,7 +56,25 @@ export default (id, esm, parent?) => {
         esm.parentNode = parentNode
 
         // Delete Function
-        esm.delete = function () {
+
+        esm.esInit = () => {
+
+            // Start Nested Components
+            for (let name in esm.esComponents) {
+                const init = esm.esComponents[name].esInit
+                if (init instanceof Function) init()
+                else console.error(`Could not start component ${name} because it does not have an esInit function`)
+            }
+
+            // Trigger Execution on Initialization
+            if (esm.hasOwnProperty('esTrigger')) {
+                esm.default(esm.esTrigger)
+                delete esm.esTrigger
+            }
+
+        }
+
+        esm.esDelete = function () {
             this.element.remove(); 
             if(
                 this.onremove
@@ -85,6 +103,7 @@ export default (id, esm, parent?) => {
 
 
     
+        // NOTE: If you're drilling elements, this WILL cause for infinite loop when drilling an object with getters
         if (esm.element) esm.element.component = esm; // Bind component to the element
         
         // -------- Bind Functions to GraphNode --------
@@ -94,22 +113,22 @@ export default (id, esm, parent?) => {
                 const desc = Object.getOwnPropertyDescriptor(initialesm, key)
                 if (desc && desc.get && !desc.set) initialesm = Object.assign({}, initialesm) // Support ESM Modules: Only make a copy if a problem
                 const og = initialesm[key]
-                initialesm[key] = (...args) => og.call(esm, ...args)
-
-                // Try
-                // og.call(esm) 
+                initialesm[key] = (...args) =>  og.call(esm, ...args)
             } else if (key === 'attributes') {
                 for (let key2 in initialesm.attributes) {
                     if (typeof initialesm.attributes[key2] === 'function') {
                         const og = initialesm.attributes[key2]
-                        initialesm.attributes[key2] = (...args) => og.call(esm, ...args)
-
-                        // Try
-                        // og.call(esm) 
+                        initialesm.attributes[key2] = (...args) =>  og.call(esm, ...args)
                     }
                 }
             }
         }
-    
+
+
+        Object.defineProperty(esm, '__isESComponent', {
+            value: true,
+            enumerable: false
+        })    
+        
         return esm;
 }

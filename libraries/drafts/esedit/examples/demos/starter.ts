@@ -1,5 +1,5 @@
-import appInfo from '../../../../brainsatplay-starter-kit/index.wasl.json' assert {type: "json"}
-import focusInfo from '../../../../brainsatplay-starter-kit/plugins/focus/index.wasl.json' assert {type: "json"}
+import appInfo from '../../../../brainsatplay-starter-kit/index.esc.json' assert {type: "json"}
+import focusInfo from '../../../../brainsatplay-starter-kit/plugins/focus/index.esc.json' assert {type: "json"}
 
 import mainPkg from '../../../../brainsatplay-starter-kit/package.json'  assert {type: "json"}
 import focusPkg from '../../../../brainsatplay-starter-kit/plugins/focus/package.json'  assert {type: "json"}
@@ -16,7 +16,7 @@ const options = {
     filesystem: {
         'package.json': mainPkg,
         'plugins/focus/package.json': focusPkg,
-        'plugins/focus/index.wasl.json': focusInfo,
+        'plugins/focus/index.esc.json': focusInfo,
         'plugins/sine/index.js': sine,
         'plugins/seconds/index.js': seconds,
         'plugins/filter/index.js': filter,

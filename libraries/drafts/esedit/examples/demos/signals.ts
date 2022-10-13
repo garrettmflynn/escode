@@ -1,5 +1,5 @@
-import appInfo from '../../../../htil/content/signals/index.wasl.json' assert {type: "json"}
-import dataInfo from '../../../../htil/plugins/datastreams/index.wasl.json' assert {type: "json"}
+import appInfo from '../../../../htil/content/signals/index.esc.json' assert {type: "json"}
+import dataInfo from '../../../../htil/plugins/datastreams/index.esc.json' assert {type: "json"}
 import mainPkg from '../../../../htil/content/signals/package.json'  assert {type: "json"}
 import dataPkg from '../../../../htil/plugins/datastreams/package.json'  assert {type: "json"}
 import * as button from  '../../../../htil/plugins/ui/button/index.js'
@@ -18,7 +18,7 @@ const options = {
         'plugins/devices/muse/index.js': muse,
         'plugins/devices/ganglion/index.js': ganglion,
         'plugins/datastreams/package.json': dataPkg,
-        'plugins/datastreams/index.wasl.json': dataInfo,
+        'plugins/datastreams/index.esc.json': dataInfo,
         'plugins/datastreams/plugins/start/index.js': start
     }
 }

@@ -32,6 +32,7 @@
     },
     "dependencies": {
         "freerange": "^0.0.27",
-        "wasl": "0.0.13"
+        "escode": "*",
+        "wasl": "*"
     }
 }

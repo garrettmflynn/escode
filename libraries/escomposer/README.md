@@ -29,11 +29,11 @@ This popup allows users to search for components using the [components] repo.
 This view is an "if this, then that" system for defining flows of **data** in the application.
 
 ## Key Features
-- [x] Support for any [WASL](https://github.com/brainsatplay/wasl)-based application.
+- [ ] Support for any [ESCode](https://github.com/brainsatplay/escompose/tree/main/libraries/escode)-based application.
 
 ### Tests
-- [ ] Can load + save our [Phaser](https://github.com/garrettmflynn/phaser) plugin
-- [ ] Can load + save our [external](https://github.com/brainsatplay/wasl/tree/main/tests/0/0.0/0.0.0/external) app demo
+- [ ] Can load + save our [Phaser](https://github.com/brainsatplay/escompose/tree/main/components/phaser) plugin
+- [ ] Can load + save our [external](https://github.com/brainsatplay/escompose/tree/main/libraries/escode/tests/0/0.0/0.0.0/external) app demo
 
 ## Roadmap
 - Add templates (e.g. move)

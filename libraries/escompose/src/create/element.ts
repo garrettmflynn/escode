@@ -1,5 +1,4 @@
 import { ESComponent } from "../component";
-import * as resolve from "./utils/resolve";
 import update from "./utils/update";
 
 export function add(id, esm: ESComponent, parent) {
@@ -7,23 +6,23 @@ export function add(id, esm: ESComponent, parent) {
     let elm = create(id, esm, parent);
 
     if(!esm.element) esm.element = elm;
-    if(!esm.default) esm.default = function (props:{[key:string]:any}){ 
-        if(typeof props === 'object') 
-            for(const key in props) { 
-                if(this.element) {
-                    if(typeof this.element[key] === 'function' && typeof props[key] !== 'function')
-                        { //attempt to execute a function with arguments
-                            if(Array.isArray(props[key]))
-                            this.element[key](...props[key]);
-                            else this.element[key](props[key]);
-                        } 
-                    else if (key === 'style') { Object.assign(this.element[key],props[key])}
-                    else this.element[key] = props[key]; 
-                }
-            }
+    // if(!esm.default) esm.default = function (props:{[key:string]:any}){ 
+    //     if(typeof props === 'object') 
+    //         for(const key in props) { 
+    //             if(this.element) {
+    //                 if(typeof this.element[key] === 'function' && typeof props[key] !== 'function')
+    //                     { //attempt to execute a function with arguments
+    //                         if(Array.isArray(props[key]))
+    //                         this.element[key](...props[key]);
+    //                         else this.element[key](props[key]);
+    //                     } 
+    //                 else if (key === 'style') { Object.assign(this.element[key],props[key])}
+    //                 else this.element[key] = props[key]; 
+    //             }
+    //         }
             
-        return props;
-    }
+    //     return props;
+    // }
 
     return esm;
 }

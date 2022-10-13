@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.github.com/brainsatplay/wasl/versions/0.0.0/port.schema.json",
+  "title": "Port",
+  "description": "Exposed components of your application.",
+  "anyOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "patternProperties": {
+        "^(.+)$": {}
+      }
+    }
+  ]
+}

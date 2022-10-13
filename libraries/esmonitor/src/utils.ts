@@ -12,3 +12,10 @@ export const isSame = (a,b) => {
 export const iterateSymbols = (obj, callback) => {
     return Promise.all(Object.getOwnPropertySymbols(obj).map((sym: symbol) => callback(sym, obj[sym])))
 }
+
+export const  getPath = (type, info) => {
+    const pathType = info.path[type]
+    if (!pathType) throw new Error('Invalid Path Type')
+    const filtered = pathType.filter((v) => typeof v === 'string')
+    return filtered.join(info.keySeparator)
+}

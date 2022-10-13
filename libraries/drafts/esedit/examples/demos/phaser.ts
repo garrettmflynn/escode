@@ -1,5 +1,5 @@
-import appInfo from '../../../../components/demos/phaser/index.wasl.json' assert {type: "json"}
-// import phaserInfo from '../../../../phaser/src/index.wasl.json' assert {type: "json"}
+import appInfo from '../../../../components/demos/phaser/index.esc.json' assert {type: "json"}
+// import phaserInfo from '../../../../phaser/src/index.esc.json' assert {type: "json"}
 
 // import mainPkg from '../../../../phaser/package.json'  assert {type: "json"}
 // import phaserPkg from '../../../../phaser/src/package.json'  assert {type: "json"}
@@ -18,7 +18,7 @@ const options = {
     filesystem: {
         // 'package.json': mainPkg,
         // 'src/package.json': phaserPkg,
-        // 'src/index.wasl.json': phaserInfo,
+        // 'src/index.esc.json': phaserInfo,
         // 'src/plugins/game/index.js': game,
         // 'src/plugins/player/index.js': player,
         // 'src/plugins/cursors/index.js': cursors,

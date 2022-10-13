@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.github.com/brainsatplay/wasl/versions/0.0.0/ports.schema.json",
+  "title": "Ports",
+  "description": "Parts of your application that you wish to expose as an API.",
+  "type": "object",
+  "properties": {
+    "input": {
+      "description": "Inputs to your application.",
+      "$ref": "port.schema.json"
+    },
+    "output": {
+      "description": "Outputs of your application.",
+      "$ref": "port.schema.json"
+    }
+  },
+  "additionalProperties": false
+}

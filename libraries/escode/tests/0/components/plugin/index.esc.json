@@ -1,0 +1,19 @@
+{
+    "name": "Test Plugin",
+    "components": {
+        "add": {
+            "src": "../math/add.js",
+            "children": {
+                "multiply": true
+            }
+        },
+        "multiply": {
+            "src": "../math/multiply.js"
+        }
+    },
+
+    "ports": {
+        "input": "add",
+        "output": "multiply"
+    }
+}

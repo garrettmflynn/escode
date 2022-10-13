@@ -1,0 +1,7 @@
+{
+    "name": "app",
+    "description": "A basic ESCode application",
+    "author": "Garrett Flynn <garrettmflynn@gmail.com>",
+    "type": "module",
+    "main": "index.js"
+}

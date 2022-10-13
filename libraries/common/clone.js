@@ -1,31 +1,12 @@
-export const deep = (obj) => {
+import { drillSimple } from "./drill"
 
-    // return obj
+export const deep = (obj, opts={}) => {
 
-    const seen = []
-    const fromSeen = []
-    
-    let drill = (obj, acc={}) => {
-        for (let key in obj) {
-            const val = obj[key]
-            if (val && typeof val === 'object') {
-                const name = val.constructor.name
-                if (name === 'Object' || name === 'Array') {
-                    const idx = seen.indexOf(val)
-                    if (idx !== -1) acc[key] =fromSeen[idx]
-                    else {
-                        seen.push(val)
-                        acc[key] = Array.isArray(val) ? [] : {}
-                        fromSeen.push(acc[key])
-                        acc[key] = drill(val, acc[key])
-                    }
-                } 
-                else acc[key] = val
-            } else acc[key] = val
-        } 
+    opts.accumulator = {}
+    drillSimple(obj, (key, val, info) => {
+        if (info.simple && info.object) return Array.isArray(val) ? [] : {}
+        else return val
+    }, opts)
 
-        return acc
-    }
-
-    return drill(obj)
+    return opts.accumulator
 }

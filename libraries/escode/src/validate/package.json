@@ -1,0 +1,35 @@
+{
+  "name": "escode-validate",
+  "version": "0.0.20",
+  "description": "A validator for ESCode (ESC) files",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "repository": "https://github.com/brainsatplay/escompose",
+  "author": "Garrett Flynn <garrettmflynn@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "start:browser": "tinybuild --path tinybuild.demo.js",
+    "build": "tinybuild",
+    "types": "node types.js"
+  },
+  "devDependencies": {
+    "ajv": "^8.11.0",
+    "ajv-formats": "^2.1.1",
+    "json-schema-to-typescript": "^11.0.2"
+  },
+  "peerDependencies": {
+    "escode": "*"
+  },
+  "dependencies": {
+    "esmpile": "^0.1.1",
+    "node-fetch": "^3.2.10"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.github.com/brainsatplay/wasl/versions/0.0.0/edges.schema.json",
+  "title": "Edges",
+  "description": "The way that nodes are connected",
+  "type": "object",
+  "patternProperties": {
+    "^([^.]+)(.[^.]+)*?$": {
+      "type": "object",
+      "patternProperties": {
+        "^([^.]+)(.[^.]+)*?$": {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "$comment": "Can be inferred from the href property of each node",
+              "type": "string",
+              "pattern": "^(http|websockets|webrtc)$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "additionalProperties": false
+      }
+    },
+    "additionalProperties": false
+  }
+}

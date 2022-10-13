@@ -1,9 +1,9 @@
 
-export type WASLOptions = any
+export type ESCOptions = any
 
-export type WASLLoadInput = any
+export type ESCLoadInput = any
 
-export type WASL = any
+export type ESC = any
 
 export type NodeInfo = {
     tag: string,

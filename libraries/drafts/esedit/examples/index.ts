@@ -17,8 +17,8 @@ let app: brainsatplay.App | brainsatplay.editable.App
 
 if (method === 'remote') {
     // infoToPass = 'app' // local
-    // infoToPass = 'http://127.0.0.1:5501/index.wasl.json' // pseudolocal
-    infoToPass = 'https://raw.githubusercontent.com/brainsatplay/wasl/main/tests/0/0.0/0.0.0/external/index.wasl.json'
+    // infoToPass = 'http://127.0.0.1:5501/index.esc.json' // pseudolocal
+    infoToPass = 'https://raw.githubusercontent.com/brainsatplay/wasl/main/tests/0/0.0/0.0.0/external/index.esc.json'
 }
 
 // ------------------- Method #2: Direct Import (index.js) -------------------
