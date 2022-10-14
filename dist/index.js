@@ -16,12 +16,12 @@
   __export(update_exports, {
     default: () => update_default,
     esmOnly: () => esmOnly,
-    forwarded: () => forwarded,
-    nExecution: () => nExecution
+    nExecution: () => nExecution,
+    passedWithListener: () => passedWithListener
   });
   var nExecution = 0;
   var esmOnly = 0;
-  var forwarded = void 0;
+  var passedWithListener = void 0;
   function update_default() {
     if (this.delayId)
       clearTimeout(this.delayId);
@@ -260,8 +260,8 @@
     [id]: {
       esCompose: basic_exports,
       esListeners: {
-        [`imports.nExecution`]: "imports.forwarded",
-        [`imports.forwarded`]: (...args) => console.log("Forwarded!", args)
+        [`imports.nExecution`]: "imports.passedWithListener",
+        [`imports.passedWithListener`]: (...args) => console.log("Passed with Listener!", args)
       }
     },
     log: {

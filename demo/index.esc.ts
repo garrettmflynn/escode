@@ -11,8 +11,8 @@ export const esComponents = {
     [id]: {
         esCompose: test,
         esListeners: {
-            [`imports.nExecution`]: 'imports.forwarded',
-            [`imports.forwarded`]: (...args) =>  console.log('Forwarded!', args),
+            [`imports.nExecution`]: 'imports.passedWithListener',
+            [`imports.passedWithListener`]: (...args) =>  console.log('Passed with Listener!', args),
         }
     }, 
     log: {
