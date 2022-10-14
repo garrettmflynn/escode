@@ -1,13 +1,30 @@
+import { functionExecution, setterExecution } from "../listeners";
+
 export const isProxy = Symbol("isProxy")
 
 export const functions = (proxy) => {
     return {
         apply: async function (target, thisArg, argumentsList) {
             try {
-                console.log(`Function is running in:`, proxy.proxy.path, proxy.parent,target, argumentsList);
-                const output = await target.apply(thisArg, argumentsList);
-                console.log('Function output:', output);
-                if (proxy.callback instanceof Function) proxy.callback(proxy.path.join(proxy.options.keySeparator), {}, output)
+
+                // Notify of Function Execution
+                const pathStr = proxy.path.join(proxy.options.keySeparator)
+
+                const listeners =  (proxy.listeners) ? proxy.listeners.functions[pathStr] : undefined
+                let output, executionInfo: any = {};
+
+                if (listeners){
+                    executionInfo = await functionExecution(thisArg, listeners, target, argumentsList)
+                    output = executionInfo.output
+                } 
+                
+                // Default Behavior
+                else output = await target.apply(thisArg, argumentsList);
+
+                // Notify with Proxy Callback
+                if (proxy.callback instanceof Function) proxy.callback(pathStr, executionInfo, output)
+
+                // Return output to function
                 return output
             } catch (e) {
                 console.warn(`Cannot run function:`, e, proxy.proxy.path, proxy.parent, target, argumentsList);
@@ -25,19 +42,26 @@ export const objects = (proxy) => {
         },
         set(target, prop, newVal, receiver) {
 
+
             if (prop === isProxy) return true;
 
-            // let messageStr;
-            // if (!target.hasOwnProperty(prop)) messageStr = 'New Property!'
-            // else if (target[prop] !== newVal) messageStr = 'Changed Value!'
-            // else messageStr = 'Same Value!'
-            // console.log(messageStr, prop, newVal, proxy.path)
+            const pathStr = [...proxy.path, prop].join(proxy.options.keySeparator)
 
-            if (proxy.callback instanceof Function) proxy.callback([...proxy.path, prop].join('.'), {}, newVal)
 
             // Create Proxies for Objects
-            // TODO: Drill down to create proxies for all objects
-            if (newVal) proxy.create(prop, target, newVal)
+            if (newVal) {
+                const newProxy = proxy.create(prop, target, newVal)
+                if (newProxy) newVal = newProxy
+            }
+
+            
+            if (proxy.listeners) {
+                const listeners = proxy.listeners.setters[pathStr]
+                if (listeners) setterExecution(listeners, newVal) // run callbacks
+            }
+
+            if (proxy.callback instanceof Function) proxy.callback(pathStr, {}, newVal)
+
 
             return Reflect.set(target, prop, newVal, receiver);
         },

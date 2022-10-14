@@ -5,7 +5,7 @@ const defaultSamplingRate = 60
 
 export default class Poller {
 
-    #pollingId?: number;
+    #pollingId?: NodeJS.Timer;
     #sps: number;
 
     listeners: {[x:symbol]: ListenerInfo} = {}
@@ -52,12 +52,16 @@ export default class Poller {
 
     // Poll Listeners
     poll = (listeners) => {
-        utils.iterateSymbols(listeners, (sym, value) => {
-            let { path, callback, current, history } = value
+        utils.iterateSymbols(listeners, (sym, o) => {
+            let { callback, current, history } = o
+
+            // Resolving the path once
+            if (!o.path.resolved) o.path.resolved = utils.getPath('output', o)
+
             if (!utils.isSame(current, history)){
 
                 const info = {}
-                callback(path.output, info, current)
+                callback(o.path.resolved, info, current)
                 if (typeof current === 'object') {
                     if (Array.isArray(current)) history = [...current]
                     else history = {...current}
@@ -70,12 +74,16 @@ export default class Poller {
     start = (listeners = this.listeners) => {
         if (!this.sps) this.sps = defaultSamplingRate // Set default sampling rate
         else if (!this.#pollingId) {
+            console.warn('Starting Polling!')
             this.#pollingId = setInterval(() => this.poll(listeners), 1000/this.sps)
         }
     }
 
     // Stop Polling
     stop = () => {
-        if (this.#pollingId) clearInterval(this.#pollingId)
+        if (this.#pollingId) {
+            console.warn('Stopped Polling!')
+            clearInterval(this.#pollingId)
+        }
     }
 }

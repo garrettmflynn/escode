@@ -1,5 +1,5 @@
 import { PathFormat } from "../esmonitor/src/types"
-
+import * as standards from './standards'
 
 const hasKey = (key, obj) => {
     return obj.hasOwnProperty(key) || key in obj
@@ -7,11 +7,12 @@ const hasKey = (key, obj) => {
 
 export const getFromPath = (baseObject, path, opts: any = {}) => {
     const fallbackKeys = opts.fallbacks ?? []
-    const keySeparator = opts.keySeparator ?? '.'
+    const keySeparator = opts.keySeparator ?? standards.keySeparator
 
     if (typeof path === 'string') path = path.split(keySeparator)
     else if (typeof path == 'symbol') path = [path]
 
+    let exists;
     path = [...path]
 
     let ref =  baseObject
@@ -36,20 +37,22 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
         }
         
         // Try Standard Path
-        if (hasKey(str, ref)) ref = ref[str]
+        exists = hasKey(str, ref)
+        if (exists) ref = ref[str]
         else if (i === path.length - 1) {
             console.error(`Final path key not found: ${str}`, path, ref, baseObject)
             return
         }
     }
 
-    return ref
+    if (opts.output === 'info') return { value: ref, exists }
+    else return ref
 }
 
 
 export const setFromPath = (path: PathFormat, value: any, ref:any, opts: any = {}) => {
     const create = opts?.create ?? false
-    const keySeparator = opts?.keySeparator ?? '.'
+    const keySeparator = opts?.keySeparator ?? standards.keySeparator
 
     if (typeof path === 'string') path = path.split(keySeparator)
     else if (typeof path == 'symbol') path = [path]

@@ -1,1 +1,1 @@
-export default (input) => console.log(input)
+export default (...input) => console.log(`[log]:`, input)

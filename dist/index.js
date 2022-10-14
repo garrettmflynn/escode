@@ -15,34 +15,29 @@
   var update_exports = {};
   __export(update_exports, {
     default: () => update_default,
-    mirror: () => mirror,
+    esmOnly: () => esmOnly,
+    forwarded: () => forwarded,
     nExecution: () => nExecution
   });
-
-  // libraries/esmpile/tests/basic/dependency.js
-  var toResolve;
-  setTimeout(() => {
-    toResolve = {
-      test: true
-    };
-  }, 300);
-
-  // libraries/esmpile/tests/basic/update.js
-  var original = toResolve ? JSON.parse(JSON.stringify(toResolve)) : toResolve;
   var nExecution = 0;
-  var mirror = 0;
-  var update_default = () => {
-    nExecution++;
-    setTimeout(() => mirror = nExecution, 500);
-    console.log(`original`, original);
-    console.log(`namespace`, toResolve);
-    console.log(`named`, toResolve);
-    console.log(`nExecution`, nExecution);
-    return toResolve === toResolve;
-  };
+  var esmOnly = 0;
+  var forwarded = void 0;
+  function update_default() {
+    if (this.delayId)
+      clearTimeout(this.delayId);
+    this.nExecution++;
+    this.delayId = setTimeout(() => esmOnly = this.nExecution, 500);
+  }
 
   // libraries/esmpile/tests/basic/index.js
   var imports = update_exports;
+
+  // demo/index.esc.ts
+  var index_esc_exports = {};
+  __export(index_esc_exports, {
+    esComponents: () => esComponents,
+    esListeners: () => esListeners
+  });
 
   // components/ui/button.js
   var button_exports = {};
@@ -80,17 +75,29 @@
     return res;
   }
 
+  // libraries/escode/tests/0/components/log.js
+  var log_exports = {};
+  __export(log_exports, {
+    default: () => log_default
+  });
+  var log_default = (...input) => console.log(`[log]:`, input);
+
+  // libraries/common/standards.ts
+  var keySeparator = ".";
+  var defaultPath = "default";
+
   // libraries/common/pathHelpers.ts
   var hasKey = (key, obj) => {
     return obj.hasOwnProperty(key) || key in obj;
   };
   var getFromPath = (baseObject, path, opts = {}) => {
     const fallbackKeys = opts.fallbacks ?? [];
-    const keySeparator = opts.keySeparator ?? ".";
+    const keySeparator2 = opts.keySeparator ?? keySeparator;
     if (typeof path === "string")
-      path = path.split(keySeparator);
+      path = path.split(keySeparator2);
     else if (typeof path == "symbol")
       path = [path];
+    let exists;
     path = [...path];
     let ref = baseObject;
     for (let i = 0; i < path.length; i++) {
@@ -109,20 +116,24 @@
           }
         }
       }
-      if (hasKey(str, ref))
+      exists = hasKey(str, ref);
+      if (exists)
         ref = ref[str];
       else if (i === path.length - 1) {
         console.error(`Final path key not found: ${str}`, path, ref, baseObject);
         return;
       }
     }
-    return ref;
+    if (opts.output === "info")
+      return { value: ref, exists };
+    else
+      return ref;
   };
   var setFromPath = (path, value, ref, opts = {}) => {
     const create3 = opts?.create ?? false;
-    const keySeparator = opts?.keySeparator ?? ".";
+    const keySeparator2 = opts?.keySeparator ?? keySeparator;
     if (typeof path === "string")
-      path = path.split(keySeparator);
+      path = path.split(keySeparator2);
     else if (typeof path == "symbol")
       path = [path];
     path = [...path];
@@ -146,6 +157,144 @@
         ref = ref.esComponents;
     }
     ref[last] = value;
+  };
+
+  // demo/ui.ts
+  var main = document.getElementById("app");
+  var stateTable = document.getElementById("states");
+  var containers = {};
+  var add = (arr) => arr.reduce((a, b) => a + b, 0);
+  var average = (arr) => add(arr) / arr.length;
+  var update = async (path, info, update2, toUpdate = []) => {
+    toUpdate.forEach((state) => setFromPath(path, update2, state, { create: true }));
+    if (stateTable) {
+      const split = path.split(".");
+      const last = split.pop();
+      const obj = split.join(".");
+      let container = containers[obj];
+      if (!container) {
+        container = containers[obj] = {
+          states: {
+            averages: {},
+            elements: {},
+            output: {}
+          },
+          headers: {
+            name: document.createElement("th")
+          }
+        };
+        container.header = document.createElement("tr");
+        container.header.classList.add("header-row");
+        container.headers.name.innerText = obj;
+        container.header.appendChild(container.headers.name);
+        stateTable.appendChild(container.header);
+      }
+      let state = container.states[last];
+      if (!state) {
+        let header = container.headers.state;
+        if (!header) {
+          const header2 = document.createElement("th");
+          header2.innerText = "state";
+          container.header.appendChild(header2);
+          container.headers.state = header2;
+        }
+        state = container.states[last] = {
+          info: {
+            averages: {},
+            columns: {},
+            output: {}
+          }
+        };
+        state.header = document.createElement("th");
+        state.header.innerText = last;
+        state.div = document.createElement("tr");
+        state.value = document.createElement("td");
+        state.averages = {};
+        state.div.appendChild(state.header);
+        state.div.appendChild(state.value);
+        stateTable.appendChild(state.div);
+      }
+      state.value.innerHTML = JSON.stringify(update2);
+      const infoCopy = { ...info };
+      delete infoCopy.function;
+      delete infoCopy.arguments;
+      delete infoCopy.info;
+      for (let key in infoCopy) {
+        const val = infoCopy[key];
+        if (!state.info.averages[key])
+          state.info.averages[key] = [];
+        let output = val;
+        if (typeof val === "number") {
+          const aveArr = state.info.averages[key];
+          aveArr.push(val);
+          output = `${average(aveArr).toFixed(3)}ms`;
+        }
+        if (output === void 0)
+          output = "No Data";
+        let header = container.headers[key];
+        if (!header) {
+          const header2 = document.createElement("th");
+          header2.innerText = key;
+          container.header.appendChild(header2);
+          container.headers[key] = header2;
+        }
+        let col = state.info.columns[key];
+        if (!col) {
+          col = state.info.columns[key] = document.createElement("td");
+          state.div.appendChild(col);
+        }
+        col.innerText = output;
+        state.info.output[key] = output;
+      }
+      for (let key in state.averages) {
+        if (state.averages[key].length > 100)
+          state.averages[key].shift();
+      }
+    }
+  };
+
+  // demo/index.esc.ts
+  var id = "test";
+  var moveButtonId = "button";
+  var esComponents = {
+    [id]: {
+      esCompose: basic_exports,
+      esListeners: {
+        [`imports.nExecution`]: "imports.forwarded",
+        [`imports.forwarded`]: (...args) => console.log("Forwarded!", args)
+      }
+    },
+    log: {
+      esCompose: log_exports
+    },
+    container: {
+      componentToMove: moveButtonId,
+      esCompose: {
+        tagName: "div"
+      },
+      log: {
+        esCompose: log_exports
+      },
+      esComponents: {
+        header: {
+          tagName: "h1",
+          attributes: {
+            innerText: "ESCompose Demo"
+          }
+        },
+        [moveButtonId]: {
+          esCompose: button_exports,
+          esTrigger: { value: true, __internal: true }
+        }
+      },
+      parentNode: main
+    }
+  };
+  var esListeners = {
+    [`container.${moveButtonId}`]: {
+      [`${id}.imports`]: true,
+      [`log`]: true
+    }
   };
 
   // libraries/common/check.js
@@ -200,11 +349,13 @@
           this.stop();
       };
       this.poll = (listeners) => {
-        iterateSymbols(listeners, (sym, value) => {
-          let { path, callback, current, history } = value;
+        iterateSymbols(listeners, (sym, o) => {
+          let { callback, current, history } = o;
+          if (!o.path.resolved)
+            o.path.resolved = getPath("output", o);
           if (!isSame(current, history)) {
             const info = {};
-            callback(path.output, info, current);
+            callback(o.path.resolved, info, current);
             if (typeof current === "object") {
               if (Array.isArray(current))
                 history = [...current];
@@ -219,12 +370,15 @@
         if (!this.sps)
           this.sps = defaultSamplingRate;
         else if (!this.#pollingId) {
+          console.warn("Starting Polling!");
           this.#pollingId = setInterval(() => this.poll(listeners), 1e3 / this.sps);
         }
       };
       this.stop = () => {
-        if (this.#pollingId)
+        if (this.#pollingId) {
+          console.warn("Stopped Polling!");
           clearInterval(this.#pollingId);
+        }
       };
       if (listeners)
         this.listeners = listeners;
@@ -250,9 +404,11 @@
   // libraries/esmonitor/src/listeners.ts
   var listeners_exports = {};
   __export(listeners_exports, {
+    functionExecution: () => functionExecution,
     functions: () => functions,
     getExecutionInfo: () => getExecutionInfo,
-    getters: () => getters
+    setterExecution: () => setterExecution,
+    setters: () => setters
   });
 
   // libraries/esmonitor/src/info.ts
@@ -300,26 +456,30 @@
     result.output = await func(...args);
     return result;
   };
-  var handler = (info, collection, subscribeCallback) => {
-    if (!get(info, collection)) {
-      let parent = info.parent;
-      let val = parent[info.last];
-      subscribeCallback(val, parent);
+  var handler = (info, collection, subscribeCallback, monitor2 = true) => {
+    if (monitor2) {
+      if (!get(info, collection)) {
+        let parent = info.parent;
+        let val = parent[info.last];
+        subscribeCallback(val, parent);
+      }
     }
     register(info, collection);
   };
-  var getters = (info, collection) => {
+  var setterExecution = async (listeners, value) => {
+    const executionInfo = {};
+    await iterateSymbols(listeners, (_, o) => o.callback(getPath("output", o), executionInfo, value));
+  };
+  var setters = (info, collection, monitor2 = true) => {
     handler(info, collection, (value, parent) => {
       let val = value;
       delete parent[info.last];
       try {
-        console.log("Definigin", info.path.absolute);
         Object.defineProperty(parent, info.last, {
           get: () => val,
           set: async (v) => {
             const listeners = Object.assign({}, collection[getPath("absolute", info)]);
-            const executionInfo = {};
-            await iterateSymbols(listeners, (_, o) => o.callback(getPath("output", info), executionInfo, v));
+            setterExecution(listeners, v);
             val = v;
           },
           enumerable: true
@@ -327,31 +487,38 @@
       } catch (e) {
         throw e;
       }
-    });
+    }, monitor2);
   };
-  var functions = (info, collection) => {
+  var functionExecution = async (context, listeners, func, args) => {
+    listeners = Object.assign({}, listeners);
+    const keys = Object.getOwnPropertySymbols(listeners);
+    const info = listeners[keys[0]];
+    const executionInfo = await getExecutionInfo(async (...args2) => await func.call(context, ...args2), args, info.infoToOutput);
+    await iterateSymbols(listeners, (_, o) => {
+      o.callback(getPath("output", o), executionInfo.value, executionInfo.output);
+    });
+    return executionInfo;
+  };
+  var functions = (info, collection, monitor2 = true) => {
     handler(info, collection, (_, parent) => {
       parent[info.last] = async function(...args) {
-        const listeners = Object.assign({}, collection[getPath("absolute", info)]);
-        const executionInfo = await getExecutionInfo(async (...args2) => await info.original.call(this, ...args2), args, info.infoToOutput);
-        await iterateSymbols(listeners, (_2, o) => {
-          o.callback(getPath("output", info), executionInfo.value, executionInfo.output);
-        });
+        const listeners = collection[getPath("absolute", info)];
+        functionExecution(this, listeners, info.original, args);
       };
-    });
+    }, monitor2);
   };
 
   // libraries/common/drill.js
-  var drillSimple = (obj, callback, options2) => {
-    let accumulator = options2.accumulator;
+  var drillSimple = (obj, callback, options) => {
+    let accumulator = options.accumulator;
     if (!accumulator)
-      accumulator = options2.accumulator = {};
-    const ignore = options2.ignore || [];
-    const path = options2.path || [];
-    const condition = options2.condition || true;
+      accumulator = options.accumulator = {};
+    const ignore = options.ignore || [];
+    const path = options.path || [];
+    const condition = options.condition || true;
     const seen = [];
     const fromSeen = [];
-    let drill = (obj2, acc = {}, globalInfo) => {
+    let drill2 = (obj2, acc = {}, globalInfo) => {
       for (let key in obj2) {
         if (ignore.includes(key))
           continue;
@@ -373,12 +540,12 @@
               acc[key] = fromSeen[idx];
             else {
               seen.push(val);
-              const pass = condition instanceof Function ? condition(key, val, info) : condition;
-              info.pass = pass;
+              const pass2 = condition instanceof Function ? condition(key, val, info) : condition;
+              info.pass = pass2;
               acc[key] = callback(key, val, info);
-              if (pass) {
+              if (pass2) {
                 fromSeen.push(acc[key]);
-                acc[key] = drill(val, acc[key], { ...globalInfo, path: newPath });
+                acc[key] = drill2(val, acc[key], { ...globalInfo, path: newPath });
               }
             }
           } else {
@@ -390,7 +557,7 @@
       }
       return acc;
     };
-    return drill(obj, accumulator, { path });
+    return drill2(obj, accumulator, { path });
   };
 
   // libraries/esmonitor/src/inspectable/handlers.ts
@@ -405,11 +572,16 @@
     return {
       apply: async function(target, thisArg, argumentsList) {
         try {
-          console.log(`Function is running in:`, proxy.proxy.path, proxy.parent, target, argumentsList);
-          const output = await target.apply(thisArg, argumentsList);
-          console.log("Function output:", output);
+          const pathStr = proxy.path.join(proxy.options.keySeparator);
+          const listeners = proxy.listeners ? proxy.listeners.functions[pathStr] : void 0;
+          let output, executionInfo = {};
+          if (listeners) {
+            executionInfo = await functionExecution(thisArg, listeners, target, argumentsList);
+            output = executionInfo.output;
+          } else
+            output = await target.apply(thisArg, argumentsList);
           if (proxy.callback instanceof Function)
-            proxy.callback(proxy.path.join(proxy.options.keySeparator), {}, output);
+            proxy.callback(pathStr, executionInfo, output);
           return output;
         } catch (e) {
           console.warn(`Cannot run function:`, e, proxy.proxy.path, proxy.parent, target, argumentsList);
@@ -427,10 +599,19 @@
       set(target, prop, newVal, receiver) {
         if (prop === isProxy)
           return true;
+        const pathStr = [...proxy.path, prop].join(proxy.options.keySeparator);
+        if (newVal) {
+          const newProxy = proxy.create(prop, target, newVal);
+          if (newProxy)
+            newVal = newProxy;
+        }
+        if (proxy.listeners) {
+          const listeners = proxy.listeners.setters[pathStr];
+          if (listeners)
+            setterExecution(listeners, newVal);
+        }
         if (proxy.callback instanceof Function)
-          proxy.callback([...proxy.path, prop].join("."), {}, newVal);
-        if (newVal)
-          proxy.create(prop, target, newVal);
+          proxy.callback(pathStr, {}, newVal);
         return Reflect.set(target, prop, newVal, receiver);
       }
     };
@@ -444,21 +625,21 @@
     } catch (e) {
       return e;
     }
-    if (parent[key] && parent[key][isProxy])
+    const alreadyIs = parent[key] && parent[key][isProxy];
+    if (alreadyIs)
       return false;
     const type = typeof val;
     const isObject = type === "object";
     const isFunction = type == "function";
-    const onlyObjsAndFuncs = !val || !(isObject || isFunction);
-    if (onlyObjsAndFuncs)
+    const notObjOrFunc = !val || !(isObject || isFunction);
+    if (notObjOrFunc)
       return false;
     if (val instanceof Element)
       return false;
     if (val instanceof EventTarget)
       return false;
     const isESM = isObject && esm(val);
-    const getDesc = isObject && parent.hasOwnProperty(key);
-    if (!getDesc && isFunction)
+    if (isFunction)
       return true;
     else {
       const desc = Object.getOwnPropertyDescriptor(parent, key);
@@ -467,7 +648,8 @@
           return true;
         else
           console.warn("Cannot create proxy for ESM:", key, val);
-      }
+      } else if (!parent.hasOwnProperty(key))
+        return true;
     }
     return false;
   };
@@ -477,14 +659,13 @@
       this.check = canCreate;
       this.create = (key, parent, val) => {
         const create3 = this.check(parent, key, val);
-        if (create3 instanceof Error)
-          return;
-        else if (create3) {
+        if (create3 && !(create3 instanceof Error)) {
           if (val === void 0)
             val = parent[key];
           parent[key] = new Inspectable(val, { ...this.options, name: key, parent: this });
+          return parent[key];
         }
-        return parent[key];
+        return;
       };
       this.options = opts;
       this.parent = opts.parent;
@@ -493,6 +674,18 @@
         this.path = [...this.parent.path];
       if (opts.name)
         this.path.push(opts.name);
+      if (opts.listeners)
+        this.listeners = opts.listeners;
+      if (opts.path) {
+        if (opts.path instanceof Function)
+          this.path = opts.path(this.path);
+        else if (Array.isArray(opts.path))
+          this.path = opts.path;
+        else
+          console.log("Invalid path", opts.path);
+      }
+      if (!this.options.keySeparator)
+        this.options.keySeparator = keySeparator;
       let type = opts.type;
       if (type != "object")
         type = typeof target === "function" ? "function" : "object";
@@ -505,35 +698,37 @@
   };
 
   // libraries/esmonitor/src/Monitor.ts
+  var fallback = "esComponents";
   var Monitor = class {
     constructor(opts = {}) {
       this.poller = new Poller();
       this.options = {
         pathFormat: "relative",
-        keySeparator: "."
+        keySeparator
       };
       this.listenerLookup = {};
       this.listeners = {
         polling: this.poller.listeners,
         functions: {},
-        getters: {}
+        setters: {}
       };
       this.references = {};
-      this.get = (path) => getFromPath(this.references, path, {
+      this.get = (path, output) => getFromPath(this.references, path, {
         keySeparator: this.options.keySeparator,
-        fallbacks: ["esComponents"]
+        fallbacks: [fallback],
+        output
       });
       this.set = (path, value, ref = this.references, opts = {}) => setFromPath(path, value, ref, opts);
-      this.on = (absPath, callback, options2 = {}) => {
+      this.on = (absPath, callback, options = {}) => {
         let splitPath = absPath;
         if (typeof absPath === "string")
           splitPath = absPath.split(this.options.keySeparator);
         else if (typeof absPath === "symbol")
           splitPath = [absPath];
         const id2 = splitPath[0];
-        return this.listen(id2, callback, splitPath.slice(1), options2);
+        return this.listen(id2, callback, splitPath.slice(1), options);
       };
-      this.createInfo = (id2, callback, path, original2) => {
+      this.getInfo = (id2, type, callback, path, original) => {
         if (typeof path === "string")
           path = path.split(this.options.keySeparator);
         const relativePath = path.join(this.options.keySeparator);
@@ -580,16 +775,16 @@
           set reference(val) {
             refs[id2] = val;
           },
-          original: original2,
-          history: typeof original2 === "object" ? Object.assign({}, original2) : original2,
+          original,
+          history: typeof original === "object" ? Object.assign({}, original) : original,
           sub: Symbol("subscription"),
           last: path.slice(-1)[0]
         };
         this.listenerLookup[info.sub] = getPath("absolute", info);
         return info;
       };
-      this.listen = (id2, callback, path = [], options2, __internal = {}) => {
-        let isDynamic = options2.static ? !options2.static : true;
+      this.listen = (id2, callback, path = [], options, __internal = {}) => {
+        let isDynamic = options.static ? !options.static : true;
         if (typeof path === "string")
           path = path.split(this.options.keySeparator);
         else if (typeof path === "symbol")
@@ -602,17 +797,18 @@
         }
         if (isDynamic && !globalThis.Proxy) {
           isDynamic = false;
-          console.warn("Falling back to using getters and setters...");
+          console.warn("Falling back to using function interception and setters...");
         }
-        if (isDynamic && !baseRef[isProxy]) {
+        let isInspectable = baseRef[isProxy];
+        if (isDynamic && !isInspectable) {
           const inspector = new Inspectable(baseRef, {
-            callback: (path2, info, update) => {
-              console.log("Handling internal calls", path2, info, update);
-            },
-            keySeparator: this.options.keySeparator
+            keySeparator: this.options.keySeparator,
+            listeners: this.listeners,
+            path: (path2) => path2.filter((str) => str !== fallback)
           });
           this.set(id2, inspector);
           baseRef = inspector;
+          isInspectable = true;
         }
         if (!__internal.poll)
           __internal.poll = esm(baseRef);
@@ -636,40 +832,33 @@
         };
         let subs = {};
         if (toMonitorInternally(ref, true)) {
-          const drillOptions = {
-            condition: (_, val) => toMonitorInternally(val)
-          };
           drillSimple(ref, (key, val, drillInfo) => {
             if (drillInfo.pass)
               return;
             else {
               const fullPath = [...arrayPath, ...drillInfo.path];
-              if (typeof val === "function") {
-                if (__internalComplete.poll) {
-                  console.warn(`Skipping subscription to ${fullPath.join(this.options.keySeparator)} since its parent is ESM.`);
-                } else {
-                  const info = this.createInfo(id2, callback, fullPath, val);
-                  this.add("functions", info);
-                  const abs = getPath("absolute", info);
-                  subs[abs] = info.sub;
-                }
-              } else {
-                const internalSubs = this.listen(id2, callback, fullPath, options2, __internalComplete);
-                Object.assign(subs, internalSubs);
-              }
+              const internalSubs = this.listen(id2, callback, fullPath, options, __internalComplete);
+              Object.assign(subs, internalSubs);
             }
-          }, drillOptions);
+          }, {
+            condition: (_, val) => toMonitorInternally(val)
+          });
         } else {
-          const info = this.createInfo(id2, callback, arrayPath, ref);
+          let info;
           try {
-            if (__internalComplete.poll)
+            if (__internalComplete.poll) {
+              info = this.getInfo(id2, "polling", callback, arrayPath, ref);
               this.poller.add(info);
-            else if (typeof ref === "function")
-              this.add("functions", info);
-            else
-              this.add("getters", info);
+            } else {
+              let type = "setters";
+              if (typeof ref === "function")
+                type = "functions";
+              info = this.getInfo(id2, type, callback, arrayPath, ref);
+              this.add(type, info, !isInspectable);
+            }
           } catch (e) {
             console.warn("Falling to polling:", path, e);
+            info = this.getInfo(id2, "polling", callback, arrayPath, ref);
             this.poller.add(info);
           }
           subs[getPath("absolute", info)] = info.sub;
@@ -681,9 +870,9 @@
           }
         }
       };
-      this.add = (type, info) => {
+      this.add = (type, info, monitor2 = true) => {
         if (listeners_exports[type])
-          listeners_exports[type](info, this.listeners[type]);
+          listeners_exports[type](info, this.listeners[type], monitor2);
         else
           this.listeners[type][getPath("absolute", info)][info.sub] = info;
       };
@@ -691,7 +880,7 @@
         if (!subs) {
           subs = subs = {
             ...this.listeners.functions,
-            ...this.listeners.getters,
+            ...this.listeners.setters,
             ...this.listeners.polling
           };
         }
@@ -716,19 +905,19 @@
         const polling = this.poller.get(sub);
         const funcs = this.listeners.functions[absPath];
         const func = funcs?.[sub];
-        const getters2 = this.listeners.getters[absPath];
-        const getter = getters2?.[sub];
+        const setters2 = this.listeners.setters[absPath];
+        const setter = setters2?.[sub];
         if (polling)
           this.poller.remove(sub);
         else if (func) {
           delete funcs[sub];
           if (!Object.getOwnPropertySymbols(funcs).length)
             func.current = func.original;
-        } else if (getter) {
-          delete getters2[sub];
-          if (!Object.getOwnPropertySymbols(getters2).length) {
-            const parent = getter.parent;
-            const last = getter.last;
+        } else if (setter) {
+          delete setters2[sub];
+          if (!Object.getOwnPropertySymbols(setters2).length) {
+            const parent = setter.parent;
+            const last = setter.last;
             const value = parent[last];
             Object.defineProperty(parent, last, { value });
           }
@@ -772,7 +961,7 @@
   };
 
   // libraries/escompose/src/create/element.ts
-  function add(id2, esm2, parent) {
+  function add2(id2, esm2, parent) {
     let elm = create(id2, esm2, parent);
     if (!esm2.element)
       esm2.element = elm;
@@ -804,7 +993,7 @@
 
   // libraries/escompose/src/create/index.ts
   var create_default = (id2, esm2, parent) => {
-    esm2 = add(id2, esm2, parent);
+    esm2 = add2(id2, esm2, parent);
     let el = esm2.element;
     delete esm2.element;
     Object.defineProperty(esm2, "element", {
@@ -887,7 +1076,8 @@
           };
           window.addEventListener("resize", onresizeEventCallback);
         }
-      }
+      },
+      enumerable: true
     });
     esm2.onresize = onresize;
     if (esm2.element)
@@ -929,172 +1119,189 @@
   };
 
   // libraries/escompose/src/index.ts
-  var create2 = (config, options2) => {
-    console.log(config);
-    if (!options2.keySeparator)
-      options2.keySeparator = ".";
-    let monitor2 = options2.monitor;
-    if (!(monitor2 instanceof src_default))
-      monitor2 = options2.monitor = new src_default(options2);
-    let components = {};
-    const drill = (o, id3, parent, path = []) => {
-      const clonedEsCompose = deep(o.esCompose) ?? {};
-      console.log("ESC", path, clonedEsCompose);
-      let merged = Object.assign({}, Object.assign(Object.assign({}, clonedEsCompose), o));
-      delete merged.esCompose;
-      console.log("merged", path, deep(merged));
-      console.log("merged (active)", path, merged);
-      merged = deep(merged);
-      console.log("merged (active2)", path, merged);
-      const instance2 = create_default(id3, merged, parent);
-      if (instance2.esComponents) {
-        for (let name in instance2.esComponents) {
-          const base = instance2.esComponents[name];
-          const thisInstance = drill(base, name, instance2, path);
-          instance2.esComponents[name] = thisInstance;
+  var drill = (o, id2, parent, path = [], opts) => {
+    const clonedEsCompose = deep(o.esCompose) ?? {};
+    let merged = Object.assign({}, Object.assign(Object.assign({}, clonedEsCompose), o));
+    delete merged.esCompose;
+    const instance = create_default(id2, merged, parent);
+    const savePath = path.join(opts.keySeparator ?? keySeparator);
+    if (opts?.components)
+      opts.components[savePath] = { instance, depth: parent ? path.length + 1 : path.length };
+    if (instance.esComponents) {
+      for (let name in instance.esComponents) {
+        const base = instance.esComponents[name];
+        let thisPath = [...path, name];
+        const thisInstance = drill(base, name, instance, thisPath, opts);
+        instance.esComponents[name] = thisInstance;
+      }
+    }
+    return instance;
+  };
+  var setListeners = (context, components) => {
+    context.listeners = {};
+    for (let absPath in components) {
+      const info = components[absPath];
+      const listeners = info.instance.esListeners;
+      for (let path in listeners) {
+        const basePath = [context.id];
+        const topPath = [];
+        if (absPath)
+          topPath.push(...absPath.split(context.options.keySeparator));
+        if (path)
+          topPath.push(...path.split(context.options.keySeparator));
+        basePath.push(...topPath);
+        const obj = context.monitor.get(basePath);
+        if (obj?.__isESComponent)
+          basePath.push(defaultPath);
+        const joined = topPath.join(context.options.keySeparator);
+        if (!context.listeners[joined])
+          context.listeners[joined] = {};
+        const value = listeners[path];
+        if (typeof value === "object")
+          context.listeners[joined] = { ...listeners[path] };
+        else
+          context.listeners[joined] = value;
+        context.monitor.on(basePath, (path2, info2, args) => passToListeners(context, absPath, path2, info2, args), context.options.listeners);
+      }
+    }
+  };
+  function pass(from, target, args, context) {
+    const id2 = context.id;
+    let parent, key, root;
+    const isValue = target?.__value;
+    parent = target.parent;
+    key = target.key;
+    root = target.root;
+    target = target.parent[key];
+    let ogValue = target;
+    const type = typeof target;
+    const checkIfSetter = (path) => {
+      const info = context.monitor.get(path, "info");
+      if (info.exists) {
+        const val = info.value;
+        const noDefault = typeof val !== "function" && !val?.default;
+        if (noDefault)
+          target = toSet;
+        else
+          target = val;
+        parent[key] = target;
+      }
+    };
+    if (typeof target === "boolean") {
+      if (!isValue) {
+        const fullPath = [id2];
+        if (root)
+          fullPath.push(root);
+        fullPath.push(...key.split(context.options.keySeparator));
+        checkIfSetter(fullPath);
+      } else
+        console.error("Cannot use a boolean for esListener...");
+    } else if (type === "string") {
+      const path = [id2];
+      const topPath = [];
+      if (root)
+        topPath.push(root);
+      topPath.push(...target.split(context.options.keySeparator));
+      path.push(...topPath);
+      checkIfSetter(path);
+      if (isValue)
+        parent[key] = { [ogValue]: parent[key] };
+    }
+    if (target === toSet) {
+      const parentPath = [id2];
+      if (root)
+        parentPath.push(root);
+      parentPath.push(...key.split(context.options.keySeparator));
+      const idx = parentPath.pop();
+      const info = context.monitor.get(parentPath, "info");
+      info.value[idx] = args[0];
+    } else if (target?.default)
+      target.default(...args);
+    else if (typeof target === "function")
+      target(...args);
+    else {
+      let baseMessage = `listener: ${from} \u2014> ${key}`;
+      if (parent) {
+        console.error(`Deleting ${baseMessage}`, parent[key]);
+        delete parent[key];
+      } else
+        console.error(`Failed to add ${baseMessage}`, target);
+    }
+  }
+  function passToListeners(context, root, name, _, ...args) {
+    const sep = context.options.keySeparator;
+    const noDefault = name.slice(0, -`${sep}${defaultPath}`.length);
+    const listenerGroups = [{
+      info: context.listeners[name],
+      name
+    }, {
+      info: context.listeners[noDefault],
+      name: noDefault
+    }];
+    listenerGroups.forEach((group) => {
+      const info = group.info;
+      if (info) {
+        if (typeof info === "object") {
+          for (let key in info) {
+            pass(name, {
+              parent: info,
+              key,
+              root,
+              value: info[key]
+            }, args, context);
+          }
+        } else {
+          pass(name, {
+            value: info,
+            parent: context.listeners,
+            key: group.name,
+            root,
+            __value: true
+          }, args, context);
         }
       }
-      components[path.join(options2.keySeparator)] = instance2;
-      return instance2;
-    };
-    const id2 = Symbol("root");
-    const instance = drill(config, id2);
-    console.log("instance", instance, deep(instance));
-    let fullInstance = deep(instance);
-    monitor2.set(id2, fullInstance);
-    fullInstance.esInit();
-    const onOutput = (name, _, ...args) => {
-      console.log("out", name, args, fullInstance.esListeners);
-      const defaultPath = ".default";
-      const noDefault = name.slice(0, -defaultPath.length);
-      const listenerGroups = [fullInstance.esListeners[name], fullInstance.esListeners[noDefault]];
-      listenerGroups.forEach((group) => {
-        for (let key in group) {
-          let target = group[key];
-          const type = typeof target;
-          const noDefault2 = type !== "function" && !target?.default;
-          if (type === "string")
-            target = group[key] = fullInstance.esComponents[target];
-          else if (noDefault2) {
-            const path = key.split(".");
-            target = getFromPath(fullInstance.esComponents, path, {
-              fallbacks: ["esComponents"],
-              keySeparator: options2.keySeparator
-            });
-          }
-          if (target?.default)
-            target.default(...args);
-          else if (typeof target === "function")
-            target(...args);
-          else {
-            console.warn(`Deleting listener: ${name} \u2014> ${key}`);
-            delete group[key];
-          }
-        }
-      });
-    };
-    for (let path in fullInstance.esListeners) {
-      const basePath = [id2, ...path.split(".")];
-      const obj = monitor2.get(basePath, void 0);
-      if (obj.__isESComponent)
-        basePath.push("default");
-      monitor2.on(basePath, onOutput);
+    });
+  }
+  var toSet = Symbol("toSet");
+  var create2 = (config, options) => {
+    let monitor2;
+    if (options.monitor instanceof src_default) {
+      monitor2 = options.monitor;
+      options.keySeparator = monitor2.options.keySeparator;
+    } else {
+      if (!options.monitor)
+        options.monitor = {};
+      if (!options.monitor.keySeparator)
+        options.monitor.keySeparator = options.keySeparator;
+      monitor2 = new src_default(options.monitor);
     }
+    if (!options.keySeparator)
+      options.keySeparator = keySeparator;
+    const fullOptions = options;
+    const id2 = Symbol("root");
+    const components = {};
+    const instance = drill(config, id2, void 0, void 0, {
+      components,
+      keySeparator: fullOptions.keySeparator
+    });
+    let fullInstance = instance;
+    monitor2.set(id2, fullInstance);
+    const context = {
+      id: id2,
+      instance: fullInstance,
+      monitor: monitor2,
+      options: fullOptions
+    };
+    setListeners(context, components);
+    fullInstance.esInit();
     return fullInstance;
   };
   var src_default2 = create2;
 
-  // index.ts
-  var app = document.getElementById("app");
-  var statesDiv = document.getElementById("states");
-  var id = "test";
-  var moveButtonId = "button";
-  var monitor = new Monitor();
-  var objectStates = {};
-  monitor.set("states", objectStates);
-  monitor.on("states", (path, info, update) => {
-    console.log("State Object Updated!", path, update);
-  }, { static: true });
-  var inspectableState = new Inspectable(objectStates, {
-    callback: async (path, info, update) => {
-      console.log("Inspected Object Updated!", path, update);
-    }
-  });
-  var states = {};
-  var add2 = (arr) => arr.reduce((a, b) => a + b, 0);
-  var average = (arr) => add2(arr) / arr.length;
-  var logUpdate = async (path, info, update) => {
-    monitor.set(path, update, inspectableState, { create: true });
-    if (statesDiv) {
-      let state = states[path];
-      if (!state) {
-        state = states[path] = {};
-        state.div = document.createElement("div");
-        state.t = document.createElement("p");
-        state.tAdded = document.createElement("p");
-        state.value = document.createElement("p");
-        state.averages = {
-          t: [],
-          tAdded: []
-        };
-        state.div.appendChild(state.value);
-        state.div.appendChild(state.t);
-        state.div.appendChild(state.tAdded);
-        statesDiv.appendChild(state.div);
-      }
-      state.value.innerHTML = `<h4>${path}</h4> ${JSON.stringify(update)}`;
-      const active = info.function && info.arguments && info.info;
-      const o = active ? await getExecutionInfo(info.function, info.arguments, info.info) : { output: update, value: {} };
-      if (info.hasOwnProperty("performance")) {
-        const executionTime = info.performance;
-        if (o.value.performance) {
-          const tAdded = executionTime - o.value.performance;
-          state.averages.tAdded.push(tAdded);
-        }
-        if (executionTime)
-          state.averages.t.push(executionTime);
-        state.t.innerHTML = `<span style="font-size: 80%;"><b>Execution Time:</b> ${average(state.averages.t).toFixed(3)}</span>`;
-        state.tAdded.innerHTML = `<span style="font-size: 80%;"><b>Execution Time Difference:</b> ${average(state.averages.tAdded).toFixed(3)}</span>`;
-      }
-      for (let key in state.averages) {
-        if (state.averages[key].length > 100)
-          state.averages[key].shift();
-      }
-    }
-  };
-  var escodeFile = {
-    esComponents: {
-      [id]: {
-        esCompose: basic_exports
-      },
-      container: {
-        componentToMove: moveButtonId,
-        esCompose: {
-          tagName: "div",
-          esComponents: {
-            header: {
-              tagName: "h1",
-              attributes: {
-                innerText: "ESCompose Demo"
-              }
-            },
-            [moveButtonId]: {
-              esCompose: button_exports,
-              esTrigger: { value: true, __internal: true }
-            }
-          }
-        },
-        parentNode: app
-      }
-    },
-    esListeners: {
-      [`container.${moveButtonId}`]: {
-        [`${id}.imports`]: true
-      },
-      [`${id}.imports`]: logUpdate
-    }
-  };
-  var options = {
+  // demo/index.ts
+  var states = [];
+  var logUpdate = (path, info, newVal) => update(path, info, newVal, states);
+  var monitor = new Monitor({
     onInit: logUpdate,
     onUpdate: {
       callback: logUpdate,
@@ -1102,13 +1309,20 @@
         performance: true
       }
     },
-    monitor: {
-      pathFormat: "absolute",
-      polling: {
-        sps: 60
-      }
-    }
-  };
-  var component = src_default2(escodeFile, options);
+    pathFormat: "absolute",
+    polling: { sps: 60 }
+  });
+  var objectStates = {};
+  var inspectableState = new Inspectable(objectStates, {
+    callback: async (path, info, update2) => console.log("States Updated!", path, update2)
+  });
+  states.push(inspectableState);
+  var esmId = "ESM";
+  monitor.set(esmId, basic_exports);
+  monitor.on(esmId, (path, _, update2) => console.log("Polling Result:", path, update2));
+  var component = src_default2(index_esc_exports, {
+    monitor,
+    listeners: { static: false }
+  });
   console.log("Configuration Object", component);
 })();

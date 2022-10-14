@@ -96,7 +96,8 @@ export default (id, esm, parent?) => {
                     };
                     window.addEventListener('resize', onresizeEventCallback);
                 }
-            }
+            },
+            enumerable: true
         })
 
         esm.onresize = onresize
@@ -123,7 +124,6 @@ export default (id, esm, parent?) => {
                 }
             }
         }
-
 
         Object.defineProperty(esm, '__isESComponent', {
             value: true,

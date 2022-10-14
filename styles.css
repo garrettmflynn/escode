@@ -14,7 +14,7 @@ body {
     padding: 0;
     width: 100vw;
     height: 100vh;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 section {
@@ -116,11 +116,27 @@ nav h1 {
 
 
 /* States */
-#states {
-    display: flex;
-    overflow-y: scroll;
+
+/* #states {
+    padding: 0px 25px;
+} */
+
+#states td, #states th {
+    padding: 5px 0px;
+    padding-right: 20px;
 }
 
-#states > div {
-    padding: 0px 25px;
+#states .header-row > th {
+    padding: 10px;
+    padding-right: 50px;
+}
+
+#states {
+    text-align: left;
+}
+
+#states .header-row {
+    background: black;
+    color: white;
+    padding-top: 20px;
 }

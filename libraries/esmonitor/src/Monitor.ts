@@ -2,7 +2,7 @@ import * as check from '../../common/check.js'
 import Poller from './Poller.js'
 
 import { Options } from '../../common/types'
-import { PathFormat, ListenerInfo, InternalOptions, ListenerPool, ListenerLookup, ArrayPath, ListenerOptions } from './types'
+import { PathFormat, ListenerInfo, InternalOptions, ListenerRegistry, ListenerLookup, ArrayPath, ListenerOptions, MonitorOptions } from './types'
 import * as listeners from './listeners'
 import { iterateSymbols, getPath } from './utils.js'
 import { drillSimple } from '../../common/drill.js'
@@ -10,25 +10,24 @@ import { getFromPath, setFromPath } from '../../common/pathHelpers.js'
 import { isProxy } from './inspectable/handlers.js'
 import Inspectable from './inspectable/index.js'
 
+import * as standards from '../../common/standards'
+
+const fallback = 'esComponents'
 
 export default class Monitor {
 
     poller = new Poller()
 
-    options: Options = {
+    options: MonitorOptions = {
         pathFormat: 'relative',
-        keySeparator: '.',
+        keySeparator: standards.keySeparator,
     }
     
     listenerLookup: ListenerLookup = {}
-    listeners: {
-        functions: ListenerPool,
-        getters: ListenerPool,
-        polling: Poller['listeners'],
-    } = {
+    listeners: ListenerRegistry = {
         polling: this.poller.listeners,
         functions: {},
-        getters: {},
+        setters: {},
     }
 
     references: {
@@ -37,14 +36,15 @@ export default class Monitor {
         }
     } = {}
 
-    constructor(opts:Partial<Options>={}){
+    constructor(opts:Partial<MonitorOptions>={}){
         Object.assign(this.options, opts)
         this.poller.setOptions(opts.polling)
     }
 
-    get = (path) => getFromPath(this.references, path, {
+    get = (path, output?) => getFromPath(this.references, path, {
         keySeparator: this.options.keySeparator,
-        fallbacks: ['esComponents']
+        fallbacks: [fallback],
+        output
     })
 
     set = (path, value, ref:any = this.references, opts = {}) => setFromPath(path, value, ref, opts)
@@ -62,7 +62,7 @@ export default class Monitor {
     }
 
 
-    createInfo = (id, callback, path, original) => {
+    getInfo = (id, type, callback, path, original) => {
         if (typeof path === 'string') path = path.split(this.options.keySeparator)
         const relativePath = path.join(this.options.keySeparator)
 
@@ -134,21 +134,24 @@ export default class Monitor {
 
         if (isDynamic && !globalThis.Proxy) {
             isDynamic = false
-            console.warn('Falling back to using getters and setters...')
+            console.warn('Falling back to using function interception and setters...')
         }
 
 
+        let isInspectable = baseRef[isProxy]
 
-        if (isDynamic && !baseRef[isProxy]) {
+
+        if (isDynamic && !isInspectable) {
+            
             const inspector = new Inspectable(baseRef, {
-                callback: (path, info, update) => {
-                    console.log('Handling internal calls', path, info, update)
-                },
                 keySeparator: this.options.keySeparator,
+                listeners: this.listeners,
+                path: (path) => path.filter((str) => str !== fallback)
             })
 
             this.set(id, inspector) // reset reference
             baseRef = inspector
+            isInspectable = true
         }
 
 
@@ -181,54 +184,44 @@ export default class Monitor {
         // ------------------ Create Subscription ------------------
 
         // Option #1: Subscribe to each object property individually
-
         let subs = {}
         if (toMonitorInternally(ref, true)) {
-
-            // TODO: Ensure that this doesn't have a circular reference
-            const drillOptions = {
-                condition: (_, val) => toMonitorInternally(val)
-            }
             drillSimple(ref, (key, val, drillInfo) => {
                 if (drillInfo.pass) return 
                 else {
-
                     const fullPath = [...arrayPath, ...drillInfo.path]
-                    if (typeof val === 'function') {
-                        if (__internalComplete.poll) {
-                            console.warn(`Skipping subscription to ${fullPath.join(this.options.keySeparator)} since its parent is ESM.`)
-                        } else {
-                            const info = this.createInfo(id, callback, fullPath, val)
-                            this.add('functions', info)
-                            const abs = getPath('absolute', info)
-                            subs[abs] = info.sub
-                        }
-                    } else {
-                        const internalSubs = this.listen(id, callback, fullPath, options, __internalComplete) // subscribe to all
-                        Object.assign(subs, internalSubs)
-                    }
+                    const internalSubs = this.listen(id, callback, fullPath, options, __internalComplete) // subscribe to all
+                    Object.assign(subs, internalSubs)
                 }
-            }, drillOptions) 
-            
+            }, {
+                condition: (_, val) => toMonitorInternally(val)
+            })
         } 
 
         // Option #2: Subscribe to specific property
         else {
 
-            const info = this.createInfo(id, callback, arrayPath, ref)
-
+            let info;
             try {
-
+                
                 // Force Polling
-                if (__internalComplete.poll) this.poller.add(info)
+                if (__internalComplete.poll) {
+                    info = this.getInfo(id, 'polling', callback, arrayPath, ref)
+                    this.poller.add(info)
+                }
 
-                // Intercept Function Calls
-                else if (typeof ref === 'function')  this.add('functions', info)
-            
-                // Trigger Getters
-                else this.add('getters', info)
+                // Direct Methods
+                else {
+
+                    let type = 'setters' // trigger setters
+                    if (typeof ref === 'function') type = 'functions' // intercept function calls
+                    info = this.getInfo(id, type, callback, arrayPath, ref)
+                    this.add(type, info, !isInspectable)
+                }
+                
             } catch (e) {
                 console.warn('Falling to polling:', path, e)
+                info = this.getInfo(id, 'polling', callback, arrayPath, ref)
                 this.poller.add(info)
             }
             
@@ -244,8 +237,8 @@ export default class Monitor {
         }
     }
 
-    add = (type, info) => {
-        if (listeners[type])  listeners[type](info, this.listeners[type])
+    add = (type, info, monitor = true) => {
+        if (listeners[type]) listeners[type](info, this.listeners[type], monitor)
         else this.listeners[type][getPath('absolute', info)][info.sub] = info
     }
 
@@ -257,7 +250,7 @@ export default class Monitor {
             subs = 
             subs = {
                 ...this.listeners.functions,
-                ...this.listeners.getters,
+                ...this.listeners.setters,
                 ...this.listeners.polling,
             }
         }
@@ -289,8 +282,8 @@ export default class Monitor {
 
             const funcs = this.listeners.functions[absPath]
             const func = funcs?.[sub]
-            const getters = this.listeners.getters[absPath]
-            const getter = getters?.[sub]
+            const setters = this.listeners.setters[absPath]
+            const setter = setters?.[sub]
 
             if (polling) this.poller.remove(sub)
             
@@ -301,11 +294,11 @@ export default class Monitor {
             }
             
             // Transition Back to Standard Object
-            else if (getter) {
-                delete getters[sub]
-                if (!Object.getOwnPropertySymbols(getters).length) {
-                    const parent = getter.parent
-                    const last = getter.last
+            else if (setter) {
+                delete setters[sub]
+                if (!Object.getOwnPropertySymbols(setters).length) {
+                    const parent = setter.parent
+                    const last = setter.last
                     const value = parent[last]
                     Object.defineProperty(parent, last, { value })
                 }

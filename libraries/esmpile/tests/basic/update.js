@@ -1,16 +1,17 @@
-import { toResolve } from './dependency.js'
-import * as o from './dependency.js'
-const original = toResolve ? JSON.parse(JSON.stringify(toResolve)) : toResolve
 export let nExecution = 0
-export let mirror = 0
+export let esmOnly = 0
+export let forwarded = undefined
 
-export default ( ) => {
-    nExecution++
-    setTimeout(() => mirror = nExecution, 500)
-    console.log(`original`, original)
-    console.log(`namespace`, o.toResolve)
-    console.log(`named`, toResolve)
-    console.log(`nExecution`, nExecution)
+// Implicit Variables
+// - delayId
 
-    return o.toResolve === toResolve
+export default function ( ) {
+
+    if (this.delayId) clearTimeout(this.delayId)
+
+    // Set Global and Scoped Variable
+    this.nExecution++
+
+    this.delayId = setTimeout(() => esmOnly = this.nExecution, 500)
+
 }

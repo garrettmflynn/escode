@@ -1,7 +1,28 @@
+import Inspectable from "./inspectable"
+import Poller from "./Poller"
+
+type onUpdateFunction = (path: string, info: ActiveInfo, ...args: any[]) => void
 export type MonitorOptions = {
     pathFormat: 'absolute' | 'relative',
     polling?: PollingOptions,
-    keySeparator: '.' | string
+    keySeparator: '.' | string,
+    onInit?: (path: string, info: ActiveInfo) => any | Promise<any>,
+    onUpdate?: onUpdateFunction | {
+        callback: onUpdateFunction,
+        info: {
+            performance: boolean
+        }
+    },
+}
+
+export type InspectableOptions = {
+    type?: 'function' | 'object', 
+    parent?: Inspectable
+    name?:string,
+    callback?: Inspectable['callback'],
+    keySeparator?: '.' | string,
+    listeners?: ListenerRegistry
+    path?: (arr: ArrayPath) => ArrayPath | ArrayPath
 }
 
 export type ArrayPath = (string | symbol)[]
@@ -62,4 +83,10 @@ export type ListenerPool = {
     [x: string]: {
         [x: symbol]: ListenerInfo
     }
+}
+
+export type ListenerRegistry = {
+    functions: ListenerPool,
+    setters: ListenerPool,
+    polling: Poller['listeners'],
 }
