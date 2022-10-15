@@ -1,15 +1,15 @@
 {
     "name": "Math Plugin",
 
-    "components": {
+    "esComponents": {
         "addition": {
-            "src": "./add2.js",
+            "esCompose": "./add2.js",
             "children": {
                 "multiplication": true
             }
         },
         "multiplication": {
-            "src": "./multiply2.js"
+            "esCompose": "./multiply2.js"
         }
     }, 
 

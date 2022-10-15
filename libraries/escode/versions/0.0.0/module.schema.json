@@ -7,7 +7,7 @@
     "anyOf": [
         {
             "properties": {
-                "src": {
+                "esCompose": {
                     "anyOf": [
                         {
                             "type": "string",

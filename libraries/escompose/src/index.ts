@@ -1,9 +1,9 @@
-import { getFromPath } from "../../common/pathHelpers"
 import Monitor from "../../esmonitor/src"
 import createComponent from "./create"
 import * as clone from "../../common/clone.js"
 import * as standards from "../../common/standards"
 import { Options } from "../../common/types"
+import { ESComponent } from "./component"
 
 
 // TODO: Ensure that this doesn't have a circular reference
@@ -11,7 +11,9 @@ const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
 
     // ------------------ Merge ESM with esCompose Properties ------------------
     const clonedEsCompose = clone.deep(o.esCompose) ?? {}
+    // let merged = merge(Object.assign({}, clonedEsCompose), o)
     let merged = Object.assign({}, Object.assign(Object.assign({}, clonedEsCompose), o))
+
     delete merged.esCompose
 
     // ------------------ Create Instance with Special Keys ------------------
@@ -219,7 +221,8 @@ const create = (config, options: Partial<Options>) => {
 
     fullInstance.esInit()
 
-    return fullInstance
+    console.log('fullInstance', fullInstance)
+    return fullInstance as ESComponent
 }
 
 export default create

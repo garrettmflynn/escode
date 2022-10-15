@@ -8,9 +8,9 @@ function onConnect(result){
     let target = this
     do {
         target = target?.parent?.node
-    } while (target.parent && !target.element)
+    } while (target.parent && !target.esElement)
 
-    const parentNode = target?.element ?? document.body
+    const parentNode = target?.esElement ?? document.body
     if (typeof result.subprocesses === 'object') {
         if (result.subprocesses.csv) {
 

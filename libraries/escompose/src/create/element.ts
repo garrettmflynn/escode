@@ -1,51 +1,51 @@
 import { ESComponent } from "../component";
-import update from "./utils/update";
 
-export function add(id, esm: ESComponent, parent) {
+export function create(id, esm: ESComponent, parent) {
 
-    let elm = create(id, esm, parent);
+    if (!esm.id && id) esm.id = id;
+    if (typeof esm.id !== 'string') esm.id = `${esm.tagName ?? 'element'}${Math.floor(Math.random() * 1000000000000000)}`;
 
-    if(!esm.element) esm.element = elm;
-    // if(!esm.default) esm.default = function (props:{[key:string]:any}){ 
-    //     if(typeof props === 'object') 
-    //         for(const key in props) { 
-    //             if(this.element) {
-    //                 if(typeof this.element[key] === 'function' && typeof props[key] !== 'function')
-    //                     { //attempt to execute a function with arguments
-    //                         if(Array.isArray(props[key]))
-    //                         this.element[key](...props[key]);
-    //                         else this.element[key](props[key]);
-    //                     } 
-    //                 else if (key === 'style') { Object.assign(this.element[key],props[key])}
-    //                 else this.element[key] = props[key]; 
-    //             }
-    //         }
-            
-    //     return props;
-    // }
-
-    return esm;
-}
-
-export function create(id, esm: ESComponent, parent){
-
-    if(esm.element) {
-        if(typeof esm.element === 'string') {
-            const elm = document.querySelector(esm.element); //get first element by tag or id 
-            if(!elm) {
-                const elm = document.getElementById(esm.element); 
-                if (elm) esm.element = elm;
-            } else esm.element = elm;
+    // --------------------------- Get Element ---------------------------
+    let element = esm.esElement;
+    if (element) {
+        if (typeof element === 'string') {
+            const elm = document.querySelector(element); //get first element by tag or id 
+            if (!elm) {
+                const elm = document.getElementById(element);
+                if (elm) element = elm;
+            } else element = elm;
         }
     }
-    else if (esm.tagName) esm.element = document.createElement(esm.tagName);
-    else if(esm.id) {
-        const elm = document.getElementById(esm.id); 
-        if (elm) esm.element = elm;
+    else if (esm.tagName) element = document.createElement(esm.tagName);
+    else if (esm.id) {
+        const elm = document.getElementById(esm.id);
+        if (elm) element = elm;
     }
 
-    if (!(esm.element instanceof Element)) console.warn('Element not found for', id);
-    update(id, esm, parent);
-    return esm.element;
+    if (!(element instanceof Element)) console.warn('Element not found for', id);
+
+    // --------------------------- Assign Things to Element ---------------------------
+
+    if (element instanceof Element) {
+        let p = esm.parentNode;
+
+        const parentEl = (parent?.esElement instanceof Element) ? parent.esElement : undefined;
+        esm.parentNode = p ? p : parentEl;
+
+        element.id = esm.id;
+
+        if (esm.attributes) {
+            for (let key in esm.attributes) {
+                if (typeof esm.attributes[key] === 'function') element[key] = (...args) => esm.attributes[key](...args); // replace this scope
+                else element[key] = esm.attributes[key];
+            }
+        }
+
+        if (element instanceof HTMLElement) {
+            if (esm.style) Object.assign(element.style, esm.style);
+        }
+    }
+
+    return element;
 }
 

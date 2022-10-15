@@ -4,12 +4,14 @@ const getLayer = (name, context) => {
 
 function createPlayer(player) {
 
+        const context = this.ref?.scene ?? this
+
         // player will collide with the level tiles
-        const groundLayer = getLayer('World', this) 
-        this.physics.add.collider(groundLayer, player);
+        const groundLayer = getLayer('World', context) 
+        context.physics.add.collider(groundLayer, player);
     
-        const coinLayer = getLayer('Coins', this) 
-        this.physics.add.overlap(player, coinLayer);
+        const coinLayer = getLayer('Coins', context) 
+        context.physics.add.overlap(player, coinLayer);
           
 }
 

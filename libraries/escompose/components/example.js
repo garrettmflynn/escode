@@ -9,7 +9,7 @@ export const attributes = {
 }
 
 export function set(text=this.nExecutions) {
-    this.element.innerText = `${this.attributes.innerHTML} (${text})`
+    this.esElement.innerText = `${this.attributes.innerHTML} (${text})`
 }
 
 export function onrender() {

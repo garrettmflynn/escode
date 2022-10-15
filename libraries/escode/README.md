@@ -22,9 +22,9 @@ Each version of `escode` is archived in the `versions` folder of this repository
 ###  Example .esc File
 ```json
 {
-    "components": {
+    "esComponents": {
         "first": {
-            "src": "first.esc.json",
+            "esCompose": "first.esc.json",
             "extensions": {
                 "arbitrary": {
                     "x": 1080,
@@ -39,7 +39,7 @@ Each version of `escode` is archived in the `versions` folder of this repository
             }
         },
          "third": {
-            "src": "./test.js"
+            "esCompose": "./test.js"
         } 
     },
 

@@ -11,7 +11,7 @@ export let stream;
 export function onrender(){
     if (this.stream) this.stream.remove()
     this.stream = document.createElement('visualscript-timeseries-stream')
-    this.element.appendChild(this.stream)
+    this.esElement.appendChild(this.stream)
 }
 
 export let nChannels = 0

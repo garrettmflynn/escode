@@ -1,16 +1,16 @@
 {
     "tagName": "div",
-    "components": {
+    "esComponents": {
         "sounds": {
-            "src": "../select.js",
+            "esCompose": "../select.js",
             "options": []
         },
         "button": {
-            "src": "../button.js",
+            "esCompose": "../button.js",
             "innerText": "Play"
         },
         "toggle": {
-            "src": "../../audio/toggle.js"
+            "esCompose": "../../audio/toggle.js"
         }
     },
     "listeners": {

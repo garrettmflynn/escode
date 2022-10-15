@@ -18,14 +18,14 @@ export type ESComponent = {
     // HTML-Specific
     id: string;
     tagName: string;
-    element?: string | ComponentElement,
+    esElement?: string | ComponentElement,
     parentNode?: Element,
     style: {[key:string]:any},
     attributes:{
         [x in attributeKeys] : any
     }
-    onresize: Function,
-    onrender: Function
-    onremove: Function
+    esOnResize: Function,
+    esOnRender: Function
+    esOnRemove: Function
 
 }

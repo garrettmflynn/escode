@@ -1,14 +1,14 @@
 {
     "name": "Test Plugin",
-    "components": {
+    "esComponents": {
         "add": {
-            "src": "../math/add.js",
+            "esCompose": "../math/add.js",
             "children": {
                 "multiply": true
             }
         },
         "multiply": {
-            "src": "../math/multiply.js"
+            "esCompose": "../math/multiply.js"
         }
     },
 

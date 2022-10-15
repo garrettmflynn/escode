@@ -1,5 +1,5 @@
 {
-    "components": {
+    "esComponents": {
         "app": {
             "style": {
                 "background-color": "black",
@@ -10,98 +10,94 @@
                 "overflow": "auto"
             },
             "tagName": "div",
-            "components": {
+            "esComponents": {
                 "devices": {
                     "tagName": "div",
-                            "src": "../../../../components/ui/devices/index.esc.json",
-                            "overrides": {
-                                "connectmode": {
-                                    "options": [
-                                        {
-                                            "value": "BLE",
-                                            "show": "selectBLE"
-                                        },
-                                        {
-                                            "value": "USB",
-                                            "show": "selectUSB"
-                                        }
-                                    ]
-                                },
-                                "selectUSB": {
-                                    "options": {
-                                        "peanut": "Biocomp Peanut HEG",
-                                        "hegduino": "HEGduino",
-                                        "hegduinoV1": "HEGduino V1"
-                                    }
-                                },
-                                "selectBLE": {
-                                    "options": {
-                                        "hegduino":"HEGduino",
-                                        "hegduinoV1": "HEGduino V1",
-                                        "blueberry2": "Blueberry",
-                                        "blueberry": "Blueberry_Legacy"
-                                    }
-                                },
-                                "connect": {
-                                    "subprocesses": {
-                                        "src": "./scripts/connect/subprocesses.js"
+                            "esCompose": "../../../../components/ui/devices/index.esc.json",
+                            "connectmode": {
+                                "options": [
+                                    {
+                                        "value": "BLE",
+                                        "show": "selectBLE"
                                     },
-                                    "onconnect": {
-                                        "src": "./scripts/connect/onConnect.js"
+                                    {
+                                        "value": "USB",
+                                        "show": "selectUSB"
                                     }
-                                },
-                                "preprocessData": {
-                                    "src": "../../../../components/devices/heg/preprocess.js"
+                                ]
+                            },
+                            "selectUSB": {
+                                "options": {
+                                    "peanut": "Biocomp Peanut HEG",
+                                    "hegduino": "HEGduino",
+                                    "hegduinoV1": "HEGduino V1"
                                 }
+                            },
+                            "selectBLE": {
+                                "options": {
+                                    "hegduino":"HEGduino",
+                                    "hegduinoV1": "HEGduino V1",
+                                    "blueberry2": "Blueberry",
+                                    "blueberry": "Blueberry_Legacy"
+                                }
+                            },
+                            "connect": {
+                                "subprocesses": {
+                                    "esCompose": "./scripts/connect/subprocesses.js"
+                                },
+                                "onconnect": {
+                                    "esCompose": "./scripts/connect/onConnect.js"
+                                }
+                            },
+                            "preprocessData": {
+                                "esCompose": "../../../../components/devices/heg/preprocess.js"
                             }
                 },
                 "output": {
                     "tagName": "div",
-                    "components": {
+                    "esComponents": {
                         "audio": {
-                            "src": "../../../../components/ui/audio/index.esc.json",
-                            "overrides": {
-                                "sounds": {
-                                    "options": [
-                                        {
-                                            "label": "Kalimba",
-                                            "value": {
-                                                "src": "../assets/kalimba.wav"
-                                            }
-                                        },
-                                        {
-                                            "label": "Phonk",
-                                            "value": {
-                                                "src": "../assets/phonk.wav"
-                                            }
-                                        },
-                                        {
-                                            "label": "Synth Flute",
-                                            "value": {
-                                                "src": "../assets/synthflute.wav"
-                                            }
+                            "esCompose": "../../../../components/ui/audio/index.esc.json",
+                            "sounds": {
+                                "options": [
+                                    {
+                                        "label": "Kalimba",
+                                        "value": {
+                                            "esCompose": "../assets/kalimba.wav"
                                         }
-                                    ]
-                                }
+                                    },
+                                    {
+                                        "label": "Phonk",
+                                        "value": {
+                                            "esCompose": "../assets/phonk.wav"
+                                        }
+                                    },
+                                    {
+                                        "label": "Synth Flute",
+                                        "value": {
+                                            "esCompose": "../assets/synthflute.wav"
+                                        }
+                                    }
+                                ]
                             }
                         },
                         "other": {
                             "tagName": "div",
-                            "components": {
+                            "esComponents": {
                                 "stats": {
-                                    "src": "../../../../components/ui/devices/stats/index.js"
+                                    "esCompose": "../../../../components/ui/devices/stats/index.js"
                                 },
                                 "reset": {
-                                    "src": "../../../../components/ui/button.js",
+                                    "esCompose": "../../../../components/ui/button.js",
                                     "attributes": {
                                         "innerHTML": "Reset Stats"
                                     }
                                 },
                                 "waveform": {
-                                    "src": "../../../../components/ui/devices/heg/waveform.js"
+                                    "esCompose": "../../../../components/ui/devices/heg/waveform.js"
                                 },
                                 "csvmenu": {
-                                    "src": "../../../../components/drafts/output/csv/menu.js"
+                                    "esCompose": "../../../../components/drafts/output/csv/menu.js"
                                 }
                             }
                         }

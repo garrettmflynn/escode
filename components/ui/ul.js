@@ -8,7 +8,7 @@ export default function (...args) {
         if (typeof input === 'string'){
             const li = document.createElement('li')
             li.innerText = input
-            this.element.appendChild(li)
+            this.esElement.appendChild(li)
             items.push(input)
         }
     })

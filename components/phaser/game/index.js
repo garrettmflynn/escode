@@ -15,7 +15,7 @@ let onResolve = null
 
 if (!('Phaser' in window)) script.onload = () => {
     if (onResolve instanceof Function) onResolve(window.Phaser) // resolve previous promise
-    for (let tag in nodes)  nodes[tag].run() // run created nodes when initialized // TODO: Is broken...
+    for (let tag in nodes)  nodes[tag].default() // run created nodes when initialized // TODO: Is broken...
     // for (let tag in nodes) nodes[tag].default() 
 }
 
@@ -28,16 +28,20 @@ export const config = defaultConfig
 
 export let game;
 
-export function oncreate() {
+export const tagName = 'div'
+
+export function esInit() {
+    console.log('Created', this)
     if (window.Phaser) this.default() // run node if phaser exists
      else nodes[this._unique] = this // set link to node
 }
 
-export function ondelete() {
+export function esDelete() {
     if (this.game) this.game.destroy(true, false)
 }
 
 export default async function(){
+
 
     const instance = this
 
@@ -48,7 +52,7 @@ export default async function(){
     let cfg = (typeof this.config === 'function') ? this.config(window.Phaser) : this.config;
     let defaultCfg = (typeof config === 'function') ? config(window.Phaser) : config;
     let mergedConfig = merge(defaultCfg, cfg) // merge config with default config
-    mergedConfig.parent =  instance.parent?.parentNode // set parent node
+    mergedConfig.parent =  this.esElement // set parent node
 
     // Handle Game Initialization
     return new Promise((resolve) => {
@@ -74,9 +78,13 @@ export default async function(){
             call(originalCreate, this)
             this.context = this
 
-            instance.nodes.forEach(n => {
-                if (typeof n.ongame === 'function') n.ongame(this.context)
-            })
+            if (instance.esComponents) {
+                for (let key in instance.esComponents) {
+                    const component = instance.esComponents[key]
+                    if (typeof component.ongame === 'function') component.ongame(this.context)
+                }
+            }
+
             resolve(this.context)
         }
 
@@ -86,9 +94,12 @@ export default async function(){
             call(originalUpdate, this) // TODO: Call all dependent objects...
 
             // run children with update functions
-            instance.nodes.forEach(n => {
-                if (typeof n.update === 'function') n.update(this, Object.fromEntries(instance.nodes)) // can be internal or connected
-            })
+            if (instance.esComponents) {
+                for (let key in instance.esComponents) {
+                    const component = instance.esComponents[key]
+                    if (typeof component.update === 'function') component.update(this, instance.esComponents) // can be internal or connected
+                }
+            }
         }
 
 

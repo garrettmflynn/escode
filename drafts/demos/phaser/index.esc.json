@@ -1,7 +1,7 @@
 {
-    "components": {
+    "esComponents": {
         "game": {
-            "src": "../../../components/phaser/game/index.js",
+            "esCompose": "../../../components/phaser/game/index.js",
             "preload": {
                 "setBaseURL": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/assets",
                 "tilemapTiledJSON": [
@@ -46,16 +46,16 @@
                 "scene": {
                     "key": "main",
                     "create": {
-                        "src": "./scripts/create.js"
+                        "esCompose": "./scripts/create.js"
                     }
                 }
             },
-            "components": {
+            "esComponents": {
                 "cursors": {
-                    "src": "../../../components/phaser/cursors.js"
+                    "esCompose": "../../../components/phaser/cursors.js"
                 },
                 "player": {
-                    "src": "../../../components/phaser/player.js",
+                    "esCompose": "../../../components/phaser/player.js",
                     "position": {
                         "x": 200,
                         "y": 200
@@ -68,10 +68,10 @@
                     "bounce": 0.2,
                     "collideWorldBounds": false,
                     "create": {
-                        "src": "./scripts/player/create/main.js"
+                        "esCompose": "./scripts/player/create/main.js"
                     },
                     "update": {
-                        "src": "./scripts/player/update.js"
+                        "esCompose": "./scripts/player/update.js"
                     }
                 }
             }

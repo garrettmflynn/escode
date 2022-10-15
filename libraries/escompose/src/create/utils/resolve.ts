@@ -1,8 +1,8 @@
 export const parentNode = (esm, parentNode) => {
 
-    const oncreate = esm.onrender
+    const oncreate = esm.esOnRender
 
-    const elm = esm.element;
+    const elm = esm.esElement;
     parentNode = parentNode || elm.parentNode;
     if(!parentNode) {
         setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished

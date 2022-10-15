@@ -6,13 +6,13 @@ export const options = {
 
 export const tagName = 'select'
 
-export const oncreate = function() {
+export const esInit = function() {
     let target = this
-    let element = target.element
+    let element = target.esElement
     if (!element) {
         if (target.source){
             target = target.source
-            element = target.element
+            element = target.esElement
         } 
     }
 

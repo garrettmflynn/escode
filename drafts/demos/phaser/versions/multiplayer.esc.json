@@ -1,12 +1,12 @@
 {
-    "components": {
+    "esComponents": {
             "phaser": {
-                "src": "../index.esc.json",
+                "esCompose": "../index.esc.json",
                 "overrides": {
                     "game": {
-                        "components": {
+                        "esComponents": {
                             "companion": {
-                                "src": "../../../components/phaser/player.js",
+                                "esCompose": "../../../components/phaser/player.js",
                                 "position": {
                                     "x": 100,
                                     "y": 200
@@ -19,10 +19,10 @@
                                 "bounce": 0.2,
                                 "collideWorldBounds": false,
                                 "create": {
-                                    "src": "../scripts/player/create/companion.js"
+                                    "esCompose": "../scripts/player/create/companion.js"
                                 },
                                 "update": {
-                                    "src": "../scripts/player/update.js"
+                                    "esCompose": "../scripts/player/update.js"
                                 }
                             }
                         }

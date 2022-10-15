@@ -1,35 +1,35 @@
 {
     "tagName": "div",
-    "components": {
+    "esComponents": {
         "sounds": {
-            "src": "../../../../components/ui/select.js",
+            "esCompose": "../../../../components/ui/select.js",
             "options": [
                 {
                     "label": "Kalimba",
                     "value": {
-                        "src": "../assets/kalimba.wav"
+                        "esCompose": "../assets/kalimba.wav"
                     }
                 },
                 {
                     "label": "Phonk",
                     "value": {
-                        "src": "../assets/phonk.wav"
+                        "esCompose": "../assets/phonk.wav"
                     }
                 },
                 {
                     "label": "Synth Flute",
                     "value": {
-                        "src": "../assets/synthflute.wav"
+                        "esCompose": "../assets/synthflute.wav"
                     }
                 }
             ]
         },
         "button": {
-            "src": "../../../../components/ui/button.js",
+            "esCompose": "../../../../components/ui/button.js",
             "innerText": "Play"
         },
         "toggle": {
-            "src": "../../../../components/audio/toggle.js"
+            "esCompose": "../../../../components/audio/toggle.js"
         }
     },
     "listeners": {

@@ -1,14 +1,14 @@
 {
-    "components": {
+    "esComponents": {
             "fft": {
-                "src": "fft/index.js",
+                "esCompose": "fft/index.js",
                 "children": {
                     "alpha": true,
                     "beta": true
                 }
             },
             "alpha": {
-                "src": "bandpower/index.js",
+                "esCompose": "bandpower/index.js",
                 "arguments": {
                     "band": "alpha"
                 },
@@ -17,7 +17,7 @@
                 }
             },
             "beta": {
-                "src": "bandpower/index.js",
+                "esCompose": "bandpower/index.js",
                 "arguments": {
                     "band": "beta"
                 },
@@ -26,7 +26,7 @@
                 }
             },
             "ratio": {
-                "src": "ratio/index.js"
+                "esCompose": "ratio/index.js"
             }
         },
 

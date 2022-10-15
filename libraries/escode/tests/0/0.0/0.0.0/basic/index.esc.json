@@ -1,16 +1,14 @@
 {
     "name": "My Application",
-    "components": {
+    "esComponents": {
             "plugin": {
-                "src": "../../../plugins/plugin/index.esc.json",
-                "overrides": {
-                    "add": {
-                        "arguments": {
-                            "input": 15
-                        },
-                        "toAdd": {
-                            "src": "./number.js"
-                        }
+                "esCompose": "../../../plugins/plugin/index.esc.json",
+                "add": {
+                    "arguments": {
+                        "input": 15
+                    },
+                    "toAdd": {
+                        "esCompose": "./number.js"
                     }
                 },
                 "children": {
@@ -19,22 +17,22 @@
                 }
             },
             "math": {
-                "src": "../../../plugins/math/index.esc.json",
+                "esCompose": "../../../plugins/math/index.esc.json",
                 "children": {
                     "external": true,
                     "log": true
                 }
             },
             "external": {
-                "components": {
+                "esComponents": {
                     "secondaddition": {
-                        "src": "../../../plugins/math/add2.js",
+                        "esCompose": "../../../plugins/math/add2.js",
                         "children": {
                             "secondmultiplication": true
                         }
                     },
                     "secondmultiplication": {
-                        "src": "../../../plugins/math/multiply2.js"
+                        "esCompose": "../../../plugins/math/multiply2.js"
                     }
                 }, 
                 
@@ -49,7 +47,7 @@
             },
 
             "log": {
-                "src": "../../../plugins/log.js"
+                "esCompose": "../../../plugins/log.js"
             }
         }
 }

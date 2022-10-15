@@ -38,7 +38,6 @@ export const esComponents = {
                 esTrigger: {value: true, __internal: true}
             },
         },
-        parentNode: ui.main
     }
 }
 

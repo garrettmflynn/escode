@@ -1,7 +1,7 @@
 {
-    "components": {
+    "esComponents": {
         "start" : {
-            "src": "./components/start.js"
+            "esCompose": "./components/start.js"
         }
     },
 

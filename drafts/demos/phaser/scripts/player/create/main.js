@@ -2,10 +2,12 @@ import base from './base.js'
 
 export function main() {
 
+    const context = this.ref?.scene ?? this
+
     // player walk animation
-    this.anims.create({
+    context.anims.create({
         key: "walk",
-        frames: this.anims.generateFrameNames("player", {
+        frames: context.anims.generateFrameNames("player", {
             prefix: "p1_walk",
             start: 1,
             end: 11,
@@ -15,7 +17,7 @@ export function main() {
         repeat: -1,
         });
         // idle with only one frame, so repeat is not neaded
-        this.anims.create({
+        context.anims.create({
         key: "idle",
         frames: [{ key: "player", frame: "p1_stand" }],
         frameRate: 10,
@@ -24,12 +26,15 @@ export function main() {
 
 function createMain(player) {
 
-    base.call(this, player) // call base create function
-    main.call(this, player) // call base create function
+    const context = this.ref?.scene ?? this
+
+
+    base.call(context, player) // call base create function
+    main.call(context, player) // call base create function
 
 
     // make the camera follow the player
-    this.cameras.main.startFollow(player); // TODO: Move out
+    context.cameras.main.startFollow(player); // TODO: Move out
 
 }
 

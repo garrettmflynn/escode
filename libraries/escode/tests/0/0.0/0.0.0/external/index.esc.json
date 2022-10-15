@@ -1,38 +1,38 @@
 {
-    "components": {
+    "esComponents": {
         "average": {
-            "src": "../../../plugins/average.js",
+            "esCompose": "../../../plugins/average.js",
             "children": {
                 "threshold": true
             }
         },
         "threshold": {
-            "src": "../../../plugins/threshold.js",
+            "esCompose": "../../../plugins/threshold.js",
             "threshold": 500,
             "children": {
                 "ui.game.player.jump": true
             }
         },
         "synthetic": {
-            "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/devices/synthetic/index.js",
+            "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/devices/synthetic/index.js",
             "children": {
                 "datastreams.start": true
             }
         },
         "ganglion": {
-            "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/devices/ganglion/index.js",
+            "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/devices/ganglion/index.js",
             "children": {
                 "datastreams.start": true
             }
         },
         "muse": {
-            "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/devices/muse/index.js",
+            "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/devices/muse/index.js",
             "children": {
                 "datastreams.start": true
             }
         },
         "datastreams": {
-            "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/datastreams/index.esc.json",
+            "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/datastreams/index.esc.json",
             "children": {
                 "ui.timeseries": true,
                 "average": true
@@ -47,7 +47,7 @@
                 "width": "100%",
                 "height": "100%"
             },
-            "components": {
+            "esComponents": {
                 "timeseries": {
                     "style": {
                         "position": "absolute",
@@ -56,7 +56,7 @@
                         "width": "250px",
                         "height": "150px"
                     },
-                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/timeseries/index.js"
+                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/drafts/old/timeseries/index.js"
                 },
                 "button_1": {
                     "attributes": {
@@ -65,13 +65,13 @@
                     "children": {
                         "synthetic": true
                     },
-                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js"
+                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js"
                 },
                 "button_2": {
                     "attributes": {
                         "innerHTML": "Connect Ganglion"
                     },
-                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js",
+                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js",
                     "children": {
                         "ganglion": true
                     }
@@ -80,7 +80,7 @@
                     "attributes": {
                         "innerHTML": "Connect Muse"
                     },
-                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js",
+                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js",
                     "children": {
                         "muse": true
                     }
@@ -89,7 +89,7 @@
                     "attributes": {
                         "innerHTML": "Jump Main Character"
                     },
-                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js",
+                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js",
                     "children": {
                         "ui.game.player.jump": true
                     }
@@ -98,13 +98,13 @@
                     "attributes": {
                         "innerHTML": "Jump Companion"
                     },
-                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js",
+                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/ui/button.js",
                     "children": {
                         "ui.game.companion.jump": true
                     }
                 },
                 "game": {
-                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/phaser/game/index.js",
+                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/phaser/game/index.js",
                             "preload": {
                                 "setBaseURL": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/assets",
                                 "tilemapTiledJSON": [
@@ -149,16 +149,16 @@
                                 "scene": {
                                     "key": "main",
                                     "create": {
-                                        "src": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/create.js"
+                                        "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/create.js"
                                     }
                                 }
                             },
-                            "components": {
+                            "esComponents": {
                                 "cursors": {
-                                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/phaser/cursors.js"
+                                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/phaser/cursors.js"
                                 },
                                 "player": {
-                                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/phaser/player.js",
+                                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/phaser/player.js",
                                     "position": {
                                         "x": 200,
                                         "y": 200
@@ -171,14 +171,14 @@
                                     "bounce": 0.2,
                                     "collideWorldBounds": false,
                                     "create": {
-                                        "src": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/player/create/main.js"
+                                        "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/player/create/main.js"
                                     },
                                     "update": {
-                                        "src": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/player/update.js"
+                                        "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/player/update.js"
                                     }
                                 },
                                 "companion": {
-                                    "src": "https://raw.githubusercontent.com/brainsatplay/components/main/components/phaser/player.js",
+                                    "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/components/phaser/player.js",
                                     "position": {
                                         "x": 100,
                                         "y": 200
@@ -191,10 +191,10 @@
                                     "bounce": 0.2,
                                     "collideWorldBounds": false,
                                     "create": {
-                                        "src": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/player/create/companion.js"
+                                        "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/player/create/companion.js"
                                     },
                                     "update": {
-                                        "src": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/player/update.js"
+                                        "esCompose": "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/scripts/player/update.js"
                                     }
                                 }
                             }

@@ -1,19 +1,28 @@
 
 // -------------- Import Modules --------------
-import * as test from 'esmpile/tests/basic/index.js'
-import * as escFile from './index.esc.js'
 import createComponent from '../libraries/escompose/src/index'
 import Monitor from '../libraries/esmonitor/src/Monitor.js'
 import Inspectable from '../libraries/esmonitor/src/inspectable/index.js'
 import ESC from "../libraries/escode/src/core/index";
 import validate from "../libraries/escode/src/validate/index";
-import { update } from './ui.js'
+import * as ui from './ui.js'
 
+// ------------------ ES Components (more imports in files) ------------------
+import * as escFile from './index.esc'
+import * as phaserFile from '../drafts/demos/phaser/index.esc'
+import * as audiofeedbackFile from '../drafts/demos/devices/audiofeedback/index.esc'
+import * as todoFile from '../drafts/demos/todo/index.esc'
 
+import * as test from 'esmpile/tests/basic/index.js'
 
-// -------------- Setup External Monitor --------------
+// ------------------ ESMpile (todo) ------------------
+// for (let file in monitor.dependencies) {
+//     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
+// }
+
+// ------------------ ESMonitor ------------------
 let states: Inspectable[] = []
-let logUpdate = (path, info, newVal?: any) =>  update(path, info, newVal, states)
+let logUpdate = (path, info, newVal?: any) =>  ui.update(path, info, newVal, states)
 
 const monitor = new Monitor({
     onInit: logUpdate,
@@ -27,7 +36,6 @@ const monitor = new Monitor({
     polling: { sps: 60 }
 })
 
-// ------------------ Simple ESMonitor State Object ------------------
 const objectStates = {}
 
 // Monitor Object for All Changes
@@ -42,18 +50,37 @@ const esmId = 'ESM'
 monitor.set(esmId, test)
 monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
 
-// ----------------------- Create ES Component from ESM File -----------------------
-const component = createComponent(escFile, {
+// ------------------ ESCompose ------------------
+const selected = escFile as any
+// const selected = phaserFile as any
+
+// // Broken...
+// const selected = audiofeedbackFile as any
+// const selected = todoFile as any
+
+selected.parentNode = ui.main
+
+const component = createComponent(selected, {
     monitor, // Use the existing monitor
     listeners: { static: false } // Will be able to track new keys added to the object
 })
 
+// // Ensuring there is a container for the app
+// component.esElement = document.createElement('div')
+// ui.main.appendChild(component.esElement)
+
+
+
 console.log('Configuration Object', component)
 
-// for (let file in monitor.dependencies) {
-//     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
-// }
+// ------------------ ESCode (todo) ------------------
+// ....
 
+// ------------------ ESComposer (todo) ------------------
+// ....
+
+
+// ------------------ OLD CODE FOR COMPONENT DEMO ------------------
 // const demos = {
 //     "Todo List": {
 //         "path": "./drafts/demos/todo/index.esc.json",

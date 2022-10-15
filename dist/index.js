@@ -5,298 +5,6 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // libraries/esmpile/tests/basic/index.js
-  var basic_exports = {};
-  __export(basic_exports, {
-    imports: () => imports
-  });
-
-  // libraries/esmpile/tests/basic/update.js
-  var update_exports = {};
-  __export(update_exports, {
-    default: () => update_default,
-    esmOnly: () => esmOnly,
-    nExecution: () => nExecution,
-    passedWithListener: () => passedWithListener
-  });
-  var nExecution = 0;
-  var esmOnly = 0;
-  var passedWithListener = void 0;
-  function update_default() {
-    if (this.delayId)
-      clearTimeout(this.delayId);
-    this.nExecution++;
-    this.delayId = setTimeout(() => esmOnly = this.nExecution, 500);
-  }
-
-  // libraries/esmpile/tests/basic/index.js
-  var imports = update_exports;
-
-  // demo/index.esc.ts
-  var index_esc_exports = {};
-  __export(index_esc_exports, {
-    esComponents: () => esComponents,
-    esListeners: () => esListeners
-  });
-
-  // components/ui/button.js
-  var button_exports = {};
-  __export(button_exports, {
-    attributes: () => attributes,
-    cache: () => cache,
-    default: () => button_default,
-    tagName: () => tagName
-  });
-  var tagName = "button";
-  var attributes = {
-    innerHTML: "Click Me",
-    onmousedown: function() {
-      this.default({ value: true, __internal: true });
-      const onMouseUp = () => {
-        this.default({ value: false, __internal: true });
-        globalThis.removeEventListener("mouseup", onMouseUp);
-      };
-      globalThis.addEventListener("mouseup", onMouseUp);
-    }
-  };
-  var cache = null;
-  function button_default(input) {
-    let res;
-    const value = input?.value ?? input;
-    const isInternal = input?.__internal;
-    if (isInternal) {
-      if (this.cache) {
-        if (value !== void 0)
-          res = this.cache;
-      } else
-        res = value;
-    } else if (value !== void 0)
-      this.cache = value;
-    return res;
-  }
-
-  // libraries/escode/tests/0/components/log.js
-  var log_exports = {};
-  __export(log_exports, {
-    default: () => log_default
-  });
-  var log_default = (...input) => console.log(`[log]:`, input);
-
-  // libraries/common/standards.ts
-  var keySeparator = ".";
-  var defaultPath = "default";
-
-  // libraries/common/pathHelpers.ts
-  var hasKey = (key, obj) => {
-    return obj.hasOwnProperty(key) || key in obj;
-  };
-  var getFromPath = (baseObject, path, opts = {}) => {
-    const fallbackKeys = opts.fallbacks ?? [];
-    const keySeparator2 = opts.keySeparator ?? keySeparator;
-    if (typeof path === "string")
-      path = path.split(keySeparator2);
-    else if (typeof path == "symbol")
-      path = [path];
-    let exists;
-    path = [...path];
-    let ref = baseObject;
-    for (let i = 0; i < path.length; i++) {
-      if (!ref) {
-        const message = `Could not get path`;
-        console.error(message, path, ref);
-        throw new Error(message);
-      }
-      const str = path[i];
-      if (!hasKey(str, ref) && ref.hasOwnProperty("esComponents")) {
-        for (let i2 in fallbackKeys) {
-          const key = fallbackKeys[i2];
-          if (hasKey(key, ref)) {
-            ref = ref[key];
-            break;
-          }
-        }
-      }
-      exists = hasKey(str, ref);
-      if (exists)
-        ref = ref[str];
-      else if (i === path.length - 1) {
-        console.error(`Final path key not found: ${str}`, path, ref, baseObject);
-        return;
-      }
-    }
-    if (opts.output === "info")
-      return { value: ref, exists };
-    else
-      return ref;
-  };
-  var setFromPath = (path, value, ref, opts = {}) => {
-    const create3 = opts?.create ?? false;
-    const keySeparator2 = opts?.keySeparator ?? keySeparator;
-    if (typeof path === "string")
-      path = path.split(keySeparator2);
-    else if (typeof path == "symbol")
-      path = [path];
-    path = [...path];
-    const copy = [...path];
-    const last = copy.pop();
-    for (let i = 0; i < copy.length; i++) {
-      const str = copy[i];
-      let has = hasKey(str, ref);
-      if (create3 && !has) {
-        ref[str] = {};
-        has = true;
-      }
-      if (has)
-        ref = ref[str];
-      else {
-        const message = `Could not set path`;
-        console.error(message, path);
-        throw new Error(message);
-      }
-      if (ref.esComponents)
-        ref = ref.esComponents;
-    }
-    ref[last] = value;
-  };
-
-  // demo/ui.ts
-  var main = document.getElementById("app");
-  var stateTable = document.getElementById("states");
-  var containers = {};
-  var add = (arr) => arr.reduce((a, b) => a + b, 0);
-  var average = (arr) => add(arr) / arr.length;
-  var update = async (path, info, update2, toUpdate = []) => {
-    toUpdate.forEach((state) => setFromPath(path, update2, state, { create: true }));
-    if (stateTable) {
-      const split = path.split(".");
-      const last = split.pop();
-      const obj = split.join(".");
-      let container = containers[obj];
-      if (!container) {
-        container = containers[obj] = {
-          states: {
-            averages: {},
-            elements: {},
-            output: {}
-          },
-          headers: {
-            name: document.createElement("th")
-          }
-        };
-        container.header = document.createElement("tr");
-        container.header.classList.add("header-row");
-        container.headers.name.innerText = obj;
-        container.header.appendChild(container.headers.name);
-        stateTable.appendChild(container.header);
-      }
-      let state = container.states[last];
-      if (!state) {
-        let header = container.headers.state;
-        if (!header) {
-          const header2 = document.createElement("th");
-          header2.innerText = "state";
-          container.header.appendChild(header2);
-          container.headers.state = header2;
-        }
-        state = container.states[last] = {
-          info: {
-            averages: {},
-            columns: {},
-            output: {}
-          }
-        };
-        state.header = document.createElement("th");
-        state.header.innerText = last;
-        state.div = document.createElement("tr");
-        state.value = document.createElement("td");
-        state.averages = {};
-        state.div.appendChild(state.header);
-        state.div.appendChild(state.value);
-        stateTable.appendChild(state.div);
-      }
-      state.value.innerHTML = JSON.stringify(update2);
-      const infoCopy = { ...info };
-      delete infoCopy.function;
-      delete infoCopy.arguments;
-      delete infoCopy.info;
-      for (let key in infoCopy) {
-        const val = infoCopy[key];
-        if (!state.info.averages[key])
-          state.info.averages[key] = [];
-        let output = val;
-        if (typeof val === "number") {
-          const aveArr = state.info.averages[key];
-          aveArr.push(val);
-          output = `${average(aveArr).toFixed(3)}ms`;
-        }
-        if (output === void 0)
-          output = "No Data";
-        let header = container.headers[key];
-        if (!header) {
-          const header2 = document.createElement("th");
-          header2.innerText = key;
-          container.header.appendChild(header2);
-          container.headers[key] = header2;
-        }
-        let col = state.info.columns[key];
-        if (!col) {
-          col = state.info.columns[key] = document.createElement("td");
-          state.div.appendChild(col);
-        }
-        col.innerText = output;
-        state.info.output[key] = output;
-      }
-      for (let key in state.averages) {
-        if (state.averages[key].length > 100)
-          state.averages[key].shift();
-      }
-    }
-  };
-
-  // demo/index.esc.ts
-  var id = "test";
-  var moveButtonId = "button";
-  var esComponents = {
-    [id]: {
-      esCompose: basic_exports,
-      esListeners: {
-        [`imports.nExecution`]: "imports.passedWithListener",
-        [`imports.passedWithListener`]: (...args) => console.log("Passed with Listener!", args)
-      }
-    },
-    log: {
-      esCompose: log_exports
-    },
-    container: {
-      componentToMove: moveButtonId,
-      esCompose: {
-        tagName: "div"
-      },
-      log: {
-        esCompose: log_exports
-      },
-      esComponents: {
-        header: {
-          tagName: "h1",
-          attributes: {
-            innerText: "ESCompose Demo"
-          }
-        },
-        [moveButtonId]: {
-          esCompose: button_exports,
-          esTrigger: { value: true, __internal: true }
-        }
-      },
-      parentNode: main
-    }
-  };
-  var esListeners = {
-    [`container.${moveButtonId}`]: {
-      [`${id}.imports`]: true,
-      [`log`]: true
-    }
-  };
-
   // libraries/common/check.js
   var moduleStringTag = "[object Module]";
   var esm = (object) => {
@@ -558,6 +266,83 @@
       return acc;
     };
     return drill2(obj, accumulator, { path });
+  };
+
+  // libraries/common/standards.ts
+  var keySeparator = ".";
+  var defaultPath = "default";
+
+  // libraries/common/pathHelpers.ts
+  var hasKey = (key, obj) => {
+    return obj.hasOwnProperty(key) || key in obj;
+  };
+  var getFromPath = (baseObject, path, opts = {}) => {
+    const fallbackKeys = opts.fallbacks ?? [];
+    const keySeparator2 = opts.keySeparator ?? keySeparator;
+    if (typeof path === "string")
+      path = path.split(keySeparator2);
+    else if (typeof path == "symbol")
+      path = [path];
+    let exists;
+    path = [...path];
+    let ref = baseObject;
+    for (let i = 0; i < path.length; i++) {
+      if (!ref) {
+        const message = `Could not get path`;
+        console.error(message, path, ref);
+        throw new Error(message);
+      }
+      const str = path[i];
+      if (!hasKey(str, ref) && ref.hasOwnProperty("esComponents")) {
+        for (let i2 in fallbackKeys) {
+          const key = fallbackKeys[i2];
+          if (hasKey(key, ref)) {
+            ref = ref[key];
+            break;
+          }
+        }
+      }
+      exists = hasKey(str, ref);
+      if (exists)
+        ref = ref[str];
+      else if (i === path.length - 1) {
+        console.error(`Final path key not found: ${str}`, path, ref, baseObject);
+        return;
+      }
+    }
+    if (opts.output === "info")
+      return { value: ref, exists };
+    else
+      return ref;
+  };
+  var setFromPath = (path, value, ref, opts = {}) => {
+    const create3 = opts?.create ?? false;
+    const keySeparator2 = opts?.keySeparator ?? keySeparator;
+    if (typeof path === "string")
+      path = path.split(keySeparator2);
+    else if (typeof path == "symbol")
+      path = [path];
+    path = [...path];
+    const copy = [...path];
+    const last = copy.pop();
+    for (let i = 0; i < copy.length; i++) {
+      const str = copy[i];
+      let has = hasKey(str, ref);
+      if (create3 && !has) {
+        ref[str] = {};
+        has = true;
+      }
+      if (has)
+        ref = ref[str];
+      else {
+        const message = `Could not set path`;
+        console.error(message, path);
+        throw new Error(message);
+      }
+      if (ref.esComponents)
+        ref = ref.esComponents;
+    }
+    ref[last] = value;
   };
 
   // libraries/esmonitor/src/inspectable/handlers.ts
@@ -933,93 +718,81 @@
   // libraries/esmonitor/src/index.ts
   var src_default = Monitor;
 
-  // libraries/escompose/src/create/utils/update.ts
-  var update_default2 = (id2, esm2, parent) => {
+  // libraries/escompose/src/create/element.ts
+  function create(id2, esm2, parent) {
     if (!esm2.id && id2)
       esm2.id = id2;
-    if (!esm2.id)
+    if (typeof esm2.id !== "string")
       esm2.id = `${esm2.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
-    if (esm2.element instanceof Element) {
-      let p = esm2.parentNode;
-      const parentEl = parent?.element instanceof Element ? parent.element : void 0;
-      esm2.parentNode = p ? p : parentEl;
-      esm2.element.id = esm2.id;
-      if (esm2.attributes) {
-        for (let key in esm2.attributes) {
-          if (typeof esm2.attributes[key] === "function")
-            esm2.element[key] = (...args) => esm2.attributes[key](...args);
-          else
-            esm2.element[key] = esm2.attributes[key];
-        }
-      }
-      if (esm2.element instanceof HTMLElement) {
-        if (esm2.style)
-          Object.assign(esm2.element.style, esm2.style);
-      }
-    }
-    return esm2;
-  };
-
-  // libraries/escompose/src/create/element.ts
-  function add2(id2, esm2, parent) {
-    let elm = create(id2, esm2, parent);
-    if (!esm2.element)
-      esm2.element = elm;
-    return esm2;
-  }
-  function create(id2, esm2, parent) {
-    if (esm2.element) {
-      if (typeof esm2.element === "string") {
-        const elm = document.querySelector(esm2.element);
+    let element = esm2.esElement;
+    if (element) {
+      if (typeof element === "string") {
+        const elm = document.querySelector(element);
         if (!elm) {
-          const elm2 = document.getElementById(esm2.element);
+          const elm2 = document.getElementById(element);
           if (elm2)
-            esm2.element = elm2;
+            element = elm2;
         } else
-          esm2.element = elm;
+          element = elm;
       }
     } else if (esm2.tagName)
-      esm2.element = document.createElement(esm2.tagName);
+      element = document.createElement(esm2.tagName);
     else if (esm2.id) {
       const elm = document.getElementById(esm2.id);
       if (elm)
-        esm2.element = elm;
+        element = elm;
     }
-    if (!(esm2.element instanceof Element))
+    if (!(element instanceof Element))
       console.warn("Element not found for", id2);
-    update_default2(id2, esm2, parent);
-    return esm2.element;
+    if (element instanceof Element) {
+      let p = esm2.parentNode;
+      const parentEl = parent?.esElement instanceof Element ? parent.esElement : void 0;
+      esm2.parentNode = p ? p : parentEl;
+      element.id = esm2.id;
+      if (esm2.attributes) {
+        for (let key in esm2.attributes) {
+          if (typeof esm2.attributes[key] === "function")
+            element[key] = (...args) => esm2.attributes[key](...args);
+          else
+            element[key] = esm2.attributes[key];
+        }
+      }
+      if (element instanceof HTMLElement) {
+        if (esm2.style)
+          Object.assign(element.style, esm2.style);
+      }
+    }
+    return element;
   }
 
   // libraries/escompose/src/create/index.ts
   var create_default = (id2, esm2, parent) => {
-    esm2 = add2(id2, esm2, parent);
-    let el = esm2.element;
-    delete esm2.element;
-    Object.defineProperty(esm2, "element", {
+    let el = create(id2, esm2, parent);
+    Object.defineProperty(esm2, "esElement", {
       get: function() {
         if (el instanceof Element)
           return el;
       },
       set: function(v) {
+        console.log("Setting element", v);
         if (v instanceof Element) {
           el = v;
           for (let name in esm2.esComponents) {
-            const el2 = esm2.esComponents[name].element;
-            if (el2 instanceof Element)
-              v.appendChild(el2);
+            const component2 = esm2.esComponents[name];
+            component2.parentNode = v;
           }
         }
       },
-      enumerable: true
+      enumerable: true,
+      configurable: false
     });
-    esm2.element = el;
+    esm2.esElement = el;
     const parentNode = esm2.parentNode;
     delete esm2.parentNode;
     Object.defineProperty(esm2, "parentNode", {
       get: function() {
-        if (esm2.element instanceof Element)
-          return esm2.element.parentNode;
+        if (esm2.esElement instanceof Element)
+          return esm2.esElement.parentNode;
       },
       set: (v) => {
         if (typeof v === "string") {
@@ -1029,18 +802,27 @@
           else
             v = document.getElementById(v);
         }
-        if (v?.element instanceof Element)
-          v = v.element;
-        if (esm2.element instanceof Element) {
-          if (esm2.element.parentNode)
-            esm2.element.remove();
-          if (v)
-            v.appendChild(esm2.element);
+        if (v?.esElement instanceof Element)
+          v = v.esElement;
+        if (esm2.esElement instanceof Element) {
+          console.log("Setting parent node", esm2, v);
+          if (esm2.esElement.parentNode)
+            esm2.esElement.remove();
+          if (v) {
+            v.appendChild(esm2.esElement);
+          }
+        } else {
+          for (let name in esm2.esComponents) {
+            const component2 = esm2.esComponents[name];
+            console.log("Setting Parent Node", name, component2);
+            component2.parentNode = v;
+          }
         }
       },
       enumerable: true
     });
     esm2.parentNode = parentNode;
+    const onInit = esm2.esInit;
     esm2.esInit = () => {
       for (let name in esm2.esComponents) {
         const init = esm2.esComponents[name].esInit;
@@ -1053,15 +835,19 @@
         esm2.default(esm2.esTrigger);
         delete esm2.esTrigger;
       }
+      if (onInit)
+        onInit.call(esm2);
     };
     esm2.esDelete = function() {
-      this.element.remove();
-      if (this.onremove && this.element instanceof Element)
-        this.onremove.call(this);
+      if (this.esElement instanceof Element) {
+        this.esElement.remove();
+        if (this.onremove)
+          this.onremove.call(this);
+      }
     };
-    let onresize = esm2.onresize;
+    let onresize = esm2.esOnResize;
     let onresizeEventCallback = null;
-    Object.defineProperty(esm2, "onresize", {
+    Object.defineProperty(esm2, "esOnResize", {
       get: function() {
         return onresize;
       },
@@ -1071,7 +857,7 @@
           window.removeEventListener("resize", onresizeEventCallback);
         if (onresize) {
           onresizeEventCallback = (ev) => {
-            if (onresize && esm2.element instanceof Element)
+            if (onresize && esm2.esElement instanceof Element)
               foo.call(this, ev);
           };
           window.addEventListener("resize", onresizeEventCallback);
@@ -1079,9 +865,9 @@
       },
       enumerable: true
     });
-    esm2.onresize = onresize;
-    if (esm2.element)
-      esm2.element.component = esm2;
+    esm2.esOnResize = onresize;
+    if (esm2.esElement)
+      esm2.esElement.component = esm2;
     let initialesm = esm2._initial ?? esm2;
     for (let key in initialesm) {
       if (typeof initialesm[key] === "function") {
@@ -1103,6 +889,8 @@
       value: true,
       enumerable: false
     });
+    if (esm2.esOnCreate)
+      esm2.esOnCreate.call(esm2);
     return esm2;
   };
 
@@ -1294,9 +1082,224 @@
     };
     setListeners(context, components);
     fullInstance.esInit();
+    console.log("fullInstance", fullInstance);
     return fullInstance;
   };
   var src_default2 = create2;
+
+  // demo/ui.ts
+  var main = document.getElementById("app");
+  var stateTable = document.getElementById("states");
+  var containers = {};
+  var add = (arr) => arr.reduce((a, b) => a + b, 0);
+  var average = (arr) => add(arr) / arr.length;
+  var update = async (path, info, update2, toUpdate = []) => {
+    toUpdate.forEach((state) => setFromPath(path, update2, state, { create: true }));
+    if (stateTable) {
+      const split = path.split(".");
+      const last = split.pop();
+      const obj = split.join(".");
+      let container = containers[obj];
+      if (!container) {
+        container = containers[obj] = {
+          states: {
+            averages: {},
+            elements: {},
+            output: {}
+          },
+          headers: {
+            name: document.createElement("th")
+          }
+        };
+        container.header = document.createElement("tr");
+        container.header.classList.add("header-row");
+        container.headers.name.innerText = obj;
+        container.header.appendChild(container.headers.name);
+        stateTable.appendChild(container.header);
+      }
+      let state = container.states[last];
+      if (!state) {
+        let header = container.headers.state;
+        if (!header) {
+          const header2 = document.createElement("th");
+          header2.innerText = "state";
+          container.header.appendChild(header2);
+          container.headers.state = header2;
+        }
+        state = container.states[last] = {
+          info: {
+            averages: {},
+            columns: {},
+            output: {}
+          }
+        };
+        state.header = document.createElement("th");
+        state.header.innerText = last;
+        state.div = document.createElement("tr");
+        state.value = document.createElement("td");
+        state.averages = {};
+        state.div.appendChild(state.header);
+        state.div.appendChild(state.value);
+        stateTable.appendChild(state.div);
+      }
+      state.value.innerHTML = JSON.stringify(update2);
+      const infoCopy = { ...info };
+      delete infoCopy.function;
+      delete infoCopy.arguments;
+      delete infoCopy.info;
+      for (let key in infoCopy) {
+        const val = infoCopy[key];
+        if (!state.info.averages[key])
+          state.info.averages[key] = [];
+        let output = val;
+        if (typeof val === "number") {
+          const aveArr = state.info.averages[key];
+          aveArr.push(val);
+          output = `${average(aveArr).toFixed(3)}ms`;
+        }
+        if (output === void 0)
+          output = "No Data";
+        let header = container.headers[key];
+        if (!header) {
+          const header2 = document.createElement("th");
+          header2.innerText = key;
+          container.header.appendChild(header2);
+          container.headers[key] = header2;
+        }
+        let col = state.info.columns[key];
+        if (!col) {
+          col = state.info.columns[key] = document.createElement("td");
+          state.div.appendChild(col);
+        }
+        col.innerText = output;
+        state.info.output[key] = output;
+      }
+      for (let key in state.averages) {
+        if (state.averages[key].length > 100)
+          state.averages[key].shift();
+      }
+    }
+  };
+
+  // demo/index.esc.ts
+  var index_esc_exports = {};
+  __export(index_esc_exports, {
+    esComponents: () => esComponents,
+    esListeners: () => esListeners
+  });
+
+  // libraries/esmpile/tests/basic/index.js
+  var basic_exports = {};
+  __export(basic_exports, {
+    imports: () => imports
+  });
+
+  // libraries/esmpile/tests/basic/update.js
+  var update_exports = {};
+  __export(update_exports, {
+    default: () => update_default,
+    esmOnly: () => esmOnly,
+    nExecution: () => nExecution,
+    passedWithListener: () => passedWithListener
+  });
+  var nExecution = 0;
+  var esmOnly = 0;
+  var passedWithListener = void 0;
+  function update_default() {
+    if (this.delayId)
+      clearTimeout(this.delayId);
+    this.nExecution++;
+    this.delayId = setTimeout(() => esmOnly = this.nExecution, 500);
+  }
+
+  // libraries/esmpile/tests/basic/index.js
+  var imports = update_exports;
+
+  // components/ui/button.js
+  var button_exports = {};
+  __export(button_exports, {
+    attributes: () => attributes,
+    cache: () => cache,
+    default: () => button_default,
+    tagName: () => tagName
+  });
+  var tagName = "button";
+  var attributes = {
+    innerHTML: "Click Me",
+    onmousedown: function() {
+      this.default({ value: true, __internal: true });
+      const onMouseUp = () => {
+        this.default({ value: false, __internal: true });
+        globalThis.removeEventListener("mouseup", onMouseUp);
+      };
+      globalThis.addEventListener("mouseup", onMouseUp);
+    }
+  };
+  var cache = null;
+  function button_default(input) {
+    let res;
+    const value = input?.value ?? input;
+    const isInternal = input?.__internal;
+    if (isInternal) {
+      if (this.cache) {
+        if (value !== void 0)
+          res = this.cache;
+      } else
+        res = value;
+    } else if (value !== void 0)
+      this.cache = value;
+    return res;
+  }
+
+  // libraries/escode/tests/0/components/log.js
+  var log_exports = {};
+  __export(log_exports, {
+    default: () => log_default
+  });
+  var log_default = (...input) => console.log(`[log]:`, input);
+
+  // demo/index.esc.ts
+  var id = "test";
+  var moveButtonId = "button";
+  var esComponents = {
+    [id]: {
+      esCompose: basic_exports,
+      esListeners: {
+        [`imports.nExecution`]: "imports.passedWithListener",
+        [`imports.passedWithListener`]: (...args) => console.log("Passed with Listener!", args)
+      }
+    },
+    log: {
+      esCompose: log_exports
+    },
+    container: {
+      componentToMove: moveButtonId,
+      esCompose: {
+        tagName: "div"
+      },
+      log: {
+        esCompose: log_exports
+      },
+      esComponents: {
+        header: {
+          tagName: "h1",
+          attributes: {
+            innerText: "ESCompose Demo"
+          }
+        },
+        [moveButtonId]: {
+          esCompose: button_exports,
+          esTrigger: { value: true, __internal: true }
+        }
+      }
+    }
+  };
+  var esListeners = {
+    [`container.${moveButtonId}`]: {
+      [`${id}.imports`]: true,
+      [`log`]: true
+    }
+  };
 
   // demo/index.ts
   var states = [];
@@ -1320,7 +1323,9 @@
   var esmId = "ESM";
   monitor.set(esmId, basic_exports);
   monitor.on(esmId, (path, _, update2) => console.log("Polling Result:", path, update2));
-  var component = src_default2(index_esc_exports, {
+  var selected = index_esc_exports;
+  selected.parentNode = main;
+  var component = src_default2(selected, {
     monitor,
     listeners: { static: false }
   });

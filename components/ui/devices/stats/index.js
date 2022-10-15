@@ -4,7 +4,7 @@
 
     export const animation = function(){
         const thisLatest = this.latest ?? {}
-        if((!this.element.innerHTML || thisLatest.currentTimestamp !== thisLatest.lastTimestamp)){
+        if((!this.esElement.innerHTML || thisLatest.currentTimestamp !== thisLatest.lastTimestamp)){
             const timestamp = (thisLatest.currentTimestamp) ? new Date(thisLatest.currentTimestamp).toISOString() : 0
 
             // Calculate RMSE Stats
@@ -23,7 +23,7 @@
                 // }
             }
 
-            this.element.innerHTML = `
+            this.esElement.innerHTML = `
             STATS:
             <tr> <th>Timestamp: </th><td>${timestamp}</td> </tr>
             <tr> <th>Current: </th><td>${thisLatest.current?.toFixed(2) ?? 0}</td> </tr>

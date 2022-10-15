@@ -1,29 +1,29 @@
 {
     "tagName": "div",
-    "components": {
+    "esComponents": {
         "connectmode": {
-            "src": "../select.js"
+            "esCompose": "../select.js"
         },
         "selectUSB": {
-            "src": "../select.js"
+            "esCompose": "../select.js"
         },
         "selectBLE": {
-            "src": "../select.js"
+            "esCompose": "../select.js"
         },
         "selectBLEOther": {
-            "src": "../select.js"
+            "esCompose": "../select.js"
         },
         "selectOther": {
-            "src": "../select.js"
+            "esCompose": "../select.js"
         },
         "connect": {
-            "src": "../../devices/connect.js"
+            "esCompose": "../../devices/connect.js"
         },
         "toConnect": {
             "attributes": {
                 "innerHTML": "Connect Device"
             },
-            "src": "../button.js"
+            "esCompose": "../button.js"
         }
     },
     "listeners": {
