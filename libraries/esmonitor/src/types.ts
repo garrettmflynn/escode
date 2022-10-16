@@ -22,7 +22,8 @@ export type InspectableOptions = {
     callback?: Inspectable['callback'],
     keySeparator?: '.' | string,
     listeners?: ListenerRegistry
-    path?: (arr: ArrayPath) => ArrayPath | ArrayPath
+    path?: (arr: ArrayPath) => ArrayPath | ArrayPath,
+    depth?: number
 }
 
 export type ArrayPath = (string | symbol)[]

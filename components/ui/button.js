@@ -1,14 +1,16 @@
 // Element Specification
-export const tagName = 'button' // Attach this component to a button element
-export const attributes = {
-    innerHTML: 'Click Me',  // Set default text
-    onmousedown: function () {
-        this.default({value: true, __internal: true}) // Run the default function of the ES Component
-        const onMouseUp = () => {
-            this.default({value: false, __internal: true}) // Notify when the mouse has been released
-            globalThis.removeEventListener('mouseup', onMouseUp) // Stop monitoring for the mouseup event
+export const esElement = {
+    element: 'button',
+    attributes: {
+        innerHTML: 'Click Me',  // Set default text
+        onmousedown: function () {
+            this.default({value: true, __internal: true}) // Run the default function of the ES Component
+            const onMouseUp = () => {
+                this.default({value: false, __internal: true}) // Notify when the mouse has been released
+                globalThis.removeEventListener('mouseup', onMouseUp) // Stop monitoring for the mouseup event
+            }
+            globalThis.addEventListener('mouseup', onMouseUp) // Monitor when the user releases the mouse
         }
-        globalThis.addEventListener('mouseup', onMouseUp) // Monitor when the user releases the mouse
     }
 }
 

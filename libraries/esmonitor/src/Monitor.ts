@@ -1,7 +1,6 @@
 import * as check from '../../common/check.js'
 import Poller from './Poller.js'
 
-import { Options } from '../../common/types'
 import { PathFormat, ListenerInfo, InternalOptions, ListenerRegistry, ListenerLookup, ArrayPath, ListenerOptions, MonitorOptions } from './types'
 import * as listeners from './listeners'
 import { iterateSymbols, getPath } from './utils.js'
@@ -13,6 +12,14 @@ import Inspectable from './inspectable/index.js'
 import * as standards from '../../common/standards'
 
 const fallback = 'esComponents'
+
+
+// Global Inspectable (monitored for all changes)
+window.ESMonitorState = new Inspectable({}, {
+    callback: async (path, info, update) => console.log('States Updated!', path, info, update)
+})
+
+
 
 export default class Monitor {
 
@@ -97,7 +104,14 @@ export default class Monitor {
             infoToOutput,
             callback: async (...args) => {
                 const output = await callback(...args)
+
+                // ------------------ Set Manually in Inspected State ------------------
+                setFromPath(path, args[2], window.ESMonitorState, { create: true })
+
+                // ------------------ Run onUpdate Callback ------------------
                 if (onUpdate instanceof Function) onUpdate(...args)
+
+                // Return Standard Output
                 return output
             }, 
             get current() { return get(info.path.absolute) },
@@ -146,7 +160,9 @@ export default class Monitor {
             const inspector = new Inspectable(baseRef, {
                 keySeparator: this.options.keySeparator,
                 listeners: this.listeners,
-                path: (path) => path.filter((str) => str !== fallback)
+                path: (path) => path.filter((str) => str !== fallback),
+                // listenDeeper: ['__isESComponent'],
+                // listenDeeper: ['test']
             })
 
             this.set(id, inspector) // reset reference

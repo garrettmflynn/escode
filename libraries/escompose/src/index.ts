@@ -60,7 +60,9 @@ const setListeners = (context, components) => {
             if (typeof value === 'object') context.listeners[joined] = {...listeners[path]}
             else context.listeners[joined] = value
             
-            context.monitor.on(basePath, (path, info, args) => passToListeners(context, absPath, path, info, args), context.options.listeners)
+            context.monitor.on(basePath, (path, info, args) => {
+                passToListeners(context, absPath, path, info, args), context.options.listeners
+            })
         }
     }
 }
@@ -68,6 +70,7 @@ const setListeners = (context, components) => {
 
 function pass(from, target, args, context) {
 
+    
     const id = context.id
 
     let parent, key, root
@@ -128,15 +131,29 @@ function pass(from, target, args, context) {
     else if (typeof target === 'function') target(...args)
 
     else {
-        let baseMessage = `listener: ${from} —> ${key}`
-        if (parent) {
-            console.error(`Deleting ${baseMessage}`, parent[key])
-            delete parent[key]
-        } else console.error(`Failed to add ${baseMessage}`, target)
+        try {
+            const parentPath = [id]
+            if (root) parentPath.push(root)
+            parentPath.push(...key.split(context.options.keySeparator))
+            const idx = parentPath.pop()
+            const info = context.monitor.get(parentPath, 'info')
+            const arg = args[0]
+            if (target.esBranch) {
+                target.esBranch.forEach(o => {
+                    if (o.equals === arg) info.value[idx] = o.value
+                })
+            } else info.value[idx] = target // Setting with provided value
+        } catch (e) {
+            let baseMessage = `listener: ${from} —> ${key}`
+            if (parent) {
+                console.error(`Deleting ${baseMessage}`, parent[key], e)
+                delete parent[key]
+            } else console.error(`Failed to add ${baseMessage}`, target)
+        }
     }
 }
 
-function passToListeners(context, root, name, _, ...args) {
+function passToListeners(context, root, name, info, ...args) {
 
     const sep = context.options.keySeparator
     const noDefault = name.slice(0, -`${sep}${standards.defaultPath}`.length)
@@ -152,6 +169,7 @@ function passToListeners(context, root, name, _, ...args) {
 
         const info = group.info
         if (info){
+
             if (typeof info === 'object') {
                 for (let key in info) {
                     pass(name, {

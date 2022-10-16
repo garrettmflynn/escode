@@ -3,7 +3,7 @@ export let bounce = 0.0;
 export let collideWorldBounds;
 export let size = {}
 export let position = {}
-export let jumpRefractoryPeriod = 1500 // wait until next jump
+export let jumpRefractoryPeriod = 2000 // wait until next jump
 
 export let create; // externally-specified create function
 export let update; // externally-specified update function
@@ -12,7 +12,10 @@ export let ref; // reference to the player sprite
 
 export let jumped = false
 export function jump (height) {
-    if (height && this.jumped === false) {
+    if (
+        height 
+        && this.jumped === false 
+    ) {
         this.jumped = true
         this.ref.body.setVelocityY(-500*height);
         setTimeout(() => this.jumped = false, this.jumpRefractoryPeriod) // minimum 1.5 seconds

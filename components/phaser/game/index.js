@@ -28,10 +28,9 @@ export const config = defaultConfig
 
 export let game;
 
-export const tagName = 'div'
+export const esElement = 'div'
 
 export function esInit() {
-    console.log('Created', this)
     if (window.Phaser) this.default() // run node if phaser exists
      else nodes[this._unique] = this // set link to node
 }

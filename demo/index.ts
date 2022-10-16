@@ -2,9 +2,8 @@
 // -------------- Import Modules --------------
 import createComponent from '../libraries/escompose/src/index'
 import Monitor from '../libraries/esmonitor/src/Monitor.js'
-import Inspectable from '../libraries/esmonitor/src/inspectable/index.js'
-import ESC from "../libraries/escode/src/core/index";
-import validate from "../libraries/escode/src/validate/index";
+// import ESC from "../libraries/escode/src/core/index";
+// import validate from "../libraries/escode/src/validate/index";
 import * as ui from './ui.js'
 
 // ------------------ ES Components (more imports in files) ------------------
@@ -12,8 +11,10 @@ import * as escFile from './index.esc'
 import * as phaserFile from '../drafts/demos/phaser/index.esc'
 import * as audiofeedbackFile from '../drafts/demos/devices/audiofeedback/index.esc'
 import * as todoFile from '../drafts/demos/todo/index.esc'
+import * as multiplayerPhaserFile from '../drafts/demos/phaser/versions/multiplayer.esc'
+import * as devicePhaserFile from '../drafts/demos/phaser/versions/devices.esc'
 
-import * as test from 'esmpile/tests/basic/index.js'
+import * as test from '../components/tests/basic/index.js'
 
 // ------------------ ESMpile (todo) ------------------
 // for (let file in monitor.dependencies) {
@@ -21,8 +22,7 @@ import * as test from 'esmpile/tests/basic/index.js'
 // }
 
 // ------------------ ESMonitor ------------------
-let states: Inspectable[] = []
-let logUpdate = (path, info, newVal?: any) =>  ui.update(path, info, newVal, states)
+let logUpdate = (path, info, newVal?: any) =>  ui.update(path, info, newVal)
 
 const monitor = new Monitor({
     onInit: logUpdate,
@@ -36,29 +36,27 @@ const monitor = new Monitor({
     polling: { sps: 60 }
 })
 
-const objectStates = {}
-
-// Monitor Object for All Changes
-const inspectableState = new Inspectable(objectStates, {
-    callback: async (path, info, update) => console.log('States Updated!', path, update)
-})
-
-states.push(inspectableState)
-
 // Poll the ESM Object
-const esmId = 'ESM'
-monitor.set(esmId, test)
-monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
 
 // ------------------ ESCompose ------------------
-const selected = escFile as any
-// const selected = phaserFile as any
+const demo: string = 'basic'
+let selected;
+if (demo === 'phaser') selected = phaserFile as any
+else if (demo === 'multiplayer') selected = multiplayerPhaserFile as any
+else if (demo === 'device') selected = devicePhaserFile as any
 
-// // Broken...
-// const selected = audiofeedbackFile as any
-// const selected = todoFile as any
 
-selected.parentNode = ui.main
+// Broken...
+else if (demo === 'audiofeedback') selected = audiofeedbackFile as any
+else if (demo === 'todo') selected = todoFile as any
+else {
+    selected = escFile as any
+    const esmId = 'ESM'
+    monitor.set(esmId, test)
+    monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
+}
+
+selected.esParent = ui.main
 
 const component = createComponent(selected, {
     monitor, // Use the existing monitor
@@ -201,3 +199,4 @@ console.log('Configuration Object', component)
 //     demo.style.display = ''
 //     loader.style.width = `0%`
 // }
+

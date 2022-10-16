@@ -7,10 +7,7 @@ const add = (arr) => arr.reduce((a, b) => a + b, 0)
 const average = (arr) => add(arr) / arr.length
 
 
-export const update = async (path, info, update, toUpdate: any[] = []) => {
-
-    // ------------------ Set Manually in Inspected State ------------------
-    toUpdate.forEach(state => setFromPath(path, update, state, { create: true }))
+export const update = async (path, info, update) => {
 
     // ------------------ Show States on UI ------------------
     if (stateTable){
@@ -72,8 +69,9 @@ export const update = async (path, info, update, toUpdate: any[] = []) => {
         // container.table.insertAdjacentElement('afterbegin', state.div)
         // stateTable.insertAdjacentElement('afterbegin', container.div)
 
-        state.value.innerHTML = JSON.stringify(update)
-
+        if (typeof update === 'object') {
+            state.value.innerHTML = 'Object' //JSON.stringify(update)
+        } else state.value.innerHTML = JSON.stringify(update)
 
         const infoCopy = {...info}
         delete infoCopy.function

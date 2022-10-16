@@ -1,49 +1,142 @@
-import { ESComponent } from "../component";
+import { ESComponent, ESElementInfo } from "../component";
 
 export function create(id, esm: ESComponent, parent) {
 
-    if (!esm.id && id) esm.id = id;
-    if (typeof esm.id !== 'string') esm.id = `${esm.tagName ?? 'element'}${Math.floor(Math.random() * 1000000000000000)}`;
-
     // --------------------------- Get Element ---------------------------
-    let element = esm.esElement;
-    if (element) {
-        if (typeof element === 'string') {
-            const elm = document.querySelector(element); //get first element by tag or id 
-            if (!elm) {
-                const elm = document.getElementById(element);
-                if (elm) element = elm;
-            } else element = elm;
+    let element = esm.esElement as ESComponent['esElement'] | null;
+
+    let info: undefined | ESElementInfo;
+    if (!(element instanceof Element)) {
+        if (typeof element === 'object') {
+            info = element as ESElementInfo
+            const id = info.id;
+            if (info.element instanceof Element) element = info.element
+            else if (info.selectors) element = document.querySelector(info.selectors)
+            else if (info.id) element = document.getElementById(info.id)
+            else element = info.element
         }
-    }
-    else if (esm.tagName) element = document.createElement(esm.tagName);
-    else if (esm.id) {
-        const elm = document.getElementById(esm.id);
-        if (elm) element = elm;
+
+        if (typeof element === 'string') element = document.createElement(element);
     }
 
     if (!(element instanceof Element)) console.warn('Element not found for', id);
 
+
+    let states: any = {
+        element: element,
+        parentNode: esm.esParent ?? info?.parentNode ?? ((parent?.esElement instanceof Element) ? parent.esElement : undefined),
+        onresize: esm.esOnResize,
+        onresizeEventCallback: undefined,
+    }
+
     // --------------------------- Assign Things to Element ---------------------------
-
     if (element instanceof Element) {
-        let p = esm.parentNode;
 
-        const parentEl = (parent?.esElement instanceof Element) ? parent.esElement : undefined;
-        esm.parentNode = p ? p : parentEl;
+        // Set ID
+        if (typeof id !== 'string') id = `${element.tagName ?? 'element'}${Math.floor(Math.random() * 1000000000000000)}`;
+        if (!element.id) element.id = id;
 
-        element.id = esm.id;
+        if (info) {
 
-        if (esm.attributes) {
-            for (let key in esm.attributes) {
-                if (typeof esm.attributes[key] === 'function') element[key] = (...args) => esm.attributes[key](...args); // replace this scope
-                else element[key] = esm.attributes[key];
+            // Set Attributes
+            if (info.attributes) {
+                for (let key in info.attributes) {
+                    if (typeof info.attributes[key] === 'function') {
+                        const func = info.attributes[key];
+
+                        element[key] = (...args) => {
+                            const context = esm.__esProxy ?? esm
+                            console.log('Running', key, args, func, context, esm)
+                            return func.call(context ?? esm, ...args)
+                        }; // replace this scope
+                    } else element[key] = info.attributes[key];
+                }
             }
-        }
 
-        if (element instanceof HTMLElement) {
-            if (esm.style) Object.assign(element.style, esm.style);
+            // Set Style
+            if (element instanceof HTMLElement && info.style) Object.assign(element.style, info.style);
         }
+    }
+
+
+    // Listen for Changes to Element
+    Object.defineProperty(esm, 'esElement', {
+        get: function() {
+            if (states.element instanceof Element) return states.element
+        },
+        set: function(v) {
+            if (v instanceof Element) {
+                states.element = v
+
+                // Trigger esParent Setter on Nested Components
+                for (let name in esm.esComponents) {
+                    const component = esm.esComponents[name] as ESComponent;
+                    component.esParent = v
+                }
+            }
+        },
+        enumerable:true,
+        configurable: false
+    })
+
+    Object.defineProperty(esm, 'esParent', {
+        get:function () { 
+            if (esm.esElement instanceof Element) return esm.esElement.parentNode; 
+        },
+        set:(v) => { 
+
+            // Get Parent Node from User String
+            if (typeof v === 'string') {
+                const newValue = document.querySelector(v);
+                if (newValue) v = newValue
+                else v = document.getElementById(v);
+            }
+
+            // Set Parent Node on Element
+            if (v?.esElement instanceof Element) v = v.esElement
+            if (esm.esElement instanceof Element) {
+                if(esm.esElement.parentNode) esm.esElement.remove()
+                if (v) v.appendChild(esm.esElement);
+            } 
+            
+            // Set Child Parent Nodes to This
+            else {
+                for (let name in esm.esComponents) {
+                    const component = esm.esComponents[name]
+                    component.esParent = v
+                }
+            }
+        },
+        enumerable:true
+    });
+
+    // On Resize Function
+    let onresize = esm.esOnResize
+    Object.defineProperty(esm,'esOnResize',{
+        get: function() { return onresize },
+        set: function(foo) {
+            states.onresize = foo
+            if (states.onresizeEventCallback) window.removeEventListener('resize', states.onresizeEventCallback) // Stop previous listener
+            if (states.onresize) {
+                states.onresizeEventCallback = (ev) => { 
+                    if ( states.onresize && esm.esElement instanceof Element ) {
+                        const context = esm.__esProxy ?? esm
+                        return foo.call(context, ev) 
+                    }
+                };
+                window.addEventListener('resize', states.onresizeEventCallback);
+            }
+        },
+        enumerable: true
+    })
+
+    esm.esOnResize = states.onresize
+    esm.esParent = states.parentNode
+
+    // NOTE: If you're drilling elements, this WILL cause for infinite loop when drilling an object with getters
+    if (esm.esElement instanceof Element) {
+        esm.esElement.esComponent = esm
+        esm.esElement.setAttribute('__isescomponent', '')
     }
 
     return element;

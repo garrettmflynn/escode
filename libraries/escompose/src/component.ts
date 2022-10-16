@@ -3,6 +3,20 @@ type ComponentElement = Element & { [x:string]: any }
 
 type attributeKeys = keyof HTMLElement['attributes']
 
+type baseESElement = string | ComponentElement
+
+export type ESElementInfo = {
+    element?: baseESElement,
+    id?: string,
+    selectors?: string,
+    style?: {[key:string]:any},
+    attributes?: {
+        [x in attributeKeys] : any
+    },
+    parentNode?: baseESElement
+}
+
+
 export type ESComponent = {
     
     default: Function,
@@ -17,15 +31,16 @@ export type ESComponent = {
 
     // HTML-Specific
     id: string;
-    tagName: string;
-    esElement?: string | ComponentElement,
-    parentNode?: Element,
-    style: {[key:string]:any},
-    attributes:{
-        [x in attributeKeys] : any
-    }
+    esElement?: baseESElement | ESElementInfo,
+    esParent?: ComponentElement,
+    esStyle: {[key:string]:any},
+    esAttributes:{ [x in attributeKeys] : any }
     esOnResize: Function,
     esOnRender: Function
     esOnRemove: Function
+
+
+    __isESComponent: boolean,
+    __esProxy: ProxyConstructor,
 
 }

@@ -40,18 +40,18 @@ export const objects = (proxy) => {
             if (prop === isProxy) return true;
             return Reflect.get(target, prop, receiver);
         },
+        
         set(target, prop, newVal, receiver) {
-
-
+            
             if (prop === isProxy) return true;
-
             const pathStr = [...proxy.path, prop].join(proxy.options.keySeparator)
-
 
             // Create Proxies for Objects
             if (newVal) {
-                const newProxy = proxy.create(prop, target, newVal)
-                if (newProxy) newVal = newProxy
+                // if (!proxy.options.listenDeeper || proxy.target[proxy.options.listenDeeper]) {
+                    const newProxy = proxy.create(prop, target, newVal)
+                    if (newProxy) newVal = newProxy
+                // }
             }
 
             

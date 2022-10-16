@@ -6,8 +6,9 @@ function createCompanion(player) {
     base.call(this, player) // call base create function
     main.call(this, player) // call main create function (no follow)
 
+    const size =  4/6
     // Half Size
-    player.setDisplaySize(4*player.width / 6, 4* player.height / 6); 
+    player.setDisplaySize(size*player.width , size*player.height); 
 
 }
 

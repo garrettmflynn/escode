@@ -1,9 +1,11 @@
 import 'https://cdn.jsdelivr.net/npm/visualscript@0.0.7/dist/index.esm.js'
 
-export const tagName = 'div'
-export const style = {
-    height: '100%',
-    width: '100%'
+export const esElement = {
+    element: 'div',
+    style: {
+        height: '100%',
+        width: '100%'
+    }
 }
 
 export let stream;

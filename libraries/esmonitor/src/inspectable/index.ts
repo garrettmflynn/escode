@@ -54,35 +54,43 @@ export default class Inspectable {
     options: InspectableOptions
     proxy: ProxyConstructor
     listeners?: ListenerRegistry
+    target: any
 
     constructor ( target:any, opts: InspectableOptions ={} ) {
 
+        // -------------- Only Listen to ES Components --------------
 
-        this.options = opts
-        this.parent = opts.parent
-        this.callback = opts.callback ?? this.parent?.callback
-        if (this.parent) this.path = [...this.parent.path]
-        if (opts.name) this.path.push(opts.name)
-        if (opts.listeners) this.listeners = opts.listeners
+        if (target.__esProxy) this.proxy = target.__esProxy
+        else {
 
-        if (opts.path) {
-            if (opts.path instanceof Function) this.path = opts.path(this.path)
-            else if (Array.isArray(opts.path)) this.path = opts.path
-            else console.log('Invalid path', opts.path)
+            this.target = target
+            this.options = opts
+            // if (!this.options.depth) this.options.depth = 0
+            this.parent = opts.parent
+            this.callback = opts.callback ?? this.parent?.callback
+            if (this.parent) this.path = [...this.parent.path]
+            if (opts.name) this.path.push(opts.name)
+            if (opts.listeners) this.listeners = opts.listeners
+
+            if (opts.path) {
+                if (opts.path instanceof Function) this.path = opts.path(this.path)
+                else if (Array.isArray(opts.path)) this.path = opts.path
+                else console.log('Invalid path', opts.path)
+            }
+
+
+            if (!this.options.keySeparator) this.options.keySeparator = standards.keySeparator
+
+            let type = opts.type
+            if (type != 'object') type = (typeof target === 'function')  ? 'function' : 'object';
+            const handler =  handlers[`${type}s`](this)
+
+            this.proxy = new Proxy(target, handler)
+            Object.defineProperty(target, '__esProxy', { value: this.proxy, enumerable: false })
+        
+            // Create Nested Inspectable Proxies
+            for (let key in target) this.create(key, target, undefined)
         }
-
-
-        if (!this.options.keySeparator) this.options.keySeparator = standards.keySeparator
-
-        let type = opts.type
-        if (type != 'object') type = (typeof target === 'function')  ? 'function' : 'object';
-        const handler =  handlers[`${type}s`](this)
-        this.proxy = new Proxy(target, handler)
-        
-
-        
-        // Create Nested Inspectable Proxies
-        for (let key in target) this.create(key, target)
 
         return this.proxy as any // Replace class passed to the user with the proxy
 

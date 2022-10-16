@@ -8,9 +8,13 @@ export const parentNode = (esm, parentNode) => {
         setTimeout(()=>{ //slight delay on appendChild so the graph is up to date after other sync loading calls are finished
             if(typeof parentNode === 'string') parentNode = document.getElementById(parentNode);
             if(parentNode && typeof parentNode === 'object') parentNode.appendChild(elm);
-            if(oncreate) oncreate.call(elm.component, elm);
-            if(elm.component.animation || elm.component.animate) elm.component.runAnimation();
-            if(elm.component.looper || typeof elm.component.loop === 'number' && elm.component.loop) elm.component.runLoop()
+            if(oncreate) {
+                const esm = elm.esComponent
+                const context = esm.__esProxy ?? esm
+                oncreate.call(context, elm);
+            }
+            if(elm.esComponent.animation || elm.esComponent.animate) elm.esComponent.runAnimation();
+            if(elm.esComponent.looper || typeof elm.esComponent.loop === 'number' && elm.esComponent.loop) elm.esComponent.runLoop()
         },0.01); //small timeout makes sure the elements all load before executing component utilities
     }
 }

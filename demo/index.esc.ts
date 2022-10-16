@@ -1,18 +1,24 @@
-import * as test from 'esmpile/tests/basic/index.js'
+import * as test from '../components/tests/basic/index.js'
 import * as button from '../components/ui/button.js'
-import * as log from '../libraries/escode/tests/0/components/log.js'
-import * as ui from './ui'
-
+import * as log from '../components/basic/log.js'
 
 const id = 'test'
 const moveButtonId = 'button'
 
+export const esElement = 'div'
+
+export const esStyle = {
+    padding: '50px'
+}
+
 export const esComponents = {
+
     [id]: {
         esCompose: test,
         esListeners: {
             [`imports.nExecution`]: 'imports.passedWithListener',
             [`imports.passedWithListener`]: (...args) =>  console.log('Passed with Listener!', args),
+            [`imports.later`]: (...args) =>  console.log('Added Later!', args),
         }
     }, 
     log: {
@@ -21,16 +27,18 @@ export const esComponents = {
     container: {
         componentToMove: moveButtonId,
         esCompose: {
-            tagName: 'div'
+            esElement: 'div'
         },
         log: {
             esCompose: log
         },
         esComponents: {
             header: {
-                tagName: 'h1',
-                attributes: {
-                    innerText: 'ESCompose Demo'
+                esElement: {
+                    element: 'h1',
+                    attributes: {
+                        innerText: 'ESCompose Demo'
+                    }
                 }
             },
             [moveButtonId]: {
