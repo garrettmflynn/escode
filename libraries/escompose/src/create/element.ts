@@ -46,7 +46,6 @@ export function create(id, esm: ESComponent, parent) {
 
                         element[key] = (...args) => {
                             const context = esm.__esProxy ?? esm
-                            console.log('Running', key, args, func, context, esm)
                             return func.call(context ?? esm, ...args)
                         }; // replace this scope
                     } else element[key] = info.attributes[key];

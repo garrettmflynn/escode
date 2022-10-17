@@ -19,10 +19,14 @@ export const functions = (proxy) => {
                 } 
                 
                 // Default Behavior
-                else output = await target.apply(thisArg, argumentsList);
-
+                else {
+                    output = await target.apply(thisArg, argumentsList);
+                    executionInfo = proxy?.state?.[pathStr]?.value ?? {}
+                }
+                
                 // Notify with Proxy Callback
-                if (proxy.callback instanceof Function) proxy.callback(pathStr, executionInfo, output)
+                const callback = proxy.options.callback
+                if (callback instanceof Function) callback(pathStr, executionInfo, output)
 
                 // Return output to function
                 return output
@@ -60,8 +64,11 @@ export const objects = (proxy) => {
                 if (listeners) setterExecution(listeners, newVal) // run callbacks
             }
 
-            if (proxy.callback instanceof Function) proxy.callback(pathStr, {}, newVal)
-
+            const callback = proxy.options.callback
+            if (callback instanceof Function) {
+                const info = proxy?.state?.[pathStr]?.value ?? {}
+                callback(pathStr, info, newVal)
+            }
 
             return Reflect.set(target, prop, newVal, receiver);
         },

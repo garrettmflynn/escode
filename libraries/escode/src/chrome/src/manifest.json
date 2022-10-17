@@ -23,6 +23,11 @@
     "service_worker": "common/background.js"
   },
 
+  "web_accessible_resources": [{
+    "resources": ["devtools/injected.js", "devtools/style.css"],
+    "matches": ["<all_urls>"]
+  }],
+
   "content_scripts": [
     {
       "matches": ["http://*/**", "https://*/**"],

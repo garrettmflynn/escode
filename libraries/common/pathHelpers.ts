@@ -40,7 +40,7 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
         exists = hasKey(str, ref)
         if (exists) ref = ref[str]
         else if (i === path.length - 1) {
-            console.error(`Final path key not found: ${str}`, path, ref, baseObject)
+            if (!opts.dynamic) console.error(`Final path key not found: ${str}`, path, ref, baseObject)
             return
         }
     }

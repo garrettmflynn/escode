@@ -7,19 +7,18 @@ import { iterateSymbols, getPath } from './utils.js'
 import { drillSimple } from '../../common/drill.js'
 import { getFromPath, setFromPath } from '../../common/pathHelpers.js'
 import { isProxy } from './inspectable/handlers.js'
-import Inspectable from './inspectable/index.js'
+import Inspectable, { InspectableProxy } from './inspectable/index.js'
 
 import * as standards from '../../common/standards'
 
 const fallback = 'esComponents'
 
+declare global {
+    interface Window { ESMonitorState: InspectableProxy; }
+}
 
-// Global Inspectable (monitored for all changes)
-window.ESMonitorState = new Inspectable({}, {
-    callback: async (path, info, update) => console.log('States Updated!', path, info, update)
-})
-
-
+// ------------- Global Inspectable (monitored for all changes) -------------
+window.ESMonitorState = new Inspectable() as any
 
 export default class Monitor {
 
@@ -51,7 +50,8 @@ export default class Monitor {
     get = (path, output?) => getFromPath(this.references, path, {
         keySeparator: this.options.keySeparator,
         fallbacks: [fallback],
-        output
+        output,
+        dynamic: this.references[path[0]][isProxy]
     })
 
     set = (path, value, ref:any = this.references, opts = {}) => setFromPath(path, value, ref, opts)
@@ -106,7 +106,7 @@ export default class Monitor {
                 const output = await callback(...args)
 
                 // ------------------ Set Manually in Inspected State ------------------
-                setFromPath(path, args[2], window.ESMonitorState, { create: true })
+                window.ESMonitorState.__esInspectable.set(...args)
 
                 // ------------------ Run onUpdate Callback ------------------
                 if (onUpdate instanceof Function) onUpdate(...args)

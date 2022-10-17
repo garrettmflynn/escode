@@ -239,7 +239,6 @@ const create = (config, options: Partial<Options>) => {
 
     fullInstance.esInit()
 
-    console.log('fullInstance', fullInstance)
     return fullInstance as ESComponent
 }
 

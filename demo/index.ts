@@ -58,6 +58,7 @@ else {
 
 selected.esParent = ui.main
 
+// Create an active ES Component from a .esc file
 const component = createComponent(selected, {
     monitor, // Use the existing monitor
     listeners: { static: false } // Will be able to track new keys added to the object
@@ -67,9 +68,6 @@ const component = createComponent(selected, {
 // component.esElement = document.createElement('div')
 // ui.main.appendChild(component.esElement)
 
-
-
-console.log('Configuration Object', component)
 
 // ------------------ ESCode (todo) ------------------
 // ....

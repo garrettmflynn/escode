@@ -50,7 +50,7 @@ export type Info = {
 
 export type ActiveInfo = {
     function?: Function,
-    args?: any[],
+    arguments?: any[],
     info?: Info,
     performance?: number
 }

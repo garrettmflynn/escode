@@ -16,11 +16,7 @@ const get = (info, collection) => collection[utils.getPath('absolute', info)]
 export const getExecutionInfo = async (func, args, info) => {
 
     let result = {
-        value: {
-            function: func,
-            arguments: args,
-            info
-        },
+        value: { },
         output: undefined,
     } as {
         value: ActiveInfo,

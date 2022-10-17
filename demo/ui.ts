@@ -1,4 +1,3 @@
-import { setFromPath } from "../libraries/common/pathHelpers"
 
 export const main = document.getElementById('app')
 const stateTable = document.getElementById('states')
