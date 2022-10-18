@@ -43,10 +43,9 @@ if (state) {
             }
 
             try {
-                const state = JSON.parse(JSON.stringify(stateInfo))
-                window.postMessage({ state, source: id }, '*');
+                window.postMessage({ state: stateInfo, source: id }, '*');
             } catch (e) {
-                console.warn('[ESCode]: Could not pass state', state, e)
+                console.warn('[ESCode]: Could not pass state', stateInfo, e)
             }
         }
     }

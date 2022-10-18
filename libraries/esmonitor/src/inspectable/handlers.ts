@@ -2,6 +2,21 @@ import { functionExecution, setterExecution } from "../listeners";
 
 export const isProxy = Symbol("isProxy")
 
+export const runCallback = (callback, path, info, output, setGlobal=true) => {
+    if (callback instanceof Function) callback(path, info, output)
+
+    // ------------------ Set Manually in Inspected State ------------------
+    if (setGlobal && window.ESMonitorState) {
+        const callback = window.ESMonitorState.callback
+        window.ESMonitorState.state[path] = {
+            output,
+            value: info
+        }
+
+        runCallback(callback, path, info, output, false)
+    }
+}
+
 export const functions = (proxy) => {
     return {
         apply: async function (target, thisArg, argumentsList) {
@@ -26,7 +41,7 @@ export const functions = (proxy) => {
                 
                 // Notify with Proxy Callback
                 const callback = proxy.options.callback
-                if (callback instanceof Function) callback(pathStr, executionInfo, output)
+                runCallback(callback, pathStr, executionInfo, output)
 
                 // Return output to function
                 return output
@@ -65,10 +80,8 @@ export const objects = (proxy) => {
             }
 
             const callback = proxy.options.callback
-            if (callback instanceof Function) {
-                const info = proxy?.state?.[pathStr]?.value ?? {}
-                callback(pathStr, info, newVal)
-            }
+            const info = proxy?.state?.[pathStr]?.value ?? {}
+            runCallback(callback, pathStr, info, newVal)
 
             return Reflect.set(target, prop, newVal, receiver);
         },

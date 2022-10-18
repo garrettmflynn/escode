@@ -101,7 +101,7 @@ export default class Inspectable {
             Object.defineProperty(target, '__esInspectable', { value: this, enumerable: false })
 
             // Create Nested Inspectable Proxies
-            for (let key in target) this.create(key, target, undefined)
+            for (let key in target) this.create(key, target, undefined, true)
         }
 
         return this.proxy as any // Replace class passed to the user with the proxy
@@ -115,20 +115,23 @@ export default class Inspectable {
             value: info,
         }
 
-        setFromPath(path, update, this.proxy, { create: true })
+        // Set on Proxy Object
+        setFromPath(path, update, this.proxy, { create: true });
     }
 
     check = canCreate
 
-    create = (key, parent, val?) => {
+    create = (key, parent, val?, set = false) => {
 
         const create = this.check(parent, key, val)
+        if (val === undefined) val = parent[key] 
+
         if (create && !(create instanceof Error)) {
-            if (val === undefined) val = parent[key] 
             parent[key] = new Inspectable(val, this.options, key, this)
             return parent[key]
         }
 
+        if (set) this.proxy[key] = val ?? parent[key] // Notify on initialization
         return
     }
 }

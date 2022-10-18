@@ -1,24 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "ESCode (bundled)",
+  "name": "ESCode",
   "version": "0.0.1",
   "description": "A Chrome extension for recomposing the web",
 
   "options_page": "options.html",
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon-48.png"
-  },
-  
-  "icons": {
-    "48": "icon-48.png",
-    "128": "icon-128.png"
+    "default_icon": "icons/48.png"
   },
 
+  "icons": {
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
   "permissions": ["tabs", "activeTab", "scripting", "storage"],
   "host_permissions":["<all_urls>"],
 
-  "minimum_chrome_version": "10.0",
+  "minimum_chrome_version": "49.0",
 
   "chrome_url_overrides": {
     "newtab": "newtab.html"
@@ -27,11 +26,11 @@
   "devtools_page": "devtools.html",
 
   "background": {
-    "service_worker": "background.bundle.js"
+    "service_worker": "js/background.js"
   },
 
   "web_accessible_resources": [{
-    "resources": ["injected.bundle.js"],
+    "resources": ["js/devtools/injected.js", "js/devtools.css"],
     "matches": ["<all_urls>"]
   }],
 
@@ -39,7 +38,7 @@
     {
       "matches": ["http://*/**", "https://*/**"],
       "js": [
-        "contentScript.bundle.js"
+        "js/contentScript.js"
       ]
     }
   ]

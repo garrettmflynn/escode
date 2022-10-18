@@ -13,12 +13,20 @@ import * as standards from '../../common/standards'
 
 const fallback = 'esComponents'
 
+type GlobalESMonitorState = {
+    state: {[x:string]: {output: any, value: any}},
+    callback?: Function | undefined
+}
+
 declare global {
-    interface Window { ESMonitorState: InspectableProxy; }
+    interface Window { ESMonitorState: GlobalESMonitorState; }
 }
 
 // ------------- Global Inspectable (monitored for all changes) -------------
-window.ESMonitorState = new Inspectable() as any
+window.ESMonitorState = {
+    state: {},
+    callback: undefined
+} as GlobalESMonitorState
 
 export default class Monitor {
 
@@ -104,9 +112,6 @@ export default class Monitor {
             infoToOutput,
             callback: async (...args) => {
                 const output = await callback(...args)
-
-                // ------------------ Set Manually in Inspected State ------------------
-                window.ESMonitorState.__esInspectable.set(...args)
 
                 // ------------------ Run onUpdate Callback ------------------
                 if (onUpdate instanceof Function) onUpdate(...args)

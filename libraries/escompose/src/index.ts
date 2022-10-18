@@ -195,7 +195,7 @@ function passToListeners(context, root, name, info, ...args) {
 
 
 const toSet = Symbol('toSet')
-const create = (config, options: Partial<Options>) => {
+const create = (config, options: Partial<Options> = {}) => {
 
     // config = clone.deep(config) // Start with a deep copy
 
@@ -207,11 +207,12 @@ const create = (config, options: Partial<Options>) => {
         options.keySeparator = monitor.options.keySeparator // Inherit key separator
     } else {
         if (!options.monitor) options.monitor  = {}
-        if (!options.monitor.keySeparator) options.monitor.keySeparator = options.keySeparator
+        if (!options.monitor.keySeparator) {
+            if (!options.keySeparator) options.keySeparator = standards.keySeparator // Ensure key separator is defined
+            options.monitor.keySeparator = options.keySeparator
+        }
         monitor = new Monitor(options.monitor)
     }
-
-    if (!options.keySeparator) options.keySeparator = standards.keySeparator
 
     const fullOptions = options as Options
 
