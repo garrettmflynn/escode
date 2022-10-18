@@ -2,7 +2,7 @@
 import * as multiplayer from './multiplayer.esc'
 
 import * as timeseries from '../../../../components/drafts/old/timeseries/index.js'
-import { mode } from '../../../../components/basic/keys'
+import { mode } from '../../../../components/basic/keyboard'
 import * as player1 from './playerconnect.esc'
 
 console.log('player1', player1)

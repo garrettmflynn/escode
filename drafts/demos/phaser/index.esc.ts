@@ -3,7 +3,7 @@ import * as player from  "../../../components/phaser/player.js"
 import createMain from  "./scripts/player/create/main.js"
 import update from "./scripts/player/update.js"
 import create from "./scripts/create.js"
-import * as keys from "../../../components/basic/keys.js"
+import * as keys from "../../../components/basic/keyboard.js"
 
 export const esComponents = {
     keys: {
