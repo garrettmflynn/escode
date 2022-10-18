@@ -1,7 +1,5 @@
 // import webExtensionPolyfill from 'webextension-polyfill'
 // globalThis.browser = webExtensionPolyfill;
-console.log('On the new tab page!')
-
 
 // let readout = document.getElementById('readout');
 

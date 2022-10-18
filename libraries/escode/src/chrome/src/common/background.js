@@ -1,19 +1,15 @@
-// // // Storage
-// // // background.js
-// // chrome.runtime.onMessage.addListener(({ type, name }) => {
-// //   if (type === "set-name") {
-// //     chrome.storage.local.set({ name });
-// //   }
-// // });
-
-// // chrome.action.onClicked.addListener((tab) => {
-// //   chrome.storage.local.get(["name"], ({ name }) => {
-// //     chrome.tabs.sendMessage(tab.id, { name });
-// //   });
-// // });
+const extensions = ["devtools-page"]
 
 // --------------- Allow for running after update (broken...) ---------------
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
+
+  // Open Onboarding Page
+  if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    chrome.tabs.create({
+      url: 'onboarding.html'
+    });
+  }
+
   for (const cs of chrome.runtime.getManifest().content_scripts) {
     for (const tab of await chrome.tabs.query({url: cs.matches})) {
       chrome.scripting.executeScript({
@@ -26,7 +22,6 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 // --------------- Assign Connections ---------------
 var connections = {};
-
 var ports = {};
 
 
@@ -66,7 +61,7 @@ var extensionListener = function (port, message, sender) {
 
 chrome.runtime.onConnect.addListener(function (port) {
 
-    if (port.name == "devtools-page") {
+    if (extensions.includes(port.name)) {
 
       // Listen to messages sent from the DevTools page
       const liveListener = (...args) => extensionListener(port, ...args)

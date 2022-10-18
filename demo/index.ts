@@ -4,7 +4,6 @@ import createComponent from '../libraries/escompose/src/index'
 import Monitor from '../libraries/esmonitor/src/Monitor.js'
 // import ESC from "../libraries/escode/src/core/index";
 // import validate from "../libraries/escode/src/validate/index";
-import * as ui from './ui.js'
 
 // ------------------ ES Components (more imports in files) ------------------
 import * as escFile from './index.esc'
@@ -21,8 +20,10 @@ import * as test from '../components/tests/basic/index.js'
 //     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
 // }
 
+const main = document.getElementById('app') as HTMLElement
+
 // ------------------ ESMonitor ------------------
-let logUpdate = (path, info, newVal?: any) =>  ui.update(path, info, newVal)
+let logUpdate = (path, info, newVal?: any) =>  console.log('Update:', path, info, newVal)
 
 const monitor = new Monitor({
     onInit: logUpdate,
@@ -56,7 +57,7 @@ else {
     monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
 }
 
-selected.esParent = ui.main
+selected.esParent = main
 
 // Create an active ES Component from a .esc file
 const component = createComponent(selected, {

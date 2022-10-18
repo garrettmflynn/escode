@@ -19,6 +19,8 @@ const inspectable = state?.__esInspectable
 
 if (inspectable) {
 
+    window.postMessage({ name: 'storage.update', value: {  compatibleSiteHistory: window.location.href }, source: id }, '*');
+
     const ogCallback = inspectable.options.callback
 
     inspectable.options.callback = (path, info, update) => {
