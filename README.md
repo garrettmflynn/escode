@@ -16,7 +16,7 @@ Compile a list of active ESM imports with [esmpile](./libraries/esmpile/README.m
 Receive notification about changes to objects (including ESM) and their values using [esmonitor](./libraries/esmonitor/README.md).
 
 ### ESCompose
-Transform ESM into Web Components that send messages to each other using [escompose](./libraries/escompose/README.md), which implements the [ECMAScript Components (ESC)](#but-what-are-ecmascript-components) specification.
+Transform ESM into Web Components that send messages to each other using [escompose](./libraries/escompose/README.md), which implements the [ECMAScript Components (ESC)](./libraries/escompose/README.md#the-specification) specification.
 
 ### ESComposer
 Convert between .esc.js to .esc.html and .esc.json using [escomposer](./libraries/escomposer/README.md).
@@ -35,30 +35,6 @@ Inspect and edit .esc files (using code written with .esc) using [escode](./libr
 
 ## Roadmap
 - Declare ESC with similar detail to [ESM](https://tc39.es/ecma262/#sec-modules).
-
-## But What are ECMAScript Components?
-**ECMAScript Components (ESC)** is a specification for developing composable ES Modules.
-
-Each Component contains one `default` export and any number of `named` exports.
-
-``` javascript
-export let nExecutions = 0
-
-export default function(){
-    this.nExecutions++
-    return this.nExecutions
-}
-```
-
-As such, this specification treats **namespace imports** (which access default *and* named exports) as first-class citizens.
-
-#### Default Exports
-The `default` export defines the behavior of the Component.
-
-#### Named Exports
- `named` exports define the states of the Component. 
-
- However, **multiple named exports** without a default function may also be passed. These are transformed into individual Components within the same graph.
 
 ## Acknowledgments
 This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.

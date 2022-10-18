@@ -18,4 +18,5 @@ const config = {
      },
     server: false
 }
+
 export default config; //module.exports = config; //es5

@@ -168,12 +168,16 @@ const onShow = (panelWindow) => {
         if (message.states) {
           for (let path in message.states) {
             const state = message.states[path]
+            console.log('State from States', Object.keys(state.value), state)
             update(path, state.value, state.output)
           }
         }
 
         // Set Single State
-        else if (message.state) update(message.state.path, message.state.info, message.state.update)
+        else if (message.state) {
+          // console.log('Raw State', message.state)
+          update(message.state.path, message.state.info.value, message.state.update)
+        }
         else if (message.clear) {
           states.error.style.display = ''
           states.table.innerHTML = ''

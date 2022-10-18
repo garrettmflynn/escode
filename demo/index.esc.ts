@@ -37,7 +37,7 @@ export const esComponents = {
                 esElement: {
                     element: 'h1',
                     attributes: {
-                        innerText: 'ESCompose Demo'
+                        innerText: 'ESCode Demo'
                     }
                 }
             },

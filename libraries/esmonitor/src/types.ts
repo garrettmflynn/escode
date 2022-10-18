@@ -10,7 +10,7 @@ export type MonitorOptions = {
     onUpdate?: onUpdateFunction | {
         callback: onUpdateFunction,
         info: {
-            performance: boolean
+            performance?: boolean
         }
     },
 }
@@ -19,7 +19,7 @@ export type InspectableOptions = {
     type?: 'function' | 'object', 
     parent?: Inspectable
     name?:string,
-    callback?: Inspectable['callback'],
+    callback?: Function,
     keySeparator?: '.' | string,
     listeners?: ListenerRegistry
     path?: (arr: ArrayPath) => ArrayPath | ArrayPath,

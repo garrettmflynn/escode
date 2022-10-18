@@ -96,6 +96,8 @@ if (esmonitor) {
 
     const ogCallback = esmonitor.callback
 
+    esmonitor.info = {performance: true} // Force getting performance info
+
     esmonitor.callback = (path, info, update) => {
 
             if (ogCallback) ogCallback(path, info, update)

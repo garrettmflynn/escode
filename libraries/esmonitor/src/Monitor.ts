@@ -7,26 +7,11 @@ import { iterateSymbols, getPath } from './utils.js'
 import { drillSimple } from '../../common/drill.js'
 import { getFromPath, setFromPath } from '../../common/pathHelpers.js'
 import { isProxy } from './inspectable/handlers.js'
-import Inspectable, { InspectableProxy } from './inspectable/index.js'
+import Inspectable from './inspectable/index.js'
 
 import * as standards from '../../common/standards'
 
 const fallback = 'esComponents'
-
-type GlobalESMonitorState = {
-    state: {[x:string]: {output: any, value: any}},
-    callback?: Function | undefined
-}
-
-declare global {
-    interface Window { ESMonitorState: GlobalESMonitorState; }
-}
-
-// ------------- Global Inspectable (monitored for all changes) -------------
-window.ESMonitorState = {
-    state: {},
-    callback: undefined
-} as GlobalESMonitorState
 
 export default class Monitor {
 

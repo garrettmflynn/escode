@@ -131,7 +131,15 @@ export default class Inspectable {
             return parent[key]
         }
 
-        if (set) this.proxy[key] = val ?? parent[key] // Notify on initialization
+        if (set) {
+            try {
+                this.proxy[key] = val ?? parent[key] // Notify on initialization
+            } catch (e) {
+                const isESM = check.esm(parent)
+                const path = [...this.path, key]
+                console.warn(`Could not set value (${path.join(this.options.keySeparator)})${isESM ? ' because the parent is an ESM.' : ''}`)
+            }
+        }
         return
     }
 }
