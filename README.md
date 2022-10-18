@@ -1,30 +1,44 @@
-## ECMAScript Components (ESC)
-[![Npm package version](https://badgen.net/npm/v/escompose)](https://npmjs.com/package/escompose)
-[![Npm package monthly downloads](https://badgen.net/npm/dm/escompose)](https://npmjs.com/package/escompose)
+# ESCode: Recompose the Web
+[![Npm package version](https://badgen.net/npm/v/escode)](https://npmjs.com/package/escode)
+[![Npm package monthly downloads](https://badgen.net/npm/dm/escode)](https://npmjs.com/package/escode)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
+**ESCode** is a framework for creating composable web applications.
+
+> **ESCode** is a sub-framework of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay).
+
+## The Programming Workflow
+### ESMpile
+Compile a list of active ESM imports with [esmpile](./libraries/esmpile/README.md). This is achieved by bundling code hosted at standard `import` uris from their text sources. Resulting bundles also support incremental changes and recompilation.
+
+### ESMonitor
+Receive notification about changes to objects (including ESM) and their values using [esmonitor](./libraries/esmonitor/README.md).
+
+### ESCompose
+Transform ESM into Web Components that send messages to each other using [escompose](./libraries/escompose/README.md), which implements the [ECMAScript Components (ESC)](#but-what-are-ecmascript-components) specification.
+
+### ESComposer
+Convert between .esc.js to .esc.html and .esc.json using [escomposer](./libraries/escomposer/README.md).
+
+### Components
+Pull code from the official repository of ESC using [components](./components/README.md).
+
+### ESCode
+Inspect and edit .esc files (using code written with .esc) using [escode](./libraries/escode/README.md).
+
+#### Internal Libraries
+- [visualscript](./libraries/escode/libraries/visualscript/README.md): Visual programming made simple.
+
+#### Draft Applications
+- [escode-chrome](./libraries/escode/apps/chrome/README.md): A Chrome Extension for ESCode
+
+## Roadmap
+- Declare ESC with similar detail to [ESM](https://tc39.es/ecma262/#sec-modules).
+
+## But What are ECMAScript Components?
 **ECMAScript Components (ESC)** is a specification for developing composable ES Modules.
 
-> **ESC** is a core specification of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
-
-## Libraries
-### [components](./components/README.md)
-`components` contains the official repository of ES Components (ESC).
-
-### [escompose](./libraries/escompose/README.md)
-`escompose` compiles ES Components into standardized Web Components that respond to each other.
-
-### [esmonitor](./libraries/esmonitor/README.md)
-`esmonitor` allows for notification of any changes to ES Module variables during runtime.
-
-### [esmpile](./libraries/esmpile/README.md)
-`esmpile` compiles ES Module code from standard import uris.
-
-### [escomposer](./libraries/escomposer/README.md)
-`escomposer` is a visual programming system for ESC.
-
-## The Specification
 Each Component contains one `default` export and any number of `named` exports.
 
 ``` javascript
@@ -38,17 +52,13 @@ export default function(){
 
 As such, this specification treats **namespace imports** (which access default *and* named exports) as first-class citizens.
 
-### Default Exports
+#### Default Exports
 The `default` export defines the behavior of the Component.
 
-### Named Exports
+#### Named Exports
  `named` exports define the states of the Component. 
 
  However, **multiple named exports** without a default function may also be passed. These are transformed into individual Components within the same graph.
-
-
- ## Roadmap
- - Declare ESC with similar detail to [ESM](https://tc39.es/ecma262/#sec-modules).
 
 ## Acknowledgments
 This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
