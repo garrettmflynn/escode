@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESMonitor Demo</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            padding: 50px;
+        }
+
+        h2 {
+            margin: 0;
+            padding: 0;
+        }
+
+        #combinations {
+            padding: 0px 25px;
+            position: fixed;
+            top: 0;
+            right: 0;
+            border: 1px solid black;
+            background: white;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <div id="combinations">
+        <h4>Valid Combinations</h4>
+        <div id="valid"></div>
+        <h4>Invalid Combinations</h4>
+        <div id="invalid"></div>
+    </div>
+</body>
+<script type="module">
+
+    import Monitor from './dist/index.esm.js'
+
+    const validEl = document.getElementById('valid')
+    const invalidEl = document.getElementById('invalid')
+
+    const id = 'actor'
+    const storeId = 'store'
+    const objectId = 'objects'
+    const functionPath = ['nested', 'add']
+
+    const paths = {
+        nested: {
+            store: [objectId, storeId],
+            function: [objectId, id, ...functionPath]
+        },
+        default: {
+            store: storeId,
+            function: [id, ...functionPath]
+        }
+    }
+
+    const defaultRun = [{type: 'dynamic', object: 'nested'}, {type: 'static', object: 'default'}]
+
+    const runs = [
+
+        // No Monitoring
+        [],
+
+        // Just Static
+        [{type: 'static', object: 'default'}],
+        [{type: 'static', object: 'nested'}],
+
+        // Just Dynamic
+        [{type: 'dynamic', object: 'default'}],
+        [{type: 'dynamic', object: 'nested'}],
+
+        // Dynamic First (which updates the original object)
+        defaultRun,
+        [{type: 'dynamic', object: 'default'}, {type: 'static', object: 'default'}],
+        [{type: 'dynamic', object: 'default'}, {type: 'static', object: 'nested'}],
+        [{type: 'dynamic', object: 'nested'}, {type: 'static', object: 'nested'}],
+
+        // Static First
+        [{type: 'static', object: 'default'}, {type: 'dynamic', object: 'nested'}],
+        [{type: 'static', object: 'default'}, {type: 'dynamic', object: 'default'}],
+        [{type: 'static', object: 'nested'}, {type: 'dynamic', object: 'default'}],
+        [{type: 'static', object: 'nested'}, {type: 'dynamic', object: 'nested'}]
+
+    ]
+
+
+    const functionUpdate = (type, selected, passed, path, info, update) => {
+        console.log(`%c${type} (${selected}): %cUpdate from Function (${path}) - ${update}`, 'font-weight: bold', 'font-weight: normal')
+        passed[selected].store.value = update
+    }
+
+    const storeUpdate = (type, selected, passed, path, info, update) => {
+        console.log(`%c${type} (${selected}): %cUpdated Store (${path}) - ${update}`, 'font-weight: bold', 'font-weight: normal')
+        passed[selected].store.updated = true // tell when updated
+    }
+
+    const toRun = {
+        dynamic: runDynamic,
+        static: runStatic
+    }
+
+    // ---------------- Dynamic Object Monitoring (Proxy) ----------------
+
+    function run (selected, monitor, objects, isStatic) {
+        const subscriptions = {}
+
+        const name = (isStatic) ? 'Static' : 'Dynamic'
+
+        // Entire object
+        subscriptions.storeDynamic = monitor.on(
+            paths[selected].store,
+            (...args) => storeUpdate('Dynamic', selected, objects, ...args),
+            { static: false }
+        )
+
+        // Specific property
+        subscriptions.funcDynamic = monitor.on(
+            paths[selected].function,
+            (...args) => functionUpdate('Dynamic', selected, objects, ...args),
+            { static: isStatic }
+        )
+
+        return subscriptions
+    }
+    function runDynamic (selected, monitor, objects) {
+        return run(selected, monitor, objects, false)
+    }
+
+    // ---------------- Static Object Monitoring (setters / interception) ----------------
+    function runStatic (selected, monitor, objects) {
+        return run(selected, monitor, objects, true)
+    }
+
+    runs.forEach(runOrder => {
+
+        
+        const div = document.createElement('div')
+        const header = document.createElement('h2')
+
+        const types = runOrder.map(r => r.type)
+        const hasStatic = types.includes('static')
+        const hasDynamic = types.includes('dynamic')
+
+        let method
+        
+        let headerText = (runOrder.length === 0) ? 'Not Monitored' : runOrder.map(o => `${o.type} (${o.object})`).join(' + ')
+
+        header.innerText = headerText
+
+        document.body.insertAdjacentElement('beforeend', div)
+        div.insertAdjacentElement('beforeend', header)
+
+
+        let subscriptions = {}
+
+        const monitor = new Monitor()
+
+        // ---------------- Register Object ----------------
+        const actor = {
+            nested: {
+                add: (input) => input + 1,
+            }
+        }
+
+        const store = { value: 0 }
+
+        // Allows for Proxy instances to be set on the object...
+        const objects = {
+            store: store,
+            actor: actor
+        }
+
+        monitor.set(id, actor)
+        monitor.set(storeId, store)
+        monitor.set(objectId, objects) // TODO: Set static false here...
+
+        const toPass = {
+            default: { store, actor },
+            nested: objects
+        }
+
+        runOrder.forEach(o => {
+            const type = o.type
+            const subs = toRun[type](o.object, monitor, toPass)
+            for (let sub in subs) subscriptions[sub] = subs[sub]
+        })
+
+
+        // ---------------- Manipulate the Objects ----------------
+        const value = store.value = objects.store.value = 1
+
+        // Note: Updates will run asynchronously
+        const expected = value + 1
+        objects.actor.nested.add(value)
+        actor.nested.add(value)
+        console.log('After Running Function (static)', store.value === expected, store.value, expected)
+        console.log('After Running Function (dynamic)', objects.store.value === expected, objects.store.value, expected)
+
+        // // // Clear store subscriptions
+        // monitor.remove(subscriptions.storeDynamic) 
+        // monitor.remove(subscriptions.storeStatic)
+
+        // Correct for asynchronous update
+        const set = expected + 1 // store.value + 1
+
+        const secondValue = store.value = objects.store.value = set // No response
+        console.log('Set Store with', secondValue)
+
+        const finalExpected = secondValue + 1
+        objects.actor.nested.add(objects.store.value) // Received
+        actor.nested.add(store.value)
+
+        console.log('After Running Function (static)', store.value === finalExpected, store.value, finalExpected)
+        console.log('After Running Function (dynamic)', objects.store.value === finalExpected, objects.store.value, finalExpected)
+
+        console.log('Final Value (static)', store.value)
+        console.log('Final Value (dynamic)', objects.store.value)
+
+        // monitor.remove() // Remove all subscriptions
+
+        setTimeout(() => {
+
+            // if (runOrder.length === 0) 
+            runOrder = defaultRun
+
+            const allValid = runOrder.map(o => {
+                const message = document.createElement('p')
+                const focus = toPass[o.object]
+                const valid = focus.store.value === finalExpected
+                let text = `<h3 style="color: ${(valid) ? 'black' : 'red'}">${o.type} (${o.object})</h3>`
+
+                message.innerHTML = `
+                ${text} 
+                <p><b>Value:</b> ${focus.store.value}</p>
+                <p><b>Expected:</b> ${finalExpected}</p>
+                <p><b>New Key Registered:</b> ${focus.store.updated}</p>
+                `
+
+                div.insertAdjacentElement('beforeend', message)
+
+                return valid
+            }).reduce((a, b) => a && b, true)
+
+            if (allValid) {
+                validEl.insertAdjacentHTML('beforeend', `<p>${headerText}</p>`)
+            } else {
+                invalidEl.insertAdjacentHTML('beforeend', `<p>${headerText}</p>`)
+            }
+
+
+            console.log('------------- Stores -------------')
+            console.log('Dynamic Store', objects.store)
+            console.log('Dynamic Store Value', objects.store.value)
+            console.log('Dynamic Store Registered the Update?', objects.store.updated)
+
+            console.log('Static Store', store)
+            console.log('Static Store Value', store.value)
+            console.log('Static Store Registered the Update?', store.updated)
+
+            console.log('------------- Actors -------------')
+            console.log('Dynamic Actor', objects.actor)
+            console.log('Static Actor', actor)
+        }, 1000)
+    })
+
+</script>
+
+</html>

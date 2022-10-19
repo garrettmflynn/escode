@@ -59,9 +59,7 @@ export default class Poller {
             if (!o.path.resolved) o.path.resolved = utils.getPath('output', o)
 
             if (!utils.isSame(current, history)){
-
-                const info = {}
-                callback(o.path.resolved, info, current)
+                utils.runCallback(callback, o.path.resolved, {}, current)
                 if (typeof current === 'object') {
                     if (Array.isArray(current)) history = [...current]
                     else history = {...current}

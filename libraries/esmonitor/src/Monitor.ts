@@ -147,13 +147,14 @@ export default class Monitor {
 
         if (isDynamic && !isInspectable) {
             
+            // console.log('id', id)
             const inspector = new Inspectable(baseRef, {
                 keySeparator: this.options.keySeparator,
                 listeners: this.listeners,
                 path: (path) => path.filter((str) => str !== fallback),
                 // listenDeeper: ['__isESComponent'],
                 // listenDeeper: ['test']
-            })
+            }, id)
 
             this.set(id, inspector) // reset reference
             baseRef = inspector

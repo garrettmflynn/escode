@@ -13,36 +13,47 @@ This library uses three different methods for recognizing changes:
 const monitor = new Monitor()
 
 // ---------------- Register Object ----------------
-const id = 'object'
-const reference = {
-    value: 1,
+const id = 'actor'
+const actor = {
     nested: {
-        function: (input) => input, 
+        function: (input) => input + 1, 
     }
 }
 
-monitor.set(id, reference)
+const storeId = 'store'
+const store = {
+    value: 0
+}
+
+monitor.set(id, actor)
+monitor.set(storeId, store)
+
 
 // ---------------- Create Listeners for the Entire Object ----------------
 const functionPath = ['nested', 'function']
 
-const testSubs = monitor.on(id, (path, ...args) => {
-    console.log(`Update Object (${path}) - ${args}`)
+const testSubs = monitor.on(storeId, (path, ...args) => {
+    console.log(`Updated Store (${path}) - ${args}`)
 })
 
 // ---------------- Selectively Listen to Object Property ----------------
 const fSubs = monitor.on([id, ...functionPath], (path, ...args) => {
-    console.log(`Update Function (${path}) - ${args}`)
+    console.log(`Update from Function (${path}) - ${args}`)
+
+    store.value = args[0] // set store value
+    console.log('New Store Value', store.value)
+
+    store.test = store.value * 100
 })
 
-reference.value = 2
-reference.nested.function('Received!')
+store.value = 1
+reference.nested.function(store.value)
 
 monitor.remove(testSubs) // Clear test subscriptions only
 
-
-reference.value = 3 // No response
-reference.nested.function('Received again') // Received
+const set = store.value + 1
+store.value = set // No response
+reference.nested.function(store.value) // Received
 
 monitor.remove() // Remove all subscriptions
 ```

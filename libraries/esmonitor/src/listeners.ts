@@ -7,6 +7,7 @@ import * as infoUtils from './info'
 const register = (info, collection) => {
     // Place in Function Registry
     const absolute = utils.getPath('absolute', info)
+    console.log('Registering', absolute)
     if (!collection[absolute]) collection[absolute] = {}
     collection[absolute][info.sub] = info
 }
@@ -31,8 +32,10 @@ const handler = (info, collection, subscribeCallback, monitor = true) => {
 
 
 export const setterExecution = async (listeners, value) => {
-    const executionInfo = {}
-    await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => o.callback(utils.getPath('output', o), executionInfo, value))
+    await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => {
+        const path = utils.getPath('output', o)
+        utils.runCallback(o.callback, path,  {}, value)
+    })
 }
 
 export const setters = (info: ListenerInfo, collection: ListenerPool, monitor = true) => {
@@ -62,10 +65,11 @@ export const setters = (info: ListenerInfo, collection: ListenerPool, monitor = 
 export const functionExecution = async (context, listeners, func, args) => {
     listeners = Object.assign({}, listeners)
     const keys = Object.getOwnPropertySymbols(listeners)
-    const info = listeners[keys[0]] as ListenerInfo // Info is same, callback is different
+    const info = listeners[keys[0]] ?? {} as ListenerInfo // Info is same, callback is different
     const executionInfo = await infoUtils.get(async (...args) => await func.call(context, ...args), args, info.infoToOutput)
     await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => {
-        o.callback(utils.getPath('output', o), executionInfo.value, executionInfo.output)
+        const path = utils.getPath('output', o)
+        utils.runCallback(o.callback, path, executionInfo.value, executionInfo.output)
     })
 
     return executionInfo

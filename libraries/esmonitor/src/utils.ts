@@ -19,3 +19,15 @@ export const  getPath = (type, info) => {
     const filtered = pathType.filter((v) => typeof v === 'string')
     return filtered.join(info.keySeparator)
 }
+
+
+export const runCallback = (callback, path, info, output, setGlobal=true) => {
+    if (callback instanceof Function) callback(path, info, output)
+
+    // ------------------ Set Manually in Inspected State ------------------
+    if (setGlobal && window.ESMonitorState) {
+        const callback = window.ESMonitorState.callback
+        window.ESMonitorState.state[path] = { output, value: info }
+        runCallback(callback, path, info, output, false)
+    }
+}

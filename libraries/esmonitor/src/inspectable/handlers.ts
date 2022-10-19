@@ -1,21 +1,7 @@
 import { functionExecution, setterExecution } from "../listeners";
+import { runCallback } from "../utils";
 
 export const isProxy = Symbol("isProxy")
-
-export const runCallback = (callback, path, info, output, setGlobal=true) => {
-    if (callback instanceof Function) callback(path, info, output)
-
-    // ------------------ Set Manually in Inspected State ------------------
-    if (setGlobal && window.ESMonitorState) {
-        const callback = window.ESMonitorState.callback
-        window.ESMonitorState.state[path] = {
-            output,
-            value: info
-        }
-
-        runCallback(callback, path, info, output, false)
-    }
-}
 
 export const functions = (proxy) => {
     return {
@@ -76,6 +62,8 @@ export const objects = (proxy) => {
             
             if (proxy.listeners) {
                 const listeners = proxy.listeners.setters[pathStr]
+                console.log('Checking', pathStr, listeners, proxy.listeners.setters)
+
                 if (listeners) setterExecution(listeners, newVal) // run callbacks
             }
 

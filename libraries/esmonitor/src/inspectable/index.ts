@@ -89,6 +89,9 @@ export default class Inspectable {
                 else console.log('Invalid path', opts.path)
             }
 
+            // remove symbols from the path
+            if (this.path) this.path = this.path.filter(str => typeof str === 'string')
+
 
             if (!this.options.keySeparator) this.options.keySeparator = standards.keySeparator
 
