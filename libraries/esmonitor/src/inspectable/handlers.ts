@@ -66,7 +66,7 @@ export const objects = (proxy: Inspectable) => {
             if (prop === isProxy) return true;
             const pathStr = [...proxy.path, prop].join(proxy.options.keySeparator)
 
-            const isFromInspectable = newVal[fromInspectable]
+            const isFromInspectable = newVal?.[fromInspectable]
             if (isFromInspectable) newVal = newVal.value
 
             const listeners = proxy.listeners.setters 

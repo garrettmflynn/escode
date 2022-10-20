@@ -44,8 +44,7 @@ const canCreate = (parent, key?, val?) => {
         const desc = Object.getOwnPropertyDescriptor(parent, key)
 
         if (desc &&((desc.value && desc.writable) || desc.set)) {
-            if (!isESM) return true
-            else console.warn('Cannot create proxy for ESM:', key, val)
+            if (!isESM) return true // Cannot create a Proxy object for ESM
         } else if (!parent.hasOwnProperty(key)) return true
     }
 
@@ -141,7 +140,7 @@ export default class Inspectable {
                             })
 
                         } catch (e) {
-                            console.error('Could not create top-level setter...')
+                            console.error(`Could not reassign ${key} to a top-level setter...`)
                         }
                     }
                 }
@@ -184,7 +183,7 @@ export default class Inspectable {
             } catch (e) {
                 const isESM = check.esm(parent)
                 const path = [...this.path, key]
-                console.warn(`Could not set value (${path.join(this.options.keySeparator)})${isESM ? ' because the parent is an ESM.' : ''}`)
+                console.error(`Could not set value (${path.join(this.options.keySeparator)})${isESM ? ' because the parent is an ESM.' : ''}`, isESM ? '' : e)
             }
         }
 

@@ -72,7 +72,7 @@ export default class Poller {
     start = (listeners = this.listeners) => {
         if (!this.sps) this.sps = defaultSamplingRate // Set default sampling rate
         else if (!this.#pollingId) {
-            console.warn('Starting Polling!')
+            console.warn('[escode]: Starting Polling!')
             this.#pollingId = setInterval(() => this.poll(listeners), 1000/this.sps)
         }
     }
@@ -80,7 +80,7 @@ export default class Poller {
     // Stop Polling
     stop = () => {
         if (this.#pollingId) {
-            console.warn('Stopped Polling!')
+            console.warn('[escode]: Stopped Polling!')
             clearInterval(this.#pollingId)
         }
     }
