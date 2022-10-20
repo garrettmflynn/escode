@@ -4,6 +4,7 @@ import Poller from "./Poller"
 type onUpdateFunction = (path: string, info: ActiveInfo, ...args: any[]) => void
 export type MonitorOptions = {
     pathFormat: 'absolute' | 'relative',
+    fallbacks?: pathComponent[],
     polling?: PollingOptions,
     keySeparator: '.' | string,
     onInit?: (path: string, info: ActiveInfo) => any | Promise<any>,
@@ -15,28 +16,37 @@ export type MonitorOptions = {
     },
 }
 
+export type SetFromOptionsType = {
+    reference?: any,
+    listeners?: ListenerRegistry,
+    static?: boolean,
+}
+
+export type SetValueOptions = {
+    create?: boolean,
+    keySeparator?: MonitorOptions['keySeparator']
+}
+
 export type InspectableOptions = {
     type?: 'function' | 'object', 
     parent?: Inspectable
     name?:string,
     callback?: Function,
-    keySeparator?: '.' | string,
+    keySeparator: MonitorOptions['keySeparator'],
+    pathFormat: MonitorOptions['pathFormat'], // TODO: turn to not a requirement
     listeners?: ListenerRegistry
     path?: (arr: ArrayPath) => ArrayPath | ArrayPath,
-    depth?: number
+    depth?: number,
+    globalCallback?: Function
 }
 
+export type pathComponent = string | symbol
 export type ArrayPath = (string | symbol)[]
-export type PathFormat = string | symbol | (string | symbol)[]
+export type PathFormat = pathComponent | (string | symbol)[]
 
 export type PollingOptions = {
     force?: boolean,
     sps?: number
-}
-
-
-export type ListenerOptions = {
-    static?: boolean
 }
 
 export type InternalOptions = {
@@ -90,4 +100,5 @@ export type ListenerRegistry = {
     functions: ListenerPool,
     setters: ListenerPool,
     polling: Poller['listeners'],
+    lookup: ListenerLookup
 }

@@ -1,4 +1,5 @@
-import { PathFormat } from "../esmonitor/src/types"
+import { isProxy } from "../esmonitor/src/globals"
+import { PathFormat, SetValueOptions } from "../esmonitor/src/types"
 import * as standards from './standards'
 
 const hasKey = (key, obj) => {
@@ -16,6 +17,8 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
     path = [...path]
 
     let ref =  baseObject
+    let inInspectable = false // check if this parameter is nested in an esComponent
+    
     for (let i = 0; i < path.length; i++) {
 
         if (!ref) {
@@ -23,6 +26,8 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
             console.error(message, path, ref)
             throw new Error(message)
         }
+
+        if (!inInspectable) inInspectable = !!ref.__esInspectable
 
         const str = path[i]
         // Try Inside ES Components
@@ -38,9 +43,12 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
         
         // Try Standard Path
         exists = hasKey(str, ref)
+
         if (exists) ref = ref[str]
-        else if (i === path.length - 1) {
-            if (!opts.dynamic) console.error(`Final path key not found: ${str}`, path, ref, baseObject)
+        else {
+            // Check if dynamic
+            if (!inInspectable) console.error(`Will not get updates from: ${path.filter(str => typeof str === 'string').join(keySeparator)}`)
+            else if (!ref.__esInspectable) console.warn('Might be ignoring incorrectly...')
             return
         }
     }
@@ -50,7 +58,7 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
 }
 
 
-export const setFromPath = (path: PathFormat, value: any, ref:any, opts: any = {}) => {
+export const setFromPath = (path: PathFormat, value: any, ref:any, opts: SetValueOptions = {}) => {
     const create = opts?.create ?? false
     const keySeparator = opts?.keySeparator ?? standards.keySeparator
 

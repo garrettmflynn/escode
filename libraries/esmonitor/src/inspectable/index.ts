@@ -3,6 +3,7 @@ import * as check from '../../../common/check'
 import { ArrayPath, ListenerRegistry, InspectableOptions } from '../types';
 import * as standards from '../../../common/standards'
 import { setFromPath } from '../../../common/pathHelpers';
+import { isProxy, fromInspectable } from '../globals';
 
 export type InspectableProxy = ProxyConstructor & {
     __esProxy: ProxyConstructor,
@@ -19,7 +20,7 @@ const canCreate = (parent, key?, val?) => {
     }
 
     // Check if we already have a proxy
-    const alreadyIs = parent[key] && parent[key][handlers.isProxy]
+    const alreadyIs = parent[key] && parent[key][isProxy]
     if (alreadyIs) return false // Already a proxy
 
 
@@ -58,35 +59,40 @@ export default class Inspectable {
     parent?: Inspectable
     options: InspectableOptions
     proxy: ProxyConstructor
-    listeners?: ListenerRegistry
+    listeners: Partial<ListenerRegistry> = {}
     target: any
+    root: any
 
     state: {[x:string]: any} = {}
 
-    constructor ( target:any = {}, opts: InspectableOptions ={}, name?, parent?) {
+    constructor ( target:any = {}, opts: Partial<InspectableOptions> = {}, name?, parent?) {
+
+        if (!opts.pathFormat) opts.pathFormat = 'relative'
+        if (!opts.keySeparator) opts.keySeparator = standards.keySeparator
 
         // -------------- Only Listen to ES Components --------------
 
         if (target.__esProxy) this.proxy = target.__esProxy
+        else if (target[isProxy]) this.proxy = target
         else {
 
             this.target = target
-            this.options = opts
+            this.options = opts as InspectableOptions
             this.parent = parent
 
-
             if (this.parent) {
+                this.root = this.parent.root
                 this.path = [...this.parent.path]
                 this.state = this.parent.state ?? {} // Share state with the parent
-            }
+            } else this.root = target
 
             if (name) this.path.push(name)
-            if (opts.listeners) this.listeners = opts.listeners
+            if (this.options.listeners) this.listeners = this.options.listeners
 
-            if (opts.path) {
-                if (opts.path instanceof Function) this.path = opts.path(this.path)
-                else if (Array.isArray(opts.path)) this.path = opts.path
-                else console.log('Invalid path', opts.path)
+            if (this.options.path) {
+                if (this.options.path instanceof Function) this.path = this.options.path(this.path)
+                else if (Array.isArray(this.options.path)) this.path = this.options.path
+                else console.log('Invalid path', this.options.path)
             }
 
             // remove symbols from the path
@@ -95,16 +101,54 @@ export default class Inspectable {
 
             if (!this.options.keySeparator) this.options.keySeparator = standards.keySeparator
 
-            let type = opts.type
+            let type = this.options.type
             if (type != 'object') type = (typeof target === 'function')  ? 'function' : 'object';
             const handler =  handlers[`${type}s`](this)
 
             this.proxy = new Proxy(target, handler)
+
+            // Set status on original
             Object.defineProperty(target, '__esProxy', { value: this.proxy, enumerable: false })
             Object.defineProperty(target, '__esInspectable', { value: this, enumerable: false })
 
+
             // Create Nested Inspectable Proxies
-            for (let key in target) this.create(key, target, undefined, true)
+            for (let key in target) {
+
+                if (!this.parent) {
+
+                    let value = target[key]
+
+                    // Intercept functions
+                    if (typeof value === 'function') {
+                        target[key] = async (...args) => {
+                            return await this.proxy[key]({ [fromInspectable]: true, value }, ...args)
+                        }
+                    } 
+
+                    // Basic Getter / Setter for Original Input
+                    else {
+
+                        try {
+                            Object.defineProperty(target, key, {
+                                get: () => value,
+                                set: (val) => {
+                                    value = val
+                                    this.proxy[key] = {[fromInspectable]: true, value: val}
+                                },
+                                enumerable: true,
+                                configurable: true // TODO: Ensure that you are removing later...
+                            })
+
+                        } catch (e) {
+                            console.error('Could not create top-level setter...')
+                        }
+                    }
+                }
+
+                // Create More Proxies Inside
+                this.create(key, target, undefined, true)
+            }
         }
 
         return this.proxy as any // Replace class passed to the user with the proxy
@@ -143,6 +187,7 @@ export default class Inspectable {
                 console.warn(`Could not set value (${path.join(this.options.keySeparator)})${isESM ? ' because the parent is an ESM.' : ''}`)
             }
         }
+
         return
     }
 }

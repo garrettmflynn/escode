@@ -1,3 +1,5 @@
+import { Options } from "../../common/types"
+import { ArrayPath, MonitorOptions } from "./types"
 
 
 export const isSame = (a,b) => {
@@ -20,6 +22,16 @@ export const  getPath = (type, info) => {
     return filtered.join(info.keySeparator)
 }
 
+
+export const getPathInfo = (path, options: MonitorOptions) => {
+    let splitPath = path
+    if (typeof path === 'string') splitPath = path.split(options.keySeparator)
+    else if (typeof path === 'symbol') splitPath = [path]
+    return {
+        id: splitPath[0],
+        path: splitPath.slice(1) as ArrayPath,
+    }
+}
 
 export const runCallback = (callback, path, info, output, setGlobal=true) => {
     if (callback instanceof Function) callback(path, info, output)

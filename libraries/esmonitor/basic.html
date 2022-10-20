@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script type="module">
+    import Monitor from './dist/index.esm.js'
+
+const monitor = new Monitor()
+
+// ---------------- Register Object ----------------
+const id = 'actor'
+const add = (input) => input + 1
+const actor = { nested: { add } }
+
+const storeId = 'store'
+const store = { value: 0 }
+
+monitor.set(id, actor, {static: false})
+monitor.set(storeId, store, {static: false})
+
+
+// ---------------- Create Listeners for the Entire Object ----------------
+const functionPath = ['nested', 'add']
+
+const storeSubs = monitor.on(storeId, (path, info, output) => {
+    console.log(`Updated Store (${path}) - ${output}`, info)
+})
+
+// ---------------- Selectively Listen to Object Property ----------------
+const funcSubs = monitor.on([id, ...functionPath], (path, info, output) => {
+    console.log(`Update from Function (${path}) - ${output}`, info)
+    store.value = output // set store value
+    store.updated = true
+})
+
+store.value = 1
+await actor.nested.add(store.value)
+
+monitor.remove(storeSubs) // Clear test subscriptions only
+
+const set = store.value + 1
+store.value = set // No response
+await actor.nested.add(store.value) // Received
+
+monitor.remove() // Remove all subscriptions
+</script>
+</html>

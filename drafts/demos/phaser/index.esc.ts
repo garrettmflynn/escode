@@ -12,7 +12,7 @@ export const esComponents = {
     game: {
         esCompose: game,
         preload: {
-            setBaseURL: "https://raw.githubusercontent.com/brainsatplay/components/main/demos/phaser/assets",
+            setBaseURL: "https://raw.githubusercontent.com/brainsatplay/escode/main/drafts/demos/phaser/assets",
             tilemapTiledJSON: [
                 [
                     "map",

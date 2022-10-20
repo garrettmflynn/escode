@@ -1,17 +1,14 @@
 import * as check from '../../common/check.js'
 import Poller from './Poller.js'
 
-import { PathFormat, ListenerInfo, InternalOptions, ListenerRegistry, ListenerLookup, ArrayPath, ListenerOptions, MonitorOptions } from './types'
+import { PathFormat, InternalOptions, ListenerRegistry, ListenerLookup, ArrayPath, MonitorOptions, SetValueOptions, SetFromOptionsType } from './types'
 import * as listeners from './listeners'
-import { iterateSymbols, getPath } from './utils.js'
+import { iterateSymbols, getPath, getPathInfo } from './utils.js'
 import { drillSimple } from '../../common/drill.js'
-import { getFromPath, setFromPath } from '../../common/pathHelpers.js'
-import { isProxy } from './inspectable/handlers.js'
-import Inspectable from './inspectable/index.js'
+import { getFromPath } from '../../common/pathHelpers.js'
 
 import * as standards from '../../common/standards'
-
-const fallback = 'esComponents'
+import { setFromOptions } from './optionsHelpers.js'
 
 export default class Monitor {
 
@@ -22,11 +19,11 @@ export default class Monitor {
         keySeparator: standards.keySeparator,
     }
     
-    listenerLookup: ListenerLookup = {}
     listeners: ListenerRegistry = {
         polling: this.poller.listeners,
         functions: {},
         setters: {},
+        lookup: {}
     }
 
     references: {
@@ -36,94 +33,48 @@ export default class Monitor {
     } = {}
 
     constructor(opts:Partial<MonitorOptions>={}){
+
+        // Make listener lookup non-enumerable
+        Object.defineProperty(this.listeners, 'lookup', {
+            value: {},
+            enumerable: false,
+            configurable: false
+        })
+
         Object.assign(this.options, opts)
         this.poller.setOptions(opts.polling)
     }
 
-    get = (path, output?) => getFromPath(this.references, path, {
-        keySeparator: this.options.keySeparator,
-        fallbacks: [fallback],
-        output,
-        dynamic: this.references[path[0]][isProxy]
-    })
+    get = (path, output?) => {
+        return getFromPath(this.references, path, {
+            keySeparator: this.options.keySeparator,
+            fallbacks: this.options.fallbacks,
+            output,
+        })
+    }
 
-    set = (path, value, ref:any = this.references, opts = {}) => setFromPath(path, value, ref, opts)
+    set = (path, value, opts: SetFromOptionsType= {}) => {
+        const optsCopy = {...opts}
+        if (!optsCopy.reference) optsCopy.reference = this.references
+        if (!optsCopy.listeners) optsCopy.listeners = this.listeners
+        return setFromOptions(path, value, this.options, optsCopy)
+    }
 
     // A simple wrapper for listen()
-    on = (absPath: PathFormat, callback, options: ListenerOptions = {}) => {
-
-        let splitPath = absPath
-        if (typeof absPath === 'string') splitPath = absPath.split(this.options.keySeparator)
-        else if (typeof absPath === 'symbol') splitPath = [absPath]
-
-        const id = splitPath[0]
-
-        return this.listen(id, callback, (splitPath as ArrayPath).slice(1), options)
+    on = (absPath: PathFormat, callback) => {
+        const info = getPathInfo(absPath, this.options)
+        return this.listen(info.id, callback, info.path)
     }
 
 
-    getInfo = (id, type, callback, path, original) => {
-        if (typeof path === 'string') path = path.split(this.options.keySeparator)
-        const relativePath = path.join(this.options.keySeparator)
-
-        const refs = this.references
-        const get = this.get
-        const set = this.set
-
-        // Derive onUpdate Function
-        let onUpdate = this.options.onUpdate
-        let infoToOutput = {}
-
-        if (onUpdate && typeof onUpdate === 'object' && onUpdate.callback instanceof Function) {
-            infoToOutput = onUpdate.info ?? {}
-            onUpdate = onUpdate.callback
-        }
-
-        const absolute = [id, ...path]
-        let pathInfo = {
-            absolute,
-            relative: relativePath.split(this.options.keySeparator),
-            parent: absolute.slice(0,-1)
-        } as Partial<ListenerInfo['path']>
-
-        pathInfo.output =  pathInfo[this.options.pathFormat]
-        const completePathInfo = pathInfo as ListenerInfo['path']
-
-        const info = {
-            id, 
-            path: completePathInfo, 
-            keySeparator: this.options.keySeparator,
-
-            infoToOutput,
-            callback: async (...args) => {
-                const output = await callback(...args)
-
-                // ------------------ Run onUpdate Callback ------------------
-                if (onUpdate instanceof Function) onUpdate(...args)
-
-                // Return Standard Output
-                return output
-            }, 
-            get current() { return get(info.path.absolute) },
-            set current(val) { set(info.path.absolute, val) },
-            get parent() { return get(info.path.parent) },
-            get reference(){ return refs[id] },
-            set reference(val){ refs[id] = val },
-            original,
-            history: (typeof original === 'object') ? Object.assign({}, original) : original,
-            sub: Symbol('subscription'),
-            last: path.slice(-1)[0],
-        } as ListenerInfo
-
-        this.listenerLookup[info.sub] = getPath('absolute', info)
-
+    getInfo = (id, callback, path, original) => {
+        const info = listeners.info(id, callback, path, original, this.references, this.listeners, this.options)
+        this.listeners.lookup[info.sub] = getPath('absolute', info)
         return info
     }
 
-    listen = (id, callback, path: PathFormat = [], options: ListenerOptions, __internal: Partial<InternalOptions> = {}) => {
+    listen = (id, callback, path: PathFormat = [], __internal: Partial<InternalOptions> = {}) => {
 
-
-        let isDynamic = options.static ? !options.static : true
 
         if (typeof path === 'string') path = path.split(this.options.keySeparator)
         else if (typeof path === 'symbol') path = [path]
@@ -134,31 +85,6 @@ export default class Monitor {
         if (!baseRef) {
             console.error(`Reference ${id} does not exist.`)
             return
-        }
-
-        if (isDynamic && !globalThis.Proxy) {
-            isDynamic = false
-            console.warn('Falling back to using function interception and setters...')
-        }
-
-
-        let isInspectable = baseRef[isProxy]
-
-
-        if (isDynamic && !isInspectable) {
-            
-            // console.log('id', id)
-            const inspector = new Inspectable(baseRef, {
-                keySeparator: this.options.keySeparator,
-                listeners: this.listeners,
-                path: (path) => path.filter((str) => str !== fallback),
-                // listenDeeper: ['__isESComponent'],
-                // listenDeeper: ['test']
-            }, id)
-
-            this.set(id, inspector) // reset reference
-            baseRef = inspector
-            isInspectable = true
         }
 
 
@@ -193,11 +119,14 @@ export default class Monitor {
         // Option #1: Subscribe to each object property individually
         let subs = {}
         if (toMonitorInternally(ref, true)) {
-            drillSimple(ref, (key, val, drillInfo) => {
+
+            if (ref.__esInspectable) ref.__esInspectable.options.globalCallback = callback
+
+            drillSimple(ref, (_, __, drillInfo) => {
                 if (drillInfo.pass) return 
                 else {
                     const fullPath = [...arrayPath, ...drillInfo.path]
-                    const internalSubs = this.listen(id, callback, fullPath, options, __internalComplete) // subscribe to all
+                    const internalSubs = this.listen(id, callback, fullPath, __internalComplete) // subscribe to all
                     Object.assign(subs, internalSubs)
                 }
             }, {
@@ -213,7 +142,7 @@ export default class Monitor {
                 
                 // Force Polling
                 if (__internalComplete.poll) {
-                    info = this.getInfo(id, 'polling', callback, arrayPath, ref)
+                    info = this.getInfo(id, callback, arrayPath, ref)
                     this.poller.add(info)
                 }
 
@@ -222,13 +151,13 @@ export default class Monitor {
 
                     let type = 'setters' // trigger setters
                     if (typeof ref === 'function') type = 'functions' // intercept function calls
-                    info = this.getInfo(id, type, callback, arrayPath, ref)
-                    this.add(type, info, !isInspectable)
+                    info = this.getInfo(id, callback, arrayPath, ref)
+                    this.add(type, info)
                 }
                 
             } catch (e) {
-                console.warn('Falling to polling:', path, e)
-                info = this.getInfo(id, 'polling', callback, arrayPath, ref)
+                console.error('Fallback to polling:', path, e)
+                info = this.getInfo(id, callback, arrayPath, ref)
                 this.poller.add(info)
             }
             
@@ -242,10 +171,12 @@ export default class Monitor {
                 this.options.onInit(getPath('output', info), executionInfo)
             }
         }
+
+        return subs
     }
 
-    add = (type, info, monitor = true) => {
-        if (listeners[type]) listeners[type](info, this.listeners[type], monitor)
+    add = (type, info) => {
+        if (listeners[type]) listeners[type](info, this.listeners[type], this.listeners.lookup)
         else this.listeners[type][getPath('absolute', info)][info.sub] = info
     }
 
@@ -254,7 +185,6 @@ export default class Monitor {
 
         // Clear All Subscriptions if None Specified
         if (!subs) {
-            subs = 
             subs = {
                 ...this.listeners.functions,
                 ...this.listeners.setters,
@@ -282,7 +212,7 @@ export default class Monitor {
     }
 
     unsubscribe = (sub) => {
-            const absPath = this.listenerLookup[sub]
+            const absPath = this.listeners.lookup[sub]
 
             // Remove from Polling listeners
             const polling = this.poller.get(sub)
@@ -307,10 +237,10 @@ export default class Monitor {
                     const parent = setter.parent
                     const last = setter.last
                     const value = parent[last]
-                    Object.defineProperty(parent, last, { value })
+                    Object.defineProperty(parent, last, { value, writable: true })
                 }
             } else return false
 
-            delete this.listenerLookup[sub] // Remove from global listener collection
+            delete this.listeners.lookup[sub] // Remove from global listener collection
     }
 }

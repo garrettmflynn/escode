@@ -14,19 +14,14 @@ const monitor = new Monitor()
 
 // ---------------- Register Object ----------------
 const id = 'actor'
-const actor = {
-    nested: {
-        function: (input) => input + 1, 
-    }
-}
+const add = (input) => input + 1
+const actor = { nested: { add } }
 
 const storeId = 'store'
-const store = {
-    value: 0
-}
+const store = { value: 0 }
 
-monitor.set(id, actor)
-monitor.set(storeId, store)
+monitor.set(id, actor, {static: false})
+monitor.set(storeId, store, {static: false})
 
 
 // ---------------- Create Listeners for the Entire Object ----------------
@@ -39,21 +34,11 @@ const testSubs = monitor.on(storeId, (path, ...args) => {
 // ---------------- Selectively Listen to Object Property ----------------
 const fSubs = monitor.on([id, ...functionPath], (path, ...args) => {
     console.log(`Update from Function (${path}) - ${args}`)
-
     store.value = args[0] // set store value
-    console.log('New Store Value', store.value)
-
-    store.test = store.value * 100
+    store.updated = true
 })
 
-store.value = 1
 reference.nested.function(store.value)
-
-monitor.remove(testSubs) // Clear test subscriptions only
-
-const set = store.value + 1
-store.value = set // No response
-reference.nested.function(store.value) // Received
 
 monitor.remove() // Remove all subscriptions
 ```
@@ -74,3 +59,9 @@ This may also be set directly on the `Poller` object:
 ```js
 monitor.poller.sps = 60
 ```
+
+
+## Notes
+- Setting the same object multiple times can have unexpected behavior. For example, passing a function by reference to two (parts of the same object) will result in **only the first of these functions that are set** to have the correct behavior.
+
+- The top level of dynamic objects **will only respond** to changes to their original objects **if those keys were present on initialization**. This is unlike the behavior of setting the Proxy object directly (or objects nested inside it, which have been converted to Proxies).

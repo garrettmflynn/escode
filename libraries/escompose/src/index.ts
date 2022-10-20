@@ -98,18 +98,22 @@ function pass(from, target, args, context) {
     if (typeof target === 'boolean') {
         if (!isValue) {
             const fullPath = [id]
-            if (root) fullPath.push(root)
             fullPath.push(...key.split(context.options.keySeparator))
             checkIfSetter(fullPath)
         } else console.error('Cannot use a boolean for esListener...')
     } else if (type === 'string') {
         const path = [id]
         const topPath: any[] = []
-        if (root) topPath.push(root)
-        topPath.push(...target.split(context.options.keySeparator))
+        if (root) topPath.push(root) // correcting for relative string
+        topPath.push(...ogValue.split(context.options.keySeparator))
         path.push(...topPath)
         checkIfSetter(path)
-        if (isValue) parent[key] = {[ogValue]: parent[key]}
+
+        const absPath = topPath.join(context.options.keySeparator)
+        if (isValue) {
+            parent[key] = {[absPath]: parent[key]}
+            key = absPath
+        }
     }
 
     // ------------------ Handle Target ------------------
@@ -117,7 +121,7 @@ function pass(from, target, args, context) {
     // Set New Value on Parent
     if (target === toSet)  {
         const parentPath = [id]
-        if (root) parentPath.push(root)
+        // if (root) parentPath.push(root)
         parentPath.push(...key.split(context.options.keySeparator))
         const idx = parentPath.pop()
         const info = context.monitor.get(parentPath, 'info')
@@ -214,6 +218,9 @@ const create = (config, options: Partial<Options> = {}) => {
         monitor = new Monitor(options.monitor)
     }
 
+    // Always fall back to esComponents
+    monitor.options.fallbacks = ['esComponents']
+
     const fullOptions = options as Options
 
 
@@ -226,7 +233,7 @@ const create = (config, options: Partial<Options> = {}) => {
     
     let fullInstance = instance// clone.deep(instance)
 
-    monitor.set(id, fullInstance) // Setting root instance
+    monitor.set(id, fullInstance, {static: false}) // Setting root instance
 
     const context = {
         id, 
