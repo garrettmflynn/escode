@@ -2,8 +2,6 @@ import * as player from  "../../../../components/phaser/player.js"
 import update from "../scripts/player/update.js"
 import createCompanion from "../scripts/player/create/companion.js"
 // import equals from "../../../../components/basic/equals.js"
-import * as switchComponent from "../../../../components/basic/switch.js"
-import * as log from "../../../../components/basic/log.js"
 
 import * as phaser from '../index.esc'
 
@@ -34,36 +32,8 @@ Object.assign(esListeners, {
                 {equals: false, value: 0},
             ]
         }
-    },
-    ['keys']: {
-        'switch': true,
-    },
-    ['switch']: {
-        log: true
     }
 })
-
-model.esComponents.log = {
-    esCompose: log,
-}
-
-model.esComponents.switch = {
-    cases: {
-        'w': function () {
-            console.log('W pressed!')
-        },
-        'a': function () {
-            console.log('A pressed!')
-        },
-        's': function () {
-            console.log('S pressed!')
-        },
-        'd': function () {
-            console.log('D pressed!')
-        },
-    },
-    esCompose: switchComponent
-}
 
 model.esComponents.game.esComponents.companion = {
     esCompose: player,

@@ -24,16 +24,16 @@ import * as test from '../components/tests/basic/index.js'
 const main = document.getElementById('app') as HTMLElement
 
 // ------------------ ESMonitor ------------------
-let logUpdate = (path, info, newVal?: any) =>  console.log('Update:', path, info, newVal)
+// let logUpdate = (path, info, newVal?: any) =>  console.log('Update:', path, info, newVal)
 
 const monitor = new Monitor({
-    onInit: logUpdate,
-    onUpdate: {
-        callback: logUpdate,
-        info: {
-            performance: true
-        }
-    },
+    // onInit: logUpdate,
+    // onUpdate: {
+    //     callback: logUpdate,
+    //     info: {
+    //         performance: true
+    //     }
+    // },
     pathFormat: 'absolute',
     polling: { sps: 60 }
 })
@@ -65,7 +65,7 @@ selected.esParent = main
 // Create an active ES Component from a .esc file
 const component = createComponent(selected, {
     monitor, // Use the existing monitor
-    listeners: { static: false } // Will be able to track new keys added to the object
+    listeners: { static: true } // Will be able to track new keys added to the object
 })
 
 // // Ensuring there is a container for the app

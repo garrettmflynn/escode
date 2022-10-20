@@ -1,15 +1,14 @@
-import * as todoDemo from '../todo/index.esc'
-import * as deviceDemo from '../phaser/versions/devices.esc'
+import * as demo1 from './components/demo1'
+import * as demo2 from './components/demo2'
+import * as demo3 from './components/demo3'
 
 export const esElement = {
-    element: 'div',
     style: {
         padding: '50px'
     }
 }
 
 const demoEl = {
-    element: 'div',
     style: {
         // padding: '25px',
         // paddingTop: "8px",
@@ -19,18 +18,16 @@ const demoEl = {
     }
 }  
 
-const todoComponent = Object.assign({}, todoDemo) as any
-todoComponent.esElement = demoEl
+demo1.esElement.style = demoEl.style
 
-const deviceComponent = Object.assign({}, deviceDemo) as any
-deviceComponent.esElement = demoEl
-
-deviceComponent.esComponents.game.esElement = {
-    element: 'div',
+demo2.esElement.style = demoEl.style
+demo2.esComponents.game.esElement = {
     style: {
         height: '400px',
     }
 }
+
+demo3.esElement.style = demoEl.style
 
 export const esComponents = {
     h1: {
@@ -42,7 +39,6 @@ export const esComponents = {
         }
     },
     firstsection: {
-        esElement: 'div',
         esComponents: {
             h2: {
                 esElement: {
@@ -54,7 +50,6 @@ export const esComponents = {
             },
 
             block1: {
-                esElement: 'div',
                 esComponents: {
                     p1: {
                         esElement: {
@@ -64,13 +59,12 @@ export const esComponents = {
                             }
                         }
                     },
-                    demo1: todoComponent,
+                    demo1,
                 }
             },
 
 
             block2: {
-                esElement: 'div',
                 esComponents: {
                     p2: {
                         esElement: {
@@ -80,13 +74,12 @@ export const esComponents = {
                             }
                         }
                     },
-                    demo2: deviceComponent,
+                    demo2,
                 }
             },
 
 
             block3: {
-                esElement: 'div',
                 esComponents: {
                     p3: {
                         esElement: {
@@ -96,15 +89,12 @@ export const esComponents = {
                             }
                         }
                     },
-                    demo3: {
-                        esElement: demoEl
-                    },
+                    demo3
                 }
             },
 
 
             block4: {
-                esElement: 'div',
                 esComponents: {
                     p4: {
                         esElement: {
@@ -122,7 +112,6 @@ export const esComponents = {
 
 
             block5: {
-                esElement: 'div',
                 esComponents: {
                     p5: {
                         esElement: {
@@ -140,7 +129,6 @@ export const esComponents = {
 
 
             block6: {
-                esElement: 'div',
                 esComponents: {
                     p6: {
                         esElement: {
@@ -157,8 +145,4 @@ export const esComponents = {
             }
         }
     }
-}
-
-export const esListeners = {
-
 }

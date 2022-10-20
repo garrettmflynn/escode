@@ -3,16 +3,17 @@ import { ESComponent, ESElementInfo } from "../component";
 export function create(id, esm: ESComponent, parent) {
 
     // --------------------------- Get Element ---------------------------
-    let element = esm.esElement as ESComponent['esElement'] | null;
+    let element = esm.esElement as ESComponent['esElement'] | null; // Always create div at the least
 
     let info: undefined | ESElementInfo;
     if (!(element instanceof Element)) {
-        if (typeof element === 'object') {
+        if (element === undefined) element = 'div'
+        else if (typeof element === 'object') {
             info = element as ESElementInfo
-            const id = info.id;
             if (info.element instanceof Element) element = info.element
             else if (info.selectors) element = document.querySelector(info.selectors)
             else if (info.id) element = document.getElementById(info.id)
+            else if (!info.hasOwnProperty('element')) element = 'div'
             else element = info.element
         }
 

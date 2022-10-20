@@ -61,7 +61,7 @@ const setListeners = (context, components) => {
             else context.listeners[joined] = value
             
             context.monitor.on(basePath, (path, info, args) => {
-                passToListeners(context, absPath, path, info, args), context.options.listeners
+                passToListeners(context, absPath, path, info, args)
             })
         }
     }
@@ -235,7 +235,7 @@ const create = (config, options: Partial<Options> = {}) => {
     
     let fullInstance = instance// clone.deep(instance)
 
-    monitor.set(id, fullInstance, {static: false}) // Setting root instance
+    monitor.set(id, fullInstance, fullOptions.listeners) // Setting root instance
 
     const context = {
         id, 
