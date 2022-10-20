@@ -1,17 +1,22 @@
 // Element Specification
-export const tagName = 'input'
-export const attributes = {
-    placeholder: 'Insert text here',
-    oninput: function (ev) {
-        this.default({value: ev.target.value, _internal: true})
+export const esElement = {
+    element: 'input',
+    attributes: {
+        placeholder: 'Insert text here',
+        oninput: function (ev) {
+            this.default({value: ev.target.value, _internal: true})
+        }
     }
 }
 
 export default function (input){
 
-    if (input?._internal) return input.value
+    let res;
+    if (input?._internal) res = input.value
     else {
         this.esElement.value = input?.value ?? input
-        return input
+        res = input
     }
+
+    return res
 }

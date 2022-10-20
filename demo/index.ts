@@ -12,6 +12,7 @@ import * as audiofeedbackFile from '../drafts/demos/devices/audiofeedback/index.
 import * as todoFile from '../drafts/demos/todo/index.esc'
 import * as multiplayerPhaserFile from '../drafts/demos/phaser/versions/multiplayer.esc'
 import * as devicePhaserFile from '../drafts/demos/phaser/versions/devices.esc'
+import * as tutorialFile from '../drafts/demos/tutorial/index.esc'
 
 import * as test from '../components/tests/basic/index.js'
 
@@ -40,16 +41,18 @@ const monitor = new Monitor({
 // Poll the ESM Object
 
 // ------------------ ESCompose ------------------
-const demo: string = 'basic'
+const demo: string = 'device'
 let selected;
 if (demo === 'phaser') selected = phaserFile as any
 else if (demo === 'multiplayer') selected = multiplayerPhaserFile as any
 else if (demo === 'device') selected = devicePhaserFile as any
-
-
-// Broken...
-else if (demo === 'audiofeedback') selected = audiofeedbackFile as any
 else if (demo === 'todo') selected = todoFile as any
+else if (demo === 'tutorial') selected = tutorialFile as any
+
+// Broken
+else if (demo === 'audiofeedback') selected = audiofeedbackFile as any
+
+// Basic
 else {
     selected = escFile as any
     const esmId = 'ESM'

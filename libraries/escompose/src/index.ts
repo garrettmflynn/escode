@@ -78,6 +78,7 @@ function pass(from, target, args, context) {
     parent = target.parent
     key = target.key
     root = target.root
+    const rootArr = root.split(context.options.keySeparator)
     target = target.parent[key]
 
     let ogValue = target
@@ -98,13 +99,14 @@ function pass(from, target, args, context) {
     if (typeof target === 'boolean') {
         if (!isValue) {
             const fullPath = [id]
+            if (root) fullPath.push(...rootArr) // correcting for relative string
             fullPath.push(...key.split(context.options.keySeparator))
             checkIfSetter(fullPath)
         } else console.error('Cannot use a boolean for esListener...')
     } else if (type === 'string') {
         const path = [id]
         const topPath: any[] = []
-        if (root) topPath.push(root) // correcting for relative string
+        if (root) topPath.push(...rootArr) // correcting for relative string
         topPath.push(...ogValue.split(context.options.keySeparator))
         path.push(...topPath)
         checkIfSetter(path)
@@ -121,7 +123,7 @@ function pass(from, target, args, context) {
     // Set New Value on Parent
     if (target === toSet)  {
         const parentPath = [id]
-        // if (root) parentPath.push(root)
+        // if (root) parentPath.push(root) // TODO: Check if this needs fixing
         parentPath.push(...key.split(context.options.keySeparator))
         const idx = parentPath.pop()
         const info = context.monitor.get(parentPath, 'info')

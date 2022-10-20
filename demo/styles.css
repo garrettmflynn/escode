@@ -3,10 +3,6 @@
     font-family: Arial, Helvetica, sans-serif
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-}
 
 html,
 body {
@@ -14,7 +10,16 @@ body {
     padding: 0;
     width: 100vw;
     height: 100vh;
+}
+
+html {
     overflow: hidden;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
 }
 
 section {

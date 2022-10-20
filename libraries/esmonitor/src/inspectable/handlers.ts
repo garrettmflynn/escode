@@ -36,6 +36,7 @@ export const functions = (proxy: Inspectable) => {
                     output = await foo.apply(thisArg, argumentsList);
                     executionInfo = proxy?.state?.[pathStr]?.value ?? {}
                 }
+
                 
                 // Notify with Proxy Callback
                 const callback = proxy.options.callback

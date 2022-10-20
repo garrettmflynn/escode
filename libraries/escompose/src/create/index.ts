@@ -20,7 +20,8 @@ export default (id, esm, parent?) => {
 
             // Trigger Execution on Initialization
             if (esm.hasOwnProperty('esTrigger')) {
-                esm.default(esm.esTrigger)
+                if (!Array.isArray(esm.esTrigger)) esm.esTrigger = []
+                esm.default(...esm.esTrigger)
                 delete esm.esTrigger
             }
 

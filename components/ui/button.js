@@ -25,7 +25,7 @@ export default function (input){
     // Pass the cached value for the Component when it is pressed
     if (isInternal) {
         if (this.cache) {
-            if (value !== undefined) res = this.cache // Establish a new behavior where the cahched value is returned when the button is pressed
+            if (value) res = this.cache // Establish a new behavior where the cahched value is returned when the button is pressed
         } else res = value // Maintain previous behavior by notifying when the button is (un)pressed.
     }
     

@@ -162,8 +162,9 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookup?: 
 export const functionExecution = async (context, listeners, func, args) => {
     listeners = Object.assign({}, listeners)
     const keys = Object.getOwnPropertySymbols(listeners)
-    const info = listeners[keys[0]] ?? {} as ListenerInfo // Info is same, callback is different
-    const executionInfo = await infoUtils.get(async (...args) => await func.call(context, ...args), args, info.infoToOutput)
+    const infoTemplate = listeners[keys[0]] ?? {} as ListenerInfo // Info is same, callback is different
+    const executionInfo = await infoUtils.get(async (...args) => await func.call(context, ...args), args, infoTemplate.infoToOutput)
+
     await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => {
         const path = utils.getPath('output', o)
         utils.runCallback(o.callback, path, executionInfo.value, executionInfo.output)
