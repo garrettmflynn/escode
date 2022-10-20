@@ -27,11 +27,11 @@ Pull code from the official repository of ESC using [components](./components/RE
 ### ESCode
 Inspect and edit .esc files (using code written with .esc) using [escode](./libraries/escode/README.md).
 
-#### Internal Libraries
-- [visualscript](./libraries/escode/libraries/visualscript/README.md): Visual programming made simple.
+## Draft Libraries
+- [visualscript](./libraries/drafts/visualscript/README.md): Visual programming made simple for escode.
 
-#### Draft Applications
-- [escode-chrome](./libraries/escode/apps/chrome/README.md): A Chrome Extension for ESCode
+#### Apps
+- [escode-chrome](./apps/chrome/README.md): A Chrome Extension for ESCode
 
 ## Roadmap
 - Declare ESC with similar detail to [ESM](https://tc39.es/ecma262/#sec-modules).
