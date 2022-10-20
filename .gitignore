@@ -1,5 +1,13 @@
 node_modules
-libraries/**/dist
+
+libraries/components/**/dist
+
+libraries/escode/**/dist
+libraries/escompose/**/dist
+libraries/escomposer/**/dist
+libraries/esmpile/**/dist
+libraries/old/**/dist
+
 libraries/**/build
 
 .DS_Store
