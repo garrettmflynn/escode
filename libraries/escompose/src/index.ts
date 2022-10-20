@@ -139,7 +139,7 @@ function pass(from, target, args, context) {
     else {
         try {
             const parentPath = [id]
-            if (root) parentPath.push(root)
+            if (root) parentPath.push(...rootArr)
             parentPath.push(...key.split(context.options.keySeparator))
             const idx = parentPath.pop()
             const info = context.monitor.get(parentPath, 'info')

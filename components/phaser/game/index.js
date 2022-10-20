@@ -28,7 +28,9 @@ export const config = defaultConfig
 
 export let game;
 
-export const esElement = 'div'
+export const esElement = {
+    element: 'div'
+}
 
 export function esInit() {
     if (window.Phaser) this.default() // run node if phaser exists

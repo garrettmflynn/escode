@@ -1,4 +1,5 @@
 import * as todoDemo from '../todo/index.esc'
+import * as deviceDemo from '../phaser/versions/devices.esc'
 
 export const esElement = {
     element: 'div',
@@ -10,16 +11,26 @@ export const esElement = {
 const demoEl = {
     element: 'div',
     style: {
-        padding: '25px',
-        paddingTop: "8px",
-        border: '1px solid black',
-        borderRadius: '10px'
+        // padding: '25px',
+        // paddingTop: "8px",
+        // border: '1px solid black',
+        // borderRadius: '10px',
+        position: 'relative',
     }
 }  
 
 const todoComponent = Object.assign({}, todoDemo) as any
 todoComponent.esElement = demoEl
 
+const deviceComponent = Object.assign({}, deviceDemo) as any
+deviceComponent.esElement = demoEl
+
+deviceComponent.esComponents.game.esElement = {
+    element: 'div',
+    style: {
+        height: '400px',
+    }
+}
 
 export const esComponents = {
     h1: {
@@ -69,9 +80,7 @@ export const esComponents = {
                             }
                         }
                     },
-                    demo2: {
-                        esElement: demoEl
-                    },
+                    demo2: deviceComponent,
                 }
             },
 
