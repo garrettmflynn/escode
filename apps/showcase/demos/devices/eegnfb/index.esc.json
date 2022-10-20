@@ -1,0 +1,239 @@
+{
+    "esComponents": {
+        "app": {
+            "style": {
+                "background-color": "black",
+                "color": "white",
+                "font-family": "'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif",
+                "width": "100%",
+                "height": "100%",
+                "overflow": "auto"
+            },
+            "tagName": "div",
+            "esComponents": {
+                "devices": {
+                    "tagName": "div",
+                    "esCompose": "../../../../components/ui/devices/index.esc.json",
+                    "connectmode": {
+                        "options": [
+                            {
+                                "value": "BLE",
+                                "show": "selectBLE"
+                            },
+                            {
+                                "value": "USB",
+                                "show": "selectUSB"
+                            },
+                            {
+                                "value": "BLE_OTHER",
+                                "show": "selectBLEOther"
+                            },
+                            {
+                                "value": "Other",
+                                "show": "selectOther"
+                            }
+                        ]
+                    },
+                    "selectUSB": {
+                        "options": {
+                            "cyton":"Open BCI Cyton",
+                            "cyton_daisy":"Open BCI Cyton x2 (daisy chain mode)",
+                            "freeeeg32":"FreeEEG32",
+                            "freeeeg32_optical":"FreeEEG32 optical cable",
+                            "freeeeg128": "FreeEEG128",
+                            "nrf5x": "nRF5x board"
+                        },
+                        "esCompose": "../../../../components/ui/select.js"
+                    },
+                    "selectBLE": {
+                        "options": {
+                            "nrf5x": "nRF5x board"
+                        },
+                        "esCompose": "../../../../components/ui/select.js"
+                    },
+                    "selectBLEOther": {
+                        "options": {
+                            "muse": "Muse",
+                            "ganglion": "Ganglion"
+                        },
+                        "esCompose": "../../../../components/ui/select.js"
+                    },
+                    "selectOther": {
+                        "options": {
+                            "simulator": "Simulator"
+                        },
+                        "esCompose": "../../../../components/ui/select.js"
+                    },
+                    "connect": {
+                        "thirdPartyDecoder": {
+                            "esCompose": "device-decoder.third-party"
+                        },
+                        "workerUrl": {
+                            "esCompose": "./scripts/workers/stream.big.worker.js",
+                            "_format": "datauri"
+                        },
+                        "routes": {
+                            "esCompose": "./scripts/connect/routes.js"
+                        },
+                        "onconnect": {
+                            "esCompose": "./scripts/connect/onConnect.js"
+                        }
+                    },
+                    "preprocess": {
+                        "esCompose": "../../../../components/devices/eeg/preprocess.js"
+                    }
+                },
+                "output": {
+                    "tagName": "div",
+                    "esComponents": {
+                        "audio": {
+                            "esCompose": "../../../../components/ui/audio/index.esc.json",
+                            "sounds": {
+                                "options": [
+                                    {
+                                        "label": "Kalimba",
+                                        "value": {
+                                            "esCompose": "../assets/kalimba.wav"
+                                        }
+                                    },
+                                    {
+                                        "label": "Phonk",
+                                        "value": {
+                                            "esCompose": "../assets/phonk.wav"
+                                        }
+                                    },
+                                    {
+                                        "label": "Synth Flute",
+                                        "value": {
+                                            "esCompose": "../assets/synthflute.wav"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "other": {
+                            "tagName": "div",
+                            "esComponents": {
+                                "stats": {
+                                    "esCompose": "../../../../components/ui/devices/stats/index.js"
+                                },
+                                "csvmenu": {
+                                    "esCompose": "../../../../components/drafts/output/csv/menu.js"
+                                }
+                            }
+                        },
+                        "eeg": {
+                            "tagName":"div",
+                            "esComponents": {
+                                "ln0":{
+                                    "tagName":"hr"
+                                },
+                                "waveformtitle":{
+                                    "tagName":"div",
+                                    "innerHTML":"Raw Data"
+                                },
+                                "waveformdiv":{
+                                    "tagName":"div",
+                                    "style":{"height":"300px"},
+                                    "esComponents":{
+                                        "waveform":{
+                                            "tagName":"canvas",
+                                            "style":{"width":"100%", "height":"300px", "position":"absolute", "zIndex":"1"}
+                                        },
+                                        "waveformoverlay":{
+                                            "tagName":"canvas",
+                                            "style":{"width":"100%", "height":"300px", "position":"absolute", "zIndex":"2"}
+                                        },
+                                        "waveformcontrols":{
+                                            "tagName":"table",
+                                            "style":{"display":"none", "width":"100%", "height":"300px", "position":"absolute",  "zIndex":"3"},
+                                            "attributes": {
+                                                "className":"chartcontrols",
+                                                "onmouseleave": {
+                                                    "esCompose": "./scripts/waveform/mouseLeave.js"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "ln":{
+                                    "tagName":"hr"
+                                },
+                                "dfttitle":{
+                                    "tagName":"div",
+                                    "innerHTML":"Coherence"
+                                },
+                                "dftdiv":{
+                                    "tagName":"div",
+                                    "style":{"height":"300px"},
+                                    "esComponents":{
+                                        "dftwaveform":{
+                                            "tagName":"canvas",
+                                            "style":{"width":"100%", "height":"300px", "position":"absolute", "zIndex":"1"}
+                                        },
+                                        "dftwaveformoverlay":{
+                                            "tagName":"canvas",
+                                            "style":{"width":"100%", "height":"300px",  "position":"absolute", "zIndex":"2"}
+                                        }
+                                    }
+                                },
+                                "ln2":{
+                                    "tagName":"hr"
+                                },
+                                "dftxaxis":{
+                                    "tagName":"div",
+                                    "style":{"display":"flex", "justifyContent":"space-between"}
+                                },
+                                "ln3":{
+                                    "tagName":"hr"
+                                },
+                                "rmsediv":{
+                                    "tagName":"div",
+                                    "innerHTML":"RMSE (mV)",
+                                    "esComponents":{
+                                        "rmse":{
+                                            "tagName":"div"
+                                        }
+                                    }
+                                },
+                                "ln4":{
+                                    "tagName":"hr"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "listeners": {
+        "app.devices.selectBLE": {
+            "app.devices.toConnect": true
+        },
+        "app.devices.selectUSB": {
+            "app.devices.toConnect": true
+        },
+        "app.devices.selectBLEOther": {
+            "app.devices.toConnect": true
+        },
+        "app.devices.selectOther": {
+            "app.devices.toConnect": true
+        },
+        "app.devices.connectmode": {
+            "app.devices.connect.mode": true
+        },
+        "app.devices.toConnect": {
+            "app.devices.connect": true
+        },
+
+        "app.devices.connect": {
+            "app.devices.preprocess": true
+        },
+        "app.devices.preprocess": {
+            "app.output.other.stats": true
+        },
+        "app.output.other.reset": {
+            "app.devices.preprocess.reset": true
+        }
+    }
+}

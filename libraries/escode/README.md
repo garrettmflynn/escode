@@ -1,12 +1,43 @@
-# ESCode
+# Draft: ESCode
 [![Npm package version](https://badgen.net/npm/v/escode)](https://npmjs.com/package/escode)
 [![Npm package monthly downloads](https://badgen.net/npm/dm/escode)](https://npmjs.ccom/package/escode)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-**ESCode** is our development experience engine for ESCompose.
+**escode** is visual programming system for ESM / [ESC](../../README.md) projects.
 
-> **Note:** **ESCode** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
+> **escode** is the centerpiece of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/blob/main/README.md), as it allows users to understand the big picture (i.e. rapid prototyping of high-performance web applications) before slowly peeling back each layer of the Framework.
+
+### The Layers
+#### Flow Graph
+This view represents the complete logic of the application. In other words, how **data** flows between **instances** of Brains@Play [components].
+
+#### Properties Tab (TBD)
+This view represents the specific attributes of a single **instance** of [components].
+
+#### File Tree
+This view represents the file structure of an application.
+
+#### Code Editor
+This view represents the **source code** of each of the [components].
+
+
+#### Plugin Search
+This popup allows users to search for components using the [components] repo.
+
+#### Relations List (TBD)
+This view is an "if this, then that" system for defining flows of **data** in the application.
+
+## Key Features
+- [ ] Support for any [ESCode](https://github.com/brainsatplay/escompose/tree/main/libraries/escode)-based application.
+
+### Tests
+- [ ] Can load + save our [Phaser](https://github.com/brainsatplay/escompose/tree/main/components/phaser) plugin
+- [ ] Can load + save our [external](https://github.com/brainsatplay/escompose/tree/main/libraries/escode/tests/0/0.0/0.0.0/external) app demo
+
+## Roadmap
+- Add templates (e.g. move)
+- Add a quick select screen (e.g. for input / output modality)
 
 ## Acknowledgments
 This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.

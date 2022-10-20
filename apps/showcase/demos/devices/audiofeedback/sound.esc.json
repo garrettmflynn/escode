@@ -1,0 +1,43 @@
+{
+    "tagName": "div",
+    "esComponents": {
+        "sounds": {
+            "esCompose": "../../../../components/ui/select.js",
+            "options": [
+                {
+                    "label": "Kalimba",
+                    "value": {
+                        "esCompose": "../assets/kalimba.wav"
+                    }
+                },
+                {
+                    "label": "Phonk",
+                    "value": {
+                        "esCompose": "../assets/phonk.wav"
+                    }
+                },
+                {
+                    "label": "Synth Flute",
+                    "value": {
+                        "esCompose": "../assets/synthflute.wav"
+                    }
+                }
+            ]
+        },
+        "button": {
+            "esCompose": "../../../../components/ui/button.js",
+            "innerText": "Play"
+        },
+        "toggle": {
+            "esCompose": "../../../../components/audio/toggle.js"
+        }
+    },
+    "listeners": {
+        "sounds": {
+            "button": true
+        },
+        "button": {
+            "toggle": true
+        }
+    }
+}
