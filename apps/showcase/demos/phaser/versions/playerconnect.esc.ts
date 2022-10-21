@@ -20,7 +20,7 @@ esComponents.average = {
 
 
 esComponents.threshold = {
-    threshold: 500,
+    value: 300,
     esCompose: threshold,
 }
 

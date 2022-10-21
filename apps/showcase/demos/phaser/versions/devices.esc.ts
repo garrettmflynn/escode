@@ -30,7 +30,7 @@ model.esComponents.average = {
 }
 
 model.esComponents.threshold = {
-    threshold: 300,
+    value: 300,
     esCompose: threshold,
 }
 
@@ -186,7 +186,7 @@ export const esComponents = model.esComponents
 //                 "game": {
 //                     "esCompose": "https://raw.githubusercontent.com/brainsatplay/escode/main/components/phaser/game/index.js",
 //                             "preload": {
-//                                 "setBaseURL": "https://raw.githubusercontent.com/brainsatplay/escode/main/drafts/demos/phaser/assets",
+//                                 "setBaseURL": "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/assets",
 //                                 "tilemapTiledJSON": [
 //                                     [
 //                                         "map",
