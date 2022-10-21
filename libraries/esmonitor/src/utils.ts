@@ -34,7 +34,14 @@ export const getPathInfo = (path, options: MonitorOptions) => {
 }
 
 export const runCallback = (callback, path, info, output, setGlobal=true) => {
-    if (callback instanceof Function) callback(path, info, output)
+    if (callback instanceof Function) {
+        
+        // Promises
+        if (typeof output === 'object' && typeof output.then === 'function') output.then(value => callback(path, info, value))
+
+        // Normal
+        else callback(path, info, output)
+    }
 
     // ------------------ Set Manually in Inspected State ------------------
     if (setGlobal && window.ESMonitorState) {

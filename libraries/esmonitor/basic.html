@@ -16,7 +16,8 @@ const monitor = new Monitor()
 
 // ---------------- Register Object ----------------
 const id = 'actor'
-const add = (input) => input + 1
+const add = async (input) => input + 1
+const subtract = (input) => input - 1
 const actor = { nested: { add } }
 
 const storeId = 'store'
@@ -40,14 +41,22 @@ const funcSubs = monitor.on([id, ...functionPath], (path, info, output) => {
     store.updated = true
 })
 
-store.value = 1
+let expected = 0
+
+expected = store.value = 1
+expected++
 await actor.nested.add(store.value)
 
 monitor.remove(storeSubs) // Clear test subscriptions only
 
 const set = store.value + 1
+expected++
 store.value = set // No response
+expected++
 await actor.nested.add(store.value) // Received
+
+console.log('Value', store.value)
+console.log('Expected', expected)
 
 monitor.remove() // Remove all subscriptions
 </script>

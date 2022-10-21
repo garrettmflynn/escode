@@ -27,13 +27,13 @@ export const functions = (proxy: Inspectable) => {
                 let output, executionInfo: any = {};
 
                 if (toActivate){
-                    executionInfo = await listenerUtils.functionExecution(thisArg, toActivate, foo, argumentsList)
+                    executionInfo = listenerUtils.functionExecution(thisArg, toActivate, foo, argumentsList)
                     output = executionInfo.output
                 } 
                 
                 // Default Behavior
                 else {
-                    output = await foo.apply(thisArg, argumentsList);
+                    output = foo.apply(thisArg, argumentsList);
                     executionInfo = proxy?.state?.[pathStr]?.value ?? {}
                 }
 

@@ -17,7 +17,7 @@ const infoFunctions = {
     performance
 }
 
-export const get = async (func, args, info) => {
+export const get = (func, args, info) => {
 
     let result = {
         value: { },
@@ -41,6 +41,6 @@ export const get = async (func, args, info) => {
         }
     }
 
-    result.output = await func(...args)
+    result.output = func(...args)
     return result
 }

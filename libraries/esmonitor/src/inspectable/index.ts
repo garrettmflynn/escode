@@ -120,9 +120,7 @@ export default class Inspectable {
 
                     // Intercept functions
                     if (typeof value === 'function') {
-                        target[key] = async (...args) => {
-                            return await this.proxy[key]({ [fromInspectable]: true, value }, ...args)
-                        }
+                        target[key] = async (...args) => await this.proxy[key]({ [fromInspectable]: true, value }, ...args)
                     } 
 
                     // Basic Getter / Setter for Original Input

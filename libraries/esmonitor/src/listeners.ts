@@ -47,9 +47,9 @@ export const info = (id, callback, path, originalValue, base, listeners, options
         keySeparator: options.keySeparator,
 
         infoToOutput,
-        callback: async (...args) => {
-            const output = await callback(...args)
-
+        callback: (...args) => {
+            const output = callback(...args)
+            
             // ------------------ Run onUpdate Callback ------------------
             if (onUpdate instanceof Function) onUpdate(...args)
 
@@ -116,8 +116,8 @@ const handler = (info, collection, subscribeCallback, lookup?: ListenerLookup) =
 }
 
 
-export const setterExecution = async (listeners, value) => {
-    await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => {
+export const setterExecution = (listeners, value) => {
+    return utils.iterateSymbols(listeners, (_, o: ListenerInfo) => {
         const path = utils.getPath('output', o)
         utils.runCallback(o.callback, path,  {}, value)
     })
@@ -159,13 +159,13 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookup?: 
 }
 
 
-export const functionExecution = async (context, listeners, func, args) => {
+export const functionExecution = (context, listeners, func, args) => {
     listeners = Object.assign({}, listeners)
     const keys = Object.getOwnPropertySymbols(listeners)
     const infoTemplate = listeners[keys[0]] ?? {} as ListenerInfo // Info is same, callback is different
-    const executionInfo = await infoUtils.get(async (...args) => await func.call(context, ...args), args, infoTemplate.infoToOutput)
+    const executionInfo = infoUtils.get((...args) => func.call(context, ...args), args, infoTemplate.infoToOutput)
 
-    await utils.iterateSymbols(listeners, (_, o: ListenerInfo) => {
+    utils.iterateSymbols(listeners, (_, o: ListenerInfo) => {
         const path = utils.getPath('output', o)
         utils.runCallback(o.callback, path, executionInfo.value, executionInfo.output)
     })
@@ -177,7 +177,7 @@ export const functionExecution = async (context, listeners, func, args) => {
 export function functions (info: ListenerInfo, collection: ListenerPool, lookup?: ListenerLookup) {
     handler(info, collection, (_, parent) => {      
         if (!parent[isProxy]) { 
-            parent[info.last] = async function(...args) {
+            parent[info.last] = function (...args) {
                 const listeners = collection[utils.getPath('absolute', info)]
                 return functionExecution(this, listeners, info.original, args)
             }

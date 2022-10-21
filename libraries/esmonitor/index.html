@@ -155,7 +155,7 @@
         subscriptions.storeUpdate = monitor.on(
             paths[selected].outerFunction,
             (...args) => {
-                console.log('Outer Function Result:', args[2])
+                console.log('Outer Function Result:', paths[selected].outerFunction, args[2])
             },
         )
 
@@ -205,7 +205,7 @@
 
         const createActor = () => {
 
-            const add = (input) => input + 1
+            const add = async (input) => input + 1
             const subtract = (input) => input - 1
 
             return {
@@ -254,8 +254,8 @@
         objects.store.value = 10000
         store.value = 10000
 
-        await objects.actor.subtract(initalValue)
-        await actor.subtract(initalValue)
+        objects.actor.subtract(initalValue)
+        actor.subtract(initalValue)
 
         // ---------------- Manipulate the Objects ----------------
         store.value = objects.store.value = initalValue
