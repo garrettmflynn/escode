@@ -6,6 +6,8 @@ import { Options } from "../../common/types"
 import { ESComponent } from "./component"
 
 
+const listenerObject = Symbol('listenerObject')
+
 // TODO: Ensure that this doesn't have a circular reference
 const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
 
@@ -37,14 +39,14 @@ const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
 const setListeners = (context, components) => {
 
     context.listeners = {}
-    for (let absPath in components) {
-        const info = components[absPath]
+    for (let root in components) {
+        const info = components[root]
         const listeners = info.instance.esListeners
         for (let path in listeners) {
 
             const basePath = [context.id]
             const topPath: string[] = []
-            if (absPath) topPath.push(...absPath.split(context.options.keySeparator))
+            if (root) topPath.push(...root.split(context.options.keySeparator))
             if (path) topPath.push(...path.split(context.options.keySeparator))
             basePath.push(...topPath)
 
@@ -57,11 +59,13 @@ const setListeners = (context, components) => {
             if (!context.listeners[joined]) context.listeners[joined] = {}
 
             const value = listeners[path]
-            if (typeof value === 'object') context.listeners[joined] = {...listeners[path]}
-            else context.listeners[joined] = value
+            if (typeof value === 'object') {
+                for (let key in value) context.listeners[joined][key] = { value, root, [listenerObject]: true }
+            } else context.listeners[joined] = { value, root, [listenerObject]: true }
             
-            context.monitor.on(basePath, (path, info, args) => {
-                passToListeners(context, absPath, path, info, args)
+
+            context.monitor.on(basePath, (path, _, args) => {
+                passToListeners(context, path, args)
             })
         }
     }
@@ -79,7 +83,7 @@ function pass(from, target, args, context) {
     key = target.key
     root = target.root
     const rootArr = root.split(context.options.keySeparator)
-    target = target.parent[key]
+    target = target.parent[key].value
 
     let ogValue = target
     const type = typeof target
@@ -91,7 +95,11 @@ function pass(from, target, args, context) {
             const noDefault = typeof val !== 'function' && !val?.default
             if (noDefault) target = toSet
             else target = val
-            parent[key] = target
+
+            parent[key] = {
+                value: target,
+                root // carry over the root
+            }
         }
     }
 
@@ -159,7 +167,7 @@ function pass(from, target, args, context) {
     }
 }
 
-function passToListeners(context, root, name, info, ...args) {
+function passToListeners(context, name, ...args) {
 
     const sep = context.options.keySeparator
     const noDefault = name.slice(0, -`${sep}${standards.defaultPath}`.length)
@@ -176,24 +184,24 @@ function passToListeners(context, root, name, info, ...args) {
         const info = group.info
         if (info){
 
-            if (typeof info === 'object') {
+            if (info[listenerObject]) {
+                pass(name, {
+                    value: info.value,
+                    parent: context.listeners,
+                    key: group.name,
+                    root: info.root,
+                    __value: true
+                }, args, context)
+            } else if (typeof info === 'object') {
                 for (let key in info) {
                     pass(name, {
                         parent: info,
                         key,
-                        root,
-                        value: info[key],
+                        root: info[key].root,
+                        value: info[key].value,
                     }, args, context)
                 }
-            } else {
-                pass(name, {
-                    value: info,
-                    parent: context.listeners,
-                    key: group.name,
-                    root,
-                    __value: true
-                }, args, context)
-            }
+            } else console.error('Improperly Formatted Listener', info)
         }
     })
 }

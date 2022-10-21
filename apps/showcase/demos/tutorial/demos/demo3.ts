@@ -87,7 +87,7 @@ export const esComponents = {
         esCompose: data,
     },
     trigger: {
-        esTrigger: [true],
+        // esTrigger: true,
         default: (input) => input
     }
 }

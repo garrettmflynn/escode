@@ -1,8 +1,8 @@
-import * as button from "../../../../components/ui/button.js"
-import * as start from "../../../../components/drafts/old/datastreams/components/start.js"
-import * as average from "../../../../components/basic/average.js"
-import * as threshold from "../../../../components/basic/threshold.js"
-import * as muse from "../../../../components/drafts/old/devices/muse/index.js"
+import * as button from "../../../../../components/ui/button.js"
+import * as start from "../../../../../components/drafts/old/datastreams/components/start.js"
+import * as average from "../../../../../components/basic/average.js"
+import * as threshold from "../../../../../components/basic/threshold.js"
+import * as muse from "../../../../../components/drafts/old/devices/muse/index.js"
 
 export const esComponents = {} as any
 export const esListeners = {} as any

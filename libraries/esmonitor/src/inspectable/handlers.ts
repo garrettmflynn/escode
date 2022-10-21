@@ -47,7 +47,7 @@ export const functions = (proxy: Inspectable) => {
                 return output
 
             } catch (e) {
-                console.warn(`Cannot run function:`, e, proxy.path, proxy.parent, target, argumentsList);
+                console.warn(`Function failed:`, e, proxy.path);
             }
         }
     };

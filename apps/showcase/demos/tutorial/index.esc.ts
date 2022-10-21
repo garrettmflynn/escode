@@ -1,6 +1,7 @@
 import * as demo1 from './components/demo1'
 import * as demo2 from './components/demo2'
 import * as demo3 from './components/demo3'
+import * as log from '../../../../components/basic/log.js'
 
 export const esElement = {
     style: {
@@ -30,6 +31,7 @@ demo2.esComponents.game.esElement = {
 demo3.esElement.style = demoEl.style
 
 export const esComponents = {
+    log,
     h1: {
         esElement: {
             element: 'h1',
@@ -145,4 +147,11 @@ export const esComponents = {
             }
         }
     }
+}
+
+export const esListeners = {
+    'firstsection.block2.demo2.datastreams': {
+        // 'firstsection.block3.demo3.plotter': true,
+        log: true
+    },
 }
