@@ -20,6 +20,9 @@ overlay.height = canvasHeight;
 
 let sampleCt = 1000
 
+
+const ogArray = new Array(sampleCt).fill(0)
+const color = [0,255,0,1]
 const plotterInstance = Object.assign(Object.assign({}, plotter), {
     options: {
         worker:true, //use an offscreen canvas
@@ -29,19 +32,24 @@ const plotterInstance = Object.assign(Object.assign({}, plotter), {
         overlayColor:'orange',
         lines: {
             '0':{
-                values:new Array(sampleCt).fill(0).map((v,i)=>{ return 0.5*Math.sin(2*Math.PI*(25)*(Date.now()/1000+(i/sampleCt))); }),
+                values: ogArray,
                 //width:2,
-                color:[0,255,0,1]
+                color
             },
             '1':{
-                values:new Array(sampleCt).fill(0).map((v,i)=>{ return 0.5*Math.sin(2*Math.PI*(1)*(Date.now()/1000+(i/sampleCt))); }),
+                values: ogArray,
                 //width:2,
-                color:[0,255,0,1]
+                color
             },
             '2':{
-                values:new Array(sampleCt).fill(0).map((v,i)=>{ return 0.5*Math.sin(2*Math.PI*(3)*(Date.now()/1000+(i/sampleCt))); }),
+                values: ogArray,
                 //width:2,
-                color:[0,255,0,1]
+                color
+            },
+            '3':{
+                values:ogArray,
+                //width:2,
+                color
             }
         }
     }

@@ -60,7 +60,7 @@ const setListeners = (context, components) => {
 
             const value = listeners[path]
             if (typeof value === 'object') {
-                for (let key in value) context.listeners[joined][key] = { value, root, [listenerObject]: true }
+                for (let key in value) context.listeners[joined][key] = { value: value[key], root, [listenerObject]: true }
             } else context.listeners[joined] = { value, root, [listenerObject]: true }
             
 
@@ -83,46 +83,85 @@ function pass(from, target, args, context) {
     key = target.key
     root = target.root
     const rootArr = root.split(context.options.keySeparator)
-    target = target.parent[key].value
+    const info = target.parent[key]
+    target = info.value
+
+    let config = info?.esConfig // Grab config
 
     let ogValue = target
     const type = typeof target
 
-    const checkIfSetter = (path) => {
+    const checkIfSetter = (path, willSet) => {
         const info = context.monitor.get(path, 'info')
         if (info.exists) {
             const val = info.value
             const noDefault = typeof val !== 'function' && !val?.default
-            if (noDefault) target = toSet
-            else target = val
+            const value = (noDefault) ? toSet : val
 
-            parent[key] = {
-                value: target,
+            const res =  {
+                value,
                 root // carry over the root
             }
-        }
+
+            if (willSet) {
+                target = res.value
+                parent[key] = res
+            }
+
+            return res
+        } else return {value: undefined, root: undefined}
+        
+    }
+
+    const transform = (willSet?) => {
+        const fullPath = [id]
+        if (root) fullPath.push(...rootArr) // correcting for relative string
+        fullPath.push(...key.split(context.options.keySeparator))
+        return checkIfSetter(fullPath, willSet)
     }
 
     // ------------------ Grab Correct Target to Listen To ------------------
+    
+    // Confirmation of the target
     if (typeof target === 'boolean') {
-        if (!isValue) {
-            const fullPath = [id]
-            if (root) fullPath.push(...rootArr) // correcting for relative string
-            fullPath.push(...key.split(context.options.keySeparator))
-            checkIfSetter(fullPath)
-        } else console.error('Cannot use a boolean for esListener...')
-    } else if (type === 'string') {
+        if (!isValue) transform(true)
+        else console.error('Cannot use a boolean for esListener...')
+    } 
+    
+    // Name of the target
+    else if (type === 'string') {
         const path = [id]
         const topPath: any[] = []
         if (root) topPath.push(...rootArr) // correcting for relative string
         topPath.push(...ogValue.split(context.options.keySeparator))
         path.push(...topPath)
-        checkIfSetter(path)
+        checkIfSetter(path, true)
 
         const absPath = topPath.join(context.options.keySeparator)
         if (isValue) {
             parent[key] = {[absPath]: parent[key]}
             key = absPath
+        }
+    } 
+    
+    // Configuration Object
+    else if (target && type === 'object' && !target.hasOwnProperty('__isESComponent')) {
+        transform(true)
+        Object.defineProperty(parent[key], 'esConfig', {value: ogValue})
+        config = ogValue
+    }
+
+
+    // ------------------ Special Keywords ------------------
+    if (config) {
+        if (config.hasOwnProperty('esFormat')) {
+            try { args = config.esFormat(...args) } catch (e) { console.error('Failed to format arguments', e) }
+        }
+
+        if (config.hasOwnProperty('esBranch')) {
+            config.esBranch.forEach(o => {
+                if (o.equals === args[0]) args[0] = o.value // set first argument to branch value
+            })
         }
     }
 
@@ -131,7 +170,7 @@ function pass(from, target, args, context) {
     // Set New Value on Parent
     if (target === toSet)  {
         const parentPath = [id]
-        // if (root) parentPath.push(root) // TODO: Check if this needs fixing
+        if (root) parentPath.push(...rootArr) // TODO: Check if this needs fixing
         parentPath.push(...key.split(context.options.keySeparator))
         const idx = parentPath.pop()
         const info = context.monitor.get(parentPath, 'info')
@@ -144,26 +183,13 @@ function pass(from, target, args, context) {
     // Direct Function
     else if (typeof target === 'function') target(...args)
 
+    // Failed
     else {
-        try {
-            const parentPath = [id]
-            if (root) parentPath.push(...rootArr)
-            parentPath.push(...key.split(context.options.keySeparator))
-            const idx = parentPath.pop()
-            const info = context.monitor.get(parentPath, 'info')
-            const arg = args[0]
-            if (target.esBranch) {
-                target.esBranch.forEach(o => {
-                    if (o.equals === arg) info.value[idx] = o.value
-                })
-            } else info.value[idx] = target // Setting with provided value
-        } catch (e) {
-            let baseMessage = `listener: ${from} —> ${key}`
-            if (parent) {
-                console.error(`Deleting ${baseMessage}`, parent[key], e)
-                delete parent[key]
-            } else console.error(`Failed to add ${baseMessage}`, target)
-        }
+        let baseMessage = `listener: ${from} —> ${key}`
+        if (parent) {
+            console.error(`Deleting ${baseMessage}`, parent[key])
+            delete parent[key]
+        } else console.error(`Failed to add ${baseMessage}`, target)
     }
 }
 

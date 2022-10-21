@@ -1,4 +1,3 @@
-import { isProxy } from "../esmonitor/src/globals"
 import { PathFormat, SetValueOptions } from "../esmonitor/src/types"
 import * as standards from './standards'
 
@@ -46,10 +45,9 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
 
         if (exists) ref = ref[str]
         else {
-            // Check if dynamic
-            if (!inInspectable) console.error(`Will not get updates from: ${path.filter(str => typeof str === 'string').join(keySeparator)}`)
-            else if (!ref.__esInspectable) console.warn('Might be ignoring incorrectly...')
-            return
+            if (!inInspectable) console.warn(`[esmonitor]: Will not get updates from ${path.filter(str => typeof str === 'string').join(keySeparator)} unless you have specific listeners attached to the monitored object.`)
+            ref = undefined
+            exists = true
         }
     }
 

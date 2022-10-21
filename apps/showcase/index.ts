@@ -65,8 +65,8 @@ selected.esParent = main
 // Create an active ES Component from a .esc file
 const component = createComponent(selected, {
     monitor, // Use the existing monitor
-    // listeners: { static: true } // Will be able to track new keys added to the object
-    listeners: { static: false }
+    // listeners: { static: false } // Will be able to track new keys added to the object
+    listeners: { static: true }
 })
 
 // // Ensuring there is a container for the app

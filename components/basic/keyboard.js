@@ -14,12 +14,15 @@ export function esInit() {
 
         const val = ev[this.mode]
 
-        const defaults = ['shiftKey', 'metaKey', 'altKey']
-        defaults.forEach(key => {
-            if (ev[key]) this[key] = ev[key]
-        })
+        if (!this[val]) {
 
-        this.default(val)
+            const defaults = ['shiftKey', 'metaKey', 'altKey']
+            defaults.forEach(key => {
+                if (ev[key]) this[key] = ev[key]
+            })
+
+            this.default(val)
+        }
     })
 
     // Toggle Off
