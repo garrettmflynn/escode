@@ -151,17 +151,12 @@ export const esComponents = {
 
 
 
-const set = new Set()
+// const set = new Set()
 export const esListeners = {
     'firstsection.block2.demo2.datastreams': {
         'firstsection.block3.demo3.plotter': {
             esFormat: ([data, timestamps, contentHint]) => {
-                if (!set.has(contentHint)) set.add(contentHint)
-                const formatted = Array.from(set, (v, i) => {
-                    const res = (v === contentHint) ? data : []
-                    return res
-                })
-                return [formatted]
+                return [{[contentHint]: data}]
             }
         },
     },

@@ -30,28 +30,9 @@ const plotterInstance = Object.assign(Object.assign({}, plotter), {
         overlay,
         overlayFont:'1em Verdana',
         overlayColor:'orange',
-        lines: {
-            '0':{
-                values: ogArray,
-                //width:2,
-                color
-            },
-            '1':{
-                values: ogArray,
-                //width:2,
-                color
-            },
-            '2':{
-                values: ogArray,
-                //width:2,
-                color
-            },
-            '3':{
-                values:ogArray,
-                //width:2,
-                color
-            }
-        }
+        generateNewLines: true,
+        cleanGeneration: false,
+        lines: {}
     }
 });
 
