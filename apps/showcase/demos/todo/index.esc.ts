@@ -57,6 +57,8 @@ export const esListeners = {
         list: true
     },
     list: {
-        store: true
+        store: {
+            esFormat: (value) => [value, 'todos']
+        }
     }
 }
