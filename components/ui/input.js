@@ -1,11 +1,6 @@
-// Element Specification
-export const esElement = {
-    element: 'input',
-    attributes: {
-        placeholder: 'Insert text here',
-        oninput: function (ev) {
-            this.default({value: ev.target.value, _internal: true})
-        }
+export const esAttributes = {
+    oninput: function (ev) {
+        this.default({value: ev.target.value, _internal: true})
     }
 }
 

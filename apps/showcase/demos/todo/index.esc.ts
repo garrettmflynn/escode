@@ -6,38 +6,34 @@ import * as load from  "../../../../components/storage/local/get.js"
 
 import onSubmit from  "./scripts/onSubmit.js"
 
-let buttonComponent = Object.assign({}, button) as any
-buttonComponent.esElement = Object.assign({}, buttonComponent.esElement) as any
-buttonComponent.esElement.attributes = Object.assign({}, buttonComponent.esElement.attributes) as any
-buttonComponent.esElement.attributes.innerHTML = "Add Todo"
-buttonComponent.esElement.attributes.type = "submit"
+const buttonAttributes = Object.assign({}, button.esAttributes) as any
+buttonAttributes.innerHTML = "Add Todo"
+buttonAttributes.type = "submit"
+
+const inputAttributes = Object.assign({}, input.esAttributes) as any
+inputAttributes.placeholder = 'Write your todo here'
 
 export const esComponents = {
         list: {
+            esElement: 'ul',
             esCompose: list
         },
         form: {
-            esElement: {
-                element: 'form',
-                attributes: {
-                    onsubmit: onSubmit 
-                }
+            esElement: 'form',
+            esAttributes: {
+                onsubmit: onSubmit 
             },
             esComponents: {
                 input: {
+                    esElement: 'input',
+                    esAttributes: inputAttributes,
                     esCompose: input
                 },
-                button: buttonComponent
-                // button: {
-                //     esElement: {
-                //         element: 'button',
-                //         attributes: {
-                //             innerHTML: "Add Todo",
-                //             type: "submit"
-                //         }
-                //     },
-                //     esCompose: button
-                // },
+                button: {
+                    esElement: 'button',
+                    esAttributes: buttonAttributes,
+                    esCompose: button
+                }
             }
         },
         store: {

@@ -3,7 +3,7 @@ import * as demo2 from './components/demo2'
 import * as demo3 from './components/demo3'
 import * as log from '../../../../components/basic/log.js'
 
-export const esElement = {
+export const esAttributes = {
     style: {
         padding: '50px'
     }
@@ -19,46 +19,40 @@ const demoEl = {
     }
 }  
 
-demo1.esElement.style = demoEl.style
+demo1.esAttributes.style = demoEl.style
 
-demo2.esElement.style = demoEl.style
-demo2.esComponents.game.esElement = {
+demo2.esAttributes.style = demoEl.style
+demo2.esComponents.game.esAttributes = {
     style: {
         height: '400px',
     }
 }
 
-demo3.esElement.style = demoEl.style
+demo3.esAttributes.style = demoEl.style
 
 export const esComponents = {
     log,
     h1: {
-        esElement: {
-            element: 'h1',
-            attributes: {
-                innerHTML: "How Does Signal Processing Work?"
-            }
+        esElement: 'h1',
+        esAttributes: {
+            innerHTML: "How Does Signal Processing Work?"
         }
     },
     firstsection: {
         esComponents: {
             h2: {
-                esElement: {
-                    element: 'h2',
-                    attributes: {
-                        innerHTML: "What are Signals?"
-                    }
+                esElement: 'h2', 
+                esAttributes: {
+                    innerHTML: "What are Signals?"
                 }
             },
 
             block1: {
                 esComponents: {
                     p1: {
-                        esElement: {
-                            element: 'p',
-                            attributes: {
-                                innerHTML: "Signals are information being carried in a medium like electricity or light that we can use to understand or communicate with each other."
-                            }
+                        esElement: 'p',
+                        esAttributes: {
+                            innerHTML:  "Signals are information being carried in a medium like electricity or light that we can use to understand or communicate with each other."
                         }
                     },
                     demo1,
@@ -69,11 +63,9 @@ export const esComponents = {
             block2: {
                 esComponents: {
                     p2: {
-                        esElement: {
-                            element: 'p',
-                            attributes: {
-                                innerHTML: "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
-                            }
+                        esElement: 'p',
+                        esAttributes: {
+                            innerHTML:   "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
                         }
                     },
                     demo2,
@@ -84,11 +76,9 @@ export const esComponents = {
             block3: {
                 esComponents: {
                     p3: {
-                        esElement: {
-                            element: 'p',
-                            attributes: {
-                                innerHTML: "This makes it hard to use these signals to do things like control a game!"
-                            }
+                        esElement: 'p',
+                        esAttributes: {
+                            innerHTML:   "This makes it hard to use these signals to do things like control a game!"
                         }
                     },
                     demo3
@@ -99,11 +89,9 @@ export const esComponents = {
             block4: {
                 esComponents: {
                     p4: {
-                        esElement: {
-                            element: 'p',
-                            attributes: {
-                                innerHTML: "We can filter some noise, but sometimes there are multiple sources of noise, in this case we still see signals from our power outlet, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
-                            }
+                        esElement: 'p',
+                        esAttributes: {
+                            innerHTML: "We can filter some noise, but sometimes there are multiple sources of noise, in this case we still see signals from our power outlet, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
                         }
                     },
                     demo4: {
@@ -116,11 +104,9 @@ export const esComponents = {
             block5: {
                 esComponents: {
                     p5: {
-                        esElement: {
-                            element: 'p',
-                            attributes: {
-                                innerHTML: "To solve this we can apply multiple filters to block different ranges or specific frequencies. "
-                            }
+                        esElement: 'p',
+                        esAttributes: {
+                            innerHTML: "To solve this we can apply multiple filters to block different ranges or specific frequencies. "
                         }
                     },
                     demo5: {
@@ -133,11 +119,9 @@ export const esComponents = {
             block6: {
                 esComponents: {
                     p6: {
-                        esElement: {
-                            element: 'p',
-                            attributes: {
-                                innerHTML: "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
-                            }
+                        esElement: 'p',
+                        esAttributes: {
+                            innerHTML: "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
                         }
                     },
                     demo6: {

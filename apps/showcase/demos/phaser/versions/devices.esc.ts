@@ -40,23 +40,23 @@ model.esComponents.muse = {
     esCompose: muse,
 }
 
-const buttonElementConfig = Object.assign({}, button.esElement)
-buttonElementConfig.attributes = Object.assign({}, buttonElementConfig.attributes)
-buttonElementConfig.attributes.innerText = 'Connect Muse'
-buttonElementConfig.style = {
-    'z-index': 100,
+const buttonAttributes = Object.assign({}, button.esAttributes)
+buttonAttributes.innerText = 'Connect Muse'
+buttonAttributes.style = {
+    zIndex: 100,
     position: 'absolute',
     top: '0',
     left: '0',
 }
 
 model.esComponents.button = {
-    esElement: buttonElementConfig,
+    esElement: 'button',
+    esAttributes: buttonAttributes,
     esCompose: button,
 }
 
-const timeseriesElementConfig = Object.assign({}, timeseries.esElement)
-timeseriesElementConfig.style = {
+const timeseriesAttributes = Object.assign({}, timeseries.esAttributes)
+timeseriesAttributes.style = {
     position: "absolute",
     bottom: "15px",
     right: "15px",
@@ -66,7 +66,8 @@ timeseriesElementConfig.style = {
 }
 
 model.esComponents.timeseries = {
-   esElement: timeseriesElementConfig,
+   esElement: 'div',
+   esAttributes: timeseriesAttributes,
    esCompose: timeseries
 }
 

@@ -38,12 +38,8 @@ const plotterInstance = Object.assign(Object.assign({}, plotter), {
 
 export const esComponents = {
     canvas: {
-        esElement: {
-            element: canvas,
-            // attributes: {
-            //     width: canvasWidth,
-            //     height: canvasHeight,
-            // },
+        esElement: canvas,
+        esAttributes: {
             style: {
                 backgroundColor: 'black',
                 width: canvasStyleWidth,
@@ -53,12 +49,8 @@ export const esComponents = {
         
     },
     overlay: {
-        esElement: {
-            element: overlay,
-            // attributes: {
-            //     width: canvasWidth,
-            //     height: canvasHeight,
-            // },
+        esElement: overlay,
+        esAttributes: {
             style: {
                 position: 'absolute',
                 width: canvasStyleWidth,
@@ -66,7 +58,7 @@ export const esComponents = {
                 top: '0px',
                 left: '0px'
             }
-        },
+        }
     },
     plotter: {
         esCompose: plotterInstance

@@ -1,5 +1,4 @@
 
-    export const tagName = 'table'
     export const latest = null
 
     export const animation = function(){

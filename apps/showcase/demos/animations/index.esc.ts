@@ -19,11 +19,9 @@ export const esComponents = {
         esElement: 'p',
         esComponents: {
             header: {
-                esElement: {
-                    element: 'b',
-                    attributes: {
-                        innerText: 'Frames: '
-                    }
+                esElement: 'b',
+                esAttributes: {
+                    innerText: 'Frames: '
                 }
             },
             span: {
@@ -36,11 +34,9 @@ export const esComponents = {
         esElement: 'p',
         esComponents: {
             header: {
-                esElement: {
-                    element: 'b',
-                    attributes: {
-                        innerText: 'Time: '
-                    }
+                esElement: 'b',
+                esAttributes: {
+                    innerText: 'Time: '
                 }
             },
             span: {

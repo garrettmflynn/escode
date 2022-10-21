@@ -5,10 +5,10 @@ import * as log from '../../components/basic/log.js'
 const id = 'test'
 const moveButtonId = 'button'
 
-export const esElement = 'div'
-
-export const esStyle = {
-    padding: '50px'
+export const esAttributes = {
+    style: {
+        padding: '50px'
+    }
 }
 
 export const esComponents = {
@@ -34,14 +34,13 @@ export const esComponents = {
         },
         esComponents: {
             header: {
-                esElement: {
-                    element: 'h1',
-                    attributes: {
-                        innerText: 'ESCode Demo'
-                    }
+                esElement: 'h1',
+                esAttributes: {
+                    innerText: 'ESCode Demo'
                 }
             },
             [moveButtonId]: {
+                esElement: 'button',
                 esCompose: button,
                 esTrigger: {value: true, __internal: true}
             },

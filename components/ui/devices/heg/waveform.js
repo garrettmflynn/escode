@@ -1,6 +1,3 @@
-    
-    export const tagName = 'canvas'
-
     export const style = {width:'100vw', height:'300px'}
 
     export const webaudio = null
@@ -8,16 +5,14 @@
     export const canvas = null
     export const ctx = null
 
-    export const onrender = function (canvas, info) { 
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-
-        let ctx = canvas.getContext('2d');
-
-        this.canvas = canvas;
+    export const onrender = function () { 
+        if (!this.canvas) this.canvas = document.createElement('canvas')
+        this.canvas.width = this.canvas.clientWidth;
+        this.canvas.height = this.canvas.clientHeight;
+        let ctx = this.canvas.getContext('2d');
         this.ctx = ctx;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.esElement.appendChild(this.canvas)
     }
     
 

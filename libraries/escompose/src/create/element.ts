@@ -25,6 +25,7 @@ export function create(id, esm: ESComponent, parent) {
 
     let states: any = {
         element: element,
+        attributes: esm.esAttributes,
         parentNode: esm.esParent ?? info?.parentNode ?? ((parent?.esElement instanceof Element) ? parent.esElement : undefined),
         onresize: esm.esOnResize,
         onresizeEventCallback: undefined,
@@ -32,32 +33,41 @@ export function create(id, esm: ESComponent, parent) {
 
     // --------------------------- Assign Things to Element ---------------------------
     if (element instanceof Element) {
-
-        // Set ID
         if (typeof id !== 'string') id = `${element.tagName ?? 'element'}${Math.floor(Math.random() * 1000000000000000)}`;
         if (!element.id) element.id = id;
+    }
 
-        if (info) {
 
-            // Set Attributes
-            if (info.attributes) {
-                for (let key in info.attributes) {
-                    if (typeof info.attributes[key] === 'function') {
-                        const func = info.attributes[key];
+    const setAttributes = (attributes) => {
+        if (esm.esElement instanceof Element) {
+            for (let key in attributes) {
 
-                        element[key] = (...args) => {
+                // Set Style Per Attribute
+                if (key === 'style') {
+                    for (let styleKey in attributes.style) esm.esElement.style[styleKey] = attributes.style[styleKey]
+                }
+
+                // Replace Whole Attribute
+                else {
+                    if (typeof attributes[key] === 'function') {
+                        const func = attributes[key];
+                        esm.esElement[key] = (...args) => {
                             const context = esm.__esProxy ?? esm
                             return func.call(context ?? esm, ...args)
                         }; // replace this scope
-                    } else element[key] = info.attributes[key];
+                    } else esm.esElement[key] = attributes[key];
                 }
             }
-
-            // Set Style
-            if (element instanceof HTMLElement && info.style) Object.assign(element.style, info.style);
         }
     }
 
+    Object.defineProperty(esm, 'esAttributes', {
+        get: () => states.attributes,
+        set: (value) => {
+            states.attributes = value;
+            if (states.attributes) setAttributes(states.attributes)
+        }
+    })
 
     // Listen for Changes to Element
     Object.defineProperty(esm, 'esElement', {
@@ -73,6 +83,9 @@ export function create(id, esm: ESComponent, parent) {
                     const component = esm.esComponents[name] as ESComponent;
                     component.esParent = v
                 }
+
+                // Set Attributes
+                setAttributes(states.attributes)
             }
         },
         enumerable:true,

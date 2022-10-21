@@ -4,7 +4,7 @@ export const options = {
     // three: 'Option #3',
 };
 
-export const tagName = 'select'
+export const itemTag = 'option'
 
 export const esInit = function() {
     let target = this
@@ -36,7 +36,7 @@ export const esInit = function() {
     if (element) element.innerHTML = options.map((o) => {
         const value = (typeof o === 'object') ? o.value : o
         const label = o?.label ?? value
-        return `<option value='${value}'>${label}</option>`
+        return `<${this.itemTag} value='${value}'>${label}</${this.itemTag}>`
     })
 
     // Hide Dependent Elements
