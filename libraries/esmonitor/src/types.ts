@@ -86,9 +86,15 @@ export type ListenerInfo = {
     history: any
 }
 
-export type ListenerLookup = {
-    [x: symbol]: string
+export type Lookup<keyType, valueType> = {
+    [x: keyType]: valueType
 }
+
+export type ListenerLookups = {
+    symbol: Lookup<symbol, string>,
+    name: Lookup<string, symbol>
+}
+
 
 export type ListenerPool = {
     [x: string]: {
@@ -100,5 +106,5 @@ export type ListenerRegistry = {
     functions: ListenerPool,
     setters: ListenerPool,
     polling: Poller['listeners'],
-    lookup: ListenerLookup
+    lookup: ListenerLookups
 }

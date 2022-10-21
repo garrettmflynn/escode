@@ -1,4 +1,4 @@
-import { ListenerInfo, ListenerLookup, ListenerPool, ListenerRegistry, MonitorOptions } from "./types"
+import { ListenerInfo, ListenerLookups, ListenerPool, ListenerRegistry, MonitorOptions } from "./types"
 import * as utils from './utils'
 import * as infoUtils from './info'
 import { isProxy } from './globals'
@@ -70,12 +70,28 @@ export const info = (id, callback, path, originalValue, base, listeners, options
     return info
 }
 
-export const register = (info, collection, lookup?: ListenerLookup) => {
+
+const registerInLookup = (name, sub, lookups) => {
+
+    if (lookups) {
+        const id = Math.random()
+        lookups.symbol[sub] = {
+            name,
+            id 
+        } // set in lookup
+        if (!lookups.name[name]) lookups.name[name] = {}
+        lookups.name[name][id] = sub
+    }
+}
+
+export const register = (info, collection, lookups?: ListenerLookups) => {
     // Place in Function Registry
     const absolute = utils.getPath('absolute', info)
     if (!collection[absolute]) collection[absolute] = {}
     collection[absolute][info.sub] = info
-    if (lookup) lookup[info.sub] = absolute // set in lookup
+
+    // Place in Lookup Registry
+    registerInLookup(absolute, info.sub, lookups)
 }
 
 const listeners = {
@@ -95,14 +111,14 @@ export const set = (type, absPath, value, callback, base, allListeners: Partial<
     else {
         const path = utils.getPath('absolute', fullInfo)
         allListeners[type][path][fullInfo.sub] = fullInfo
-        if (allListeners.lookup) allListeners.lookup[fullInfo.sub] = path // set in lookup
+        if (allListeners.lookup) registerInLookup(path, fullInfo.sub, allListeners.lookup)
     }
 }
 
 const get = (info, collection) => collection[utils.getPath('absolute', info)]
 
 
-const handler = (info, collection, subscribeCallback, lookup?: ListenerLookup) => {
+const handler = (info, collection, subscribeCallback, lookups?: ListenerLookups) => {
     
     // Create Listener for this Object
     if (!get(info, collection)) {
@@ -112,7 +128,7 @@ const handler = (info, collection, subscribeCallback, lookup?: ListenerLookup) =
     }
 
     // Register in Collection
-    register(info, collection, lookup)
+    register(info, collection, lookups)
 }
 
 
@@ -123,7 +139,7 @@ export const setterExecution = (listeners, value) => {
     })
 }
 
-export function setters (info: ListenerInfo, collection: ListenerPool, lookup?: ListenerLookup) {
+export function setters (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups) {
     handler(info, collection, (value, parent) => {
         let val = value
 
@@ -155,7 +171,7 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookup?: 
                 }
             }
         }
-    }, lookup)
+    }, lookups)
 }
 
 
@@ -174,7 +190,7 @@ export const functionExecution = (context, listeners, func, args) => {
 }
 
 
-export function functions (info: ListenerInfo, collection: ListenerPool, lookup?: ListenerLookup) {
+export function functions (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups) {
     handler(info, collection, (_, parent) => {      
         if (!parent[isProxy]) { 
             parent[info.last] = function (...args) {
@@ -182,5 +198,5 @@ export function functions (info: ListenerInfo, collection: ListenerPool, lookup?
                 return functionExecution(this, listeners, info.original, args)
             }
         }
-    }, lookup)
+    }, lookups)
 }

@@ -1,5 +1,8 @@
 import * as element from './element'
 
+
+const animations = {}
+
 export default (id, esm, parent?) => {
     
         // ------------------ Produce a Complete ESM Element ------------------
@@ -23,6 +26,57 @@ export default (id, esm, parent?) => {
                 if (!Array.isArray(esm.esTrigger)) esm.esTrigger = []
                 esm.default(...esm.esTrigger)
                 delete esm.esTrigger
+            }
+
+            // Run as an Animation
+            if (esm.esAnimate) {
+                let original = esm.esAnimate
+
+                const id = Math.random()
+                const interval = (typeof original === 'number') ? original : 'global'
+
+                if (!animations[interval]) {
+                
+                    const info = animations[interval] = {objects: {id: esm}} as any
+
+                    const objects = info.objects
+                    const runFuncs = () => {
+                        for (let key in objects) objects[key].default()
+                    }
+
+                    // Global Animation Frames
+                    if (interval === 'global') {
+                        const callback = () => {
+                            runFuncs()
+                            info.id = window.requestAnimationFrame(callback)
+                        }
+
+                        callback()
+
+                        animations[interval].stop = () => window.cancelAnimationFrame(info.id)
+                    }
+                    // Set Interval
+                    else {
+                        info.id = setInterval(() => runFuncs(), 1000/interval)
+                        animations[interval].stop = () => clearInterval(info.id)
+                    } 
+                } 
+                
+                // Add to Objects
+                else animations[interval].objects[id] = esm
+
+                esm.esAnimate =  {
+                    id,
+                    original,
+                    stop: () => {
+                        delete animations[interval].objects[id]
+                        esm.esAnimate = original
+                        if (Object.keys(animations[interval].objects).length === 0) {
+                            animations[interval].stop()
+                            delete animations[interval]
+                        }
+                    }
+                }
             }
 
             const context = esm.__esProxy ?? esm

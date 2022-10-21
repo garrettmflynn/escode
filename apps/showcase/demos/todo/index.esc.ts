@@ -7,6 +7,8 @@ import * as load from  "../../../../components/storage/local/get.js"
 import onSubmit from  "./scripts/onSubmit.js"
 
 let buttonComponent = Object.assign({}, button) as any
+buttonComponent.esElement = Object.assign({}, buttonComponent.esElement) as any
+buttonComponent.esElement.attributes = Object.assign({}, buttonComponent.esElement.attributes) as any
 buttonComponent.esElement.attributes.innerHTML = "Add Todo"
 buttonComponent.esElement.attributes.type = "submit"
 

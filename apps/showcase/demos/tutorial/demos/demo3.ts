@@ -93,14 +93,10 @@ export const esComponents = {
     data: {
         sampleCt,
         esCompose: data,
-    },
-    trigger: {
-        // esTrigger: true,
-        default: (input) => input
+        // esAnimate: true
     }
 }
 
 export const esListeners = {
-    data: 'plotter',
-    trigger: 'data.start'
+    data: 'plotter'
 }

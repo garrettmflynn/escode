@@ -1,7 +1,7 @@
 import * as check from '../../common/check.js'
 import Poller from './Poller.js'
 
-import { PathFormat, InternalOptions, ListenerRegistry, ListenerLookup, ArrayPath, MonitorOptions, SetValueOptions, SetFromOptionsType } from './types'
+import { PathFormat, InternalOptions, ListenerRegistry, ArrayPath, MonitorOptions, SetFromOptionsType } from './types'
 import * as listeners from './listeners'
 import { iterateSymbols, getPath, getPathInfo } from './utils.js'
 import { drillSimple } from '../../common/drill.js'
@@ -9,6 +9,10 @@ import { getFromPath } from '../../common/pathHelpers.js'
 
 import * as standards from '../../common/standards'
 import { setFromOptions } from './optionsHelpers.js'
+
+const createLookup = () => {
+    return { symbol: {}, name: {} }
+}
 
 export default class Monitor {
 
@@ -23,7 +27,7 @@ export default class Monitor {
         polling: this.poller.listeners,
         functions: {},
         setters: {},
-        lookup: {}
+        lookup: createLookup()
     }
 
     references: {
@@ -36,7 +40,7 @@ export default class Monitor {
 
         // Make listener lookup non-enumerable
         Object.defineProperty(this.listeners, 'lookup', {
-            value: {},
+            value: createLookup(),
             enumerable: false,
             configurable: false
         })
@@ -46,10 +50,11 @@ export default class Monitor {
     }
 
     get = (path, output?) => {
+
         return getFromPath(this.references, path, {
             keySeparator: this.options.keySeparator,
             fallbacks: this.options.fallbacks,
-            output,
+            output
         })
     }
 
@@ -69,7 +74,7 @@ export default class Monitor {
 
     getInfo = (id, callback, path, original) => {
         const info = listeners.info(id, callback, path, original, this.references, this.listeners, this.options)
-        this.listeners.lookup[info.sub] = getPath('absolute', info)
+        this.listeners.lookup.symbol[info.sub] = getPath('absolute', info)
         return info
     }
 
@@ -97,7 +102,7 @@ export default class Monitor {
         if (!this.references[id]) this.references[id] = baseRef // Setting base reference
 
         // Drill Reference based on Path
-        let ref = this.get([id, ...arrayPath])
+        let ref = this.get([id, ...arrayPath]) // Muting error about not being able to find the listener...
 
         // Create listeners for Objects
         const toMonitorInternally = (val, allowArrays=false) => {
@@ -212,7 +217,8 @@ export default class Monitor {
     }
 
     unsubscribe = (sub) => {
-            const absPath = this.listeners.lookup[sub]
+            const info = this.listeners.lookup.symbol[sub]
+            const absPath = info.name
 
             // Remove from Polling listeners
             const polling = this.poller.get(sub)
@@ -241,6 +247,7 @@ export default class Monitor {
                 }
             } else return false
 
-            delete this.listeners.lookup[sub] // Remove from global listener collection
+            delete this.listeners.lookup.symbol[sub] // Remove from global listener collection
+            delete this.listeners.lookup.name[info.name][info.id]
     }
 }

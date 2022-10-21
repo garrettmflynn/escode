@@ -137,10 +137,9 @@ function pass(from, target, args, context) {
         path.push(...topPath)
         checkIfSetter(path, true)
 
-        const absPath = topPath.join(context.options.keySeparator)
         if (isValue) {
-            parent[key] = {[absPath]: parent[key]}
-            key = absPath
+            parent[key] = {[ogValue]: parent[key]}
+            key = ogValue
         }
     } 
     

@@ -22,7 +22,6 @@ export const  getPath = (type, info) => {
     return filtered.join(info.keySeparator)
 }
 
-
 export const getPathInfo = (path, options: MonitorOptions) => {
     let splitPath = path
     if (typeof path === 'string') splitPath = path.split(options.keySeparator)

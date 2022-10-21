@@ -16,7 +16,6 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
     path = [...path]
 
     let ref =  baseObject
-    let inInspectable = false // check if this parameter is nested in an esComponent
     
     for (let i = 0; i < path.length; i++) {
 
@@ -25,8 +24,6 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
             console.error(message, path, ref)
             throw new Error(message)
         }
-
-        if (!inInspectable) inInspectable = !!ref.__esInspectable
 
         const str = path[i]
         // Try Inside ES Components
@@ -45,7 +42,6 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
 
         if (exists) ref = ref[str]
         else {
-            if (!inInspectable) console.warn(`[esmonitor]: Will not get updates from ${path.filter(str => typeof str === 'string').join(keySeparator)} unless you have specific listeners attached to the monitored object.`)
             ref = undefined
             exists = true
         }
