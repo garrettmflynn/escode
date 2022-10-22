@@ -6,24 +6,30 @@ type attributeKeys = keyof HTMLElement['attributes']
 type baseESElement = string | ComponentElement
 
 export type ESElementInfo = {
-    element?: baseESElement,
+    // Get Element
     id?: string,
     selectors?: string,
-    style?: {[key:string]:any},
-    attributes?: {
-        [x in attributeKeys] : any
-    },
-    parentNode?: baseESElement
 }
 
+export type ESDefineInfo = {
+    name: string,
+    extends: string
+}
 
-export type ESComponent = {
+export type ESElementArray = [ESDefineInfo['name'], {extends: ESDefineInfo['extends']}]
+
+type GeneralElementType = baseESElement | ESElementInfo
+export type ESComponent<ElementType>  = {
     
     default: Function,
-    esCompose: ESComponent // Is Merged into this component
+    esCompose: ESComponent<GeneralElementType> // Is Merged into this component
+
+    esDefine: {
+        [x:string]: ESComponent<ESDefineInfo> // Component Definitions
+    }
 
     esComponents: {
-        [x:string]: ESComponent
+        [x:string]: ESComponent<GeneralElementType> // General Components
     }
 
     esInit: Function
@@ -31,7 +37,7 @@ export type ESComponent = {
 
     // HTML-Specific
     id: string;
-    esElement?: baseESElement | ESElementInfo,
+    esElement?: ElementType,
     esParent?: ComponentElement,
     esStyle: {[key:string]:any},
     esAttributes:{ [x in attributeKeys] : any }

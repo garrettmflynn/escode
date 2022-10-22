@@ -7,14 +7,20 @@ export function create(id, esm: ESComponent, parent) {
 
     let info: undefined | ESElementInfo;
     if (!(element instanceof Element)) {
+
+        // Nothing Defined
         if (element === undefined) element = 'div'
+        else if (Array.isArray(element))  element = document.createElement(...element);
+
+
+        // Configuration Object Defined
         else if (typeof element === 'object') {
             info = element as ESElementInfo
-            if (info.element instanceof Element) element = info.element
-            else if (info.selectors) element = document.querySelector(info.selectors)
+
+            // Get HTML Elememt
+            if (info.selectors) element = document.querySelector(info.selectors)
             else if (info.id) element = document.getElementById(info.id)
-            else if (!info.hasOwnProperty('element')) element = 'div'
-            else element = info.element
+            else element = 'div' // default to div
         }
 
         if (typeof element === 'string') element = document.createElement(element);
@@ -26,7 +32,7 @@ export function create(id, esm: ESComponent, parent) {
     let states: any = {
         element: element,
         attributes: esm.esAttributes,
-        parentNode: esm.esParent ?? info?.parentNode ?? ((parent?.esElement instanceof Element) ? parent.esElement : undefined),
+        parentNode: esm.esParent ?? ((parent?.esElement instanceof Element) ? parent.esElement : undefined),
         onresize: esm.esOnResize,
         onresizeEventCallback: undefined,
     }

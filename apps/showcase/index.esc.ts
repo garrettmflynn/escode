@@ -3,7 +3,7 @@ import * as button from '../../components/ui/button.js'
 import * as log from '../../components/basic/log.js'
 
 const id = 'test'
-const moveButtonId = 'button'
+const buttonComponentId = 'button'
 
 export const esAttributes = {
     style: {
@@ -25,7 +25,7 @@ export const esComponents = {
         esCompose: log
     },
     container: {
-        componentToMove: moveButtonId,
+        componentToMove: buttonComponentId,
         esCompose: {
             esElement: 'div'
         },
@@ -39,7 +39,7 @@ export const esComponents = {
                     innerText: 'ESCode Demo'
                 }
             },
-            [moveButtonId]: {
+            [buttonComponentId]: {
                 esElement: 'button',
                 esCompose: button,
                 esTrigger: {value: true, __internal: true}
@@ -50,7 +50,7 @@ export const esComponents = {
 
 
 export const esListeners = {
-    [`container.${moveButtonId}`]: {
+    [`container.${buttonComponentId}`]: {
         [`${id}.imports`]: true,
         [`log`]: true,
     }

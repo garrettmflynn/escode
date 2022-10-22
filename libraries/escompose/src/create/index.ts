@@ -1,9 +1,18 @@
 import * as element from './element'
+import * as component from "./component";
 
 
 const animations = {}
 
 export default (id, esm, parent?) => {
+
+        // ------------------ Register Components ------------------
+        let registry = esm.esDefine ?? {}
+        for (let key in registry) {
+            const esm = registry[key]
+            const info = esm.esElement
+            if (info.name && info.extends) component.define(info, esm)
+        }
     
         // ------------------ Produce a Complete ESM Element ------------------
         let el = element.create(id, esm, parent);

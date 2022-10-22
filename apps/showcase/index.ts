@@ -42,7 +42,7 @@ const monitor = new Monitor({
 // Poll the ESM Object
 
 // ------------------ ESCompose ------------------
-const demo: string = 'tutorial'
+const demo: string = 'todo'
 let selected;
 if (demo === 'phaser') selected = phaserFile as any
 else if (demo === 'multiplayer') selected = multiplayerPhaserFile as any
