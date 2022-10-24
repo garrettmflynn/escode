@@ -68,7 +68,6 @@ const setListeners = (context, components) => {
                 for (let key in value) context.listeners[joined][key] = { value: value[key], root, [listenerObject]: true }
             } else context.listeners[joined] = { value, root, [listenerObject]: true }
             
-
             context.monitor.on(basePath, (path, _, args) => {
                 passToListeners(context, path, args)
             })
@@ -158,13 +157,19 @@ function pass(from, target, args, context) {
 
     // ------------------ Special Keywords ------------------
     let isValidInput = true
+
     if (config) {
         if (config.hasOwnProperty('esFormat')) {
-            try { args = config.esFormat(...args) } catch (e) { console.error('Failed to format arguments', e) }
+            try { 
+                args = config.esFormat(...args) 
+                if (args === undefined) isValidInput = false
+                if (!Array.isArray(args)) args = [args]
+            } catch (e) { console.error('Failed to format arguments', e) }
         }
 
         if (config.hasOwnProperty('esBranch')) {
             let isValid = false
+
             config.esBranch.forEach(o => {
                 if (o.equals === args[0]) {
                     args[0] = o.value // set first argument to branch value

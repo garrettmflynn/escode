@@ -117,7 +117,7 @@ export default (id, esm, parent?) => {
         }
 
         Object.defineProperty(esm, '__isESComponent', {
-            value: true,
+            value: id,
             enumerable: false
         })    
 

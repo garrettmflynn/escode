@@ -8,7 +8,7 @@ export function esInit() {
     if (!this.popup?.closed && this.name && this.url) {
 
         this.popup = globalThis.open(this.url, this.name, `popup`);
-    
+
         const timer = globalThis.setInterval(() => {
             
             if (this.popup.closed !== false) { // !== is required for compatibility with Opera
@@ -24,23 +24,31 @@ export function esInit() {
         globalThis.addEventListener('beforeunload', this.popup.close)
 
     }
-
 }
 
 export function esDelete() {
     if (this.popup) this.popup.close()
 }
 
+export function onReady () {
+    this.buffer.forEach(msg => this.popup.postMessage(msg))
+    this.buffer = []
+}
+
 export function onmessage(ev){
-    console.log(`message from ${ev.source.name}`, ev.data)
+    if (ev.data.ready) this.onReady()
     return ev.data
 }
+
+export const buffer = []
 
 export default function (message) {
 
     // TODO: Allow for asynchronously waiting for the specific response from this update
     if (message) {
-        this.popup.postMessage({ message, for: this.name })
+        const msg = { message, for: this.name }
+        if (this.popup) this.popup.postMessage(msg)
+        else this.buffer.push(msg)
     }
 
 }

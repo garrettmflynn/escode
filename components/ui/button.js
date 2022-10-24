@@ -31,7 +31,7 @@ export const esAttributes = {
 }
 
 export default function (input){
-
+    
     let res;
     const value = input?.value ?? input // Grab the passed value
     const isInternal = input?.__internal // Check if the input was internal or external

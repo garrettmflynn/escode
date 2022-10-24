@@ -8,8 +8,12 @@ export function create(id, esm: ESComponent, parent) {
     let info: undefined | ESElementInfo;
     if (!(element instanceof Element)) {
 
+        const hasChildren = esm.esDOM && Object.keys(esm.esDOM).length > 0
+
+        const defaultTagName = hasChildren ? 'div' : 'link'
+
         // Nothing Defined
-        if (element === undefined) element = 'div'
+        if (element === undefined) element = defaultTagName
         else if (Array.isArray(element)) element = document.createElement(...element as [string, ElementCreationOptions]);
 
 
@@ -20,7 +24,7 @@ export function create(id, esm: ESComponent, parent) {
             // Get HTML Elememt
             if (info.selectors) element = document.querySelector(info.selectors)
             else if (info.id) element = document.getElementById(info.id)
-            else element = 'div' // default to div
+            else element = defaultTagName // default to div
         }
 
         if (typeof element === 'string') element = document.createElement(element);

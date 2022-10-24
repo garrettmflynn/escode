@@ -1,13 +1,31 @@
 import * as button from "../../../../components/ui/button";
 import * as popup from "../../../../components/ui/popup"
-import * as speak from "../../../../components/WebSpeechAPI/speak.js"
-import * as mouse from "../../../../components/ui/mouse/index.js"
+import * as speak from "../../../../components/modalities/voice/speak.js"
+import * as mouse from "../../../../components/modalities/mouse/index.js"
 import * as keys from "../../../../components/basic/keyboard.js"
-import * as log from "../../../../components/basic/log";
+import * as switchComponent from "../../../../components/modalities/switch/index.js"
+
+const otherButton = {
+    esElement: 'button',
+    esCompose: button,
+    default: function (...args) {
+
+        const res = button.default.call(this, ...args)
+
+        if (res){
+            const floor = 150
+            const mult = 255 - floor
+            const r = floor + mult*Math.random()
+            const g = floor + mult*Math.random()
+            const b = floor + mult*Math.random()
+            this.esElement.style.backgroundColor = `rgb(${r}, ${g}, ${b})`
+        }
+    }
+}
 
 
-const colors = [ 'aqua', 'azure', 'beige', 'bisque', 'black', 'blue', 'brown', 'chocolate', 'coral', /* … */ ];
-const grammar = `#JSGF V1.0; grammar colors; public <color> = ${colors.join(' | ')};`
+const numbers = [ '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const grammar = `#JSGF V1.0; grammar numbers; public <number> = ${numbers.join(' | ')};`
 
 export const esAttributes = {
     style: {
@@ -26,59 +44,67 @@ export const esDOM = {
 
     description: {
         esDOM: {
+
             p1: {
                 esElement: 'p',
                 esAttributes: {
-                    innerText: 'This demonstration shows how to use Accessify to make your application accessible to people with disabilities.'
+                    innerHTML: 'This demonstration features <b>speech recognition</b>, <b>a virtual mouse using the keyboard</b>, and a <b>popup with a selectable grid</b> for selecting an item by its ID.'
                 }
             },
 
             p2: {
                 esElement: 'p',
                 esAttributes: {
-                    innerHTML: 'It features <b>speech recognition</b>, <b>a virtual mouse controlled by the keyboard</b>, and a <b>popup implementing the SSVEP / P300 paradigms</b> for brain-computer interfaces'
+                    innerHTML: 'You will need to <b>enable the popup and microphone access</b> to use this demonstration.'
                 }
             }
         }
     },
 
-    log: {
-        esCompose: log
+    // Voice Control
+    enableVoice: {
+        esElement: 'button',
+        esAttributes: {
+            innerText: 'Enable Voice Commands'
+        },
+        esCompose: button
     },
 
+    speak: {
+        // grammar,
+        esCompose: speak,
+    }, 
+
+    // Mouse Control
     keys: {
         esCompose: keys,
     },
 
-    startVoiceCommand: {
-        esElement: 'button',
-        esAttributes: {
-            innerText: 'Start Voice Command'
-        },
-        esCompose: button
+    mouse: {
+        esCompose: mouse,
+    }, 
+
+    // Switch Control
+    switch: {
+        esCompose: switchComponent,
     },
 
     popup: {
         url: 'apps/showcase/demos/accessify/popups/test.html',
         name: 'thispopup',
         esCompose: popup,
-    }, 
-
-    speak: {
-        grammar,
-        esCompose: speak,
-    }, 
-
-    mouse: {
-        esCompose: mouse,
-    }, 
+    },
 }
 
+let nButtons = 24
+for (let i = 0; i < nButtons; i++) {
+    esDOM[`otherButton${i}`] = otherButton
+}
 
 export const esListeners = {
 
     // Voice Controls
-    startVoiceCommand: {
+    enableVoice: {
         'speak.start': {
             esBranch: [
                 {equals: true, value: true}
@@ -86,9 +112,9 @@ export const esListeners = {
         }
     },
     speak: {
-       popup: {
-            esFormat: (phrase) => [{ color: phrase }]
-       }
+        switch: {
+            esFormat: (phrase) => [phrase, 'click'] // skip focus stage
+        }
     },
 
     // Keyboard Controls
@@ -123,4 +149,23 @@ export const esListeners = {
             esFormat: () => [{x: 10}]
         },
     },
+
+    ["keys.held"]: {
+        switch: {
+            esFormat: (state) => state.join('')
+        }
+    },
+
+    // Switch Controls
+    ['switch.register']: {
+        popup: true
+    },
+
+    ['popup.onmessage']: {
+        switch: {
+            esFormat: (data) => {
+                if (data?.message === 'clicked') return [data.clicked, 'click']
+            }
+        }
+    }
 }

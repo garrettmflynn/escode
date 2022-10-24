@@ -119,9 +119,10 @@ export default class Monitor {
             else return !Array.isArray(val)
         }
 
+
         // ------------------ Create Subscription ------------------
 
-        // Option #1: Subscribe to each object property individually
+        // Case #1: Subscribe to each object property individually
         let subs = {}
         if (toMonitorInternally(ref, true)) {
 
@@ -139,42 +140,39 @@ export default class Monitor {
             })
         } 
 
-        // Option #2: Subscribe to specific property
-        else {
-
-            let info;
-            try {
-                
-                // Force Polling
-                if (__internalComplete.poll) {
-                    info = this.getInfo(id, callback, arrayPath, ref)
-                    this.poller.add(info)
-                }
-
-                // Direct Methods
-                else {
-
-                    let type = 'setters' // trigger setters
-                    if (typeof ref === 'function') type = 'functions' // intercept function calls
-                    info = this.getInfo(id, callback, arrayPath, ref)
-                    this.add(type, info)
-                }
-                
-            } catch (e) {
-                console.error('Fallback to polling:', path, e)
+        // Case #2: Subscribe to specific property
+        let info;
+        try {
+            
+            // Force Polling
+            if (__internalComplete.poll) {
                 info = this.getInfo(id, callback, arrayPath, ref)
                 this.poller.add(info)
             }
-            
 
-            subs[getPath('absolute', info)] = info.sub
+            // Direct Methods
+            else {
 
-            // Notify User of Initialization
-            if (this.options.onInit instanceof Function) {
-                const executionInfo = {}
-                for (let key in info.infoToOutput) executionInfo[key] = undefined
-                this.options.onInit(getPath('output', info), executionInfo)
+                let type = 'setters' // trigger setters
+                if (typeof ref === 'function') type = 'functions' // intercept function calls
+                info = this.getInfo(id, callback, arrayPath, ref)
+                this.add(type, info)
             }
+            
+        } catch (e) {
+            console.error('Fallback to polling:', path, e)
+            info = this.getInfo(id, callback, arrayPath, ref)
+            this.poller.add(info)
+        }
+        
+
+        subs[getPath('absolute', info)] = info.sub
+
+        // Notify User of Initialization
+        if (this.options.onInit instanceof Function) {
+            const executionInfo = {}
+            for (let key in info.infoToOutput) executionInfo[key] = undefined
+            this.options.onInit(getPath('output', info), executionInfo)
         }
 
         return subs
