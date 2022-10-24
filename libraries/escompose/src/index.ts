@@ -9,20 +9,24 @@ import { merge } from "./utils"
 
 const listenerObject = Symbol('listenerObject')
 
-// TODO: Ensure that this doesn't have a circular reference
-const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
+const esMerge = (base, esCompose) => {
 
-    // ------------------ Merge ESM with esCompose Properties ------------------
-    let clonedEsCompose = clone.deep(o.esCompose) ?? {}
+    let clonedEsCompose = clone.deep(esCompose) ?? {}
 
     // Merge Traversal (i.e. only unset if undefined, otherwise drill into objects)
-    let merged = Object.assign({}, o) // basic clone
+    let merged = Object.assign({}, base) // basic clone
     if (!Array.isArray(clonedEsCompose)) clonedEsCompose = [clonedEsCompose]
     clonedEsCompose.reverse().forEach((toCompose) => merged = merge(Object.assign({}, toCompose), merged)) // Apply the first one last
 
-    // Simple Merge
-    // let merged = Object.assign({}, Object.assign(Object.assign({}, clonedEsCompose), o))
+    return merged
+}
 
+// TODO: Ensure that this doesn't have a circular reference
+const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
+
+    // TODO: Search the entire object for the esCompose key. Then execute this merge script
+    // ------------------ Merge ESM with esCompose Properties ------------------
+    const merged = esMerge(o, o.esCompose)
     delete merged.esCompose
 
     // ------------------ Create Instance with Special Keys ------------------

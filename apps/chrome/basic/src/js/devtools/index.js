@@ -76,8 +76,7 @@ const update = async (path, info, update) => {
 
         section.header.insertAdjacentElement('afterend', state.div)
 
-        if (typeof update === 'object') state.value.innerHTML = 'Object' //JSON.stringify(update)
-        else state.value.innerHTML = JSON.stringify(update)
+        state.value.innerHTML = JSON.stringify(update)
 
         const infoCopy = {...info}
 
