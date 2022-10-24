@@ -2,9 +2,11 @@ import { drillSimple } from "./drill"
 
 export const deep = (obj, opts={}) => {
 
-    opts.accumulator = {}
+    opts.accumulator = Array.isArray(obj) ? [] : {}
     drillSimple(obj, (key, val, info) => {
-        if (info.simple && info.object) return Array.isArray(val) ? [] : {}
+        if (info.simple && info.object) {
+            return Array.isArray(val) ? [] : {}
+        }
         else return val
     }, opts)
 

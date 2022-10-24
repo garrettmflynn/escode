@@ -21,7 +21,9 @@ export function esInit() {
             if (this.name === ev.source.name) this.onmessage(ev)
         })
 
-        globalThis.addEventListener('beforeunload', this.popup.close)
+        globalThis.addEventListener('beforeunload', () => {
+            this.popup.close()
+        })
 
     }
 }

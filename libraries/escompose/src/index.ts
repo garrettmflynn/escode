@@ -13,10 +13,12 @@ const listenerObject = Symbol('listenerObject')
 const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
 
     // ------------------ Merge ESM with esCompose Properties ------------------
-    const clonedEsCompose = clone.deep(o.esCompose) ?? {}
+    let clonedEsCompose = clone.deep(o.esCompose) ?? {}
 
     // Merge Traversal (i.e. only unset if undefined, otherwise drill into objects)
-    let merged = merge(Object.assign({}, clonedEsCompose), o)
+    let merged = Object.assign({}, o) // basic clone
+    if (!Array.isArray(clonedEsCompose)) clonedEsCompose = [clonedEsCompose]
+    clonedEsCompose.reverse().forEach((toCompose) => merged = merge(Object.assign({}, toCompose), merged)) // Apply the first one last
 
     // Simple Merge
     // let merged = Object.assign({}, Object.assign(Object.assign({}, clonedEsCompose), o))
@@ -64,12 +66,13 @@ const handleListenerValue = ({
      // and handling configuration object (TODO: Move out to ESMonitor)
      const value = config // Subscription configuration object
      const fromStringPath = topPath.join(context.options.keySeparator)
-     if (!listeners[fromStringPath]) listeners[fromStringPath] = {}
-     listeners[fromStringPath][toPath] = { value, root, [listenerObject]: true }
 
-     context.monitor.on(fromSubscriptionPath, (path, _, args) => {
-         passToListeners(context, path, args)
-     })
+     if (!listeners[fromStringPath]) {
+        listeners[fromStringPath] = {}
+        context.monitor.on(fromSubscriptionPath, (path, _, args) => passToListeners(context, path, args)) // only subscribe once
+     }
+
+     listeners[fromStringPath][toPath] = { value, root, [listenerObject]: true }
 }
 
 const setListeners = (context, components) => {
@@ -91,7 +94,10 @@ const setListeners = (context, components) => {
 
             if (from && typeof from === 'object') {
                 for (let fromPath in from)  handleListenerValue({...mainInfo, fromPath, config: from[fromPath]})
-            } else {
+            } 
+            
+            // Immediate Absolute Paths Only
+            else {
                 if (typeof toPath === 'string') handleListenerValue({...mainInfo, fromPath: from, config: toPath})
                 else console.error('Improperly Formatted Listener', to)
             }

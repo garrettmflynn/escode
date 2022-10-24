@@ -27,6 +27,7 @@ export const drillSimple = (obj, callback, options) => {
             }
             if (info.object) {
                 const name = info.name
+
                 if (name === 'Object' || name === 'Array') {
                     info.simple = true
                     const idx = seen.indexOf(val)

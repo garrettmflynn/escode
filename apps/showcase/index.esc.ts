@@ -16,9 +16,11 @@ export const esDOM = {
     [id]: {
         esCompose: test,
         esListeners: {
-            [`imports.nExecution`]: 'imports.passedWithListener',
-            [`imports.passedWithListener`]: (...args) =>  console.log('Passed with Listener!', args),
-            [`imports.later`]: (...args) =>  console.log('Added Later!', args),
+            'imports.passedWithListener': `imports.nExecution`,
+            ['ARBITRARY']: {
+                'imports.passedWithListener': (...args) =>  console.log('Passed with Listener!', args),
+                'imports.later': (...args) =>  console.log('Added Later!', args)
+            },
         }
     }, 
     log: {
@@ -41,7 +43,20 @@ export const esDOM = {
             },
             [buttonComponentId]: {
                 esElement: 'button',
-                esCompose: button,
+                esCompose: [
+
+                    // Additional onmousedown Function
+                    {
+                        esAttributes: {
+                            onmousedown: () => {
+                                console.log('Calling me too!')
+                            }
+                        }
+                    },
+
+                    // Primary Button Component
+                    button
+                ],
                 esTrigger: {value: true, __internal: true}
             },
         },
@@ -50,8 +65,11 @@ export const esDOM = {
 
 
 export const esListeners = {
-    [`container.${buttonComponentId}`]: {
-        [`${id}.imports`]: true,
-        [`log`]: true,
+    [`${id}.imports`]: {
+        [`container.${buttonComponentId}`]: true
+    },
+
+    log: {
+        [`container.${buttonComponentId}`]: true
     }
 }
