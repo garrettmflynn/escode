@@ -12,7 +12,7 @@ const model = multiplayer as any
 model.esDOM.player1 = player1
 // model.esDOM.player2 = player2
 
-model.esListeners['player1.threshold'] = "game.player.jump"
+model.esListeners["game.player.jump"] = 'player1.threshold'
 // model.esListeners['player2.threshold'] = "game.companion.jump"
 
 

@@ -101,71 +101,130 @@ for (let i = 0; i < nButtons; i++) {
     esDOM[`otherButton${i}`] = otherButton
 }
 
+
+
 export const esListeners = {
 
     // Voice Controls
-    enableVoice: {
-        'speak.start': {
+    'speak.start': {
+        enableVoice: {
             esBranch: [
                 {equals: true, value: true}
             ]
-        }
-    },
-    speak: {
-        switch: {
-            esFormat: (phrase) => [phrase, 'click'] // skip focus stage
-        }
-    },
-
-    // Keyboard Controls
-    ['keys. ']: {
-        ['mouse.click']: {
-            esBranch: [
-                {equals: true, value: true}
-            ]
-        }
-    },
-
-    ['keys.ArrowDown']: {
-        ['mouse.move']: {
-            esFormat: () => [{y: 10}]
-        },
-    },
-
-    ['keys.ArrowUp']: {
-        ['mouse.move']: {
-            esFormat: () => [{y: -10}]
-        },
-    },
-
-    ['keys.ArrowLeft']: {
-        ['mouse.move']: {
-            esFormat: () => [{x: -10}]
-        },
-    },
-
-    ['keys.ArrowRight']: {
-        ['mouse.move']: {
-            esFormat: () => [{x: 10}]
-        },
-    },
-
-    ["keys.held"]: {
-        switch: {
-            esFormat: (state) => state.join('')
         }
     },
 
     // Switch Controls
-    ['switch.register']: {
-        popup: true
-    },
-
-    ['popup.onmessage']: {
-        switch: {
+    switch: {
+        speak: {
+            esFormat: (phrase) => [phrase, 'click'] // skip focus stage
+        },
+        ["keys.held"]: {
+            esFormat: (state) => state.join('')
+        },
+        ['popup.onmessage']: {
             esFormat: (data) => {
                 if (data?.message === 'clicked') return [data.clicked, 'click']
             }
         }
+    },
+
+    // Mouse Controls
+    ['mouse.click']: {
+        ['keys. ']: {
+            esBranch: [
+                {equals: true, value: true}
+            ]
+        }
+    },
+
+    ['mouse.move']: {
+        ['keys.ArrowDown']: {
+            esFormat: () => [{y: 10}]
+        },
+        ['mouse.ArrowUp']: {
+            esFormat: () => [{y: -10}]
+        },
+        ['mouse.ArrowLeft']: {
+            esFormat: () => [{x: -10}]
+        },
+        ['mouse.ArrowRight']: {
+            esFormat: () => [{x: 10}]
+        },
+    },
+
+    // Popup Controls
+    popup: {
+        ['switch.register']: true,
     }
 }
+
+
+// export const esListeners = {
+
+//     // Voice Controls
+//     enableVoice: {
+//         'speak.start': {
+//             esBranch: [
+//                 {equals: true, value: true}
+//             ]
+//         }
+//     },
+//     speak: {
+//         switch: {
+//             esFormat: (phrase) => [phrase, 'click'] // skip focus stage
+//         }
+//     },
+
+//     // Keyboard Controls
+//     ['keys. ']: {
+//         ['mouse.click']: {
+//             esBranch: [
+//                 {equals: true, value: true}
+//             ]
+//         }
+//     },
+
+//     ['keys.ArrowDown']: {
+//         ['mouse.move']: {
+//             esFormat: () => [{y: 10}]
+//         },
+//     },
+
+//     ['keys.ArrowUp']: {
+//         ['mouse.move']: {
+//             esFormat: () => [{y: -10}]
+//         },
+//     },
+
+//     ['keys.ArrowLeft']: {
+//         ['mouse.move']: {
+//             esFormat: () => [{x: -10}]
+//         },
+//     },
+
+//     ['keys.ArrowRight']: {
+//         ['mouse.move']: {
+//             esFormat: () => [{x: 10}]
+//         },
+//     },
+
+//     ["keys.held"]: {
+//         switch: {
+//             esFormat: (state) => state.join('')
+//         }
+//     },
+
+//     // Switch Controls
+//     ['switch.register']: {
+//         popup: true
+//     },
+
+//     ['popup.onmessage']: {
+//         switch: {
+//             esFormat: (data) => {
+//                 if (data?.message === 'clicked') return [data.clicked, 'click']
+//             }
+//         }
+//     }
+// }

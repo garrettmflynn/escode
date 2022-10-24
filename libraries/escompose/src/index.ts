@@ -20,13 +20,13 @@ const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
 
     // Simple Merge
     // let merged = Object.assign({}, Object.assign(Object.assign({}, clonedEsCompose), o))
-    
+
     delete merged.esCompose
 
     // ------------------ Create Instance with Special Keys ------------------
     const instance = createComponent(id, merged, parent)
     const savePath = path.join(opts.keySeparator ?? standards.keySeparator)
-    if (opts?.components) opts.components[savePath] = {instance, depth: (parent) ? path.length + 1 : path.length}
+    if (opts?.components) opts.components[savePath] = { instance, depth: (parent) ? path.length + 1 : path.length }
 
     // ------------------ Convert Nested Components ------------------
     if (instance.esDOM) {
@@ -41,36 +41,60 @@ const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
     return instance
 }
 
+
+const handleListenerValue = ({
+    context,
+    root,
+    fromPath,
+    toPath,
+    config,
+    listeners
+}) => {
+    
+     // Getting Listener Path
+     const fromSubscriptionPath = [context.id]
+     const topPath: string[] = []
+     if (root) topPath.push(...root.split(context.options.keySeparator))
+     if (fromPath) topPath.push(...fromPath.split(context.options.keySeparator))
+     fromSubscriptionPath.push(...topPath)
+     const obj = context.monitor.get(fromSubscriptionPath)
+     if (obj?.__isESComponent) fromSubscriptionPath.push(standards.defaultPath)
+
+     // Getting Source Path (keep from —> to syntax)
+     // and handling configuration object (TODO: Move out to ESMonitor)
+     const value = config // Subscription configuration object
+     const fromStringPath = topPath.join(context.options.keySeparator)
+     if (!listeners[fromStringPath]) listeners[fromStringPath] = {}
+     listeners[fromStringPath][toPath] = { value, root, [listenerObject]: true }
+
+     context.monitor.on(fromSubscriptionPath, (path, _, args) => {
+         passToListeners(context, path, args)
+     })
+}
+
 const setListeners = (context, components) => {
 
-    context.listeners = {}
+    const listeners = context.listeners = {} // Uses from —> to syntax
+
     for (let root in components) {
         const info = components[root]
-        const listeners = info.instance.esListeners
-        for (let path in listeners) {
+        const to = info.instance.esListeners  // Uses to —> from syntax
+        for (let toPath in to) {
+            const from = to[toPath]
 
-            const basePath = [context.id]
-            const topPath: string[] = []
-            if (root) topPath.push(...root.split(context.options.keySeparator))
-            if (path) topPath.push(...path.split(context.options.keySeparator))
-            basePath.push(...topPath)
+            const mainInfo = {
+                context,
+                root,
+                toPath,
+                listeners
+            }
 
-
-            const obj = context.monitor.get(basePath)
-            if (obj?.__isESComponent) basePath.push(standards.defaultPath)
-
-            // Collect All Listeners
-            const joined = topPath.join(context.options.keySeparator)
-            if (!context.listeners[joined]) context.listeners[joined] = {}
-
-            const value = listeners[path]
-            if (typeof value === 'object') {
-                for (let key in value) context.listeners[joined][key] = { value: value[key], root, [listenerObject]: true }
-            } else context.listeners[joined] = { value, root, [listenerObject]: true }
-            
-            context.monitor.on(basePath, (path, _, args) => {
-                passToListeners(context, path, args)
-            })
+            if (from && typeof from === 'object') {
+                for (let fromPath in from)  handleListenerValue({...mainInfo, fromPath, config: from[fromPath]})
+            } else {
+                if (typeof toPath === 'string') handleListenerValue({...mainInfo, fromPath: from, config: toPath})
+                else console.error('Improperly Formatted Listener', to)
+            }
         }
     }
 }
@@ -78,7 +102,6 @@ const setListeners = (context, components) => {
 
 function pass(from, target, args, context) {
 
-    
     const id = context.id
 
     let parent, key, root
@@ -102,7 +125,7 @@ function pass(from, target, args, context) {
             const noDefault = typeof val !== 'function' && !val?.default
             const value = (noDefault) ? toSet : val
 
-            const res =  {
+            const res = {
                 value,
                 root // carry over the root
             }
@@ -113,8 +136,8 @@ function pass(from, target, args, context) {
             }
 
             return res
-        } else return {value: undefined, root: undefined}
-        
+        } else return { value: undefined, root: undefined }
+
     }
 
     const transform = (willSet?) => {
@@ -125,13 +148,13 @@ function pass(from, target, args, context) {
     }
 
     // ------------------ Grab Correct Target to Listen To ------------------
-    
+
     // Confirmation of the target
     if (typeof target === 'boolean') {
         if (!isValue) transform(true)
         else console.error('Cannot use a boolean for esListener...')
-    } 
-    
+    }
+
     // Name of the target
     else if (type === 'string') {
         const path = [id]
@@ -142,15 +165,15 @@ function pass(from, target, args, context) {
         checkIfSetter(path, true)
 
         if (isValue) {
-            parent[key] = {[ogValue]: parent[key]}
+            parent[key] = { [ogValue]: parent[key] }
             key = ogValue
         }
-    } 
-    
+    }
+
     // Configuration Object
     else if (target && type === 'object' && !target.hasOwnProperty('__isESComponent')) {
         transform(true)
-        Object.defineProperty(parent[key], 'esConfig', {value: ogValue})
+        Object.defineProperty(parent[key], 'esConfig', { value: ogValue })
         config = ogValue
     }
 
@@ -160,8 +183,8 @@ function pass(from, target, args, context) {
 
     if (config) {
         if (config.hasOwnProperty('esFormat')) {
-            try { 
-                args = config.esFormat(...args) 
+            try {
+                args = config.esFormat(...args)
                 if (args === undefined) isValidInput = false
                 if (!Array.isArray(args)) args = [args]
             } catch (e) { console.error('Failed to format arguments', e) }
@@ -184,7 +207,7 @@ function pass(from, target, args, context) {
     // ------------------ Handle Target ------------------
     if (isValidInput) {
         // Set New Value on Parent
-        if (target === toSet)  {
+        if (target === toSet) {
             const parentPath = [id]
             if (root) parentPath.push(...rootArr) // TODO: Check if this needs fixing
             parentPath.push(...key.split(context.options.keySeparator))
@@ -192,7 +215,7 @@ function pass(from, target, args, context) {
             const info = context.monitor.get(parentPath, 'info')
             info.value[idx] = args[0]
         }
-        
+
         // Direct Object with Default Function
         else if (target?.default) target.default(...args)
 
@@ -201,6 +224,7 @@ function pass(from, target, args, context) {
 
         // Failed
         else {
+
             let baseMessage = `listener: ${from} —> ${key}`
             if (parent) {
                 console.error(`Deleting ${baseMessage}`, parent[key])
@@ -225,7 +249,7 @@ function passToListeners(context, name, ...args) {
     listenerGroups.forEach(group => {
 
         const info = group.info
-        if (info){
+        if (info) {
 
             if (info[listenerObject]) {
                 pass(name, {
@@ -263,7 +287,7 @@ const create = (config, options: Partial<Options> = {}) => {
         monitor = options.monitor
         options.keySeparator = monitor.options.keySeparator // Inherit key separator
     } else {
-        if (!options.monitor) options.monitor  = {}
+        if (!options.monitor) options.monitor = {}
         if (!options.monitor.keySeparator) {
             if (!options.keySeparator) options.keySeparator = standards.keySeparator // Ensure key separator is defined
             options.monitor.keySeparator = options.keySeparator
@@ -283,15 +307,15 @@ const create = (config, options: Partial<Options> = {}) => {
         components,
         keySeparator: fullOptions.keySeparator
     })
-    
+
     let fullInstance = instance // clone.deep(instance)
 
     monitor.set(id, fullInstance, fullOptions.listeners) // Setting root instance
 
     const context = {
-        id, 
-        instance: fullInstance, 
-        monitor, 
+        id,
+        instance: fullInstance,
+        monitor,
         options: fullOptions
     }
 

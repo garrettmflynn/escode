@@ -47,7 +47,7 @@ const demo: string = 'accessify'
 let selected;
 if (demo === 'phaser') selected = phaserFile as any
 else if (demo === 'multiplayer') selected = multiplayerPhaserFile as any
-else if (demo === 'device') selected = devicePhaserFile as any
+else if (demo === 'device') selected = devicePhaserFile as any // BROKEN
 else if (demo === 'todo') selected = todoFile as any
 else if (demo === 'animations') selected = animationsFile as any
 else if (demo === 'tutorial') selected = tutorialFile as any

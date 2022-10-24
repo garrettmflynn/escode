@@ -1,4 +1,4 @@
-import * as player from  "../../../../../components/phaser/player.js"
+import * as player from "../../../../../components/phaser/player.js"
 import update from "../scripts/player/update.js"
 import createCompanion from "../scripts/player/create/companion.js"
 // import equals from "../../../../components/basic/equals.js"
@@ -14,22 +14,21 @@ export const esListeners = Object.assign({}, model.esListeners)
 Object.assign(esListeners, {
 
     // Companion Controls
-    ['keys.w']: {
-        ['game.companion.jump']: true,
+    ['game.companion.jump']: {
+        ['keys.w']: true
     },
-    ['keys.a']: {
-        ['game.companion.velocity']: {
+
+    ['game.companion.velocity']: {
+        ['keys.a']: {
             esBranch: [
-                {equals: true, value: -200},
-                {equals: false, value: 0},
+                { equals: true, value: -200 },
+                { equals: false, value: 0 },
             ]
-        }
-    },
-    ['keys.d']: {
-        ['game.companion.velocity']: {
+        },
+        ['keys.d']: {
             esBranch: [
-                {equals: true, value: 200},
-                {equals: false, value: 0},
+                { equals: true, value: 200 },
+                { equals: false, value: 0 },
             ]
         }
     }

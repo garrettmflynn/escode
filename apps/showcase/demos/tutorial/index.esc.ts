@@ -137,11 +137,11 @@ export const esDOM = {
 
 // const set = new Set()
 export const esListeners = {
-    'firstsection.block2.demo2.datastreams': {
-        'firstsection.block3.demo3.plotter': {
+    'firstsection.block3.demo3.plotter': {
+        'firstsection.block2.demo2.datastreams': {
             esFormat: ([data, timestamps, contentHint]) => {
                 return [{[contentHint]: data}]
             }
-        },
-    },
+        }
+    }
 }

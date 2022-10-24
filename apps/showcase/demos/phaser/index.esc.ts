@@ -90,23 +90,24 @@ export const esDOM = {
 
 export const esListeners = {
         // Main Player Controls
-        ['keys.ArrowUp']: {
-            ['game.player.jump']: true,
+        ['game.player.jump']: {
+            ['keys.ArrowUp']: true
         },
-        ['keys.ArrowLeft']: {
-            ['game.player.velocity']: {
+        
+        ['game.player.velocity']: {
+
+            ['keys.ArrowLeft']: {
                 esBranch: [
                     {equals: true, value: -150},
                     {equals: false, value: 0},
                 ]
-            }
-        },
-        ['keys.ArrowRight']: {
-            ['game.player.velocity']: {
+            },
+
+            ['keys.ArrowRight']: {
                 esBranch: [
                     {equals: true, value: 150},
                     {equals: false, value: 0},
                 ]
             }
-        },
+        }
 }

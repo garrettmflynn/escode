@@ -14,14 +14,20 @@ model.esDOM.game = Object.assign({}, model.esDOM.game) as any
 model.esDOM.game.esDOM = Object.assign({}, model.esDOM.game.esDOM) as any
 model.esListeners = Object.assign({}, model.esListeners) as any
 
-model.esListeners.average = 'threshold'
-model.esListeners.threshold = "game.companion.jump"
-model.esListeners['datastreams'] = {
-    "timeseries": true,
-    "average": true
+model.esListeners.threshold = 'average'
+model.esListeners["game.companion.jump"].threshold = true
+
+model.esListeners.average = {
+    datastreams: true
 }
-model.esListeners.muse = "datastreams"
-model.esListeners.button = "muse"
+
+model.esListeners.timeseries = {
+    datastreams: true
+}
+
+model.esListeners.datastreams = 'muse'
+
+model.esListeners.muse = 'button'
 
 model.esDOM.average = {
     maxBufferSize: 100,

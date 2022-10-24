@@ -59,18 +59,20 @@ export const esDOM = {
         }
     }
 export const esListeners = {
-    load: {
-        list: true
-    },
-    ['form.input']: {
-        ['form.button']: true,
-    },
-    ['form.button']: {
-        list: true
-    },
+
     list: {
-        store: {
+        load: true,
+        ['form.button']: true
+    },
+
+    ['form.button']: {
+        ['form.input']: true
+    },
+
+    store: {
+        list: {
             esFormat: (value) => [value, 'todos']
         }
     }
+    
 }

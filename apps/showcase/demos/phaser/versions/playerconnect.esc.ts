@@ -7,12 +7,10 @@ import * as muse from "../../../../../components/drafts/old/devices/muse/index.j
 export const esDOM = {} as any
 export const esListeners = {} as any
 
-esListeners.average = 'threshold'
-esListeners['datastreams'] = {
-    "average": true
-}
-esListeners.muse = "datastreams"
-esListeners.button = "muse"
+esListeners.threshold = 'average'
+esListeners.average = 'datastreams'
+esListeners.datastreams = "muse"
+esListeners.muse = "button"
 
 esDOM.average = {
     esCompose: average,
