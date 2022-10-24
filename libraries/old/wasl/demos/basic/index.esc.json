@@ -1,6 +1,6 @@
 {
     "name": "My Application",
-    "esComponents": {
+    "esDOM": {
             "plugin": {
                 "esCompose": "../../../plugins/plugin/index.esc.json",
                 "add": {
@@ -24,7 +24,7 @@
                 }
             },
             "external": {
-                "esComponents": {
+                "esDOM": {
                     "secondaddition": {
                         "esCompose": "../../../plugins/math/add2.js",
                         "children": {

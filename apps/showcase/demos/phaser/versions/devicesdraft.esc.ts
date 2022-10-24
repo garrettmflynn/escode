@@ -5,19 +5,19 @@ import * as multiplayer from './multiplayer.esc'
 // import { mode } from '../../../../../components/basic/keyboard'
 import * as player1 from './playerconnect.esc'
 
-// player2.esComponents.button.esElement = button2ElementConfig
+// player2.esDOM.button.esElement = button2ElementConfig
 
 const model = multiplayer as any
 
-model.esComponents.player1 = player1
-// model.esComponents.player2 = player2
+model.esDOM.player1 = player1
+// model.esDOM.player2 = player2
 
 model.esListeners['player1.threshold'] = "game.player.jump"
 // model.esListeners['player2.threshold'] = "game.companion.jump"
 
 
 
-// model.esComponents.button2 = {
+// model.esDOM.button2 = {
 //     esElement: buttonElementConfig,
 //     esCompose: button,
 // }
@@ -32,11 +32,11 @@ model.esListeners['player1.threshold'] = "game.player.jump"
 //     "z-index": 100,
 // }
 
-// model.esComponents.timeseries = {
+// model.esDOM.timeseries = {
 //    esElement: timeseriesElementConfig,
 //    esCompose: timeseries
 // }
 
 
 export const esListeners = model.esListeners
-export const esComponents = model.esComponents
+export const esDOM = model.esDOM

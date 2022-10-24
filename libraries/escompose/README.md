@@ -32,6 +32,40 @@ The `default` export defines the behavior of the Component.
 
  However, **multiple named exports** without a default function may also be passed. These are transformed into individual Components within the same graph.
 
+ ## Special Properties
+### Cross-File Properties
+#### esComponents
+This is a registry of ESC that you'd like to transform into Web Components.
+- **Note:** This has to be loaded 
+
+##### esCompose
+This is a key that allows you to specify how this ESC inherits from another.
+
+#### esDOM
+This is a tree of ESC instances that determine how they will be displayed on the screen—as well as how they're referenced in listener scope.
+
+#### esListeners
+This is a collection of configuration objects that specify how ESC will listen to each other.
+
+### JSON / HTML Properties
+#### esTrigger
+This allows you to run the default function of an ESC using the arguments specified here.
+```json
+{
+    "esTrigger": [true],
+    "esCompose": "./components/trigger.js'
+}
+```
+
+#### esAnimate
+This allows you to specify an animation loop for your component.
+```json
+{
+    "esAnimate": 10, // Runs 10 times every second
+    // "esAnimate": true, // Runs on the default animation loop
+    "esCompose": "./components/time.js'
+}
+```
 
 ## Acknowledgments
 This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.

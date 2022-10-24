@@ -14,6 +14,7 @@ import * as multiplayerPhaserFile from './demos/phaser/versions/multiplayer.esc'
 import * as devicePhaserFile from './demos/phaser/versions/devices.esc'
 import * as tutorialFile from './demos/tutorial/index.esc'
 import * as animationsFile from './demos/animations/index.esc'
+import * as accessifyFile from './demos/accessify/index.esc'
 
 import * as test from '../../components/tests/basic/index.js'
 
@@ -42,7 +43,7 @@ const monitor = new Monitor({
 // Poll the ESM Object
 
 // ------------------ ESCompose ------------------
-const demo: string = 'todo'
+const demo: string = 'accessify'
 let selected;
 if (demo === 'phaser') selected = phaserFile as any
 else if (demo === 'multiplayer') selected = multiplayerPhaserFile as any
@@ -50,6 +51,7 @@ else if (demo === 'device') selected = devicePhaserFile as any
 else if (demo === 'todo') selected = todoFile as any
 else if (demo === 'animations') selected = animationsFile as any
 else if (demo === 'tutorial') selected = tutorialFile as any
+else if (demo === 'accessify') selected = accessifyFile as any
 
 // Broken
 else if (demo === 'audiofeedback') selected = audiofeedbackFile as any

@@ -85,8 +85,8 @@ export function create(id, esm: ESComponent, parent) {
                 states.element = v
 
                 // Trigger esParent Setter on Nested Components
-                for (let name in esm.esComponents) {
-                    const component = esm.esComponents[name] as ESComponent;
+                for (let name in esm.esDOM) {
+                    const component = esm.esDOM[name] as ESComponent;
                     component.esParent = v
                 }
 
@@ -120,8 +120,8 @@ export function create(id, esm: ESComponent, parent) {
             
             // Set Child Parent Nodes to This
             else {
-                for (let name in esm.esComponents) {
-                    const component = esm.esComponents[name]
+                for (let name in esm.esDOM) {
+                    const component = esm.esDOM[name]
                     component.esParent = v
                 }
             }

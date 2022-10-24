@@ -1,6 +1,6 @@
 {
     "tagName": "div",
-    "esComponents": {
+    "esDOM": {
         "sounds": {
             "esCompose": "../select.js",
             "options": []

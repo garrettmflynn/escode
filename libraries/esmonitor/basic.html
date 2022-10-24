@@ -41,6 +41,26 @@ const funcSubs = monitor.on([id, ...functionPath], (path, info, output) => {
     store.updated = true
 })
 
+// // ---------------- Proposed Configuration ----------------
+// const storeSubs = monitor.on(storeId, {
+//     func1: (path, info, output) => console.log(`Updated Store (${path}) - ${output}`, info),
+//     esBranch: [
+//         {equals: 1, value: () => console.log(`Is One!`)},
+//         {equals: 2, value: () => console.log(`Is Two!`)},
+//         {equals: true, value: () => console.log(`Is True!`)},
+//     ],
+//     esFormat: (...args) => {
+//         console.log('Formatting!', args)
+//         return args
+//     }
+// })
+
+// const valueSubs = monitor.on([storeId, value], {
+//     update: [storeId, update], // Trigger update with name
+//     secondUpdate: true // Trigger update with boolean
+// })
+
+
 let expected = 0
 
 expected = store.value = 1

@@ -1,5 +1,5 @@
 {
-    "esComponents": {
+    "esDOM": {
         "list": {
             "esCompose": "../../../components/ui/ul.js"
         },
@@ -10,7 +10,7 @@
                     "esCompose": "./scripts/onSubmit.js"
                 }
             },
-            "esComponents": {}
+            "esDOM": {}
         },
         "input": {
             "esCompose": "../../../components/ui/input.js"

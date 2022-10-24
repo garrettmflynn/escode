@@ -6,9 +6,9 @@ import createCompanion from "../scripts/player/create/companion.js"
 import * as phaser from '../index.esc'
 
 const model = Object.assign({}, phaser) as any
-model.esComponents = Object.assign({}, model.esComponents) as any
-model.esComponents.game = Object.assign({}, model.esComponents.game) as any
-model.esComponents.game.esComponents = Object.assign({}, model.esComponents.game.esComponents) as any
+model.esDOM = Object.assign({}, model.esDOM) as any
+model.esDOM.game = Object.assign({}, model.esDOM.game) as any
+model.esDOM.game.esDOM = Object.assign({}, model.esDOM.game.esDOM) as any
 
 export const esListeners = Object.assign({}, model.esListeners)
 Object.assign(esListeners, {
@@ -35,7 +35,7 @@ Object.assign(esListeners, {
     }
 })
 
-model.esComponents.game.esComponents.companion = {
+model.esDOM.game.esDOM.companion = {
     esCompose: player,
     position: {
         x: 100,
@@ -52,4 +52,4 @@ model.esComponents.game.esComponents.companion = {
     update
 }
 
-export const esComponents = model.esComponents
+export const esDOM = model.esDOM

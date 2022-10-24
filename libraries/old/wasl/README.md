@@ -18,7 +18,7 @@ The specification is written in [JSON Schema](https://json-schema.org/) and vali
 ###  Example .esc File
 ```json
 {
-    "esComponents": {
+    "esDOM": {
         "first": {
             "esCompose": "first.esc.json",
             "extensions": {

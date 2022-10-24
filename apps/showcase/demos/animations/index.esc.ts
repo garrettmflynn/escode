@@ -3,7 +3,7 @@ import * as timestamp from './components/timestamp.js'
 
 const interval = true
 
-export const esComponents = {
+export const esDOM = {
 
     counter: {
         esCompose: counter,
@@ -17,7 +17,7 @@ export const esComponents = {
 
     count: {
         esElement: 'p',
-        esComponents: {
+        esDOM: {
             header: {
                 esElement: 'b',
                 esAttributes: {
@@ -32,7 +32,7 @@ export const esComponents = {
 
     time: {
         esElement: 'p',
-        esComponents: {
+        esDOM: {
             header: {
                 esElement: 'b',
                 esAttributes: {

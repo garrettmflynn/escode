@@ -21,7 +21,7 @@
   "author": "Garrett Flynn",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "lit": "^2.2.7",
+    "lit": "^2.4.0",
     "node-fetch": "^3.2.10",
     "resize-observer-polyfill": "^1.5.1",
     "webgl-plot": "^0.7.0"

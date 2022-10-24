@@ -4,7 +4,7 @@ import * as average from "../../../../../components/basic/average.js"
 import * as threshold from "../../../../../components/basic/threshold.js"
 import * as muse from "../../../../../components/drafts/old/devices/muse/index.js"
 
-export const esComponents = {} as any
+export const esDOM = {} as any
 export const esListeners = {} as any
 
 esListeners.average = 'threshold'
@@ -14,18 +14,18 @@ esListeners['datastreams'] = {
 esListeners.muse = "datastreams"
 esListeners.button = "muse"
 
-esComponents.average = {
+esDOM.average = {
     esCompose: average,
 }
 
 
-esComponents.threshold = {
+esDOM.threshold = {
     value: 300,
     esCompose: threshold,
 }
 
 
-esComponents.muse = {
+esDOM.muse = {
     esCompose: muse,
 }
 
@@ -38,12 +38,12 @@ buttonElementConfig.style = {
     left: '0',
 }
 
-esComponents.button = {
+esDOM.button = {
     esElement: buttonElementConfig,
     esCompose: button,
 }
 
 
-esComponents.datastreams = {
+esDOM.datastreams = {
     esCompose: start
 }

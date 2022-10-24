@@ -1,5 +1,5 @@
 {
-    "esComponents": {
+    "esDOM": {
         "app": {
             "style": {
                 "background-color": "black",
@@ -10,7 +10,7 @@
                 "overflow": "auto"
             },
             "tagName": "div",
-            "esComponents": {
+            "esDOM": {
                 "devices": {
                     "tagName": "div",
                             "esCompose": "../../../../components/ui/devices/index.esc.json",
@@ -55,7 +55,7 @@
                 },
                 "output": {
                     "tagName": "div",
-                    "esComponents": {
+                    "esDOM": {
                         "audio": {
                             "esCompose": "../../../../components/ui/audio/index.esc.json",
                             "sounds": {
@@ -83,7 +83,7 @@
                         },
                         "other": {
                             "tagName": "div",
-                            "esComponents": {
+                            "esDOM": {
                                 "stats": {
                                     "esCompose": "../../../../components/ui/devices/stats/index.js"
                                 },

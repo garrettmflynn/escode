@@ -35,7 +35,7 @@
 
 
 
-        "esComponents": {
+        "esDOM": {
           "type": "object",
           "patternProperties": {
             "^(.+)$": {

@@ -1,7 +1,7 @@
 {
     "name": "Math Plugin",
 
-    "esComponents": {
+    "esDOM": {
         "addition": {
             "esCompose": "./add2.js",
             "children": {

@@ -1,5 +1,5 @@
 {
-    "esComponents": {
+    "esDOM": {
         "start" : {
             "esCompose": "./components/start.js"
         }

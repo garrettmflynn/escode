@@ -1,10 +1,10 @@
 {
-    "esComponents": {
+    "esDOM": {
             "phaser": {
                 "esCompose": "../index.esc.json",
                 "overrides": {
                     "game": {
-                        "esComponents": {
+                        "esDOM": {
                             "companion": {
                                 "esCompose": "../../../components/phaser/player.js",
                                 "position": {

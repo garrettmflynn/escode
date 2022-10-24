@@ -1,5 +1,5 @@
 {
-"esComponents": {
+"esDOM": {
     "h1": {
         "esElement": {
             "element": "h1",
@@ -9,7 +9,7 @@
         }
     },
     "firstsection": {
-        "esComponents": {
+        "esDOM": {
             "h2": {
                 "esElement": {
                     "element": "h2",
@@ -20,7 +20,7 @@
             },
 
             "block1": {
-                "esComponents": {
+                "esDOM": {
                     "p1": {
                         "esElement": {
                             "element": "p",
@@ -35,7 +35,7 @@
 
 
             "block2": {
-                "esComponents": {
+                "esDOM": {
                     "p2": {
                         "esElement": {
                             "element": "p",
@@ -50,7 +50,7 @@
 
 
             "block3": {
-                "esComponents": {
+                "esDOM": {
                     "p3": {
                         "esElement": {
                             "element": "p",
@@ -67,7 +67,7 @@
 
 
             "block4": {
-                "esComponents": {
+                "esDOM": {
                     "p4": {
                         "esElement": {
                             "element": "p",
@@ -84,7 +84,7 @@
 
 
             "block5": {
-                "esComponents": {
+                "esDOM": {
                     "p5": {
                         "esElement": {
                             "element": "p",
@@ -101,7 +101,7 @@
 
 
             "block6": {
-                "esComponents": {
+                "esDOM": {
                     "p6": {
                         "esElement": {
                             "element": "p",

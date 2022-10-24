@@ -5,7 +5,7 @@ import update from "./scripts/player/update.js"
 import create from "./scripts/create.js"
 import * as keys from "../../../../components/basic/keyboard.js"
 
-export const esComponents = {
+export const esDOM = {
     keys: {
         esCompose: keys,
     },
@@ -60,7 +60,7 @@ export const esComponents = {
                 // }
             }
         },
-        esComponents: {
+        esDOM: {
             player: {
                 esCompose: player,
                 position: {

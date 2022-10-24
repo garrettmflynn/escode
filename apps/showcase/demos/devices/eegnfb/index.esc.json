@@ -1,5 +1,5 @@
 {
-    "esComponents": {
+    "esDOM": {
         "app": {
             "style": {
                 "background-color": "black",
@@ -10,7 +10,7 @@
                 "overflow": "auto"
             },
             "tagName": "div",
-            "esComponents": {
+            "esDOM": {
                 "devices": {
                     "tagName": "div",
                     "esCompose": "../../../../components/ui/devices/index.esc.json",
@@ -85,7 +85,7 @@
                 },
                 "output": {
                     "tagName": "div",
-                    "esComponents": {
+                    "esDOM": {
                         "audio": {
                             "esCompose": "../../../../components/ui/audio/index.esc.json",
                             "sounds": {
@@ -113,7 +113,7 @@
                         },
                         "other": {
                             "tagName": "div",
-                            "esComponents": {
+                            "esDOM": {
                                 "stats": {
                                     "esCompose": "../../../../components/ui/devices/stats/index.js"
                                 },
@@ -124,7 +124,7 @@
                         },
                         "eeg": {
                             "tagName":"div",
-                            "esComponents": {
+                            "esDOM": {
                                 "ln0":{
                                     "tagName":"hr"
                                 },
@@ -135,7 +135,7 @@
                                 "waveformdiv":{
                                     "tagName":"div",
                                     "style":{"height":"300px"},
-                                    "esComponents":{
+                                    "esDOM":{
                                         "waveform":{
                                             "tagName":"canvas",
                                             "style":{"width":"100%", "height":"300px", "position":"absolute", "zIndex":"1"}
@@ -166,7 +166,7 @@
                                 "dftdiv":{
                                     "tagName":"div",
                                     "style":{"height":"300px"},
-                                    "esComponents":{
+                                    "esDOM":{
                                         "dftwaveform":{
                                             "tagName":"canvas",
                                             "style":{"width":"100%", "height":"300px", "position":"absolute", "zIndex":"1"}
@@ -190,7 +190,7 @@
                                 "rmsediv":{
                                     "tagName":"div",
                                     "innerHTML":"RMSE (mV)",
-                                    "esComponents":{
+                                    "esDOM":{
                                         "rmse":{
                                             "tagName":"div"
                                         }

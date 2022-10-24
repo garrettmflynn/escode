@@ -215,7 +215,7 @@ var getFromPath = (baseObject, path, opts = {}) => {
     if (!inInspectable)
       inInspectable = !!ref.__esInspectable;
     const str = path[i];
-    if (!hasKey(str, ref) && ref.hasOwnProperty("esComponents")) {
+    if (!hasKey(str, ref) && ref.hasOwnProperty("esDOM")) {
       for (let i2 in fallbackKeys) {
         const key = fallbackKeys[i2];
         if (hasKey(key, ref)) {
@@ -264,8 +264,8 @@ var setFromPath = (path, value, ref, opts = {}) => {
       console.error(message, path);
       throw new Error(message);
     }
-    if (ref.esComponents)
-      ref = ref.esComponents;
+    if (ref.esDOM)
+      ref = ref.esDOM;
   }
   ref[last] = value;
 };

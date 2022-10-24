@@ -22,7 +22,7 @@ const demoEl = {
 demo1.esAttributes.style = demoEl.style
 
 demo2.esAttributes.style = demoEl.style
-demo2.esComponents.game.esAttributes = {
+demo2.esDOM.game.esAttributes = {
     style: {
         height: '400px',
     }
@@ -30,7 +30,7 @@ demo2.esComponents.game.esAttributes = {
 
 demo3.esAttributes.style = demoEl.style
 
-export const esComponents = {
+export const esDOM = {
     log,
     h1: {
         esElement: 'h1',
@@ -39,7 +39,7 @@ export const esComponents = {
         }
     },
     firstsection: {
-        esComponents: {
+        esDOM: {
             h2: {
                 esElement: 'h2', 
                 esAttributes: {
@@ -48,7 +48,7 @@ export const esComponents = {
             },
 
             block1: {
-                esComponents: {
+                esDOM: {
                     p1: {
                         esElement: 'p',
                         esAttributes: {
@@ -61,7 +61,7 @@ export const esComponents = {
 
 
             block2: {
-                esComponents: {
+                esDOM: {
                     p2: {
                         esElement: 'p',
                         esAttributes: {
@@ -74,7 +74,7 @@ export const esComponents = {
 
 
             block3: {
-                esComponents: {
+                esDOM: {
                     p3: {
                         esElement: 'p',
                         esAttributes: {
@@ -87,7 +87,7 @@ export const esComponents = {
 
 
             block4: {
-                esComponents: {
+                esDOM: {
                     p4: {
                         esElement: 'p',
                         esAttributes: {
@@ -102,7 +102,7 @@ export const esComponents = {
 
 
             block5: {
-                esComponents: {
+                esDOM: {
                     p5: {
                         esElement: 'p',
                         esAttributes: {
@@ -117,7 +117,7 @@ export const esComponents = {
 
 
             block6: {
-                esComponents: {
+                esDOM: {
                     p6: {
                         esElement: 'p',
                         esAttributes: {

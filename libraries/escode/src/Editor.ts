@@ -5,7 +5,7 @@ import { LitElement, html, css } from 'lit';
 import { Plugin } from './Plugin';
 
 // Visualscript Dependencies
-import { Tab, Panel, Tree, CodeEditor, ObjectEditor, GraphEditor, Modal, global } from "../external/visualscript/dist/index.esm.js"
+import { Tab, Panel, Tree, CodeEditor, ObjectEditor, GraphEditor, Modal, global } from "../../drafts/visualscript/src/index"
 
 export type EditorProps = {
   app?: any, // brainsatplay.editable.App

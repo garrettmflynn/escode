@@ -36,7 +36,7 @@ const plotterInstance = Object.assign(Object.assign({}, plotter), {
     }
 });
 
-export const esComponents = {
+export const esDOM = {
     canvas: {
         esElement: canvas,
         esAttributes: {

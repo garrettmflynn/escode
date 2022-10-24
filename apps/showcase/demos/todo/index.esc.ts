@@ -15,7 +15,7 @@ buttonAttributes.type = "submit"
 const inputAttributes = Object.assign({}, input.esAttributes) as any
 inputAttributes.placeholder = 'Write your todo here'
 
-export const esDefine = {
+export const esComponents = {
     listItem: {
         esElement: {
             name: 'es-removable-list-item',
@@ -25,7 +25,7 @@ export const esDefine = {
     }
 }
 
-export const esComponents = {
+export const esDOM = {
 
         list: {
             itemType: 'es-removable-list-item',
@@ -37,7 +37,7 @@ export const esComponents = {
             esAttributes: {
                 onsubmit: onSubmit 
             },
-            esComponents: {
+            esDOM: {
                 input: {
                     esElement: 'input',
                     esAttributes: inputAttributes,

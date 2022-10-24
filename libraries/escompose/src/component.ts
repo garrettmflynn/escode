@@ -19,17 +19,17 @@ export type ESDefineInfo = {
 export type ESElementArray = [ESDefineInfo['name'], {extends: ESDefineInfo['extends']}]
 
 type GeneralElementType = baseESElement | ESElementInfo
-export type ESComponent<ElementType>  = {
+export type ESComponent<ElementType = GeneralElementType>  = {
     
     default: Function,
-    esCompose: ESComponent<GeneralElementType> // Is Merged into this component
+    esCompose: ESComponent // Is Merged into this component
 
-    esDefine: {
+    esComponents?: {
         [x:string]: ESComponent<ESDefineInfo> // Component Definitions
     }
 
-    esComponents: {
-        [x:string]: ESComponent<GeneralElementType> // General Components
+    esDOM: {
+        [x:string]: ESComponent // General Components
     }
 
     esInit: Function

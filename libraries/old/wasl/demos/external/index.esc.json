@@ -1,5 +1,5 @@
 {
-    "esComponents": {
+    "esDOM": {
         "average": {
             "esCompose": "../../../plugins/average.js",
             "children": {
@@ -47,7 +47,7 @@
                 "width": "100%",
                 "height": "100%"
             },
-            "esComponents": {
+            "esDOM": {
                 "timeseries": {
                     "style": {
                         "position": "absolute",
@@ -153,7 +153,7 @@
                                     }
                                 }
                             },
-                            "esComponents": {
+                            "esDOM": {
                                 "cursors": {
                                     "esCompose": "https://raw.githubusercontent.com/brainsatplay/escode/main/components/phaser/cursors.js"
                                 },

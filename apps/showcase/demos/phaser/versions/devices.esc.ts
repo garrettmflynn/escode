@@ -9,9 +9,9 @@ import * as muse from "../../../../../components/drafts/old/devices/muse/index.j
 
 
 const model = Object.assign({}, multiplayer) as any
-model.esComponents = Object.assign({}, model.esComponents) as any
-model.esComponents.game = Object.assign({}, model.esComponents.game) as any
-model.esComponents.game.esComponents = Object.assign({}, model.esComponents.game.esComponents) as any
+model.esDOM = Object.assign({}, model.esDOM) as any
+model.esDOM.game = Object.assign({}, model.esDOM.game) as any
+model.esDOM.game.esDOM = Object.assign({}, model.esDOM.game.esDOM) as any
 model.esListeners = Object.assign({}, model.esListeners) as any
 
 model.esListeners.average = 'threshold'
@@ -23,24 +23,24 @@ model.esListeners['datastreams'] = {
 model.esListeners.muse = "datastreams"
 model.esListeners.button = "muse"
 
-model.esComponents.average = {
+model.esDOM.average = {
     maxBufferSize: 100,
     buffer: [],
     esCompose: average,
 }
 
-model.esComponents.threshold = {
+model.esDOM.threshold = {
     value: 300,
     esCompose: threshold,
 }
 
-// model.esComponents.synthetic = average
-// model.esComponents.ganglion = average
-model.esComponents.muse = {
+// model.esDOM.synthetic = average
+// model.esDOM.ganglion = average
+model.esDOM.muse = {
     esCompose: muse,
 }
 
-const buttonAttributes = Object.assign({}, button.esAttributes)
+const buttonAttributes = {}
 buttonAttributes.innerText = 'Connect Muse'
 buttonAttributes.style = {
     zIndex: 100,
@@ -49,7 +49,7 @@ buttonAttributes.style = {
     left: '0',
 }
 
-model.esComponents.button = {
+model.esDOM.button = {
     esElement: 'button',
     esAttributes: buttonAttributes,
     esCompose: button,
@@ -65,22 +65,22 @@ timeseriesAttributes.style = {
     "z-index": 100,
 }
 
-model.esComponents.timeseries = {
+model.esDOM.timeseries = {
    esElement: 'div',
    esAttributes: timeseriesAttributes,
    esCompose: timeseries
 }
 
-model.esComponents.datastreams = {
+model.esDOM.datastreams = {
     esCompose: start
 }
 
 
 export const esListeners = model.esListeners
-export const esComponents = model.esComponents
+export const esDOM = model.esDOM
 
 // {
-//     "esComponents": {
+//     "esDOM": {
 //         "average": {
 //             "esCompose": "../../../plugins/average.js",
 //             "children": {
@@ -128,7 +128,7 @@ export const esComponents = model.esComponents
 //                 "width": "100%",
 //                 "height": "100%"
 //             },
-//             "esComponents": {
+//             "esDOM": {
 //                 "timeseries": {
 //                     "style": {
 //                         "position": "absolute",
@@ -234,7 +234,7 @@ export const esComponents = model.esComponents
 //                                     }
 //                                 }
 //                             },
-//                             "esComponents": {
+//                             "esDOM": {
 //                                 "cursors": {
 //                                     "esCompose": "https://raw.githubusercontent.com/brainsatplay/escode/main/components/phaser/cursors.js"
 //                                 },

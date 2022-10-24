@@ -7,7 +7,7 @@ const animations = {}
 export default (id, esm, parent?) => {
 
         // ------------------ Register Components ------------------
-        let registry = esm.esDefine ?? {}
+        let registry = esm.esComponents ?? {}
         for (let key in registry) {
             const esm = registry[key]
             const info = esm.esElement
@@ -24,8 +24,8 @@ export default (id, esm, parent?) => {
         esm.esInit = () => {
 
             // Start Nested Components
-            for (let name in esm.esComponents) {
-                const init = esm.esComponents[name].esInit
+            for (let name in esm.esDOM) {
+                const init = esm.esDOM[name].esInit
                 if (typeof init === 'function') init()
                 else console.error(`Could not start component ${name} because it does not have an esInit function`)
             }

@@ -6,7 +6,7 @@ import * as toggle from  "../../../../../components/audio/toggle.js"
 // import create from "./scripts/create.js"
 
 export const tagName = "div"
-export const esComponents = {
+export const esDOM = {
         sounds: {
             esCompose: select,
             options: [

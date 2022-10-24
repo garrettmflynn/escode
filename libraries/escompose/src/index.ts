@@ -4,6 +4,7 @@ import * as clone from "../../common/clone.js"
 import * as standards from "../../common/standards"
 import { Options } from "../../common/types"
 import { ESComponent } from "./component"
+import { merge } from "./utils"
 
 
 const listenerObject = Symbol('listenerObject')
@@ -13,9 +14,13 @@ const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
 
     // ------------------ Merge ESM with esCompose Properties ------------------
     const clonedEsCompose = clone.deep(o.esCompose) ?? {}
-    // let merged = merge(Object.assign({}, clonedEsCompose), o)
-    let merged = Object.assign({}, Object.assign(Object.assign({}, clonedEsCompose), o))
 
+    // Merge Traversal (i.e. only unset if undefined, otherwise drill into objects)
+    let merged = merge(Object.assign({}, clonedEsCompose), o)
+
+    // Simple Merge
+    // let merged = Object.assign({}, Object.assign(Object.assign({}, clonedEsCompose), o))
+    
     delete merged.esCompose
 
     // ------------------ Create Instance with Special Keys ------------------
@@ -24,12 +29,12 @@ const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
     if (opts?.components) opts.components[savePath] = {instance, depth: (parent) ? path.length + 1 : path.length}
 
     // ------------------ Convert Nested Components ------------------
-    if (instance.esComponents) {
-        for (let name in instance.esComponents) {
-            const base = instance.esComponents[name]
+    if (instance.esDOM) {
+        for (let name in instance.esDOM) {
+            const base = instance.esDOM[name]
             let thisPath = [...path, name]
             const thisInstance = drill(base, name, instance, thisPath, opts) // converting from top to bottom
-            instance.esComponents[name] = thisInstance // replace in config
+            instance.esDOM[name] = thisInstance // replace in config
         }
     }
 
@@ -152,43 +157,51 @@ function pass(from, target, args, context) {
 
 
     // ------------------ Special Keywords ------------------
+    let isValidInput = true
     if (config) {
         if (config.hasOwnProperty('esFormat')) {
             try { args = config.esFormat(...args) } catch (e) { console.error('Failed to format arguments', e) }
         }
 
         if (config.hasOwnProperty('esBranch')) {
+            let isValid = false
             config.esBranch.forEach(o => {
-                if (o.equals === args[0]) args[0] = o.value // set first argument to branch value
+                if (o.equals === args[0]) {
+                    args[0] = o.value // set first argument to branch value
+                    isValid = true
+                }
             })
+
+            if (!isValid) isValidInput = false
         }
     }
 
     // ------------------ Handle Target ------------------
+    if (isValidInput) {
+        // Set New Value on Parent
+        if (target === toSet)  {
+            const parentPath = [id]
+            if (root) parentPath.push(...rootArr) // TODO: Check if this needs fixing
+            parentPath.push(...key.split(context.options.keySeparator))
+            const idx = parentPath.pop()
+            const info = context.monitor.get(parentPath, 'info')
+            info.value[idx] = args[0]
+        }
+        
+        // Direct Object with Default Function
+        else if (target?.default) target.default(...args)
 
-    // Set New Value on Parent
-    if (target === toSet)  {
-        const parentPath = [id]
-        if (root) parentPath.push(...rootArr) // TODO: Check if this needs fixing
-        parentPath.push(...key.split(context.options.keySeparator))
-        const idx = parentPath.pop()
-        const info = context.monitor.get(parentPath, 'info')
-        info.value[idx] = args[0]
-    }
-    
-    // Direct Object with Default Function
-    else if (target?.default) target.default(...args)
+        // Direct Function
+        else if (typeof target === 'function') target(...args)
 
-    // Direct Function
-    else if (typeof target === 'function') target(...args)
-
-    // Failed
-    else {
-        let baseMessage = `listener: ${from} —> ${key}`
-        if (parent) {
-            console.error(`Deleting ${baseMessage}`, parent[key])
-            delete parent[key]
-        } else console.error(`Failed to add ${baseMessage}`, target)
+        // Failed
+        else {
+            let baseMessage = `listener: ${from} —> ${key}`
+            if (parent) {
+                console.error(`Deleting ${baseMessage}`, parent[key])
+                delete parent[key]
+            } else console.error(`Failed to add ${baseMessage}`, target)
+        }
     }
 }
 
@@ -253,8 +266,8 @@ const create = (config, options: Partial<Options> = {}) => {
         monitor = new Monitor(options.monitor)
     }
 
-    // Always fall back to esComponents
-    monitor.options.fallbacks = ['esComponents']
+    // Always fall back to esDOM
+    monitor.options.fallbacks = ['esDOM']
 
     const fullOptions = options as Options
 
@@ -266,14 +279,13 @@ const create = (config, options: Partial<Options> = {}) => {
         keySeparator: fullOptions.keySeparator
     })
     
-    let fullInstance = instance// clone.deep(instance)
+    let fullInstance = instance // clone.deep(instance)
 
     monitor.set(id, fullInstance, fullOptions.listeners) // Setting root instance
 
     const context = {
         id, 
-        instance: 
-        fullInstance, 
+        instance: fullInstance, 
         monitor, 
         options: fullOptions
     }

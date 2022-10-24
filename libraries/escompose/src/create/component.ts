@@ -5,8 +5,8 @@ const registry = {}
 const ogCreateElement = document.createElement
 document.createElement = function (name, options) {
     const info = registry[name]
-    if (info && !info.autonomous)  return ogCreateElement.call(this, info.tag, {is: name})
-    else return ogCreateElement.call(this, name, options)
+    const created = (info && !info.autonomous) ? ogCreateElement.call(this, info.tag, {is: name}) : ogCreateElement.call(this, name, options)
+    return created
 }
 
 const tagToClassMap = {

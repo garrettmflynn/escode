@@ -1,5 +1,5 @@
 {
-    "esComponents": {
+    "esDOM": {
             "fft": {
                 "esCompose": "fft/index.js",
                 "children": {

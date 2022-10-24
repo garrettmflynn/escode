@@ -11,7 +11,7 @@ export const esAttributes = {
     }
 }
 
-export const esComponents = {
+export const esDOM = {
 
     [id]: {
         esCompose: test,
@@ -32,7 +32,7 @@ export const esComponents = {
         log: {
             esCompose: log
         },
-        esComponents: {
+        esDOM: {
             header: {
                 esElement: 'h1',
                 esAttributes: {

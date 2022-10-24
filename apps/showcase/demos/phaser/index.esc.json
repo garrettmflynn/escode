@@ -1,5 +1,5 @@
 {
-    "esComponents": {
+    "esDOM": {
         "game": {
             "esCompose": "../../../components/phaser/game/index.js",
             "preload": {
@@ -50,7 +50,7 @@
                     }
                 }
             },
-            "esComponents": {
+            "esDOM": {
                 "cursors": {
                     "esCompose": "../../../components/phaser/cursors.js"
                 },

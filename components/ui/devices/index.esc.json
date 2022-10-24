@@ -1,6 +1,6 @@
 {
     "tagName": "div",
-    "esComponents": {
+    "esDOM": {
         "connectmode": {
             "esCompose": "../select.js"
         },

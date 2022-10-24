@@ -27,7 +27,7 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
 
         const str = path[i]
         // Try Inside ES Components
-        if (!hasKey(str, ref) && ref.hasOwnProperty('esComponents')) {
+        if (!hasKey(str, ref) && ref.hasOwnProperty('esDOM')) {
             for (let i in fallbackKeys) {
                 const key = fallbackKeys[i]
                 if (hasKey(key, ref)) {
@@ -83,7 +83,7 @@ export const setFromPath = (path: PathFormat, value: any, ref:any, opts: SetValu
         }
 
         // Transfer to ESComponents automatically (if not second-to-last key...)
-        if (ref.esComponents) ref = ref.esComponents 
+        if (ref.esDOM) ref = ref.esDOM 
     }
 
     ref[last] = value
