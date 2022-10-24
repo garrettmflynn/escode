@@ -1,6 +1,7 @@
 import * as button from "../../../../components/ui/button";
 import * as popup from "../../../../components/ui/popup"
 import * as speak from "../../../../components/WebSpeechAPI/speak.js"
+import * as mouse from "../../../../components/ui/mouse/index.js"
 
 
 const colors = [ 'aqua', 'azure', 'beige', 'bisque', 'black', 'blue', 'brown', 'chocolate', 'coral', /* … */ ];
@@ -25,6 +26,10 @@ export const esDOM = {
     speak: {
         grammar,
         esCompose: speak,
+    }, 
+
+    mouse: {
+        esCompose: mouse,
     }, 
 }
 

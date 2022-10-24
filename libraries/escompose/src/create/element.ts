@@ -10,7 +10,7 @@ export function create(id, esm: ESComponent, parent) {
 
         // Nothing Defined
         if (element === undefined) element = 'div'
-        else if (Array.isArray(element))  element = document.createElement(...element);
+        else if (Array.isArray(element)) element = document.createElement(...element as [string, ElementCreationOptions]);
 
 
         // Configuration Object Defined
@@ -81,7 +81,14 @@ export function create(id, esm: ESComponent, parent) {
             if (states.element instanceof Element) return states.element
         },
         set: function(v) {
+
             if (v instanceof Element) {
+
+                if (states.element !== v){
+                    states.element.insertAdjacentElement('afterend', v) // Insert New Element
+                    states.element.remove() // Remove Old Element
+                }
+
                 states.element = v
 
                 // Trigger esParent Setter on Nested Components
