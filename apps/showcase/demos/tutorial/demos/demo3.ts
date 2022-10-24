@@ -4,15 +4,15 @@
 // import { CanvasControls } from "graphscript/dist/services/worker/WorkerCanvas.js";
 
 // import * as components from '../../../../../sensor_modules/components/index.js';
-import * as plotter from "../../../../../../sensor_modules/modules/webglplot/plotter.js";
+import * as plotter from "../../../../../components/drafts/typescript/plot/index.js";
 import * as data from '../components/data.js'
 
 let canvas = document.createElement('canvas');
 let overlay = document.createElement('canvas');
 const canvasWidth = 500
 const canvasHeight = 500
-const canvasStyleWidth = `${300}px`
-const canvasStyleHeight = `${300}px`
+const canvasStyleWidth = `${canvasWidth}px`
+const canvasStyleHeight = `${canvasHeight}px`
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 overlay.width = canvasWidth;
@@ -28,7 +28,7 @@ const plotterInstance = Object.assign(Object.assign({}, plotter), {
         worker:true, //use an offscreen canvas
         canvas,
         overlay,
-        overlayFont:'1em Verdana',
+        overlayFont:'10px Verdana',
         overlayColor:'orange',
         generateNewLines: true,
         cleanGeneration: false,
