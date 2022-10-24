@@ -77,17 +77,17 @@ export function esDelete () {
 
 // ------------------- Commands ------------------- 
 
-export function move (dx, dy){
+export function move (o){
 
-    if (dx && typeof dx !== 'number') dx = this.speed
-    if (dy && typeof dy !== 'number') dy = this.speed
+    if (o.x && typeof o.x !== 'number') o.x = this.speed
+    if (o.y && typeof o.y !== 'number') o.y = this.speed
 
-    let desiredX = this.x + dx
-    let desiredY = this.y + dy
+    let desiredX = this.x + o.x
+    let desiredY = this.y + o.y
 
     // Bound within Window
     if (desiredX < (window.innerWidth - this.size.width) && desiredX > 0) this.x = desiredX
-    if (desiredX < (window.innerHeight - this.size.height) && desiredX > 0) this.y = desiredY
+    if (desiredY < (window.innerHeight - this.size.height) && desiredY > 0) this.y = desiredY
 
     // Trigger Cursor Events
     this.esElement.style.left = `${this.x}px`
@@ -100,6 +100,7 @@ export function click() {
 
     // gets the object under the image cursor position
     var tmp = document.elementFromPoint(this.x + this.offsetX, this.y + this.offsetY); 
+
     if (tmp){
         this.mutex = true;
         let event = new MouseEvent('click');
