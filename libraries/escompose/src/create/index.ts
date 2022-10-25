@@ -1,5 +1,6 @@
 import * as element from './element'
 import * as component from "./component";
+import * as standards from '../../../common/standards';
 
 
 const animations = {}
@@ -116,10 +117,14 @@ export default (id, esm, parent?) => {
             }
         }
 
-        Object.defineProperty(esm, '__isESComponent', {
-            value: id,
-            enumerable: false
-        })    
+        const isESC = {value: '', enumerable: false} as any
+        if (typeof id === 'string') {
+            if (parent?.__isESComponent) isESC.value = [parent.__isESComponent, id]
+            else isESC.value = [id]
+            isESC.value = isESC.value.join(standards.keySeparator)
+        }
+
+        Object.defineProperty(esm, '__isESComponent', isESC)    
 
         return esm;
 }

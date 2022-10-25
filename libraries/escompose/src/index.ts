@@ -64,7 +64,7 @@ const handleListenerValue = ({
      if (fromPath) topPath.push(...fromPath.split(context.options.keySeparator))
      fromSubscriptionPath.push(...topPath)
      const obj = context.monitor.get(fromSubscriptionPath)
-     if (obj?.__isESComponent) fromSubscriptionPath.push(standards.defaultPath)
+     if (obj?.hasOwnProperty('__isESComponent')) fromSubscriptionPath.push(standards.defaultPath)
 
      // Getting Source Path (keep from —> to syntax)
      // and handling configuration object (TODO: Move out to ESMonitor)

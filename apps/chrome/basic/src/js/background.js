@@ -40,6 +40,16 @@ const sendTo = (id, message) => {
 
 var extensionListener = function (port, message, sender) {
 
+  // ------------------------- Create Context Menu for Extension -------------------------
+  chrome.contextMenus.create({
+    title: "Inspect Element",
+    contexts: ["all"],
+    id: "escode-inspect-element"
+  })
+  
+  chrome.contextMenus.onClicked.addListener((info, tab) => sender.postMessage({ inspect: true }))
+  
+
   // ------------------ Initialize Connection ------------------
   if (message.name == "init") {
     connections[message.tabId] = port;

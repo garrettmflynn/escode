@@ -14,7 +14,7 @@
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
-  "permissions": ["tabs", "activeTab", "scripting", "storage"],
+  "permissions": ["tabs", "activeTab", "scripting", "contextMenus"],
   "host_permissions":["<all_urls>"],
 
   "minimum_chrome_version": "49.0",

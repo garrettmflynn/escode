@@ -46,7 +46,7 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     esOnRemove: Function
 
 
-    __isESComponent: boolean,
+    __isESComponent: string, // Path of the Component
     __esProxy: ProxyConstructor,
 
 }

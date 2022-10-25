@@ -1,8 +1,10 @@
 let states = {
   document: null,
-  table: null
+  table: null,
+  showAll: null,
+  focus: null,
+  sidebar: null
 }; 
-
 
 // ------------------------------------------------------------------
 // ----------------------- UI Management Code -----------------------
@@ -10,9 +12,31 @@ let states = {
 
 let sections = {}
 let headers = []
+let focus = null
+
 
 const add = (arr) => arr.reduce((a, b) => a + b, 0)
 const average = (arr) => add(arr) / arr.length
+
+
+function filterTable (focus) {
+
+  const notDefined = focus == undefined
+
+  // Must have section to switch focus
+  if (notDefined || sections[focus]) {
+    states.showAll.style.display = (focus) ? '' : 'none'
+
+    for (let header in sections) {
+      const section = sections[header]
+      const states = section.states
+      for (let name in states) {
+        const state = states[name]
+        section.header.style.display = state.div.style.display = (notDefined || header === focus) ?  '' : 'none'
+      }
+    }
+  }
+}
 
 const update = async (path, info, update) => {
 
@@ -28,11 +52,7 @@ const update = async (path, info, update) => {
         let section = sections[obj]
         if (!section) {
             section = sections[obj] = {
-                states: {
-                    averages: {},
-                    elements: {},
-                    output: {}
-                },
+                states: {},
                 columns: {
                     name: document.createElement('th')
                 }
@@ -140,7 +160,6 @@ const onShow = (panelWindow) => {
 
   const panel = chrome.runtime.connect({ name: "devtools-page" });
 
-
     // ------------------ On First Show ------------------
   if (!states.document) {
 
@@ -154,7 +173,18 @@ const onShow = (panelWindow) => {
     link.type = 'text/css'
     link.href = a
     states.document.head.appendChild(link)
+
+    // Create Show All Button
+    states.showAll = document.createElement('button')
+    states.showAll.innerHTML = 'Show all states'
+    states.showAll.style.display = 'none'
+    states.showAll.style.margin = '10px'
+
+    states.showAll.onclick = () => filterTable(null)
+  
+    // Add to Document
     states.document.body.insertAdjacentElement('beforeend', states.table);
+    states.document.body.insertAdjacentElement('beforeend', states.showAll);
 
     panel.postMessage({ tabId: chrome.devtools.inspectedWindow.tabId, script: "js/devtools/background.js" }); // Only once...
   }
@@ -167,7 +197,6 @@ const onShow = (panelWindow) => {
         if (message.states) {
           for (let path in message.states) {
             const state = message.states[path]
-            console.log('State from States', Object.keys(state.value), state)
             update(path, state.value, state.output)
           }
         }
@@ -187,7 +216,10 @@ const onShow = (panelWindow) => {
             tabId: chrome.devtools.inspectedWindow.tabId, 
             name: 'echo'
           });
-        } else  {
+        } 
+        else if (message.focus) states.focus = message.focus
+        else if (message.inspect) filterTable(states.focus)
+        else {
           console.log('Unhandled Message', message)
         }
     });
@@ -212,3 +244,19 @@ chrome.devtools.panels.create('ESCode', null, 'panels/panel.html', (panel) => {
   panel.onShown.addListener(onShow);
   panel.onHidden.addListener(onHide);
 });
+
+
+const elPanel = chrome.devtools.panels.elements
+elPanel.createSidebarPane("ESCode Properties",
+  function(sidebar) {
+    states.sidebar = states
+    elPanel.onSelectionChanged.addListener(() => {
+      console.log('Cannot get selected element properties...')
+        // const result = chrome.devtools.inspectedWindow.eval("$0.innerText")
+        // console.log(result, result?.[0]);
+        sidebar.setObject(undefined);
+    })
+
+    sidebar.setHeight("8ex");
+  }
+);

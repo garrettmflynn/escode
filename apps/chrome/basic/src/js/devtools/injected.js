@@ -1,10 +1,14 @@
 
 const id = 'escode-devtools-injection'
 
+const send = (o) => {
+    window.postMessage({ ...o, source: id }, '*');
+}
+
 
 // --------------- Initialize Connection with DevTools Extension ---------------
 const echoId = Math.random()
-window.postMessage({ name: 'echo', source: id, id: echoId }, '*');
+send({ name: 'echo', id: echoId }, '*');
 
 
 const components = []
@@ -92,7 +96,7 @@ const drill = (o, opts = {}) => {
 if (esmonitor) {
     
 
-    window.postMessage({ name: 'storage.update', value: {  compatibleSiteHistory: window.location.href }, source: id }, '*');
+    send({ name: 'storage.update', value: {  compatibleSiteHistory: window.location.href }}, '*');
 
     const ogCallback = esmonitor.callback
 
@@ -110,7 +114,7 @@ if (esmonitor) {
 
             try {
                 const state = drill(stateInfo, {depth: 2}) // ensure states can be passed
-                window.postMessage({ state, source: id }, '*');
+                send({ state }, '*');
             } catch (e) {
                 console.warn('[ESCode]: Could not pass state', stateInfo, e)
             }
@@ -118,10 +122,7 @@ if (esmonitor) {
     }
 // --------------------------- Clear DevTools Panel ---------------------------
 window.addEventListener('beforeunload', () => {
-    window.postMessage({
-        clear: true,
-        source: id
-    }, '*');
+    send({ clear: true }, '*');
 })
 
 
@@ -134,7 +135,7 @@ const init = () => {
     try {
         const esStates = esmonitor.state
         const states = drill(esStates) // ensure states can be passed
-        window.postMessage({ states, source: id }, '*');
+        send({ states }, '*');
     } catch (e) {
         console.warn('[ESCode]: Could not initialize states', esmonitor.state, e)
     }
@@ -160,3 +161,13 @@ window.addEventListener('message', function(event) {
         }
     }
   });
+
+
+  document.addEventListener('contextmenu', function(ev) {
+    const target = ev.target
+    const isESComponent = target.hasAttribute('__isescomponent')
+    if (isESComponent) {
+        send({ focus: target.esComponent.__isESComponent }, '*');
+    }
+
+    }, false);
