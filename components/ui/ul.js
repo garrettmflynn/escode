@@ -1,3 +1,4 @@
+export const esElement = 'ul'  // default element
 
 export const itemType = 'li'
 export const items = []

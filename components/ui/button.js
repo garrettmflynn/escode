@@ -6,6 +6,8 @@ export const __useclick = true
 export const pressed = false;
 export let cache = null // Store the last value passed to the Component
 
+export const esElement = 'button'  // default element
+
 // Element Attributes Specification
 export const esAttributes = {
     innerHTML: 'Click Me',  // Set default text

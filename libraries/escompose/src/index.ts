@@ -22,7 +22,10 @@ const esMerge = (base, esCompose) => {
 }
 
 // TODO: Ensure that this doesn't have a circular reference
-const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
+const esDrill = (o, id: string | symbol, parent?, opts?) => {
+
+    const parentId = parent?.__isESComponent
+    const path = (parentId) ? [parentId, id] : ((typeof id === 'string') ? [id] : [])
 
     // TODO: Search the entire object for the esCompose key. Then execute this merge script
     // ------------------ Merge ESM with esCompose Properties ------------------
@@ -38,8 +41,7 @@ const drill = (o, id: string | symbol, parent?, path: any[] = [], opts?) => {
     if (instance.esDOM) {
         for (let name in instance.esDOM) {
             const base = instance.esDOM[name]
-            let thisPath = [...path, name]
-            const thisInstance = drill(base, name, instance, thisPath, opts) // converting from top to bottom
+            const thisInstance = esDrill(base, name, instance, opts) // converting from top to bottom
             instance.esDOM[name] = thisInstance // replace in config
         }
     }
@@ -71,21 +73,106 @@ const handleListenerValue = ({
      const value = config // Subscription configuration object
      const fromStringPath = topPath.join(context.options.keySeparator)
 
-     if (!listeners[fromStringPath]) {
-        listeners[fromStringPath] = {}
-        context.monitor.on(fromSubscriptionPath, (path, _, args) => passToListeners(context, path, args)) // only subscribe once
-     }
+     if (!listeners.has(fromStringPath)) context.monitor.on(fromSubscriptionPath, (path, _, args) => passToListeners(context, listeners, path, args)) // only subscribe once
 
-     listeners[fromStringPath][toPath] = { value, root, [listenerObject]: true }
+     listeners.add(fromStringPath, toPath, { value, root })
+}
+
+
+// This class references the original object when checking if listeners exist
+
+// let notified = {}
+class ListenerManager {
+
+    original = {};
+    active = {}
+
+    constructor (listeners = {}) {
+        this.register(listeners)
+    }
+
+    register = (listeners) =>  {
+        this.original = listeners
+        Object.defineProperty(listeners, '__manager', {
+            value: this,
+            enumerable: false,
+            writable: false
+        })
+    }
+
+    add = (from, to, value: any = true) => {
+
+        let root = ''
+        if (value?.hasOwnProperty('root')) root = value.root
+        if (value?.hasOwnProperty('value')) value = value.value
+        else console.error('No root provided for new edge...')
+
+
+        if(!this.active[from]) this.active[from] = {}
+        this.active[from][to] = {
+            value,
+            root,
+            [listenerObject]: true
+        }
+
+        // Update Original
+        let base = this.original[to]
+        if (!base) base = this.original[to] = {}
+        if (typeof base !== 'object') {
+            if (typeof base === 'function') base = {[Symbol('function listener')]: base} // Move function to arbitrary key
+            else this.original[from] = {[base]: value}
+        }
+
+        base[from] = value // complex edge
+    }
+
+    remove = (from, to) => {
+
+        if (this.active[from]) delete this.active[from][to]
+        if (this.original[to]) {
+            const base = this.original[to]
+            if (typeof base === 'object') {
+                delete base[from] // complex edge
+                if (Object.keys(base).length === 0) delete this.original[to]
+            } else delete this.original[to] // simple edge
+        }
+
+    }
+
+    has = (from) => {
+        let has = false
+        for (let key in this.original) if (this.original[key][from]) has = true
+        if (!has) return false
+        return !!this.active[from]
+    }
+
+    get = (from) => {
+
+        const has = this.has(from)
+
+        // if (!has && !notified[from]) {
+        //     console.error('Does not have!', from, has)
+        //     notified[from] = true
+        // } else if (has && notified[from]) {
+        //     console.log('Added back!')
+        // }
+
+        if (!has) return;
+        else return this.active[from]
+    }
+
 }
 
 const setListeners = (context, components) => {
 
-    const listeners = context.listeners = {} // Uses from —> to syntax
+    // const listeners = new ListenerManager() // Uses from —> to syntax
+
 
     for (let root in components) {
         const info = components[root]
         const to = info.instance.esListeners  // Uses to —> from syntax
+        const listeners = new ListenerManager(to) // Uses from —> to syntax
+
         for (let toPath in to) {
             const from = to[toPath]
 
@@ -106,6 +193,7 @@ const setListeners = (context, components) => {
                 else console.error('Improperly Formatted Listener', to)
             }
         }
+
     }
 }
 
@@ -244,34 +332,35 @@ function pass(from, target, args, context) {
     }
 }
 
-function passToListeners(context, name, ...args) {
+function passToListeners(context, listeners, name, ...args) {
 
     const sep = context.options.keySeparator
-    const noDefault = name.slice(0, -`${sep}${standards.defaultPath}`.length)
+
+    // Don;t use default
+    const check = `${sep}${standards.defaultPath}`
+    const noDefault = (name.slice(-check.length) === check) ? name.slice(0, -check.length) : name
     const listenerGroups = [{
-        info: context.listeners[name],
-        name
-    }, {
-        info: context.listeners[noDefault],
+        info: listeners.get(noDefault),
         name: noDefault
     }]
 
     listenerGroups.forEach(group => {
 
         const info = group.info
+
         if (info) {
 
             if (info[listenerObject]) {
-                pass(name, {
+                pass(noDefault, {
                     value: info.value,
-                    parent: context.listeners,
+                    parent: listeners.active,
                     key: group.name,
                     root: info.root,
                     __value: true
                 }, args, context)
             } else if (typeof info === 'object') {
                 for (let key in info) {
-                    pass(name, {
+                    pass(noDefault, {
                         parent: info,
                         key,
                         root: info[key].root,
@@ -288,7 +377,7 @@ function passToListeners(context, name, ...args) {
 const toSet = Symbol('toSet')
 const create = (config, options: Partial<Options> = {}) => {
 
-    // config = clone.deep(config) // Start with a deep copy
+    // config = clone.deep(config) // Start with a deep copy. You must edit on the resulting object...
 
     // -------------- Create Complete Options Object --------------
 
@@ -310,26 +399,39 @@ const create = (config, options: Partial<Options> = {}) => {
 
     const fullOptions = options as Options
 
-
-    const id = Symbol('root')
     const components = {}
-    const instance = drill(config, id, undefined, undefined, {
+    const drillOpts = {
         components,
         keySeparator: fullOptions.keySeparator
-    })
-
-    let fullInstance = instance // clone.deep(instance)
-
-    monitor.set(id, fullInstance, fullOptions.listeners) // Setting root instance
-
-    const context = {
-        id,
-        instance: fullInstance,
-        monitor,
-        options: fullOptions
     }
 
-    setListeners(context, components)
+    let fullInstance;
+
+    if (options.nested?.parent && options.nested?.name){
+
+        // TODO: Figure out how to pass the path for real...
+        fullInstance = esDrill(config, options.nested.name, options.nested.parent, drillOpts)
+
+        // TODO: Add listeners...
+
+    } else {
+
+        const id = Symbol('root')
+        const instance = esDrill(config, id, undefined, drillOpts)
+
+        fullInstance = instance // clone.deep(instance)
+
+        monitor.set(id, fullInstance, fullOptions.listeners) // Setting root instance
+
+        const context = {
+            id,
+            instance: fullInstance,
+            monitor,
+            options: fullOptions
+        }
+
+        setListeners(context, components)
+    }
 
     fullInstance.esInit()
 

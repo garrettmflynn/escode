@@ -1,3 +1,6 @@
+
+export const esElement = 'input'  // default element
+
 export const esAttributes = {
     oninput: function (ev) {
         this.default({value: ev.target.value, _internal: true})

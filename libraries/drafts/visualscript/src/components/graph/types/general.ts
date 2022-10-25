@@ -43,3 +43,16 @@ type waslGraph = {
     nodes: {[x:string]: waslNode}
     edges: {[x:string]: waslEdges}
 }
+
+
+export type GraphEditorProps = {
+    plugins: {[x:string]: waslNode[] | GraphEditorProps['plugins']}
+    plot?: Function[],
+    onPlot?: Function
+    preprocess?: Function
+  } & GraphWorkspaceProps
+
+  export type GraphWorkspaceProps = {
+    graph: waslGraph;
+    edgeMode?: 'to' | 'from' 
+  }

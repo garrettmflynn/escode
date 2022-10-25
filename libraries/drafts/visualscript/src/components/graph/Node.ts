@@ -3,15 +3,14 @@ import { LitElement, html, css } from 'lit';
 import { GraphWorkspace } from './Workspace';
 import './Port';
 import { GraphEdge } from './Edge';
-import { GraphPort } from './Port';
-import { getFnParamInfo } from './utils/parse';
-import drag from './utils/drag'
+import { GraphPort, GraphPortProps } from './Port';
 
 export type GraphNodeProps = {
   workspace?: GraphWorkspace
   x?: number;
   y?: number;
-  info?: waslNode;
+  tag?: string,
+  info?: any; // Add ES Component types...
 }
 
 export class GraphNode extends LitElement {
@@ -75,6 +74,8 @@ export class GraphNode extends LitElement {
 
     workspace: GraphNodeProps['workspace'];
     element: HTMLDivElement
+
+    tag: string;
     x: GraphNodeProps['x'];
     y: GraphNodeProps['y'];
     info: GraphNodeProps['info'];
@@ -85,14 +86,15 @@ export class GraphNode extends LitElement {
       super();
 
       this.workspace = props.workspace
-      this.info = props.info ?? {tag: 'node', extensions: {visualscript: {x: 0, y:0}}}
+      this.info = props.info ?? {tag: 'node', esExtensions: {visualscript: {x: 0, y:0}}}
 
-      this.id = `${this.info.tag}_${Math.round(10000*Math.random())}`
+      this.tag = props.tag
+      this.id = `${this.tag}_${Math.round(10000*Math.random())}`
 
-      if (!this.info.extensions) this.info.extensions = {}
-      if (!this.info.extensions.visualscript) this.info.extensions.visualscript = {x: 0, y:0}
-      this.info.extensions.visualscript.x = this.x = props.x ?? this.info.extensions.visualscript.x ?? 0
-      this.info.extensions.visualscript.y = this.y = props.y ?? this.info.extensions.visualscript.y ?? 0
+      if (!this.info.esExtensions) this.info.esExtensions = {}
+      if (!this.info.esExtensions.visualscript) this.info.esExtensions.visualscript = {x: 0, y:0}
+      this.info.esExtensions.visualscript.x = this.x = props.x ?? this.info.esExtensions.visualscript.x ?? 0
+      this.info.esExtensions.visualscript.y = this.y = props.y ?? this.info.esExtensions.visualscript.y ?? 0
 
       if (this.info) this.updatePorts()
     }
@@ -104,30 +106,29 @@ export class GraphNode extends LitElement {
 
     updatePorts = (info=this.info) => {
 
-      // Derive function arguments (NOTE: Contains knowledge of graphscript requirements)
-      let args;
-      if (info.src?.operator) args = getFnParamInfo(info.src?.operator) ?? new Map()
-      else {
-        args = new Map(Object.entries(info.src?.nodes ?? info.src ?? {}).filter(([_, o]) => (o.src?.operator ?? o.operator) instanceof Function).map(([k]) => [k, {}]));
-      }      
-      
-      if (args.size === 0) args.set('default', {}) // always have a default port
-      args.set('_internal', {}) // always have an internal port
-
-      // Add ports from arguments
-      if (args) args.forEach((o, tag) => {
-        this.addPort({
-          tag,
-          ref: o.default
-        })
+      // Add ports for each non-esX property
+      Object.keys(info).forEach(tag => {
+        if (tag.slice(0,2) === 'es') return
+        if (this.ports.has(tag)) return
+        this.addPort({ tag })
       })
+
+      // Add Port for Each Active ES Component instance (i.e. the internal graph)
+      if (info.esDOM) Object.keys(info.esDOM).forEach(tag => {
+        if (this.ports.has(tag)) {
+          console.error('Port conflict: ', `${this.tag}.${tag}`)
+          return
+        }
+        this.addPort({ tag })
+      })
+
     }
 
     willUpdate = (updatedProps) => {
 
-      if ((updatedProps.has('x') || updatedProps.has('y')) && this.info.extensions?.visualscript){
-        this.info.extensions.visualscript.x = this.x        // brainsatplay extension
-        this.info.extensions.visualscript.y = this.y       // brainsatplay extension
+      if ((updatedProps.has('x') || updatedProps.has('y')) && this.info.esExtensions?.visualscript){
+        this.info.esExtensions.visualscript.x = this.x        // brainsatplay extension
+        this.info.esExtensions.visualscript.y = this.y       // brainsatplay extension
       }
 
       if (updatedProps.has('info')) this.updatePorts()
@@ -149,9 +150,11 @@ export class GraphNode extends LitElement {
       this.edges.delete(id)
     }
 
-    addPort = (info) => {
+    addPort = (info: GraphPortProps) => {
       const port = new GraphPort(Object.assign({node: this}, info))
       this.ports.set(port.tag, port)
+      if (this.shadowRoot) this.shadowRoot.getElementById('ports').appendChild(port) // Adding port to rendered html
+      return port
     }
     
     render() {
@@ -168,7 +171,7 @@ export class GraphNode extends LitElement {
         </style>
         <div>
           <div id="header">
-            ${this.info.tag}
+            ${this.tag}
           </div>
           <div id="ports">
               ${Array.from(this.ports.values())}

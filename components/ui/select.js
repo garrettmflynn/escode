@@ -1,3 +1,6 @@
+export const esElement = 'select' // default element
+
+
 export const options = {
     // one: 'Option #1',
     // two: 'Option #2',
@@ -27,7 +30,7 @@ export const esInit = function() {
 
     // Hide Selector without Options
     if (options.length === 0) {
-        element.style.display = 'none'
+        // element.style.display = 'none'
         return;
     }
 

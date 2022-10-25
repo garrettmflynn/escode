@@ -10,6 +10,7 @@ export type IOType = {
 
 export type GraphEdgeProps = {
   workspace?: GraphWorkspace
+  info?: any; // TODO: Add ES Component types...
 } & IOType
 
 export class GraphEdge extends LitElement {
@@ -120,7 +121,7 @@ export class GraphEdge extends LitElement {
     };
   }
 
-  info: waslEdge = {}
+  info: any = {} // TODO; Add ES Component types...
   output: GraphEdgeProps['output']
   input: GraphEdgeProps['input']
 
@@ -182,6 +183,7 @@ export class GraphEdge extends LitElement {
     this.output = props.output
     this.input = props.input
     this.workspace = props.workspace
+    this.info = props.info
 
     this.ready = new Promise((resolve, reject) => {
       this.resolveReady = {
@@ -198,13 +200,6 @@ export class GraphEdge extends LitElement {
             && this.workspace.onedgeadded instanceof Function // callback is a function
             ) this.workspace.onedgeadded(this)
 
-          // update wasl
-          const outputTag = this.getTag()
-          const inputTag = this.getTag(outputTag)
-
-          if (!this.workspace.graph.edges[outputTag]) this.workspace.graph.edges[outputTag] = {}
-          this.workspace.graph.edges[outputTag][inputTag] = this.info
-
           this.isReady = true
           resolve(arg)
         }, reject
@@ -212,12 +207,13 @@ export class GraphEdge extends LitElement {
     })
   }
 
+
   getTag = (outName?:string) => {
     const type = (outName) ? 'input' : 'output'
     if (!this[type]) return 
 
     const firstPort  = this[type].node.ports.keys().next().value
-    const nodeTag = this[type].node.info.tag
+    const nodeTag = this[type].node.tag
 
     const base = this[type].tag
     const route =  `${nodeTag}.${base}`
@@ -226,7 +222,14 @@ export class GraphEdge extends LitElement {
 
     // use route if already in use (otherwise target node and fallback to first port)
     if (firstPort === base) {
-      const target = (type === 'input' && outName) ? this.workspace.graph.edges[outName] : this.workspace.graph.edges
+      let target;
+      if (type === 'input' && outName) {
+        if (this.workspace.edgeMode === 'from') target = this.workspace.graph.edges[outName]
+        else {
+          console.error('Cannot get tag', outName, this.workspace.graph.edges)
+        }
+      } else target = this.workspace.graph.edges
+
       if (target?.[nodeTag]) tag = nodeTag
       else tag = route
     }
@@ -400,6 +403,7 @@ export class GraphEdge extends LitElement {
     this.workspace.element.dispatchEvent(new Event('mousemove'));
 
 
+
     this.toResolve = {
       type,
       listeners: [
@@ -409,10 +413,15 @@ export class GraphEdge extends LitElement {
     }
 
     // Allow cancelling an edge
-    let onMouseUp = (e) => {
+    let onMouseUp = async (e) => {
       if (this.firstUp == undefined) this.firstUp = true
       else this.firstUp = false
-      this.resolveIO(e.target, type, this.toResolve.callback, 'up')
+
+      if (this.toResolve) this.resolveIO(e.target, type, this.toResolve.callback, 'up')
+      else {
+        const isReady = await this.ready
+        if (!isReady) console.error('Issue with toResolve')
+      }
     }
 
     this.workspace.element.addEventListener('mouseup', onMouseUp)
@@ -687,13 +696,6 @@ export class GraphEdge extends LitElement {
     if (this.input) this.input.deleteEdge(this.id)
     // this.output.node.info.unsubscribe(this.input.node.info.id)
     this.remove()
-
-    // update wasl
-    const outputTag = this.getTag()
-    const inputTag = this.getTag(outputTag)
-    if (this.ready) {
-      if (this.workspace.graph.edges[outputTag]) delete this.workspace.graph.edges[outputTag][inputTag]
-    } else console.error('incorrect tag', outputTag, this.workspace.graph.edges)
   }
 
   resize = () => {

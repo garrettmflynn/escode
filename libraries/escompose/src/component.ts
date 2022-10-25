@@ -39,11 +39,12 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     id: string;
     esElement?: ElementType,
     esParent?: ComponentElement,
-    esStyle: {[key:string]:any},
     esAttributes:{ [x in attributeKeys] : any }
     esOnResize: Function,
     esOnRender: Function
     esOnRemove: Function
+
+    esExtensions?: {[x:string]: any}
 
 
     __isESComponent: string, // Path of the Component

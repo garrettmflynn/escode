@@ -7,9 +7,8 @@ export type GraphPortProps = {
   // plot?: Function[],
   // onPlot?: Function
   // preprocess?: Function,
-  tag?: string
+  tag: string
   node?: GraphNode
-  ref?: any
 }
 
 export class GraphPort extends LitElement {
@@ -88,15 +87,12 @@ export class GraphPort extends LitElement {
 
     resolving: boolean = false
     edges: Map<string, any> = new Map()
-    ref: GraphPortProps['ref']
 
-    constructor(props: GraphPortProps = {}) {
+    constructor(props: GraphPortProps = {tag: 'property_'+Math.random()}) {
       super();
 
       this.node = props.node
       this.tag = props.tag
-      this.ref = props.ref
-
 
       this.output.classList.add('port')
       this.output.classList.add('output')
@@ -129,7 +125,7 @@ export class GraphPort extends LitElement {
         if (!this.resolving){
           this.resolving = true
           const type = (ev.path[0].classList.contains('input')) ? 'input' : 'output'
-          if (this.node.workspace) await this.node.workspace.resolveEdge({[type]: this}).catch(e => console.log(e))
+          if (this.node.workspace) await this.node.workspace.resolveEdge({[type]: this}).catch(e => console.warn(`[escode]: ${e}`))
           this.resolving = false
         }
     }

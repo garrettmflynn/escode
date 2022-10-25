@@ -6,6 +6,15 @@ import { Plugin } from './Plugin';
 
 // Visualscript Dependencies
 import { Tab, Panel, Tree, CodeEditor, ObjectEditor, GraphEditor, Modal, global } from "../../drafts/visualscript/src/index"
+import { GraphEdge } from '../../drafts/visualscript/src/components/graph/Edge';
+
+// ESCompose and ESMonitor Dependencies
+import Monitor from '../../esmonitor/src/Monitor';
+import createComponent from '../../escompose/src/index'
+
+// Default ES Component Pool for Plugins
+import * as components from '../../../components/index.js'
+
 
 export type EditorProps = {
   app?: any, // brainsatplay.editable.App
@@ -66,8 +75,25 @@ export class Editor extends LitElement {
       };
     }
 
-    app: any
-    esc: any
+    config: {
+      esc?: any,
+      app?: any,
+      dependencies?: any,
+      graph: any,
+    } = {
+      esc: undefined,
+      app: undefined,
+      dependencies: undefined,
+      graph: undefined,
+    }
+
+    esc: {
+      monitor?: Monitor,
+      listeners: { static: boolean }
+    } = {
+      monitor: undefined,
+      listeners: { static: true }
+    }
 
     modal = new Modal()
     ui = document.createElement('visualscript-tab') 
@@ -88,8 +114,6 @@ export class Editor extends LitElement {
       super();
 
       this.ui.setAttribute('name', 'UI')
-      this.ui.style.position = 'relative'
-      console.error('MOVE STYLING INTO VISUALSCRIPT')
       if (props.app) this.setApp(props.app)
       if (props.ui) this.setUI(props.ui)
 
@@ -100,67 +124,153 @@ export class Editor extends LitElement {
       div.appendChild(this.files)
       this.filesTab.appendChild(div)
 
-      // Setup brainsatplay x visualscript interface
-      this.graph.onedgeadded = async (edge) => {    
-        const info = this.getEdgeInfo(edge)
-        info.output.addChildren({ [info.input.tag]: info.input })
+      // -------------------- Setup ESCode x visualscript interface --------------------
+
+      const getTags = (edge) => {
+        const fullOutTag = `${edge.output.node.tag}.${edge.output.tag}`
+        const fullInTag = `${edge.input.node.tag}.${edge.input.tag}`
+        const checkFor = '.default' // no default
+        const tags =  (
+          // (this.graph.workspace.edgeMode  === 'from') ? 
+          [fullOutTag, fullInTag] 
+          // : [fullInTag, fullOutTag]
+        ).map(str => (str?.slice(-checkFor.length) === checkFor) ? str.slice(0, -checkFor.length) : str)
+        return tags
+      }
+
+      this.graph.onedgeadded = async (edge: GraphEdge) => {    
+
+        if (this.config.esc){         
+          let tags = getTags(edge)
+          this.config.graph.edges.__manager.add(tags[0], tags[1], edge.info)
+        } else {
+          console.error('New edge cannot be handled...')
+        }
+
       }
 
       this.graph.onnodeadded = async (node) => {
-        const activeGraph = this.esc.graph
-        activeGraph.add(node.info)
+        const activeGraph = this.config.graph
+
+        if (this.config.esc) {
+          const component = this.createComponent(node.info, {
+            parent: this.config.esc,
+            name: node.tag
+          })
+          activeGraph.nodes[node.tag] = component
+          node.info = component
+          component.esParent = this.config.esc.esElement
+        } else {
+          console.error('Cannot handle this edit...')
+        }
+
       }
 
+      // Handle Removal Externally
       this.graph.onedgeremoved = async (edge) => {
 
-        // update active graph
-        const info = this.getEdgeInfo(edge)
-        const outNode = info.output.parent?.node ?? info.output
-        const inNode = info.input.parent?.node ?? info.input
+        if (edge.input && edge.output){
+          if (this.config.esc){
+            const tags = getTags(edge)
+            this.config.graph.edges.__manager.remove(tags[0], tags[1], edge.info)
+          } else {
+            console.error('Edge removal cannot be handled...')
+          }
+        }
 
-        // remove child definitively
-        if (info.output.children?.[info.input.tag]) delete info.output.children[info.input.tag]
-        if (info.output.children?.[inNode?.tag]) delete info.output.children[inNode.tag]
-        if (outNode.children?.[info.input.tag]) delete outNode.children[info.input.tag]
-        if (outNode.children?.[inNode?.tag]) delete outNode.children[inNode.tag]
       }
 
       this.graph.onnoderemoved = async (node) => {
-        const activeGraph = this.esc.graph
-        activeGraph.graph.removeTree(node.name)
+        const activeGraph = this.config.graph
+        if (this.config.esc){
+          const activeNode = activeGraph.nodes[node.tag]
+          activeNode.esDelete()
+          delete activeGraph.nodes[node.tag]
+        }
       }
 
     }
 
-    set = async (esc) => {
-      console.log('setting esc', esc, esc.constructor?.name)
-      this.esc = (esc.constructor?.name) ? esc.original : esc
-      console.log('ESCode', this.esc)
-      this.setPlugins(this.esc.graph.nodes)
-      await this.graph.set(this.esc.graph) // Set tree on graph
+    setGraph = async (graph) => {
+      this.config.graph = graph
+      await this.graph.set(this.config.graph) // Set tree on graph
+    }
+
+    setDependencyTree = (dep) => {
+      this.config.dependencies = dep
+
+      this.setPlugins(dep.files)
+
+      const graph = {
+        nodes: dep.files,
+        edges: dep.dependencies
+      }
+
+      this.setGraph(graph) // forward to ESCode setter
+    }
+
+    createComponent = (esc, nestedInfo: any = undefined) => {
+      if (!this.esc.monitor) {
+        this.esc.monitor = new Monitor({
+          // onInit: logUpdate,
+          // onUpdate: {
+          //     callback: logUpdate,
+          //     info: {
+          //         performance: true
+          //     }
+          // },
+          pathFormat: 'absolute',
+          polling: { sps: 60 }
+      })
+    }
+
+      // Create an active ES Component from a .esc file
+      return createComponent(esc, {
+        ...this.esc,
+        nested: nestedInfo
+      })
+    }
+
+    // TODO: Assign ES Component types
+    setComponent = (esc: any = {}) => {
+
+      const component = (esc.hasOwnProperty('__isESComponent')) ? esc : this.createComponent(esc) 
+
+      this.config.esc = component
+      component.esParent = this.ui // TODO: Cache the original position
+
+      const local = {}
+      for (let key in component.esDOM) local[key] = component.esDOM[key].esOriginal
+      
+      this.setPlugins({
+        ['Local Components']: {
+          ...component.esComponents,
+          ...local
+        },
+        ['Component Registry']: {
+          ...components,
+        }
+      })
+
+      const graph = {
+        nodes: component.esDOM,
+        edges: component.esListeners
+      }
+
+      this.graph.workspace.edgeMode = 'to'
+
+      this.setGraph(graph) // forward to ESCode setter
+
+      return component
     }
 
     setApp = (app) => {
-      this.app = app // keep app reference
-      this.set(app.esc) // forward to ESCode setter
+      this.config.app = app // keep app reference
+      this.setComponent(app.esc) // forward to ESCode setter
     }
 
     setPlugins = (plugins) => {
       this.graph.plugins = plugins
-    }
-
-    getEdgeInfo = (edge: any) => {
-
-      // access the right nodes through their parents
-      let output = this.esc.graph.nodes.get(edge.output.node.info.tag)
-      output =  output.nodes.get(edge.output.tag) ?? output 
-      let input = this.esc.graph.nodes.get(edge.input.node.info.tag)
-      input =  input.nodes.get(edge.input.tag) ?? input 
-
-      return {
-        output, 
-        input
-      }
     }
 
 
@@ -193,14 +303,14 @@ export class Editor extends LitElement {
       const openTabs: {[x:string]: any} = {}
 
       // show/hide files tab
-      if (this.app?.filesystem) {
+      if (this.config.app?.filesystem) {
 
       // Add Tab On Click
       this.tree.oncreate = async (type, item) => {
 
         if (type === 'file') {
           const path = item.key
-          const rangeFile = this.app.filesystem.open(path, true)
+          const rangeFile = this.config.app.filesystem.open(path, true)
           return rangeFile
         }
       }
@@ -213,7 +323,7 @@ export class Editor extends LitElement {
         if (!existingTab){
 
         let tabInfo = this.history[id]
-        // const plugin = this.app.plugins.plugins[f.path]
+        // const plugin = this.config.app.plugins.plugins[f.path]
   
         previousTabs.delete(id)
 
@@ -265,14 +375,14 @@ export class Editor extends LitElement {
         // ---------- Update Editors ----------
 
         const canGet = {
-          metadata: this.app.plugins.metadata,
-          package: this.app.plugins.package,
-          module: this.app.plugins.module
+          metadata: this.config.app.plugins.metadata,
+          package: this.config.app.plugins.package,
+          module: this.config.app.plugins.module
         }
 
-        let metadata = (canGet.metadata) ? (await this.app.plugins.metadata(obj.path) ?? await obj.body) : undefined
-        const module = (canGet.module) ? await this.app.plugins.module(obj.path) : obj.operator
-        const pkg = (canGet.package) ? await this.app.plugins.package(obj.path) : undefined
+        let metadata = (canGet.metadata) ? (await this.config.app.plugins.metadata(obj.path) ?? await obj.body) : undefined
+        const module = (canGet.module) ? await this.config.app.plugins.module(obj.path) : obj.operator
+        const pkg = (canGet.package) ? await this.config.app.plugins.package(obj.path) : undefined
 
         // Merge package with metadata
         if (pkg) metadata = Object.assign(JSON.parse(JSON.stringify(pkg)), metadata)
@@ -301,7 +411,7 @@ export class Editor extends LitElement {
               if (isFile) await obj.save()
               else obj.operator = (0,eval)(tmpVar)
 
-              await this.app.start()
+              await this.config.app.start()
           }
         }
 
@@ -323,7 +433,7 @@ export class Editor extends LitElement {
     })
 
 
-    let treeObject = this.app.filesystem?.files?.system
+    let treeObject = this.config.app.filesystem?.files?.system
     this.tree.set(treeObject ?? {})
 
     this.fileUpdate = this.fileUpdate + 1
@@ -356,7 +466,7 @@ export class Editor extends LitElement {
       const graphTab = new Tab({name: 'Graph'})
       graphTab.appendChild(this.graph)
       panel.addTab(graphTab)
-      if (this.app?.filesystem) panel.addTab(this.filesTab)
+      if (this.config.app?.filesystem) panel.addTab(this.filesTab)
 
       // return html`
       //     ${this.modal}

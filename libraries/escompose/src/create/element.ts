@@ -28,6 +28,14 @@ export function create(id, esm: ESComponent, parent) {
         }
 
         if (typeof element === 'string') element = document.createElement(element);
+
+        // Automatically Set innerText for inoputs
+        if (!esm.hasOwnProperty('default')) {
+            esm.default = function(input) { 
+                this.esElement.innerText = input  // Has an associated element
+                return input
+            }
+        }
     }
 
     if (!(element instanceof Element)) console.warn('Element not found for', id);

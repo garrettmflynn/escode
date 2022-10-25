@@ -1,11 +1,14 @@
 import * as element from './element'
 import * as component from "./component";
 import * as standards from '../../../common/standards';
+import * as clone from "../../../common/clone.js"
 
 
 const animations = {}
 
 export default (id, esm, parent?) => {
+
+        const copy = clone.deep(esm) // Start with a deep copy. You must edit on the resulting object...
 
         // ------------------ Register Components ------------------
         let registry = esm.esComponents ?? {}
@@ -125,6 +128,7 @@ export default (id, esm, parent?) => {
         }
 
         Object.defineProperty(esm, '__isESComponent', isESC)    
+        Object.defineProperty(esm, 'esOriginal', {value: copy, enumerable: false})    
 
         return esm;
 }

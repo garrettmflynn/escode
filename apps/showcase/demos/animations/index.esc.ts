@@ -48,11 +48,11 @@ export const esDOM = {
 
 
 export const esListeners = {
-    'count.span.esElement.innerText': {
+    'count.span': {
         counter: true
     },
 
-    'time.span.esElement.innerText': {
+    'time.span': {
         timestamp: true
     }
 }

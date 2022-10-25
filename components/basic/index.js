@@ -1,1 +1,7 @@
+export * as average from './average.js'
+export * as equals from './equals.js'
 export * as instance from './instance.js'
+export * as keyboard from './keyboard.js'
+export * as log from './log.js'
+export * as switch from './switch.js'
+export * as threshold from './threshold.js'

@@ -8,4 +8,8 @@ export type Options = {
     listeners?: {
         static?: boolean
     },
+    nested: {
+        parent: any,
+        name: any,
+    }// Add ES Component types here
 }

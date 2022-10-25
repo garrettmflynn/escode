@@ -14,6 +14,7 @@ export const tabStyle = css`
   background: inherit;
   display: block;
   overflow: hidden;
+  position: relative;
 }
 
 slot {
