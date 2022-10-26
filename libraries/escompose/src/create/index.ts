@@ -24,7 +24,7 @@ export default (id, esm, parent?) => {
 
         // ------------------ Declare Special Functions ------------------
         // Delete Function
-        const onInit = esm.esInit;
+        const ogInit = esm.esInit;
         esm.esInit = () => {
 
             // Start Nested Components
@@ -50,7 +50,7 @@ export default (id, esm, parent?) => {
 
                 if (!animations[interval]) {
                 
-                    const info = animations[interval] = {objects: {id: esm}} as any
+                    const info = animations[interval] = {objects: {[id]: esm}} as any
 
                     const objects = info.objects
                     const runFuncs = () => {
@@ -66,7 +66,10 @@ export default (id, esm, parent?) => {
 
                         callback()
 
-                        animations[interval].stop = () => window.cancelAnimationFrame(info.id)
+                        animations[interval].stop = () => {
+                            window.cancelAnimationFrame(info.id)
+                            info.cancel = true
+                        }
                     }
                     // Set Interval
                     else {
@@ -83,7 +86,7 @@ export default (id, esm, parent?) => {
                     original,
                     stop: () => {
                         delete animations[interval].objects[id]
-                        esm.esAnimate = original
+                        esm.esAnimate = original // Replace with original function
                         if (Object.keys(animations[interval].objects).length === 0) {
                             animations[interval].stop()
                             delete animations[interval]
@@ -93,11 +96,12 @@ export default (id, esm, parent?) => {
             }
 
             const context = esm.__esProxy ?? esm
-            if (onInit) onInit.call(context)
-
+            if (ogInit) ogInit.call(context)
         }
 
+        const ogDelete = esm.esDelete;
         esm.esDelete = function () {
+
             if ( this.esElement instanceof Element) {
                 this.esElement.remove(); 
                 if( this.onremove) {
@@ -105,6 +109,21 @@ export default (id, esm, parent?) => {
                     this.onremove.call(context); 
                 }
             }
+
+            if ( esm.esAnimate && typeof esm.esAnimate.stop === 'function') esm.esAnimate.stop()
+            if (esm.esListeners) esm.esListeners.__manager.clear()
+
+            if (esm.esDOM) {
+                for (let name in esm.esDOM) esm.esDOM[name].esDelete()
+            }
+
+            const context = esm.__esProxy ?? esm
+            if (ogDelete) ogDelete.call(context)
+
+            // Replace Updated Keywords with Original Values
+            esm.esInit = ogInit
+            esm.esDelete = ogDelete
+
         }
 
         // -------- Bind Functions to GraphNode --------

@@ -1,22 +1,22 @@
 import Monitor from "../../esmonitor/src"
 import createComponent from "./create"
-import * as clone from "../../common/clone.js"
+import * as cloneUtils from "../../common/clone.js"
 import * as standards from "../../common/standards"
 import { Options } from "../../common/types"
 import { ESComponent } from "./component"
-import { merge } from "./utils"
+import { merge as mergeUtil } from "./utils"
 
 
 const listenerObject = Symbol('listenerObject')
 
 const esMerge = (base, esCompose) => {
 
-    let clonedEsCompose = clone.deep(esCompose) ?? {}
+    let clonedEsCompose = cloneUtils.deep(esCompose) ?? {}
 
     // Merge Traversal (i.e. only unset if undefined, otherwise drill into objects)
     let merged = Object.assign({}, base) // basic clone
     if (!Array.isArray(clonedEsCompose)) clonedEsCompose = [clonedEsCompose]
-    clonedEsCompose.reverse().forEach((toCompose) => merged = merge(Object.assign({}, toCompose), merged)) // Apply the first one last
+    clonedEsCompose.reverse().forEach((toCompose) => merged = mergeUtil(Object.assign({}, toCompose), merged)) // Apply the first one last
 
     return merged
 }
@@ -73,9 +73,10 @@ const handleListenerValue = ({
      const value = config // Subscription configuration object
      const fromStringPath = topPath.join(context.options.keySeparator)
 
-     if (!listeners.has(fromStringPath)) context.monitor.on(fromSubscriptionPath, (path, _, args) => passToListeners(context, listeners, path, args)) // only subscribe once
+      // Only subscribe once
+     const sub = (!listeners.has(fromStringPath)) ? context.monitor.on(fromSubscriptionPath, (path, _, args) => passToListeners(context, listeners, path, args)): undefined
 
-     listeners.add(fromStringPath, toPath, { value, root })
+     listeners.add(fromStringPath, toPath, { value, root }, sub)
 }
 
 
@@ -84,10 +85,12 @@ const handleListenerValue = ({
 // let notified = {}
 class ListenerManager {
 
+    monitor: Monitor
     original = {};
     active = {}
 
-    constructor (listeners = {}) {
+    constructor (monitor, listeners = {}) {
+        this.monitor = monitor
         this.register(listeners)
     }
 
@@ -96,22 +99,23 @@ class ListenerManager {
         Object.defineProperty(listeners, '__manager', {
             value: this,
             enumerable: false,
-            writable: false
+            writable: true // NOTE: This is being redefined if you create more than one object with the same input
         })
     }
 
-    add = (from, to, value: any = true) => {
+    add = (from, to, value: any = true, subscription: any = this.active[from].sub) => {
 
         let root = ''
         if (value?.hasOwnProperty('root')) root = value.root
         if (value?.hasOwnProperty('value')) value = value.value
         else console.error('No root provided for new edge...')
 
-
         if(!this.active[from]) this.active[from] = {}
+
         this.active[from][to] = {
             value,
             root,
+            subscription,
             [listenerObject]: true
         }
 
@@ -119,24 +123,43 @@ class ListenerManager {
         let base = this.original[to]
         if (!base) base = this.original[to] = {}
         if (typeof base !== 'object') {
-            if (typeof base === 'function') base = {[Symbol('function listener')]: base} // Move function to arbitrary key
-            else this.original[from] = {[base]: value}
+            if (typeof base === 'function') base = this.original[to] = {[Symbol('function listener')]: base} // Move function to arbitrary key
+            else base = this.original[to] = {[base]: true} // Move string to  a complex listener
         }
 
-        base[from] = value // complex edge
+        base[from] = value // complex listener
     }
 
     remove = (from, to) => {
+        const toRemove = [
+            { ref: this.active, path: [from, to], unlisten: true },
+            { ref: this.original, path: [to, from] }
+        ]
 
-        if (this.active[from]) delete this.active[from][to]
-        if (this.original[to]) {
-            const base = this.original[to]
+        toRemove.forEach(o => {
+            const { ref, path, unlisten } = o
+            let base = ref[path[0]]
+
             if (typeof base === 'object') {
-                delete base[from] // complex edge
-                if (Object.keys(base).length === 0) delete this.original[to]
-            } else delete this.original[to] // simple edge
-        }
+                const info = base[path[1]]
+                delete base[path[1]] // complex listener
+                if (Object.keys(base).length === 0) {
+                    delete ref[path[0]]
+                    if (unlisten && info.subscription) this.monitor.remove(info.subscription) // Cleaning up subscriptions (active only)
+                }
 
+            } else delete ref[path[0]] // simple listener
+
+        })
+
+    }
+
+    clear = () => {
+        Object.keys(this.active).forEach(from => {
+            Object.keys(this.active[from]).forEach(to => {
+                this.remove(from, to)
+            })
+        })
     }
 
     has = (from) => !!this.active[from]
@@ -153,7 +176,7 @@ const setListeners = (context, components) => {
     for (let root in components) {
         const info = components[root]
         const to = info.instance.esListeners  // Uses to —> from syntax
-        const listeners = new ListenerManager(to) // Uses from —> to syntax
+        const listeners = new ListenerManager(context.monitor, to) // Uses from —> to syntax
 
         for (let toPath in to) {
             const from = to[toPath]
@@ -184,11 +207,13 @@ function pass(from, target, args, context) {
 
     const id = context.id
 
-    let parent, key, root
+    let parent, key, root, subscription
     const isValue = target?.__value
     parent = target.parent
     key = target.key
     root = target.root
+    subscription = target.subscription
+
     const rootArr = root.split(context.options.keySeparator)
     const info = target.parent[key]
     target = info.value
@@ -207,7 +232,8 @@ function pass(from, target, args, context) {
 
             const res = {
                 value,
-                root // carry over the root
+                root, // carry over the root
+                subscription // carry over the subscription
             }
 
             if (willSet) {
@@ -250,11 +276,16 @@ function pass(from, target, args, context) {
         }
     }
 
-    // Configuration Object
-    else if (target && type === 'object' && !target.hasOwnProperty('__isESComponent')) {
-        transform(true)
-        Object.defineProperty(parent[key], 'esConfig', { value: ogValue })
-        config = ogValue
+    else if (target && type === 'object') {
+
+        // Check if configuration object
+        if (ogValue.hasOwnProperty('esFormat') || ogValue.hasOwnProperty('esBranch')) {
+            transform(true)
+            if (ogValue){
+                if (ogValue) config = ogValue
+                Object.defineProperty(parent[key], 'esConfig', { value: config })
+            }
+        }
     }
 
 
@@ -275,7 +306,7 @@ function pass(from, target, args, context) {
 
             config.esBranch.forEach(o => {
                 if (o.equals === args[0]) {
-                    args[0] = o.value // set first argument to branch value
+                    if (o.hasOwnProperty('value'))  args[0] = o.value // set first argument to branch value
                     isValid = true
                 }
             })
@@ -338,6 +369,7 @@ function passToListeners(context, listeners, name, ...args) {
                     parent: listeners.active,
                     key: group.name,
                     root: info.root,
+                    subscription: info.subscription,
                     __value: true
                 }, args, context)
             } else if (typeof info === 'object') {
@@ -346,6 +378,7 @@ function passToListeners(context, listeners, name, ...args) {
                         parent: info,
                         key,
                         root: info[key].root,
+                        subscription: info[key].subscription,
                         value: info[key].value,
                     }, args, context)
                 }
@@ -357,7 +390,7 @@ function passToListeners(context, listeners, name, ...args) {
 
 
 const toSet = Symbol('toSet')
-const create = (config, options: Partial<Options> = {}) => {
+export const create = (config, options: Partial<Options> = {}) => {
 
     // -------------- Create Complete Options Object --------------
 
@@ -373,6 +406,10 @@ const create = (config, options: Partial<Options> = {}) => {
         }
         monitor = new Monitor(options.monitor)
     }
+
+
+    if (options.clone) config = cloneUtils.deep(config) // NOTE: If this doesn't happen, the reference will be modified by the create function
+
 
     // Always fall back to esDOM
     monitor.options.fallbacks = ['esDOM']
@@ -399,7 +436,7 @@ const create = (config, options: Partial<Options> = {}) => {
         const id = Symbol('root')
         const instance = esDrill(config, id, undefined, drillOpts)
 
-        fullInstance = instance // clone.deep(instance)
+        fullInstance = instance // cloneUtils.deep(instance)
 
         monitor.set(id, fullInstance, fullOptions.listeners) // Setting root instance
 
@@ -419,3 +456,6 @@ const create = (config, options: Partial<Options> = {}) => {
 }
 
 export default create
+
+export const merge = esMerge
+export const clone = cloneUtils.deep

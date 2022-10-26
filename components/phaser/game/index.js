@@ -39,7 +39,6 @@ export function esDelete() {
 
 export default async function(){
 
-
     const instance = this
 
     // Get Phaser

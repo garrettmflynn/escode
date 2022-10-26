@@ -133,6 +133,7 @@
         if (this.#pollingId) {
           console.warn("[escode]: Stopped Polling!");
           clearInterval(this.#pollingId);
+          this.#pollingId = void 0;
         }
       };
       if (listeners2)
@@ -779,9 +780,18 @@
         const info3 = getPathInfo(absPath, this.options);
         return this.listen(info3.id, callback, info3.path);
       };
-      this.getInfo = (id2, callback, path2, original) => {
-        const info3 = info2(id2, callback, path2, original, this.references, this.listeners, this.options);
-        this.listeners.lookup.symbol[info3.sub] = getPath("absolute", info3);
+      this.getInfo = (label, callback, path2, original) => {
+        const info3 = info2(label, callback, path2, original, this.references, this.listeners, this.options);
+        const id2 = Math.random();
+        const lookups = this.listeners.lookup;
+        const name = getPath("absolute", info3);
+        lookups.symbol[info3.sub] = {
+          name,
+          id: id2
+        };
+        if (!lookups.name[name])
+          lookups.name[name] = {};
+        lookups.name[name][id2] = info3.sub;
         return info3;
       };
       this.listen = (id2, callback, path2 = [], __internal = {}) => {
@@ -899,8 +909,10 @@
           this.poller.remove(sub);
         else if (func) {
           delete funcs[sub];
-          if (!Object.getOwnPropertySymbols(funcs).length)
+          if (!Object.getOwnPropertySymbols(funcs).length) {
             func.current = func.original;
+            delete this.listeners.functions[absPath];
+          }
         } else if (setter) {
           delete setters2[sub];
           if (!Object.getOwnPropertySymbols(setters2).length) {
@@ -908,11 +920,15 @@
             const last = setter.last;
             const value = parent[last];
             Object.defineProperty(parent, last, { value, writable: true });
+            delete this.listeners.setters[absPath];
           }
         } else
           return false;
         delete this.listeners.lookup.symbol[sub];
-        delete this.listeners.lookup.name[info3.name][info3.id];
+        const nameLookup = this.listeners.lookup.name[info3.name];
+        delete nameLookup[info3.id];
+        if (!Object.getOwnPropertySymbols(nameLookup).length)
+          delete this.listeners.lookup.name[info3.name];
       };
       Object.defineProperty(this.listeners, "lookup", {
         value: createLookup(),
@@ -1166,12 +1182,12 @@
     }
     let el = create(id2, esm2, parent);
     esm2.esElement = el;
-    const onInit = esm2.esInit;
+    const ogInit = esm2.esInit;
     esm2.esInit = () => {
       for (let name in esm2.esDOM) {
-        const init = esm2.esDOM[name].esInit;
-        if (typeof init === "function")
-          init();
+        const init2 = esm2.esDOM[name].esInit;
+        if (typeof init2 === "function")
+          init2();
         else
           console.error(`Could not start component ${name} because it does not have an esInit function`);
       }
@@ -1186,7 +1202,7 @@
         const id3 = Math.random();
         const interval2 = typeof original === "number" ? original : "global";
         if (!animations[interval2]) {
-          const info3 = animations[interval2] = { objects: { id: esm2 } };
+          const info3 = animations[interval2] = { objects: { [id3]: esm2 } };
           const objects2 = info3.objects;
           const runFuncs = () => {
             for (let key in objects2)
@@ -1198,7 +1214,10 @@
               info3.id = window.requestAnimationFrame(callback);
             };
             callback();
-            animations[interval2].stop = () => window.cancelAnimationFrame(info3.id);
+            animations[interval2].stop = () => {
+              window.cancelAnimationFrame(info3.id);
+              info3.cancel = true;
+            };
           } else {
             info3.id = setInterval(() => runFuncs(), 1e3 / interval2);
             animations[interval2].stop = () => clearInterval(info3.id);
@@ -1219,17 +1238,31 @@
         };
       }
       const context = esm2.__esProxy ?? esm2;
-      if (onInit)
-        onInit.call(context);
+      if (ogInit)
+        ogInit.call(context);
     };
+    const ogDelete = esm2.esDelete;
     esm2.esDelete = function() {
       if (this.esElement instanceof Element) {
         this.esElement.remove();
         if (this.onremove) {
-          const context = esm2.__esProxy ?? esm2;
-          this.onremove.call(context);
+          const context2 = esm2.__esProxy ?? esm2;
+          this.onremove.call(context2);
         }
       }
+      if (esm2.esAnimate && typeof esm2.esAnimate.stop === "function")
+        esm2.esAnimate.stop();
+      if (esm2.esListeners)
+        esm2.esListeners.__manager.clear();
+      if (esm2.esDOM) {
+        for (let name in esm2.esDOM)
+          esm2.esDOM[name].esDelete();
+      }
+      const context = esm2.__esProxy ?? esm2;
+      if (ogDelete)
+        ogDelete.call(context);
+      esm2.esInit = ogInit;
+      esm2.esDelete = ogDelete;
     };
     for (let key in esm2) {
       if (typeof esm2[key] === "function") {
@@ -1332,12 +1365,11 @@
       fromSubscriptionPath.push(defaultPath);
     const value = config2;
     const fromStringPath = topPath.join(context.options.keySeparator);
-    if (!listeners2.has(fromStringPath))
-      context.monitor.on(fromSubscriptionPath, (path2, _, args) => passToListeners(context, listeners2, path2, args));
-    listeners2.add(fromStringPath, toPath, { value, root });
+    const sub = !listeners2.has(fromStringPath) ? context.monitor.on(fromSubscriptionPath, (path2, _, args) => passToListeners(context, listeners2, path2, args)) : void 0;
+    listeners2.add(fromStringPath, toPath, { value, root }, sub);
   };
   var ListenerManager = class {
-    constructor(listeners2 = {}) {
+    constructor(monitor2, listeners2 = {}) {
       this.original = {};
       this.active = {};
       this.register = (listeners2) => {
@@ -1345,10 +1377,10 @@
         Object.defineProperty(listeners2, "__manager", {
           value: this,
           enumerable: false,
-          writable: false
+          writable: true
         });
       };
-      this.add = (from, to, value = true) => {
+      this.add = (from, to, value = true, subscription = this.active[from].sub) => {
         let root = "";
         if (value?.hasOwnProperty("root"))
           root = value.root;
@@ -1361,6 +1393,7 @@
         this.active[from][to] = {
           value,
           root,
+          subscription,
           [listenerObject]: true
         };
         let base2 = this.original[to];
@@ -1368,27 +1401,42 @@
           base2 = this.original[to] = {};
         if (typeof base2 !== "object") {
           if (typeof base2 === "function")
-            base2 = { [Symbol("function listener")]: base2 };
+            base2 = this.original[to] = { [Symbol("function listener")]: base2 };
           else
-            this.original[from] = { [base2]: value };
+            base2 = this.original[to] = { [base2]: true };
         }
         base2[from] = value;
       };
       this.remove = (from, to) => {
-        if (this.active[from])
-          delete this.active[from][to];
-        if (this.original[to]) {
-          const base2 = this.original[to];
+        const toRemove = [
+          { ref: this.active, path: [from, to], unlisten: true },
+          { ref: this.original, path: [to, from] }
+        ];
+        toRemove.forEach((o) => {
+          const { ref: ref2, path: path2, unlisten } = o;
+          let base2 = ref2[path2[0]];
           if (typeof base2 === "object") {
-            delete base2[from];
-            if (Object.keys(base2).length === 0)
-              delete this.original[to];
+            const info3 = base2[path2[1]];
+            delete base2[path2[1]];
+            if (Object.keys(base2).length === 0) {
+              delete ref2[path2[0]];
+              if (unlisten && info3.subscription)
+                this.monitor.remove(info3.subscription);
+            }
           } else
-            delete this.original[to];
-        }
+            delete ref2[path2[0]];
+        });
+      };
+      this.clear = () => {
+        Object.keys(this.active).forEach((from) => {
+          Object.keys(this.active[from]).forEach((to) => {
+            this.remove(from, to);
+          });
+        });
       };
       this.has = (from) => !!this.active[from];
       this.get = (from) => this.active[from];
+      this.monitor = monitor2;
       this.register(listeners2);
     }
   };
@@ -1396,7 +1444,7 @@
     for (let root in components) {
       const info3 = components[root];
       const to = info3.instance.esListeners;
-      const listeners2 = new ListenerManager(to);
+      const listeners2 = new ListenerManager(context.monitor, to);
       for (let toPath in to) {
         const from = to[toPath];
         const mainInfo = {
@@ -1419,11 +1467,12 @@
   };
   function pass(from, target, args, context) {
     const id2 = context.id;
-    let parent, key, root;
+    let parent, key, root, subscription;
     const isValue = target?.__value;
     parent = target.parent;
     key = target.key;
     root = target.root;
+    subscription = target.subscription;
     const rootArr = root.split(context.options.keySeparator);
     const info3 = target.parent[key];
     target = info3.value;
@@ -1438,7 +1487,8 @@
         const value = noDefault ? toSet : val;
         const res = {
           value,
-          root
+          root,
+          subscription
         };
         if (willSet) {
           target = res.value;
@@ -1472,10 +1522,15 @@
         parent[key] = { [ogValue]: parent[key] };
         key = ogValue;
       }
-    } else if (target && type === "object" && !target.hasOwnProperty("__isESComponent")) {
-      transform(true);
-      Object.defineProperty(parent[key], "esConfig", { value: ogValue });
-      config2 = ogValue;
+    } else if (target && type === "object") {
+      if (ogValue.hasOwnProperty("esFormat") || ogValue.hasOwnProperty("esBranch")) {
+        transform(true);
+        if (ogValue) {
+          if (ogValue)
+            config2 = ogValue;
+          Object.defineProperty(parent[key], "esConfig", { value: config2 });
+        }
+      }
     }
     let isValidInput = true;
     if (config2) {
@@ -1494,7 +1549,8 @@
         let isValid = false;
         config2.esBranch.forEach((o) => {
           if (o.equals === args[0]) {
-            args[0] = o.value;
+            if (o.hasOwnProperty("value"))
+              args[0] = o.value;
             isValid = true;
           }
         });
@@ -1542,6 +1598,7 @@
             parent: listeners2.active,
             key: group.name,
             root: info3.root,
+            subscription: info3.subscription,
             __value: true
           }, args, context);
         } else if (typeof info3 === "object") {
@@ -1550,6 +1607,7 @@
               parent: info3,
               key,
               root: info3[key].root,
+              subscription: info3[key].subscription,
               value: info3[key].value
             }, args, context);
           }
@@ -1574,6 +1632,8 @@
       }
       monitor2 = new src_default(options.monitor);
     }
+    if (options.clone)
+      config2 = deep(config2);
     monitor2.options.fallbacks = ["esDOM"];
     const fullOptions = options;
     const components = {};
@@ -2812,10 +2872,11 @@
   };
   var esListeners = {
     [`${id}.imports`]: {
-      [`container.${buttonComponentId}`]: true
-    },
-    log: {
-      [`container.${buttonComponentId}`]: true
+      [`container.${buttonComponentId}`]: {
+        esBranch: [
+          { equals: true, value: true }
+        ]
+      }
     }
   };
 
@@ -2829,6 +2890,7 @@
   // apps/showcase/demos/phaser/index.esc.ts
   var index_esc_exports2 = {};
   __export(index_esc_exports2, {
+    esAttributes: () => esAttributes3,
     esDOM: () => esDOM2,
     esListeners: () => esListeners2
   });
@@ -3185,11 +3247,23 @@
   }
 
   // apps/showcase/demos/phaser/index.esc.ts
+  var esAttributes3 = {
+    style: {
+      width: "100%",
+      height: "100%"
+    }
+  };
   var esDOM2 = {
     keys: {
       esCompose: keyboard_exports
     },
     game: {
+      esAttributes: {
+        style: {
+          width: "100%",
+          height: "100%"
+        }
+      },
       esCompose: game_exports,
       preload: {
         setBaseURL: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/assets",
@@ -3362,7 +3436,6 @@
   var escJSON = "./index.esc.ts";
   var phaserJSON = "./demos/phaser/index.esc.ts";
   var animationsJSON = "./demos/animations/index.esc.ts";
-  var testComponent = "../../components/tests/basic/index.js";
   var basicPackage = {
     file: index_esc_exports,
     fallbacks: fallbacks_exports,
@@ -3378,49 +3451,89 @@
     fallbacks: fallbacks_default3,
     file: index_esc_exports3
   };
+  var demos = {
+    phaser: phaserPackage,
+    animations: animationsPackage,
+    basic: basicPackage
+  };
+  var modes = ["direct", "reference", "import"];
   var main2 = document.getElementById("app");
   var monitor = new Monitor({
     pathFormat: "absolute",
     polling: { sps: 60 }
   });
   var asyncLoads = false;
-  var start = async () => {
+  async function init() {
     if (!asyncLoads) {
       await load_exports.script("./libraries/esmpile/extensions/typescriptServices.min.js");
       asyncLoads = true;
     }
-    const demo = "animations";
-    let selected;
-    if (demo === "phaser")
-      selected = phaserPackage;
-    else if (demo === "animations")
-      selected = animationsPackage;
-    else {
-      selected = basicPackage;
-      const esmId = "ESM";
-      monitor.set(esmId, testComponent);
-      monitor.on(esmId, (path2, _, update3) => console.log("Polling Result:", path2, update3));
+    start(demoSelect.value, modeSelect.value);
+  }
+  var active;
+  var demoSelect = document.getElementById("demoSelect");
+  var demo = localStorage.getItem("demo");
+  for (let key in demos) {
+    const option = document.createElement("option");
+    option.value = key;
+    option.innerHTML = key;
+    if (key === demo)
+      option.selected = true;
+    demoSelect.appendChild(option);
+  }
+  var modeSelect = document.getElementById("modeSelect");
+  var mode2 = localStorage.getItem("mode");
+  modes.forEach((key) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.innerHTML = key;
+    if (key === mode2)
+      option.selected = true;
+    modeSelect.appendChild(option);
+  });
+  var restartButton = document.getElementById("restartButton");
+  demoSelect.onchange = modeSelect.onchange = restartButton.onclick = () => start(demoSelect.value, modeSelect.value);
+  var basicDemoSubs;
+  async function start(demo2 = "basic", mode3 = "direct") {
+    localStorage.setItem("demo", demo2);
+    localStorage.setItem("mode", mode3);
+    if (active?.esDelete)
+      active.esDelete();
+    if (basicDemoSubs) {
+      monitor.remove(basicDemoSubs);
+      basicDemoSubs = void 0;
     }
-    const options = {};
-    options.relativeTo = window.location.href + "apps/showcase";
-    options.collection = null;
-    options.debug = true;
-    options.callbacks = { progress: {} };
-    options.fallback = true;
-    options.filesystem = {
-      _fallbacks: selected.fallbacks
-    };
-    const imported = await compile(selected.json, options).catch((e) => {
-      console.error("Compilation Failed:", e);
-    });
-    console.log("Direct Import", imported);
-    const reference = selected.file;
+    console.log(`---------------- Starting ${demo2} demo in ${mode3} mode ----------------`);
+    let selected = demos[demo2];
+    if (demo2 === "basic") {
+      const esmId = "ESM";
+      monitor.set(esmId, basic_exports);
+      basicDemoSubs = monitor.on(esmId, (path2, _, update3) => console.log("Polling Result:", path2, update3));
+    }
+    let reference = selected.file;
+    if (mode3 === "reference" || mode3 === "import") {
+      const options = {};
+      options.relativeTo = window.location.href + "apps/showcase";
+      options.collection = null;
+      options.debug = true;
+      options.callbacks = { progress: {} };
+      options.fallback = true;
+      options.filesystem = {
+        _fallbacks: selected.fallbacks
+      };
+      reference = await compile(selected.json, options).catch((e) => {
+        console.error("Compilation Failed:", e);
+      });
+      console.log("Reference / Import Mode", reference);
+    }
     reference.esParent = main2;
-    const component = src_default2(reference, {
+    const component = create2(reference, {
       monitor,
+      clone: true,
       listeners: { static: true },
       nested: void 0
     });
-  };
-  start();
+    active = component;
+  }
+  init();
 })();

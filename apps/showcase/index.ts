@@ -1,6 +1,6 @@
 
 // -------------- Import Modules --------------
-import createComponent from '../../libraries/escompose/src/index'
+import * as escompose from '../../libraries/escompose/src/index'
 import Monitor from '../../libraries/esmonitor/src/Monitor.js'
 // import ESC from "../../libraries/escode/src/core/index";
 // import validate from "../../libraries/escode/src/validate/index";
@@ -10,6 +10,8 @@ import Monitor from '../../libraries/esmonitor/src/Monitor.js'
 import * as esm from '../../libraries/esmpile/src/index'
 import * as escFile from './index.esc'
 import * as escFallbacks from './fallbacks'
+import * as testComponent from '../../components/tests/basic/index.js'
+
 
 // Phaser Demo
 import * as phaserFile from './demos/phaser/index.esc'
@@ -18,6 +20,16 @@ import phaserFallbacks from './demos/phaser/fallbacks'
 // Animations Demo
 import * as animationsFile from './demos/animations/index.esc'
 import animationsFallbacks from './demos/animations/fallbacks'
+
+// else if (demo === 'multiplayer') selected = multiplayerPhaserFile as string
+// else if (demo === 'device') selected = devicePhaserFile as string // BROKEN
+// else if (demo === 'todo') selected = todoFile as string
+// else if (demo === 'tutorial') selected = tutorialFile as string
+// else if (demo === 'accessify') selected = accessifyFile as string
+
+// // Broken
+// else if (demo === 'audiofeedback') selected = audiofeedbackFile as string
+
 
 
 // ------------------ ES Components (more imports in files) ------------------
@@ -31,7 +43,6 @@ const tutorialJSON = './demos/tutorial/index.esc.ts'
 const animationsJSON = './demos/animations/index.esc.ts'
 const accessifyJSON = './demos/accessify/index.esc.ts'
 
-const testComponent = '../../components/tests/basic/index.js'
 
 const basicPackage = {
     file: escFile,
@@ -50,6 +61,14 @@ const animationsPackage = {
     fallbacks: animationsFallbacks,
     file: animationsFile
 }
+
+const demos = {
+    phaser: phaserPackage,
+    animations: animationsPackage,
+    basic: basicPackage
+}
+
+const modes = ['direct', 'reference', 'import']
 
 const main = document.getElementById('app') as HTMLElement
 
@@ -70,7 +89,7 @@ const monitor = new Monitor({
 })
 
 let asyncLoads = false
-const start = async () => {
+async function init () {
 
     // ---------------- ESMpile ----------------
    if (!asyncLoads) {
@@ -78,70 +97,111 @@ const start = async () => {
     asyncLoads = true
    }
 
-
-    // ------------------ ESCompose ------------------
-    const demo: string = 'animations'
-    let selected;
-    if (demo === 'phaser') selected = phaserPackage
-    // else if (demo === 'multiplayer') selected = multiplayerPhaserFile as string
-    // else if (demo === 'device') selected = devicePhaserFile as string // BROKEN
-    // else if (demo === 'todo') selected = todoFile as string
-    else if (demo === 'animations') selected = animationsPackage
-    // else if (demo === 'tutorial') selected = tutorialFile as string
-    // else if (demo === 'accessify') selected = accessifyFile as string
-
-    // // Broken
-    // else if (demo === 'audiofeedback') selected = audiofeedbackFile as string
-
-    // Basic
-    else {
-        selected = basicPackage
-        const esmId = 'ESM'
-        monitor.set(esmId, testComponent)
-        monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
-    }
-
-  
-
-    const options: any = {}
-    options.relativeTo = window.location.href + 'apps/showcase'
-    options.collection = null //'global' // Specify which bundle to reference. Specify 'global' to use same bundle across all imports. Don't specify to create a new bundle
-    options.debug = true // Show debug messages
-    options.callbacks = {progress: {}}
-    options.fallback = true // We want to fallback to text import
-
-    options.filesystem = {
-        _fallbacks: selected.fallbacks
-    }
-
-
-    const imported = await esm.compile(selected.json, options).catch(e => {
-        console.error('Compilation Failed:', e)
-    })
-
-    console.log('Direct Import', imported)
-
-
-    // ------------------ ESMpile (todo) ------------------
-    // for (let file in monitor.dependencies) {
-    //     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
-    // }
-
-    const reference = selected.file
-
-    reference.esParent = main
-
-    // Create an active ES Component from a .esc file
-    const component = createComponent(reference, {
-        monitor, // Use the existing monitor
-        // listeners: { static: false } // Will be able to track new keys added to the object
-        listeners: { static: true },
-        nested: undefined
-    })
-
+   start(demoSelect.value, modeSelect.value)
 }
 
-start()
+
+let active;
+const demoSelect = document.getElementById('demoSelect') as HTMLSelectElement
+const demo = localStorage.getItem('demo')
+
+for (let key in demos) {
+    const option = document.createElement('option')
+    option.value = key
+    option.innerHTML = key
+    if (key === demo) option.selected = true
+    demoSelect.appendChild(option)
+}
+
+const modeSelect = document.getElementById('modeSelect') as HTMLSelectElement
+const mode = localStorage.getItem('mode')
+modes.forEach(key => {
+    const option = document.createElement('option')
+    option.value = key
+    option.innerHTML = key
+    if (key === mode) option.selected = true
+    modeSelect.appendChild(option)
+})
+
+
+const restartButton = document.getElementById('restartButton') as HTMLButtonElement
+
+demoSelect.onchange = modeSelect.onchange = restartButton.onclick = () =>  start(demoSelect.value, modeSelect.value)
+
+
+
+let basicDemoSubs;
+async function start (demo = "basic", mode="direct") {
+    
+        localStorage.setItem('demo', demo)
+        localStorage.setItem('mode', mode)
+
+        if (active?.esDelete) active.esDelete()
+        if (basicDemoSubs) {
+            monitor.remove(basicDemoSubs)
+            basicDemoSubs = undefined
+        }
+
+        console.log(`---------------- Starting ${demo} demo in ${mode} mode ----------------`)
+
+        // ------------------ ESCompose ------------------
+        let selected = demos[demo]
+    
+        // Basic
+        if (demo === 'basic') {
+            const esmId = 'ESM'
+            monitor.set(esmId, testComponent)
+            basicDemoSubs = monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
+        }
+    
+    
+        let reference = selected.file
+
+        if (mode === 'reference' || mode === 'import') {
+
+                
+            const options: any = {}
+            options.relativeTo = window.location.href + 'apps/showcase' // Relative to the HTML page using this file bundle
+            options.collection = null //'global' // Specify which bundle to reference. Specify 'global' to use same bundle across all imports. Don't specify to create a new bundle
+            options.debug = true // Show debug messages
+            options.callbacks = {progress: {}}
+            options.fallback = true // We want to fallback to text import
+        
+            options.filesystem = {
+                _fallbacks: selected.fallbacks
+            }
+
+            reference = await esm.compile(selected.json, options).catch(e => {
+                console.error('Compilation Failed:', e)
+            })
+
+                
+            // ------------------ ESMpile (todo) ------------------
+            // for (let file in monitor.dependencies) {
+            //     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
+            // }
+    
+        
+            console.log('Reference / Import Mode', reference)
+        }
+
+        reference.esParent = main
+            
+        // Create an active ES Component from a .esc file
+        const component = escompose.create(reference, {
+            monitor, // Use the existing monitor
+            // listeners: { static: false } // Will be able to track new keys added to the object
+            clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
+            listeners: { static: true },
+            nested: undefined
+        })
+
+
+        active = component
+}
+
+
+init()
 
 // // Ensuring there is a container for the app
 // component.esElement = document.createElement('div')

@@ -8,9 +8,19 @@
         <link rel="stylesheet" href="./apps/showcase/styles.css">
     </head>
     <body>  
+        <nav id="controls">
+            <div>
+                <label for="demoSelect">Demo</label>
+                <select id="demoSelect"></select>
+            </div>
+            <div>
+                <label for="modeSelect">Mode</label>
+                <select id="modeSelect"></select>
+            </div>
+            <button id="restartButton">Restart</button>
+        </nav>
+
         <div id="app"></div>
-        <table id="states">
-        </table>
     </body>
 
     <script src="dist/index.js"></script>

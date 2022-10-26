@@ -66,10 +66,14 @@ export const esDOM = {
 
 export const esListeners = {
     [`${id}.imports`]: {
-        [`container.${buttonComponentId}`]: true
+        [`container.${buttonComponentId}`]: {
+            esBranch: [
+                {equals: true, value: true}
+            ]
+        }
     },
 
-    log: {
-        [`container.${buttonComponentId}`]: true
-    }
+    // log: {
+    //     [`container.${buttonComponentId}`]: true
+    // }
 }

@@ -10,16 +10,12 @@ body {
     padding: 0;
     width: 100vw;
     height: 100vh;
-}
-
-html {
     overflow: hidden;
 }
 
 body {
     display: flex;
     flex-direction: column;
-    overflow: scroll;
 }
 
 section {
@@ -119,8 +115,17 @@ nav h1 {
 }
 
 
+/* App Stuff */
+
+#app {
+    flex-grow: 1;
+    overflow: scroll;
+}
+
 
 /* States */
+
+
 
 #states {
     /* display: none; */

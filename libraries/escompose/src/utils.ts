@@ -19,6 +19,7 @@ export const merge = (main, override) => {
 
             // Nest functions
             else if (typeof override[k] === 'function') {
+
                 const original = copy[k]
                 copy[k] = function (...args) {
                     if (typeof original === 'function') original.call(this, ...args) // TODO: See if there is a more performant way to do this

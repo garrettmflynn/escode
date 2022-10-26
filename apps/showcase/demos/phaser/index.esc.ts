@@ -5,11 +5,26 @@ import update from "./scripts/player/update.js"
 import create from "./scripts/create.js"
 import * as keys from "../../../../components/basic/keyboard.js"
 
+export const esAttributes = {
+    style: {
+        width: '100%',
+        height: '100%',
+    }
+}
+
 export const esDOM = {
     keys: {
         esCompose: keys,
     },
     game: {
+        
+        esAttributes: {
+            style: {
+                width: '100%',
+                height: '100%',
+            }
+        },
+
         esCompose: game,
         preload: {
             setBaseURL: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/assets",
@@ -89,7 +104,7 @@ export const esDOM = {
 
 
 export const esListeners = {
-    
+
         // Main Player Controls
         ['game.player.jump']: {
             ['keys.ArrowUp']: true

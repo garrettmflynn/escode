@@ -8,6 +8,7 @@ export type Options = {
     listeners?: {
         static?: boolean
     },
+    clone?: boolean,
     nested: {
         parent: any,
         name: any,

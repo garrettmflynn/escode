@@ -82,6 +82,7 @@ export default class Poller {
         if (this.#pollingId) {
             console.warn('[escode]: Stopped Polling!')
             clearInterval(this.#pollingId)
+            this.#pollingId = undefined
         }
     }
 }

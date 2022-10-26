@@ -72,9 +72,20 @@ export default class Monitor {
     }
 
 
-    getInfo = (id, callback, path, original) => {
-        const info = listeners.info(id, callback, path, original, this.references, this.listeners, this.options)
-        this.listeners.lookup.symbol[info.sub] = getPath('absolute', info)
+    getInfo = (label, callback, path, original) => {
+        
+        const info = listeners.info(label, callback, path, original, this.references, this.listeners, this.options)
+        const id = Math.random()
+        const lookups = this.listeners.lookup
+        const name = getPath('absolute', info)
+        lookups.symbol[info.sub] = {
+            name,
+            id
+        }
+
+        if (!lookups.name[name]) lookups.name[name] = {}
+        lookups.name[name][id] = info.sub
+        
         return info
     }
 
@@ -231,7 +242,10 @@ export default class Monitor {
             // Reassign to Original Function
             else if (func) {
                 delete funcs[sub]
-                if (!Object.getOwnPropertySymbols(funcs).length) func.current = func.original
+                if (!Object.getOwnPropertySymbols(funcs).length) {
+                    func.current = func.original
+                    delete this.listeners.functions[absPath]
+                }
             }
             
             // Transition Back to Standard Object
@@ -242,10 +256,15 @@ export default class Monitor {
                     const last = setter.last
                     const value = parent[last]
                     Object.defineProperty(parent, last, { value, writable: true })
+                    delete this.listeners.setters[absPath]
                 }
             } else return false
 
             delete this.listeners.lookup.symbol[sub] // Remove from global listener collection
-            delete this.listeners.lookup.name[info.name][info.id]
+
+            const nameLookup = this.listeners.lookup.name[info.name]
+            delete nameLookup[info.id]
+            if (!Object.getOwnPropertySymbols(nameLookup).length )delete this.listeners.lookup.name[info.name]
+
     }
 }
