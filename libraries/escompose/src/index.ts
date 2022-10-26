@@ -139,27 +139,9 @@ class ListenerManager {
 
     }
 
-    has = (from) => {
-        let has = false
-        for (let key in this.original) if (this.original[key][from]) has = true
-        if (!has) return false
-        return !!this.active[from]
-    }
+    has = (from) => !!this.active[from]
 
-    get = (from) => {
-
-        const has = this.has(from)
-
-        // if (!has && !notified[from]) {
-        //     console.error('Does not have!', from, has)
-        //     notified[from] = true
-        // } else if (has && notified[from]) {
-        //     console.log('Added back!')
-        // }
-
-        if (!has) return;
-        else return this.active[from]
-    }
+    get = (from) => this.active[from]
 
 }
 
@@ -376,8 +358,6 @@ function passToListeners(context, listeners, name, ...args) {
 
 const toSet = Symbol('toSet')
 const create = (config, options: Partial<Options> = {}) => {
-
-    // config = clone.deep(config) // Start with a deep copy. You must edit on the resulting object...
 
     // -------------- Create Complete Options Object --------------
 

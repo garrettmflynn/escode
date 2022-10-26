@@ -5,23 +5,51 @@ import Monitor from '../../libraries/esmonitor/src/Monitor.js'
 // import ESC from "../../libraries/escode/src/core/index";
 // import validate from "../../libraries/escode/src/validate/index";
 
-// ------------------ ES Components (more imports in files) ------------------
+
+// Basic ESC Demo
+import * as esm from '../../libraries/esmpile/src/index'
 import * as escFile from './index.esc'
+import * as escFallbacks from './fallbacks'
+
+// Phaser Demo
 import * as phaserFile from './demos/phaser/index.esc'
-import * as audiofeedbackFile from './demos/devices/audiofeedback/index.esc'
-import * as todoFile from './demos/todo/index.esc'
-import * as multiplayerPhaserFile from './demos/phaser/versions/multiplayer.esc'
-import * as devicePhaserFile from './demos/phaser/versions/devices.esc'
-import * as tutorialFile from './demos/tutorial/index.esc'
+import phaserFallbacks from './demos/phaser/fallbacks'
+
+// Animations Demo
 import * as animationsFile from './demos/animations/index.esc'
-import * as accessifyFile from './demos/accessify/index.esc'
+import animationsFallbacks from './demos/animations/fallbacks'
 
-import * as test from '../../components/tests/basic/index.js'
 
-// ------------------ ESMpile (todo) ------------------
-// for (let file in monitor.dependencies) {
-//     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
-// }
+// ------------------ ES Components (more imports in files) ------------------
+const escJSON = './index.esc.ts'
+const phaserJSON = './demos/phaser/index.esc.ts'
+const audiofeedbackJSON = './demos/devices/audiofeedback/index.esc.ts'
+const todoJSON = './demos/todo/index.esc.ts'
+const multiplayerPhaserJSON = './demos/phaser/versions/multiplayer.esc.ts'
+const devicePhaserJSON = './demos/phaser/versions/devices.esc'
+const tutorialJSON = './demos/tutorial/index.esc.ts'
+const animationsJSON = './demos/animations/index.esc.ts'
+const accessifyJSON = './demos/accessify/index.esc.ts'
+
+const testComponent = '../../components/tests/basic/index.js'
+
+const basicPackage = {
+    file: escFile,
+    fallbacks: escFallbacks,
+    json: escJSON
+}
+
+const phaserPackage = {
+    file: phaserFile,
+    fallbacks: phaserFallbacks,
+    json: phaserJSON
+}
+
+const animationsPackage = {
+    json: animationsJSON,
+    fallbacks: animationsFallbacks,
+    file: animationsFile
+}
 
 const main = document.getElementById('app') as HTMLElement
 
@@ -37,41 +65,83 @@ const monitor = new Monitor({
     //     }
     // },
     pathFormat: 'absolute',
-    polling: { sps: 60 }
+    polling: { sps: 60 } // Poll the ESM Object
+
 })
 
-// Poll the ESM Object
+let asyncLoads = false
+const start = async () => {
 
-// ------------------ ESCompose ------------------
-const demo: string = 'accessify'
-let selected;
-if (demo === 'phaser') selected = phaserFile as any
-else if (demo === 'multiplayer') selected = multiplayerPhaserFile as any
-else if (demo === 'device') selected = devicePhaserFile as any // BROKEN
-else if (demo === 'todo') selected = todoFile as any
-else if (demo === 'animations') selected = animationsFile as any
-else if (demo === 'tutorial') selected = tutorialFile as any
-else if (demo === 'accessify') selected = accessifyFile as any
+    // ---------------- ESMpile ----------------
+   if (!asyncLoads) {
+    await esm.load.script('./libraries/esmpile/extensions/typescriptServices.min.js');
+    asyncLoads = true
+   }
 
-// Broken
-else if (demo === 'audiofeedback') selected = audiofeedbackFile as any
 
-// Basic
-else {
-    selected = escFile as any
-    const esmId = 'ESM'
-    monitor.set(esmId, test)
-    monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
+    // ------------------ ESCompose ------------------
+    const demo: string = 'animations'
+    let selected;
+    if (demo === 'phaser') selected = phaserPackage
+    // else if (demo === 'multiplayer') selected = multiplayerPhaserFile as string
+    // else if (demo === 'device') selected = devicePhaserFile as string // BROKEN
+    // else if (demo === 'todo') selected = todoFile as string
+    else if (demo === 'animations') selected = animationsPackage
+    // else if (demo === 'tutorial') selected = tutorialFile as string
+    // else if (demo === 'accessify') selected = accessifyFile as string
+
+    // // Broken
+    // else if (demo === 'audiofeedback') selected = audiofeedbackFile as string
+
+    // Basic
+    else {
+        selected = basicPackage
+        const esmId = 'ESM'
+        monitor.set(esmId, testComponent)
+        monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
+    }
+
+  
+
+    const options: any = {}
+    options.relativeTo = window.location.href + 'apps/showcase'
+    options.collection = null //'global' // Specify which bundle to reference. Specify 'global' to use same bundle across all imports. Don't specify to create a new bundle
+    options.debug = true // Show debug messages
+    options.callbacks = {progress: {}}
+    options.fallback = true // We want to fallback to text import
+
+    options.filesystem = {
+        _fallbacks: selected.fallbacks
+    }
+
+
+    const imported = await esm.compile(selected.json, options).catch(e => {
+        console.error('Compilation Failed:', e)
+    })
+
+    console.log('Direct Import', imported)
+
+
+    // ------------------ ESMpile (todo) ------------------
+    // for (let file in monitor.dependencies) {
+    //     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
+    // }
+
+    const reference = selected.file
+
+    reference.esParent = main
+
+    // Create an active ES Component from a .esc file
+    const component = createComponent(reference, {
+        monitor, // Use the existing monitor
+        // listeners: { static: false } // Will be able to track new keys added to the object
+        listeners: { static: true },
+        nested: undefined
+    })
+
 }
 
-selected.esParent = main
-
-// Create an active ES Component from a .esc file
-const component = createComponent(selected, {
-    monitor, // Use the existing monitor
-    // listeners: { static: false } // Will be able to track new keys added to the object
-    listeners: { static: true }
-})
+start()
 
 // // Ensuring there is a container for the app
 // component.esElement = document.createElement('div')

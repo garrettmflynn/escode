@@ -24,5 +24,5 @@ export {
     sourceMap,
     nodeModules,
     load,
-    bundle
+    bundle,
 }

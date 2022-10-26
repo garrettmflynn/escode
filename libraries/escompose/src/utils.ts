@@ -21,7 +21,7 @@ export const merge = (main, override) => {
             else if (typeof override[k] === 'function') {
                 const original = copy[k]
                 copy[k] = function (...args) {
-                    original.call(this, ...args)
+                    if (typeof original === 'function') original.call(this, ...args) // TODO: See if there is a more performant way to do this
                     override[k].call(this, ...args)
                 }
             }

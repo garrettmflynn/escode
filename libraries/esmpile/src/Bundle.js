@@ -268,6 +268,7 @@ export default class Bundle {
         this.status = 'importing'
 
          const info = await response.findModule(this.url, this.options)
+        
          
          // Direct import was successful
          if (info?.result) return info.result
@@ -420,7 +421,7 @@ export default class Bundle {
                 let done = false
                 setTimeout(() => {
                     if (done) return
-                    console.log('Took too godddamn long...')
+                    console.log('Took too long...')
                     bundle.promises.result.reject()
                     bundle.promises.encoded.reject()
                 }, 100)
@@ -619,11 +620,13 @@ export default class Bundle {
 
             try {
 
+                // ------------------- Direct Import ------------------- 
                 result = (isDirect) ? await this.import().catch(async e => {
                     if (this.#options.fallback === false) throw e
                     else await this.setBundler('objecturl') // fallback to objecturl
                 }) : undefined // try to import natively
 
+                // -------------------Text Compilation ------------------- 
                 try {
                     if (!result) {
                         if (isCircular) throw new Error(`Failed to import ${this.url} natively.`)
@@ -633,6 +636,8 @@ export default class Bundle {
                 
                 // Handle Resolution Errors
                 catch (e) {
+
+                    console.log('Not compiled', this.url, e)
 
                     if (this.options.fetch?.signal?.aborted) throw e
 
@@ -653,7 +658,7 @@ export default class Bundle {
                     }
                 }
 
-                 await this.encoded // ensure properly encoded
+                await this.encoded // ensure properly encoded
                 this.status = 'success'
                 this.notify(this)
                 resolve(result)

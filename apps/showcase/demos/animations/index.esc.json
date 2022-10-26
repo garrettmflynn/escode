@@ -1,0 +1,49 @@
+{
+    "esDOM": {
+        "counter": {
+            "esCompose": "./components/counter.js",
+            "esAnimate": true
+        },
+        "timestamp": {
+            "esCompose": "./components/timestamp.js",
+            "esAnimate": true
+        },
+        "count": {
+            "esElement": "p",
+            "esDOM": {
+                "header": {
+                    "esElement": "b",
+                    "esAttributes": {
+                        "innerText": "Frames: "
+                    }
+                },
+                "span": {
+                    "esElement": "span"
+                }
+            }
+        },
+        "time": {
+            "esElement": "p",
+            "esDOM": {
+                "header": {
+                    "esElement": "b",
+                    "esAttributes": {
+                        "innerText": "Time: "
+                    }
+                },
+                "span": {
+                    "esElement": "span"
+                }
+            }
+        },
+        }
+    },
+    "esListeners": {
+        "count.span": {
+            "counter": true
+        },
+        "time.span": {
+            "timestamp": true
+        }
+    }
+}
