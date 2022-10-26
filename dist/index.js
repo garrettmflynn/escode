@@ -72,7 +72,7 @@
   };
   var runCallback = (callback, path2, info3, output, setGlobal = true) => {
     if (callback instanceof Function) {
-      if (typeof output === "object" && typeof output.then === "function")
+      if (output && typeof output === "object" && typeof output.then === "function")
         output.then((value) => callback(path2, info3, value));
       else
         callback(path2, info3, output);
@@ -219,9 +219,7 @@
   var defaultPath = "default";
 
   // libraries/common/pathHelpers.ts
-  var hasKey = (key, obj) => {
-    return obj.hasOwnProperty(key) || key in obj;
-  };
+  var hasKey = (key, obj) => key in obj;
   var getFromPath = (baseObject, path2, opts = {}) => {
     const fallbackKeys = opts.fallbacks ?? [];
     const keySeparator2 = opts.keySeparator ?? keySeparator;
@@ -239,7 +237,7 @@
         throw new Error(message);
       }
       const str = path2[i];
-      if (!hasKey(str, ref2) && ref2.hasOwnProperty("esDOM")) {
+      if (!hasKey(str, ref2) && "esDOM" in ref2) {
         for (let i2 in fallbackKeys) {
           const key = fallbackKeys[i2];
           if (hasKey(key, ref2)) {
@@ -716,7 +714,8 @@
         };
         if (info3.object) {
           const name = info3.name;
-          if (name === "Object" || name === "Array") {
+          const isESM = esm(val);
+          if (isESM || name === "Object" || name === "Array") {
             info3.simple = true;
             const idx = seen.indexOf(val);
             if (idx !== -1)
@@ -1159,11 +1158,12 @@
 
   // libraries/common/clone.js
   var deep = (obj, opts = {}) => {
+    obj = Object.assign({}, obj);
     opts.accumulator = Array.isArray(obj) ? [] : {};
     drillSimple(obj, (key, val, info3) => {
-      if (info3.simple && info3.object) {
+      if (info3.simple && info3.object)
         return Array.isArray(val) ? [] : {};
-      } else
+      else
         return val;
     }, opts);
     return opts.accumulator;
@@ -1319,11 +1319,11 @@
 
   // libraries/escompose/src/index.ts
   var listenerObject = Symbol("listenerObject");
-  var esMerge = (base2, esCompose) => {
-    let clonedEsCompose = deep(esCompose) ?? {};
+  var esMerge = (base2, esCompose = {}) => {
+    if (!Array.isArray(esCompose))
+      esCompose = [esCompose];
+    let clonedEsCompose = esCompose.map((o) => deep(o));
     let merged = Object.assign({}, base2);
-    if (!Array.isArray(clonedEsCompose))
-      clonedEsCompose = [clonedEsCompose];
     clonedEsCompose.reverse().forEach((toCompose) => merged = merge(Object.assign({}, toCompose), merged));
     return merged;
   };
@@ -1523,7 +1523,8 @@
         key = ogValue;
       }
     } else if (target && type === "object") {
-      if (ogValue.hasOwnProperty("esFormat") || ogValue.hasOwnProperty("esBranch")) {
+      const isConfig = "esFormat" in ogValue || "esBranch" in ogValue;
+      if (isConfig) {
         transform(true);
         if (ogValue) {
           if (ogValue)
@@ -1534,7 +1535,7 @@
     }
     let isValidInput = true;
     if (config2) {
-      if (config2.hasOwnProperty("esFormat")) {
+      if ("esFormat" in config2) {
         try {
           args = config2.esFormat(...args);
           if (args === void 0)
@@ -1545,7 +1546,7 @@
           console.error("Failed to format arguments", e);
         }
       }
-      if (config2.hasOwnProperty("esBranch")) {
+      if ("esBranch" in config2) {
         let isValid = false;
         config2.esBranch.forEach((o) => {
           if (o.equals === args[0]) {
@@ -2887,13 +2888,14 @@
       }
     }
   };
+  var branchConfig = {
+    esBranch: [
+      { equals: true, value: true }
+    ]
+  };
   var esListeners = {
     [`${id}.imports`]: {
-      [`container.${buttonComponentId}`]: {
-        esBranch: [
-          { equals: true, value: true }
-        ]
-      }
+      [`container.${buttonComponentId}`]: branchConfig
     },
     [`container.p.span`]: {
       [`${id}.imports.nExecution`]: true
@@ -3453,30 +3455,40 @@
   var fallbacks_default3 = {};
 
   // apps/showcase/index.ts
-  var escJSON = "./index.esc.ts";
-  var phaserJSON = "./demos/phaser/index.esc.ts";
-  var animationsJSON = "./demos/animations/index.esc.ts";
+  var escJSON = "./index.esc.json";
+  var escJS = "./index.esc.ts";
+  var phaserJSON = "./demos/phaser/index.esc.json";
+  var phaserJS = "./demos/phaser/index.esc.ts";
+  var animationsJSON = "./demos/animations/index.esc.json";
+  var animationsJS = "./demos/animations/index.esc.ts";
   var basicPackage = {
     file: index_esc_exports,
     fallbacks: fallbacks_exports,
-    json: escJSON
+    json: escJSON,
+    js: escJS
   };
   var phaserPackage = {
     file: index_esc_exports2,
     fallbacks: fallbacks_default2,
-    json: phaserJSON
+    json: phaserJSON,
+    js: phaserJS
   };
   var animationsPackage = {
     json: animationsJSON,
     fallbacks: fallbacks_default3,
-    file: index_esc_exports3
+    file: index_esc_exports3,
+    js: animationsJS
   };
   var demos = {
     phaser: phaserPackage,
     animations: animationsPackage,
     basic: basicPackage
   };
-  var modes = ["direct", "reference", "import"];
+  var modes = {
+    "Direct": "direct",
+    "JSON": "json",
+    ["File Compilation"]: "compilation"
+  };
   var main2 = document.getElementById("app");
   var monitor = new Monitor({
     pathFormat: "absolute",
@@ -3488,50 +3500,57 @@
       await load_exports.script("./libraries/esmpile/extensions/typescriptServices.min.js");
       asyncLoads = true;
     }
-    start(demoSelect.value, modeSelect.value);
+    startFunction();
   }
   var active;
-  var demoSelect = document.getElementById("demoSelect");
-  var demo = localStorage.getItem("demo");
-  for (let key in demos) {
-    const option = document.createElement("option");
-    option.value = key;
-    option.innerHTML = key;
-    if (key === demo)
-      option.selected = true;
-    demoSelect.appendChild(option);
-  }
-  var modeSelect = document.getElementById("modeSelect");
-  var mode2 = localStorage.getItem("mode");
-  modes.forEach((key) => {
-    const option = document.createElement("option");
-    option.value = key;
-    option.innerHTML = key;
-    if (key === mode2)
-      option.selected = true;
-    modeSelect.appendChild(option);
+  var selects = [{
+    element: document.getElementById("demoSelect"),
+    key: "demo",
+    selected: localStorage.getItem("demo"),
+    options: Object.keys(demos)
+  }, {
+    element: document.getElementById("modeSelect"),
+    key: "mode",
+    selected: localStorage.getItem("mode"),
+    options: modes
+  }];
+  selects.forEach((o) => {
+    const isArray = Array.isArray(o.options);
+    for (let key in o.options) {
+      const option = document.createElement("option");
+      const value = o.options[key];
+      option.value = value;
+      const text = isArray ? o.options[key] : key;
+      option.innerHTML = text[0].toUpperCase() + text.slice(1);
+      if (value === o.selected)
+        option.selected = true;
+      o.element.appendChild(option);
+    }
   });
   var restartButton = document.getElementById("restartButton");
-  demoSelect.onchange = modeSelect.onchange = restartButton.onclick = () => start(demoSelect.value, modeSelect.value);
-  var basicDemoSubs;
-  async function start(demo2 = "basic", mode3 = "direct") {
-    localStorage.setItem("demo", demo2);
-    localStorage.setItem("mode", mode3);
+  function startFunction() {
+    const args = selects.map((o) => {
+      const val = o.element.value;
+      localStorage.setItem(o.key, val);
+      return val;
+    });
     if (active?.esDelete)
       active.esDelete();
     if (basicDemoSubs) {
       monitor.remove(basicDemoSubs);
       basicDemoSubs = void 0;
     }
-    console.log(`---------------- Starting ${demo2} demo in ${mode3} mode ----------------`);
-    let selected = demos[demo2];
-    if (demo2 === "basic") {
-      const esmId = "ESM";
-      monitor.set(esmId, basic_exports);
-      basicDemoSubs = monitor.on(esmId, (path2, _, update3) => console.log("Polling Result:", path2, update3));
-    }
+    console.log(`---------------- Starting ${args[0]} demo in ${args[1]} mode ----------------`);
+    start(...args);
+  }
+  selects.forEach((o) => o.element.addEventListener("change", startFunction));
+  restartButton.addEventListener("click", startFunction);
+  var basicDemoSubs;
+  async function start(demo = "basic", mode2 = "direct") {
+    let selected = demos[demo];
     let reference = selected.file;
-    if (mode3 === "reference" || mode3 === "import") {
+    if (mode2 !== "direct") {
+      const toCompile = mode2 === "json" ? selected.json : selected.js;
       const options = {};
       options.relativeTo = window.location.href + "apps/showcase";
       options.collection = null;
@@ -3541,18 +3560,24 @@
       options.filesystem = {
         _fallbacks: selected.fallbacks
       };
-      reference = await compile(selected.json, options).catch((e) => {
+      reference = await compile(toCompile, options).catch((e) => {
         console.error("Compilation Failed:", e);
       });
-      console.log("Reference / Import Mode", reference);
+      console.log("ESMpile Result", reference);
     }
-    reference.esParent = main2;
+    if (demo === "basic") {
+      const esmId = "ESM";
+      const testComponent = reference.esDOM.test.esCompose;
+      monitor.set(esmId, testComponent);
+      basicDemoSubs = monitor.on(esmId, (path2, _, update3) => console.log("Polling Result:", path2, update3));
+    }
     const component = create2(reference, {
       monitor,
       clone: true,
       listeners: { static: true },
       nested: void 0
     });
+    component.esParent = main2;
     active = component;
   }
   init();

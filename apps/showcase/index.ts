@@ -10,16 +10,20 @@ import Monitor from '../../libraries/esmonitor/src/Monitor.js'
 import * as esm from '../../libraries/esmpile/src/index'
 import * as escFile from './index.esc'
 import * as escFallbacks from './fallbacks'
-import * as testComponent from '../../components/tests/basic/index.js'
-
+const escJSON = './index.esc.json'
+const escJS = './index.esc.ts'
 
 // Phaser Demo
 import * as phaserFile from './demos/phaser/index.esc'
 import phaserFallbacks from './demos/phaser/fallbacks'
+const phaserJSON = './demos/phaser/index.esc.json'
+const phaserJS = './demos/phaser/index.esc.ts'
 
 // Animations Demo
 import * as animationsFile from './demos/animations/index.esc'
 import animationsFallbacks from './demos/animations/fallbacks'
+const animationsJSON = './demos/animations/index.esc.json'
+const animationsJS = './demos/animations/index.esc.ts'
 
 // else if (demo === 'multiplayer') selected = multiplayerPhaserFile as string
 // else if (demo === 'device') selected = devicePhaserFile as string // BROKEN
@@ -33,33 +37,35 @@ import animationsFallbacks from './demos/animations/fallbacks'
 
 
 // ------------------ ES Components (more imports in files) ------------------
-const escJSON = './index.esc.ts'
-const phaserJSON = './demos/phaser/index.esc.ts'
 const audiofeedbackJSON = './demos/devices/audiofeedback/index.esc.ts'
 const todoJSON = './demos/todo/index.esc.ts'
 const multiplayerPhaserJSON = './demos/phaser/versions/multiplayer.esc.ts'
 const devicePhaserJSON = './demos/phaser/versions/devices.esc'
 const tutorialJSON = './demos/tutorial/index.esc.ts'
-const animationsJSON = './demos/animations/index.esc.ts'
 const accessifyJSON = './demos/accessify/index.esc.ts'
 
 
 const basicPackage = {
     file: escFile,
     fallbacks: escFallbacks,
-    json: escJSON
+    json: escJSON,
+    js: escJS
 }
 
 const phaserPackage = {
     file: phaserFile,
     fallbacks: phaserFallbacks,
-    json: phaserJSON
+    json: phaserJSON,
+    js: phaserJS
+
 }
 
 const animationsPackage = {
     json: animationsJSON,
     fallbacks: animationsFallbacks,
-    file: animationsFile
+    file: animationsFile,
+    js: animationsJS
+
 }
 
 const demos = {
@@ -68,7 +74,11 @@ const demos = {
     basic: basicPackage
 }
 
-const modes = ['direct', 'reference', 'import']
+const modes = {
+    'Direct': 'direct',
+    'JSON': 'json',
+    ['File Compilation']: 'compilation',
+}
 
 const main = document.getElementById('app') as HTMLElement
 
@@ -97,67 +107,74 @@ async function init () {
     asyncLoads = true
    }
 
-   start(demoSelect.value, modeSelect.value)
+   startFunction()
 }
 
 
 let active;
-const demoSelect = document.getElementById('demoSelect') as HTMLSelectElement
-const demo = localStorage.getItem('demo')
 
-for (let key in demos) {
-    const option = document.createElement('option')
-    option.value = key
-    option.innerHTML = key
-    if (key === demo) option.selected = true
-    demoSelect.appendChild(option)
-}
+const selects = [{
+    element: document.getElementById('demoSelect') as HTMLSelectElement,
+    key: 'demo',
+    selected: localStorage.getItem('demo'),
+    options: Object.keys(demos)
+},{
+    element: document.getElementById('modeSelect') as HTMLSelectElement,
+    key: 'mode',
+    selected: localStorage.getItem('mode'),
+    options: modes
+}]
 
-const modeSelect = document.getElementById('modeSelect') as HTMLSelectElement
-const mode = localStorage.getItem('mode')
-modes.forEach(key => {
-    const option = document.createElement('option')
-    option.value = key
-    option.innerHTML = key
-    if (key === mode) option.selected = true
-    modeSelect.appendChild(option)
+selects.forEach(o => {
+    const isArray = Array.isArray(o.options)
+    for (let key in o.options) {
+        const option = document.createElement('option')
+        const value = o.options[key]
+        option.value = value
+        const text = isArray ? o.options[key] : key
+        option.innerHTML = text[0].toUpperCase() + text.slice(1)
+        if (value === o.selected) option.selected = true
+        o.element.appendChild(option)
+    }
 })
-
 
 const restartButton = document.getElementById('restartButton') as HTMLButtonElement
 
-demoSelect.onchange = modeSelect.onchange = restartButton.onclick = () =>  start(demoSelect.value, modeSelect.value)
+function startFunction () {
+
+    const args = selects.map(o => {
+        const val = o.element.value
+        localStorage.setItem(o.key, val)
+        return val
+    })
+
+    if (active?.esDelete) active.esDelete()
+    if (basicDemoSubs) {
+        monitor.remove(basicDemoSubs)
+        basicDemoSubs = undefined
+    }
+    
+    console.log(`---------------- Starting ${args[0]} demo in ${args[1]} mode ----------------`)
+
+    start(...args)
+}
+selects.forEach(o => o.element.addEventListener('change', startFunction))
+restartButton.addEventListener('click', startFunction)
 
 
 
 let basicDemoSubs;
 async function start (demo = "basic", mode="direct") {
     
-        localStorage.setItem('demo', demo)
-        localStorage.setItem('mode', mode)
-
-        if (active?.esDelete) active.esDelete()
-        if (basicDemoSubs) {
-            monitor.remove(basicDemoSubs)
-            basicDemoSubs = undefined
-        }
-
-        console.log(`---------------- Starting ${demo} demo in ${mode} mode ----------------`)
-
         // ------------------ ESCompose ------------------
         let selected = demos[demo]
-    
-        // Basic
-        if (demo === 'basic') {
-            const esmId = 'ESM'
-            monitor.set(esmId, testComponent)
-            basicDemoSubs = monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
-        }
     
     
         let reference = selected.file
 
-        if (mode === 'reference' || mode === 'import') {
+        if (mode !== 'direct') {
+
+            const toCompile = mode === 'json' ? selected.json : selected.js
 
                 
             const options: any = {}
@@ -171,22 +188,30 @@ async function start (demo = "basic", mode="direct") {
                 _fallbacks: selected.fallbacks
             }
 
-            reference = await esm.compile(selected.json, options).catch(e => {
+            reference = await esm.compile(toCompile, options).catch(e => {
                 console.error('Compilation Failed:', e)
             })
 
-                
             // ------------------ ESMpile (todo) ------------------
             // for (let file in monitor.dependencies) {
             //     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
             // }
+
+            // reference = Object.assign({}, reference)
     
-        
-            console.log('Reference / Import Mode', reference)
+            console.log('ESMpile Result', reference)
+
         }
 
-        reference.esParent = main
+        // Basic
+        if (demo === 'basic') {
+            const esmId = 'ESM'
+            const testComponent = reference.esDOM.test.esCompose // Grab from active reference
+            monitor.set(esmId, testComponent)
+            basicDemoSubs = monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
+        }
             
+
         // Create an active ES Component from a .esc file
         const component = escompose.create(reference, {
             monitor, // Use the existing monitor
@@ -195,6 +220,9 @@ async function start (demo = "basic", mode="direct") {
             listeners: { static: true },
             nested: undefined
         })
+
+        component.esParent = main // ensure this is added to something that is ESM...
+
 
 
         active = component

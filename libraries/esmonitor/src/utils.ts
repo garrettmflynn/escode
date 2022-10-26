@@ -36,7 +36,7 @@ export const runCallback = (callback, path, info, output, setGlobal=true) => {
     if (callback instanceof Function) {
         
         // Promises
-        if (typeof output === 'object' && typeof output.then === 'function') output.then(value => callback(path, info, value))
+        if (output && typeof output === 'object' && typeof output.then === 'function') output.then(value => callback(path, info, value))
 
         // Normal
         else callback(path, info, output)

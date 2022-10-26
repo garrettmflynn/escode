@@ -81,13 +81,15 @@ export const esDOM = {
 }
 
 
+const branchConfig = {
+    esBranch: [
+        {equals: true, value: true}
+    ]
+}
+
 export const esListeners = {
     [`${id}.imports`]: {
-        [`container.${buttonComponentId}`]: {
-            esBranch: [
-                {equals: true, value: true}
-            ]
-        }
+        [`container.${buttonComponentId}`]: branchConfig
     },
 
     [`container.p.span`]: {

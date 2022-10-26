@@ -9,13 +9,16 @@ import { merge as mergeUtil } from "./utils"
 
 const listenerObject = Symbol('listenerObject')
 
-const esMerge = (base, esCompose) => {
+type anyObj = {[key: string]: any}
+type esComposeType = anyObj | anyObj[]
+const esMerge = (base, esCompose: esComposeType = {}) => {
 
-    let clonedEsCompose = cloneUtils.deep(esCompose) ?? {}
+    if (!Array.isArray(esCompose)) esCompose = [esCompose]
+    let clonedEsCompose = esCompose.map(o => cloneUtils.deep(o) )
 
     // Merge Traversal (i.e. only unset if undefined, otherwise drill into objects)
     let merged = Object.assign({}, base) // basic clone
-    if (!Array.isArray(clonedEsCompose)) clonedEsCompose = [clonedEsCompose]
+
     clonedEsCompose.reverse().forEach((toCompose) => merged = mergeUtil(Object.assign({}, toCompose), merged)) // Apply the first one last
 
     return merged
@@ -279,7 +282,9 @@ function pass(from, target, args, context) {
     else if (target && type === 'object') {
 
         // Check if configuration object
-        if (ogValue.hasOwnProperty('esFormat') || ogValue.hasOwnProperty('esBranch')) {
+        const isConfig = 'esFormat' in ogValue || 'esBranch' in ogValue
+
+        if (isConfig) {
             transform(true)
             if (ogValue){
                 if (ogValue) config = ogValue
@@ -293,7 +298,7 @@ function pass(from, target, args, context) {
     let isValidInput = true
 
     if (config) {
-        if (config.hasOwnProperty('esFormat')) {
+        if ('esFormat' in config) {
             try {
                 args = config.esFormat(...args)
                 if (args === undefined) isValidInput = false
@@ -301,7 +306,7 @@ function pass(from, target, args, context) {
             } catch (e) { console.error('Failed to format arguments', e) }
         }
 
-        if (config.hasOwnProperty('esBranch')) {
+        if ('esBranch' in config) {
             let isValid = false
 
             config.esBranch.forEach(o => {

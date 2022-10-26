@@ -1,3 +1,4 @@
+import { esm } from './check.js'
 
 export const drillSimple = (obj, callback, options) => {
 
@@ -28,7 +29,9 @@ export const drillSimple = (obj, callback, options) => {
             if (info.object) {
                 const name = info.name
 
-                if (name === 'Object' || name === 'Array') {
+                const isESM = esm(val) // make sure to catch ESM
+
+                if (isESM || name === 'Object' || name === 'Array') {
                     info.simple = true
                     const idx = seen.indexOf(val)
                     if (idx !== -1) acc[key] =fromSeen[idx]

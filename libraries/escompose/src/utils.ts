@@ -28,7 +28,7 @@ export const merge = (main, override) => {
             }
             
             // Replace values and arrays
-            else if (k in override) copy[k] = override[k] 
+            else if (k in override) copy[k] = override[k]
         })
 
         newKeys.forEach(k => copy[k] = override[k])

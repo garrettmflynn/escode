@@ -62,6 +62,7 @@ export default class Monitor {
         const optsCopy = {...opts}
         if (!optsCopy.reference) optsCopy.reference = this.references
         if (!optsCopy.listeners) optsCopy.listeners = this.listeners
+
         return setFromOptions(path, value, this.options, optsCopy)
     }
 
@@ -167,6 +168,7 @@ export default class Monitor {
                 let type = 'setters' // trigger setters
                 if (typeof ref === 'function') type = 'functions' // intercept function calls
                 info = this.getInfo(id, callback, arrayPath, ref)
+
                 this.add(type, info)
             }
             
@@ -174,6 +176,7 @@ export default class Monitor {
             console.error('Fallback to polling:', path, e)
             info = this.getInfo(id, callback, arrayPath, ref)
             this.poller.add(info)
+            // __internalComplete.poll = true
         }
         
 

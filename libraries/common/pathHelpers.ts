@@ -1,9 +1,7 @@
 import { PathFormat, SetValueOptions } from "../esmonitor/src/types"
 import * as standards from './standards'
 
-const hasKey = (key, obj) => {
-    return obj.hasOwnProperty(key) || key in obj
-}
+const hasKey = (key, obj) =>  key in obj
 
 export const getFromPath = (baseObject, path, opts: any = {}) => {
     const fallbackKeys = opts.fallbacks ?? []
@@ -27,7 +25,7 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
 
         const str = path[i]
         // Try Inside ES Components
-        if (!hasKey(str, ref) && ref.hasOwnProperty('esDOM')) {
+        if (!hasKey(str, ref) && 'esDOM' in ref) {
             for (let i in fallbackKeys) {
                 const key = fallbackKeys[i]
                 if (hasKey(key, ref)) {

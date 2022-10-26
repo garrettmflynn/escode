@@ -58,7 +58,9 @@ export const info = (id, callback, path, originalValue, base, listeners, options
         }, 
         get current() { return get(info.path.absolute) },
         set current(val) { set(info.path.absolute, val) },
-        get parent() { return get(info.path.parent) },
+        get parent() { 
+            return get(info.path.parent) 
+        },
         get reference(){ return refs[id] },
         set reference(val){ refs[id] = val },
         original: originalValue,
