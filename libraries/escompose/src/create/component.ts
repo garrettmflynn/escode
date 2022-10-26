@@ -24,6 +24,7 @@ export const define = (config, esm) => {
     // Register the Component
     if (!registry[config.name]) {
 
+
         // Derive the Base Class Name
         const clsName = (isAutonomous) ? '' : (tagToClassMap[config.extends] ?? config.extends[0].toUpperCase() + config.extends.slice(1))
         

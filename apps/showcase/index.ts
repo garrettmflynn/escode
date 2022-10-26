@@ -15,7 +15,7 @@ const escJS = './index.esc.ts'
 
 // Phaser Demo
 import * as phaserFile from './demos/phaser/index.esc'
-import phaserFallbacks from './demos/phaser/fallbacks'
+import phaserFallbacks from './demos/phaser/versions/devices/fallbacks'
 const phaserJSON = './demos/phaser/index.esc.json'
 const phaserJS = './demos/phaser/index.esc.ts'
 
@@ -24,6 +24,36 @@ import * as animationsFile from './demos/animations/index.esc'
 import animationsFallbacks from './demos/animations/fallbacks'
 const animationsJSON = './demos/animations/index.esc.json'
 const animationsJS = './demos/animations/index.esc.ts'
+
+// Multiplayer Phaser Demo
+import * as multiplayerPhaserFile from './demos/phaser/versions/multiplayer/index.esc'
+import multiplayerPhaserFallbacks from './demos/phaser/versions/multiplayer/fallbacks'
+const multiplayerPhaserJSON = './demos/phaser/versions/versions/multiplayer/index.esc.json'
+const multiplayerPhaserJS = './demos/phaser/versions/multiplayer/index.esc.ts'
+
+// Device Phaser Demo
+import * as devicePhaserFile from './demos/phaser/versions/devices/index.esc'
+import devicePhaserFallbacks from './demos/phaser/versions/devices/fallbacks'
+const devicePhaserJSON = './demos/phaser/versions/versions/devices/index.esc.json'
+const devicePhaserJS = './demos/phaser/versions/devices/index.esc.ts'
+
+// Todo Demo
+import * as todoFile from './demos/todo/index.esc'
+import todoFallbacks from './demos/todo/fallbacks'
+const todoJSON = './demos/todo/index.esc.ts'
+const todoJS = './demos/todo/index.esc.ts'
+
+// Tutorial Demo
+import * as tutorialFile from './demos/tutorial/index.esc'
+import tutorialFallbacks from './demos/tutorial/fallbacks'
+const tutorialJSON = './demos/tutorial/index.esc.ts'
+const tutorialJS = './demos/tutorial/index.esc.ts'
+
+// Accessify Demo
+import * as accessifyFile from './demos/accessify/index.esc'
+import accessifyFallbacks from './demos/accessify/fallbacks'
+const accessifyJSON = './demos/accessify/index.esc.ts'
+const accessifyJS = './demos/accessify/index.esc.ts'
 
 // else if (demo === 'multiplayer') selected = multiplayerPhaserFile as string
 // else if (demo === 'device') selected = devicePhaserFile as string // BROKEN
@@ -38,12 +68,6 @@ const animationsJS = './demos/animations/index.esc.ts'
 
 // ------------------ ES Components (more imports in files) ------------------
 const audiofeedbackJSON = './demos/devices/audiofeedback/index.esc.ts'
-const todoJSON = './demos/todo/index.esc.ts'
-const multiplayerPhaserJSON = './demos/phaser/versions/multiplayer.esc.ts'
-const devicePhaserJSON = './demos/phaser/versions/devices.esc'
-const tutorialJSON = './demos/tutorial/index.esc.ts'
-const accessifyJSON = './demos/accessify/index.esc.ts'
-
 
 const basicPackage = {
     file: escFile,
@@ -68,10 +92,50 @@ const animationsPackage = {
 
 }
 
+const todoPackage = {
+    json: todoJSON,
+    fallbacks: todoFallbacks,
+    file: todoFile,
+    js: todoJS
+}
+
+const multiplayerPackage = {
+    json: multiplayerPhaserJSON,
+    fallbacks: multiplayerPhaserFallbacks,
+    file: multiplayerPhaserFile,
+    js: multiplayerPhaserJS
+}
+
+const devicePackage = {
+    json: devicePhaserJSON,
+    fallbacks: devicePhaserFallbacks,
+    file: devicePhaserFile,
+    js: devicePhaserJS
+}
+
+const tutorialPackage = {
+    json: tutorialJSON,
+    fallbacks: tutorialFallbacks,
+    file: tutorialFile,
+    js: tutorialJS
+}
+
+const accessifyPackage = {
+    json: accessifyJSON,
+    fallbacks: accessifyFallbacks,
+    file: accessifyFile,
+    js: accessifyJS
+}
+
 const demos = {
-    phaser: phaserPackage,
+    basic: basicPackage,
     animations: animationsPackage,
-    basic: basicPackage
+    phaser: phaserPackage,
+    multiplayer: multiplayerPackage,
+    device: devicePackage,
+    todo: todoPackage,
+    tutorial: tutorialPackage,
+    accessify: accessifyPackage
 }
 
 const modes = {
@@ -221,7 +285,9 @@ async function start (demo = "basic", mode="direct") {
             nested: undefined
         })
 
-        component.esParent = main // ensure this is added to something that is ESM...
+        setTimeout(() => {
+         component.esParent = main // ensure this is added to something that is ESM...
+        }, 1000)
 
 
 

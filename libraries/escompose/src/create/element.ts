@@ -49,11 +49,38 @@ export function create(id, esm: ESComponent, parent) {
         onresizeEventCallback: undefined,
     }
 
+    // // Detect if Child Elements are Added and Need to be Initialized
+    // states.observer = new MutationObserver(function(mutations) {
+    //     mutations.forEach((mutation) =>{
+    //         console.log('mutation', mutation, mutations)
+    //         for(var i = 0; i < mutation.addedNodes.length; i++) {
+    //             const node = mutation.addedNodes[i] as any
+    //             if (node.hasAttribute instanceof Function){
+    //                 if (node.hasAttribute('__isescomponent')) node.esComponent.__esReady()
+    //             }
+    //         }
+    //     })
+    // });
+
     // --------------------------- Assign Things to Element ---------------------------
     if (element instanceof Element) {
         if (typeof id !== 'string') id = `${element.tagName ?? 'element'}${Math.floor(Math.random() * 1000000000000000)}`;
         if (!element.id) element.id = id;
     }
+
+
+    // Wait to initialize the element until it is inserted into an active DOM node
+    let isReady; 
+
+    // track if ready
+    Object.defineProperty(esm, 'esReady', {
+        value: new Promise(resolve => isReady = () => resolve(true)),
+        writable: false,
+        enumerable: false,
+    })
+
+    // trigger if ready
+    Object.defineProperty(esm, '__esReady', { value: isReady,  writable: false, enumerable: false })
 
 
     const setAttributes = (attributes) => {
@@ -111,6 +138,9 @@ export function create(id, esm: ESComponent, parent) {
 
                 // Set Attributes
                 setAttributes(states.attributes)
+
+                // states.observer.disconnect()
+                // states.observer.observe(v, { childList: true });
             }
         },
         enumerable:true,
@@ -144,6 +174,12 @@ export function create(id, esm: ESComponent, parent) {
                     component.esParent = v
                 }
             }
+
+            if (
+                v instanceof HTMLElement // Is element
+                // && !v.hasAttribute('__isescomponent')  // Is not an ES Component (which are observed elsewhere...)
+                // && v.isConnected // Is connected to the DOM
+            ) esm.__esReady()
         },
         enumerable:true
     });

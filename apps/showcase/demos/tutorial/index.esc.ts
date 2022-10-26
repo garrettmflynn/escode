@@ -21,10 +21,12 @@ const demoEl = {
 
 demo1.esAttributes.style = demoEl.style
 
-demo2.esAttributes.style = demoEl.style
+// Set Attributes for Demo 2
+Object.assign(demo2.esAttributes.style, demoEl.style)
 demo2.esDOM.game.esAttributes = {
     style: {
         height: '400px',
+        width: '600px',
     }
 }
 

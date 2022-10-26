@@ -25,7 +25,9 @@ export default (id, esm, parent?) => {
         // ------------------ Declare Special Functions ------------------
         // Delete Function
         const ogInit = esm.esInit;
-        esm.esInit = () => {
+        esm.esInit = async () => {
+
+            await esm.esReady
 
             // Start Nested Components
             for (let name in esm.esDOM) {

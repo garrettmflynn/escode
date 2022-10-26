@@ -33,6 +33,8 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     }
 
     esInit: Function
+    esReady: Promise<void>
+    __esReady: Function // Trigger for ready
     esDelete: Function
 
     // HTML-Specific
