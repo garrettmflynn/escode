@@ -927,7 +927,7 @@
         delete this.listeners.lookup.symbol[sub];
         const nameLookup = this.listeners.lookup.name[info3.name];
         delete nameLookup[info3.id];
-        if (!Object.getOwnPropertySymbols(nameLookup).length)
+        if (!Object.getOwnPropertyNames(nameLookup).length)
           delete this.listeners.lookup.name[info3.name];
       };
       Object.defineProperty(this.listeners, "lookup", {
@@ -2853,6 +2853,23 @@
             innerText: "ESCode Demo"
           }
         },
+        p: {
+          esElement: "p",
+          esDOM: {
+            b: {
+              esElement: "b",
+              esAttributes: {
+                innerText: "Clicks: "
+              }
+            },
+            span: {
+              esElement: "span",
+              esAttributes: {
+                innerText: "0"
+              }
+            }
+          }
+        },
         [buttonComponentId]: {
           esElement: "button",
           esCompose: [
@@ -2877,6 +2894,9 @@
           { equals: true, value: true }
         ]
       }
+    },
+    [`container.p.span`]: {
+      [`${id}.imports.nExecution`]: true
     }
   };
 

@@ -41,6 +41,23 @@ export const esDOM = {
                     innerText: 'ESCode Demo'
                 }
             },
+            p: {
+                esElement: 'p',
+                esDOM: {
+                    b: {
+                        esElement: 'b',
+                        esAttributes: {
+                            innerText: 'Clicks: '
+                        }
+                    },
+                    span: {
+                        esElement: 'span',
+                        esAttributes: {
+                            innerText: '0'
+                        }
+                    },
+                }
+            },
             [buttonComponentId]: {
                 esElement: 'button',
                 esCompose: [
@@ -72,6 +89,10 @@ export const esListeners = {
             ]
         }
     },
+
+    [`container.p.span`]: {
+        [`${id}.imports.nExecution`]: true
+    }
 
     // log: {
     //     [`container.${buttonComponentId}`]: true

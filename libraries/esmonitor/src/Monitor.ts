@@ -73,7 +73,7 @@ export default class Monitor {
 
 
     getInfo = (label, callback, path, original) => {
-        
+
         const info = listeners.info(label, callback, path, original, this.references, this.listeners, this.options)
         const id = Math.random()
         const lookups = this.listeners.lookup
@@ -264,7 +264,7 @@ export default class Monitor {
 
             const nameLookup = this.listeners.lookup.name[info.name]
             delete nameLookup[info.id]
-            if (!Object.getOwnPropertySymbols(nameLookup).length )delete this.listeners.lookup.name[info.name]
+            if (!Object.getOwnPropertyNames(nameLookup).length )delete this.listeners.lookup.name[info.name]
 
     }
 }
