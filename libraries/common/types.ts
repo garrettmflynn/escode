@@ -1,3 +1,4 @@
+import { Editor } from "../escode/src";
 import Monitor from "../esmonitor/src";
 import { MonitorOptions } from "../esmonitor/src/types";
 
@@ -12,5 +13,9 @@ export type Options = {
     nested: {
         parent: any,
         name: any,
-    }// Add ES Component types here
+    }, // Add ES Component types here
+
+    utilities: {
+        code?: typeof Editor
+    }
 }

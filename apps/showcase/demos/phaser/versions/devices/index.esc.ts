@@ -46,7 +46,7 @@ model.esDOM.muse = {
     esCompose: muse,
 }
 
-const buttonAttributes = {}
+const buttonAttributes = {} as any
 buttonAttributes.innerText = 'Connect Muse'
 buttonAttributes.style = {
     zIndex: 100,
@@ -81,8 +81,7 @@ model.esDOM.datastreams = {
     esCompose: start
 }
 
-
-export const esAttributes = Object.assign({}, model.esAttributes)
+export const esAttributes = Object.assign(Object.assign({}, model.esAttributes), { style: { position: 'relative' }})
 export const esListeners = model.esListeners
 export const esDOM = model.esDOM
 

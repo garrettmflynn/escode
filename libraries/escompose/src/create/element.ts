@@ -1,6 +1,17 @@
+import { Options } from "../../../common/types";
+import { EditorProps } from "../../../escode/src";
 import { ESComponent, ESElementInfo } from "../component";
 
-export function create(id, esm: ESComponent, parent) {
+
+export type ESComponentStates = {
+    element: ESComponent['esElement']
+    attributes: ESComponent['esAttributes']
+    parentNode: ESComponent['esParent']
+    onresize: ESComponent['esOnResize']
+    onresizeEventCallback: Function,
+}
+
+export function create(id, esm: ESComponent, parent, states?, utilities: Options['utilities'] = {}) {
 
     // --------------------------- Get Element ---------------------------
     let element = esm.esElement as ESComponent['esElement'] | null; // Always create div at the least
@@ -30,10 +41,11 @@ export function create(id, esm: ESComponent, parent) {
         if (typeof element === 'string') element = document.createElement(element);
 
         // Automatically Set innerText for inoputs
+        const noInput = Symbol('no input to the default function')
         if (!esm.hasOwnProperty('default')) {
-            esm.default = function(input) { 
-                this.esElement.innerText = input  // Has an associated element
-                return input
+            esm.default = function(input = noInput) { 
+                if (input !== noInput) this.esElement.innerText = input  // Set the text of the associated element
+                return this.esElement // return whole element
             }
         }
     }
@@ -41,14 +53,15 @@ export function create(id, esm: ESComponent, parent) {
     if (!(element instanceof Element)) console.warn('Element not found for', id);
 
 
-    let states: any = {
-        element: element,
-        attributes: esm.esAttributes,
-        parentNode: esm.esParent ?? ((parent?.esElement instanceof Element) ? parent.esElement : undefined),
-        onresize: esm.esOnResize,
-        onresizeEventCallback: undefined,
-    }
+    // Track All States
+    let intermediateStates = states || {}
+    intermediateStates.element = element,
+    intermediateStates.attributes = esm.esAttributes,
+    intermediateStates.parentNode = esm.esParent ?? ((parent?.esElement instanceof Element) ? parent.esElement : undefined),
+    intermediateStates.onresize = esm.esOnResize,
+    intermediateStates.onresizeEventCallback = undefined
 
+    const finalStates = intermediateStates as ESComponentStates
     // // Detect if Child Elements are Added and Need to be Initialized
     // states.observer = new MutationObserver(function(mutations) {
     //     mutations.forEach((mutation) =>{
@@ -172,15 +185,23 @@ export function create(id, esm: ESComponent, parent) {
             if (v?.esElement instanceof Element) v = v.esElement
             if (esm.esElement instanceof Element) {
                 if(esm.esElement.parentNode) esm.esElement.remove()
-                if (v) v.appendChild(esm.esElement);
+                if (v) {
+
+                    // --------------------------- Place inside ESCode Instance (if created) ---------------------------
+                    if (esm.__esCode) {
+                        esm.__esCode.setComponent(esm) // Set the target component
+                        v.appendChild(esm.__esCode); // Append ESCode where the component should be
+                    } else v.appendChild(esm.esElement);
+                }
             } 
             
             // Set Child Parent Nodes to This
             else {
-                for (let name in esm.esDOM) {
-                    const component = esm.esDOM[name]
-                    component.esParent = v
-                }
+                console.error('No element was created for this Component...', esm)
+                // for (let name in esm.esDOM) {
+                //     const component = esm.esDOM[name]
+                //     component.esParent = v
+                // }
             }
 
             if (
@@ -212,13 +233,34 @@ export function create(id, esm: ESComponent, parent) {
         enumerable: true
     })
 
-    esm.esOnResize = states.onresize
-    esm.esParent = states.parentNode
+
+    // --------------------------- Spawn ESCode Instance ---------------------------
+    if (esm.esCode) {
+        let config = esm.esCode
+        let cls = utilities.code
+        if (!cls) {
+            if (typeof esm.esCode === 'function') {
+                cls = esm.esCode
+                config = true
+            } else console.error('Editor class not provided in options.utilities.code')
+        }  else {
+            let finalConfig = ((typeof config === 'boolean') ? {} : config) as EditorProps
+            const esCode = new cls(finalConfig)
+            Object.defineProperty(esm, '__esCode', { value: esCode })
+        }
+    }
+    
 
     // NOTE: If you're drilling elements, this WILL cause for infinite loop when drilling an object with getters
     if (esm.esElement instanceof Element) {
         esm.esElement.esComponent = esm
         esm.esElement.setAttribute('__isescomponent', '')
+    }
+
+    // Trigger state changes at the end (if not going to be done elsewhere)
+    if (!states) {
+        esm.esOnResize = finalStates.onresize
+        esm.esParent = finalStates.parentNode
     }
 
     return element;

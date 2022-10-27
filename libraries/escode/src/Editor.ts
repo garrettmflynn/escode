@@ -20,6 +20,7 @@ export type EditorProps = {
   app?: any, // brainsatplay.editable.App
   plugins?: any[]
   ui?: HTMLElement
+  style?: Editor['style']
 }
 
 export class Editor extends LitElement {
@@ -112,6 +113,8 @@ export class Editor extends LitElement {
 
     constructor(props:EditorProps={}) {
       super();
+
+      if (props.style) for (let key in props.style) this.style[key] = props.style[key]
 
       this.ui.setAttribute('name', 'UI')
       if (props.app) this.setApp(props.app)
@@ -235,9 +238,13 @@ export class Editor extends LitElement {
     setComponent = (esc: any = {}) => {
 
       const component = (esc.hasOwnProperty('__isESComponent')) ? esc : this.createComponent(esc) 
+      const attachedToThis = esc.__esCode === this
 
       this.config.esc = component
-      component.esParent = this.ui // TODO: Cache the original position
+
+      this.setUI(component.esElement) // Maintain a reference to the true parent at esc.esParent
+
+      if (!attachedToThis) Object.defineProperty(component, '__esCode', {value: this}) // Setting esCode to the component
 
       const local = {}
       for (let key in component.esDOM) local[key] = component.esDOM[key].esOriginal
@@ -488,4 +495,4 @@ export class Editor extends LitElement {
     }
   }
   
-  customElements.define('brainsatplay-editor', Editor);
+  customElements.define('escode-editor', Editor);

@@ -3,6 +3,12 @@ import * as timestamp from './components/timestamp.js'
 
 const interval = true
 
+export const esAttributes = {
+    style: {
+        margin: '25px'
+    }
+}
+
 export const esDOM = {
 
     counter: {

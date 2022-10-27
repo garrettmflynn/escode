@@ -37,7 +37,7 @@ const esDrill = (o, id: string | symbol, parent?, opts?) => {
     delete merged.esCompose
 
     // ------------------ Create Instance with Special Keys ------------------
-    const instance = createComponent(id, merged, parent)
+    const instance = createComponent(id, merged, parent, opts.utilities)
     const savePath = path.join(opts.keySeparator ?? standards.keySeparator)
     if (opts?.components) opts.components[savePath] = { instance, depth: (parent) ? path.length + 1 : path.length }
 
@@ -81,6 +81,11 @@ const handleListenerValue = ({
      const sub = (!listeners.has(fromStringPath)) ? context.monitor.on(fromSubscriptionPath, (path, _, args) => passToListeners(context, listeners, path, args)): undefined
 
      listeners.add(fromStringPath, toPath, { value, root }, sub)
+
+     return {
+        path: fromSubscriptionPath,
+        config
+     }
 }
 
 
@@ -176,6 +181,7 @@ const setListeners = (context, components) => {
 
     // const listeners = new ListenerManager() // Uses from —> to syntax
 
+    let toTrigger: any[] = []
 
     for (let root in components) {
         const info = components[root]
@@ -193,7 +199,11 @@ const setListeners = (context, components) => {
             }
 
             if (from && typeof from === 'object') {
-                for (let fromPath in from)  handleListenerValue({...mainInfo, fromPath, config: from[fromPath]})
+                for (let fromPath in from) {
+                    const config = from[fromPath]
+                    const info = handleListenerValue({...mainInfo, fromPath, config})
+                    if (info.config.esTrigger) toTrigger.push(info)
+                }
             } 
             
             // Immediate Absolute Paths Only
@@ -202,8 +212,9 @@ const setListeners = (context, components) => {
                 else console.error('Improperly Formatted Listener', to)
             }
         }
-
     }
+
+   return toTrigger // Trigger after all listeners are set
 }
 
 
@@ -283,7 +294,7 @@ function pass(from, target, args, context) {
     else if (target && type === 'object') {
 
         // Check if configuration object
-        const isConfig = 'esFormat' in ogValue || 'esBranch' in ogValue
+        const isConfig = 'esFormat' in ogValue || 'esBranch' in ogValue || 'esTrigger' in ogValue
 
         if (isConfig) {
             transform(true)
@@ -308,24 +319,24 @@ function pass(from, target, args, context) {
         }
 
         if ('esBranch' in config) {
-            let isValid = false
 
-            config.esBranch.forEach(o => {
+            const isValid = config.esBranch.find(o => {
 
                 let localValid: boolean[] = []
                 if ('condition' in o) localValid.push(o.condition(...args)) // Condition Function
                 if ('equals' in o) localValid.push(o.equals === args[0]) // Equality Check
-                isValid = localValid.length > 0 && localValid.reduce((a, b) => a && b, true)
+                const isValidLocal = localValid.length > 0 && localValid.reduce((a, b) => a && b, true)
 
-                if (isValid) {
+                if (isValidLocal) {
                     if ('value' in o)  args[0] = o.value // set first argument to branch value
                 }
+
+                return isValidLocal
             })
 
             if (!isValid) isValidInput = false
         }
     }
-
 
     // ------------------ Handle Target ------------------
     if (isValidInput) {
@@ -351,7 +362,7 @@ function pass(from, target, args, context) {
 
             let baseMessage = `listener: ${from} —> ${key}`
             if (parent) {
-                console.error(`Deleting ${baseMessage}`, parent[key])
+                console.error(`Deleting ${baseMessage}`, parent[key], target)
                 delete parent[key]
             } else console.error(`Failed to add ${baseMessage}`, target)
         }
@@ -432,11 +443,14 @@ export const create = (config, options: Partial<Options> = {}) => {
     const components = {}
     const drillOpts = {
         components,
-        keySeparator: fullOptions.keySeparator
+        keySeparator: fullOptions.keySeparator,
+        utilities: fullOptions.utilities
     }
 
     let fullInstance;
 
+
+    let toTrigger;
     if (options.nested?.parent && options.nested?.name){
 
         // TODO: Figure out how to pass the path for real...
@@ -460,9 +474,20 @@ export const create = (config, options: Partial<Options> = {}) => {
             options: fullOptions
         }
 
-        setListeners(context, components)
+        toTrigger = setListeners(context, components)
     }
 
+    // Triggering appropriate listeners before connection
+    toTrigger.forEach(o => {
+        const res = monitor.get(o.path, 'info')
+        if (typeof res.value === 'function') {
+            const args = (Array.isArray(o.config.esTrigger)) ? o.config.esTrigger : [o.config.esTrigger]
+            res.value(...args)
+        }
+        else console.error('Cannot yet trigger values...', o)
+    })
+
+    // Signal connection to the entire application
     fullInstance.esConnected()
 
     return fullInstance as ESComponent

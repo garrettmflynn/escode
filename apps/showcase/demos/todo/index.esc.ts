@@ -9,6 +9,13 @@ import * as remove from  "../../../../components/storage/local/remove.js"
 
 import onSubmit from  "./scripts/onSubmit.js"
 
+
+export const esAttributes = {
+    style: {
+        margin: '25px'
+    }
+}
+
 export const esComponents = {
     listItem: {
         esElement: {

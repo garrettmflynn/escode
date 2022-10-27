@@ -35,13 +35,25 @@ const demos = {
     devicePhaser: devicePhaserDemo,
 }
 
-for (let key in demos) {
-    const demo = demos[key]
-    if (!demo.esAttributes) demo.esAttributes = {}
-    if (!demo.esAttributes.style) demo.esAttributes.style = {}
-    Object.assign(demo.esAttributes.style, demoEl.style)
+const demoInfo = {} as any
 
-    if (key.includes('phaser')) demo.esAttributes.style.height = '400px'
+const maxHeight = '300px'
+
+for (let key in demos) {
+    demoInfo[key] = {
+        esCompose: demos[key],
+        esAttributes: {
+            style: Object.assign({}, demoEl.style)
+        },
+        esCode: {
+            style: {
+                height: maxHeight,
+                border: '2px solid'
+            }
+        }
+    }
+
+    // if (key.includes('phaser')) demoInfo[key].esAttributes.style.height = maxHeight
 }
 
 export const esDOM = {
@@ -49,7 +61,7 @@ export const esDOM = {
     h1: {
         esElement: 'h1',
         esAttributes: {
-            innerHTML: "Welcome to ESCode"
+            innerHTML: "Welcome to the Brains@Play Framework"
         }
     },
     firstsection: {
@@ -66,10 +78,10 @@ export const esDOM = {
                     p1: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML: "ESCode is a rapid application development framework."
+                            innerHTML: "Brains@Play is a rapid application development framework."
                         }
                     },
-                    demo1: demos.basic,
+                    demo1: demoInfo.basic,
                 }
             },
 
@@ -82,7 +94,7 @@ export const esDOM = {
                             innerHTML: "It can be used to make simple animations."
                         }
                     },
-                    demo2: demos.animations,
+                    demo2: demoInfo.animations,
                 }
             },
 
@@ -95,7 +107,7 @@ export const esDOM = {
                             innerHTML: "Or control the information flow of more complicated applications."
                         }
                     },
-                    demo3: demos.todo,
+                    demo3: demoInfo.todo,
                 }
             },
 
@@ -108,7 +120,7 @@ export const esDOM = {
                             innerHTML: "You can even use it to create games!"
                         }
                     },
-                    demo4: demos.phaser,
+                    demo4: demoInfo.phaser,
                 }
             },
 
@@ -121,7 +133,7 @@ export const esDOM = {
                             innerHTML: "Adding another player is as simple as adding another Player component to the Game component."
                         }
                     },
-                    // demo5: demos.multiplayerPhaser,
+                    // demo5: demoInfo.multiplayerPhaser,
                 }
             },
 
@@ -134,7 +146,7 @@ export const esDOM = {
                             innerHTML: "And adding another control method—such as physiological data—is as simple as adding a control source (e.g. a blink detector using electroencephalography, or EEG, data) and a listener that handles the control source's output!"
                         }
                     },
-                    // demo6: demos.devicePhaser,
+                    // demo6: demoInfo.devicePhaser,
                 }
             }
         }
@@ -156,7 +168,7 @@ export const esDOM = {
                                 innerHTML: "Signals are information being carried in a medium like electricity or light that we can use to understand or communicate with each other."
                             }
                         },
-                        demo1: demos.signal,
+                        demo1: demoInfo.signal,
                     }
                 },
 
@@ -169,7 +181,7 @@ export const esDOM = {
                                 innerHTML: "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
                             }
                         },
-                        // demo2: demos.signal,
+                        // demo2: demoInfo.signal,
                     }
                 },
 
@@ -182,7 +194,7 @@ export const esDOM = {
                                 innerHTML: "This makes it hard to use these signals to do things like control a game!"
                             }
                         },
-                        // demo3: demos.signal,
+                        // demo3: demoInfo.signal,
                     }
                 },
 

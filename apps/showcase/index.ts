@@ -5,6 +5,7 @@ import Monitor from '../../libraries/esmonitor/src/Monitor.js'
 // import ESC from "../../libraries/escode/src/core/index";
 // import validate from "../../libraries/escode/src/validate/index";
 import * as esm from '../../libraries/esmpile/src/index'
+import * as escode from '../../libraries/escode/src/index'
 
 
 // Basic ESC Demo
@@ -320,7 +321,10 @@ async function start (demo = "basic", mode="direct") {
                 // listeners: { static: false } // Will be able to track new keys added to the object
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 listeners: { static: true },
-                nested: undefined
+                nested: undefined,
+                utilities: {
+                    code: escode.Editor
+                }
             })
 
             component.esParent = main // ensure this is added to something that is ESM...

@@ -32,6 +32,9 @@ export let options: CanvasProps & {
         route?:string
     } & WebglLinePlotProps
 
+export let canvas: WebglLinePlotProps['canvas']
+export let overlay: WebglLinePlotProps['overlay']
+
 
 function create(context) {
 
@@ -40,11 +43,12 @@ function create(context) {
     options.update = update;
     options.clear = clear;
 
-
     // Grab Canvas from DOM
-    if (typeof options.overlay === 'string') options.overlay = document.querySelector(options.overlay) as HTMLCanvasElement;
-    if (typeof options.canvas === 'string') options.canvas = document.querySelector(options.canvas) as HTMLCanvasElement;
+    if (typeof context.overlay === 'string') context.overlay = document.querySelector(this.overlay) as HTMLCanvasElement;
+    if (typeof context.canvas === 'string') context.canvas = document.querySelector(this.canvas) as HTMLCanvasElement;
 
+    options.canvas = context.canvas;
+    options.overlay = context.overlay;
 
     if(options.worker) {
 

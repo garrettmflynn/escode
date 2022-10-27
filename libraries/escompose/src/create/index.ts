@@ -2,11 +2,12 @@ import * as element from './element'
 import * as component from "./component";
 import * as standards from '../../../common/standards';
 import * as clone from "../../../common/clone.js"
+import { Options } from '../../../common/types';
 
 
 const animations = {}
 
-export default (id, esm, parent?) => {
+export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
 
         const copy = clone.deep(esm) // Start with a deep copy. You must edit on the resulting object...
 
@@ -19,7 +20,11 @@ export default (id, esm, parent?) => {
         }
     
         // ------------------ Produce a Complete ESM Element ------------------
-        let el = element.create(id, esm, parent);
+        const states = {}
+        let el = element.create(id, esm, parent, states,  utilities);
+
+        const finalStates = states as element.ESComponentStates
+        
         esm.esElement = el
 
         // ------------------ Declare Special Functions ------------------
@@ -119,6 +124,8 @@ export default (id, esm, parent?) => {
                 for (let name in esm.esDOM) esm.esDOM[name].esDisconnected()
             }
 
+            if (esm.__esCode) esm.__esCode.remove() // Remove code editor
+
             const context = esm.__esProxy ?? esm
             if (ogDelete) ogDelete.call(context)
 
@@ -150,6 +157,10 @@ export default (id, esm, parent?) => {
 
         Object.defineProperty(esm, '__isESComponent', isESC)    
         Object.defineProperty(esm, 'esOriginal', {value: copy, enumerable: false})    
+
+        // Trigger state changes at the end
+        esm.esOnResize = finalStates.onresize
+        esm.esParent = finalStates.parentNode
 
         return esm;
 }

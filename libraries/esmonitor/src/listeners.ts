@@ -157,7 +157,6 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookups?:
 
             if (redefine) {
                 try {
-
                     Object.defineProperty(parent, info.last, {
                         get: () => val,
                         set: async (v) => {

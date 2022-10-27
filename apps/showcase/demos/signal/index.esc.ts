@@ -86,6 +86,12 @@ const width = '100%'
 const height = 200
 const sampleCt = 1000
 
+export const esAttributes = {
+    style: {
+        position: 'relative'
+    }
+}
+
 export const esDOM = {
     signalCanvas: {
         width,
@@ -111,12 +117,9 @@ export const esDOM = {
         }
     },
 
-    plotter: {
-        
+    plotter: {        
         options: {
             worker:true, //use an offscreen canvas
-            canvas: '#signalCanvas', // reference by id
-            overlay: '#overlayCanvas', // reference by id
             overlayFont:'10px Verdana',
             overlayColor:'orange',
             generateNewLines: true,
@@ -134,5 +137,15 @@ export const esDOM = {
 }
 
 export const esListeners = {
+    'plotter.canvas': {
+        'signalCanvas': {
+            esTrigger: true
+        },
+    },
+    'plotter.overlay': {
+        'overlayCanvas': {
+            esTrigger: true
+        },
+    },
     'plotter': 'data'
 }

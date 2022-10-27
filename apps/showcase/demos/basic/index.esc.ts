@@ -4,6 +4,12 @@ import * as button from '../../../../components/ui/button.js'
 const id = 'test'
 const buttonComponentId = 'button'
 
+export const esAttributes = {
+    style: {
+        margin: '25px'
+    }
+}
+
 export const esDOM = {
 
     [id]: {

@@ -41,7 +41,7 @@ const nav = document.querySelector('visualscript-nav') as any
 // <visualscript-button id=select primary>Select Project</visualscript-control>
 
 // let appElement = document.querySelector('visualscript-app')
-let editor = document.querySelector('brainsatplay-editor') as any
+let editor = document.querySelector('escode-editor') as any
 // editor.setApp(app)
 
     const options = [

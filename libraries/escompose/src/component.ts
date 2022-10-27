@@ -1,3 +1,4 @@
+import { Editor, EditorProps } from "../../escode/src"
 
 type ComponentElement = Element & { [x:string]: any }
 
@@ -47,6 +48,10 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     esOnRemove: Function
 
     esExtensions?: {[x:string]: any}
+
+    // Shorthand for creating the editor
+    esCode?: boolean | EditorProps | typeof Editor
+    __esCode: Editor
 
 
     __isESComponent: string, // Path of the Component
