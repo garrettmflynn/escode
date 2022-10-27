@@ -83,7 +83,7 @@ export const esDOM = {
 
 const branchConfig = {
     esBranch: [
-        {equals: true, value: true}
+        {equals: false, value: true}
     ]
 }
 

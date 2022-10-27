@@ -32,10 +32,10 @@ export type ESComponent<ElementType = GeneralElementType>  = {
         [x:string]: ESComponent // General Components
     }
 
-    esInit: Function
+    esConnected: Function
     esReady: Promise<void>
     __esReady: Function // Trigger for ready
-    esDelete: Function
+    esDisconnected: Function
 
     // HTML-Specific
     id: string;

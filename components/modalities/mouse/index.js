@@ -34,7 +34,7 @@ export const esAttributes = {
     }
 }
 
-export function esInit () {
+export function esConnected () {
 
     // Replace default element with an image of cursor
     if (this.esElement instanceof HTMLLinkElement){
@@ -63,14 +63,14 @@ export function esInit () {
     this.esElement.style.top = this.y + 'px'
 }
 
-export function esDelete () {
+export function esDisconnected () {
     if (this.esElement != null) this.esElement.remove()
 
     document.body.style.cursor = 'default'
 
     window.removeEventListener("click", this.click)
     window.removeEventListener("mousemove", this.onMove);
-    this.stylesheets.forEach(document.head.removeChild)
+    this.stylesheets.forEach(el => el.remove())
 
     this.stylesheets = []
 }

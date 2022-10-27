@@ -1,6 +1,6 @@
 export const esAttributes = {
     onmousedown: function (ev) {
-        this.esDelete()
+        this.esDisconnected()
     },
     style: {
         cursor: 'pointer'

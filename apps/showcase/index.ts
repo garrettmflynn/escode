@@ -212,7 +212,7 @@ function startFunction () {
         return val
     })
 
-    if (active?.esDelete) active.esDelete()
+    if (active?.esDisconnected) active.esDisconnected()
     if (basicDemoSubs) {
         monitor.remove(basicDemoSubs)
         basicDemoSubs = undefined

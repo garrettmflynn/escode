@@ -24,16 +24,16 @@ export default (id, esm, parent?) => {
 
         // ------------------ Declare Special Functions ------------------
         // Delete Function
-        const ogInit = esm.esInit;
-        esm.esInit = async () => {
+        const ogInit = esm.esConnected;
+        esm.esConnected = async () => {
 
             await esm.esReady
 
             // Start Nested Components
             for (let name in esm.esDOM) {
-                const init = esm.esDOM[name].esInit
+                const init = esm.esDOM[name].esConnected
                 if (typeof init === 'function') init()
-                else console.error(`Could not start component ${name} because it does not have an esInit function`)
+                else console.error(`Could not start component ${name} because it does not have an esConnected function`)
             }
 
             // Trigger Execution on Initialization
@@ -101,8 +101,8 @@ export default (id, esm, parent?) => {
             if (ogInit) ogInit.call(context)
         }
 
-        const ogDelete = esm.esDelete;
-        esm.esDelete = function () {
+        const ogDelete = esm.esDisconnected;
+        esm.esDisconnected = function () {
 
             if ( this.esElement instanceof Element) {
                 this.esElement.remove(); 
@@ -116,15 +116,15 @@ export default (id, esm, parent?) => {
             if (esm.esListeners) esm.esListeners.__manager.clear()
 
             if (esm.esDOM) {
-                for (let name in esm.esDOM) esm.esDOM[name].esDelete()
+                for (let name in esm.esDOM) esm.esDOM[name].esDisconnected()
             }
 
             const context = esm.__esProxy ?? esm
             if (ogDelete) ogDelete.call(context)
 
             // Replace Updated Keywords with Original Values
-            esm.esInit = ogInit
-            esm.esDelete = ogDelete
+            esm.esConnected = ogInit
+            esm.esDisconnected = ogDelete
 
         }
 

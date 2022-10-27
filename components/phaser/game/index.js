@@ -28,12 +28,12 @@ export const config = defaultConfig
 
 export let game;
 
-export function esInit() {
+export function esConnected() {
     if (window.Phaser) this.default() // run node if phaser exists
      else nodes[this._unique] = this // set link to node
 }
 
-export function esDelete() {
+export function esDisconnected() {
     if (this.game) this.game.destroy(true, false)
 }
 

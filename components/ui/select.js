@@ -9,7 +9,7 @@ export const options = {
 
 export const itemTag = 'option'
 
-export const esInit = function() {
+export const esConnected = function() {
     let target = this
     let element = target.esElement
     if (!element) {

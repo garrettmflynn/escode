@@ -11,7 +11,7 @@ const listenerObject = Symbol('listenerObject')
 
 type anyObj = {[key: string]: any}
 type esComposeType = anyObj | anyObj[]
-const esMerge = (base, esCompose: esComposeType = {}) => {
+const esMerge = (base, esCompose: esComposeType = {}, path: any[] = []) => {
 
     if (!Array.isArray(esCompose)) esCompose = [esCompose]
     let clonedEsCompose = esCompose.map(o => cloneUtils.deep(o) )
@@ -19,7 +19,7 @@ const esMerge = (base, esCompose: esComposeType = {}) => {
     // Merge Traversal (i.e. only unset if undefined, otherwise drill into objects)
     let merged = Object.assign({}, base) // basic clone
 
-    clonedEsCompose.reverse().forEach((toCompose) => merged = mergeUtil(Object.assign({}, toCompose), merged)) // Apply the first one last
+    clonedEsCompose.reverse().forEach((toCompose) => merged = mergeUtil(Object.assign({}, toCompose), merged, path)) // Apply the first one last
 
     return merged
 }
@@ -32,7 +32,7 @@ const esDrill = (o, id: string | symbol, parent?, opts?) => {
 
     // TODO: Search the entire object for the esCompose key. Then execute this merge script
     // ------------------ Merge ESM with esCompose Properties ------------------
-    const merged = esMerge(o, o.esCompose)
+    const merged = esMerge(o, o.esCompose, path)
     delete merged.esCompose
 
     // ------------------ Create Instance with Special Keys ------------------
@@ -455,7 +455,7 @@ export const create = (config, options: Partial<Options> = {}) => {
         setListeners(context, components)
     }
 
-    fullInstance.esInit()
+    fullInstance.esConnected()
 
     return fullInstance as ESComponent
 }

@@ -8,12 +8,6 @@ import * as load from  "../../../../components/storage/local/get.js"
 
 import onSubmit from  "./scripts/onSubmit.js"
 
-const buttonAttributes = Object.assign({}, button.esAttributes) as any
-buttonAttributes.innerHTML = "Add Todo"
-buttonAttributes.type = "submit"
-
-const inputAttributes = Object.assign({}, input.esAttributes) as any
-inputAttributes.placeholder = 'Write your todo here'
 
 export const esComponents = {
     listItem: {
@@ -40,12 +34,17 @@ export const esDOM = {
             esDOM: {
                 input: {
                     esElement: 'input',
-                    esAttributes: inputAttributes,
+                    esAttributes: {
+                        placeholder: 'Write your todo here'
+                    },
                     esCompose: input
                 },
                 button: {
                     esElement: 'button',
-                    esAttributes: buttonAttributes,
+                    esAttributes: {
+                        type: 'submit',
+                        innerHTML: 'Add Todo'
+                    },
                     esCompose: button
                 }
             }

@@ -3,26 +3,34 @@ import * as onElementUtils from '../onElement.js'
 export const observer = undefined
 
 const style = `
+
     .escode-switch-component {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        border: 2px solid black;
-        width: fit-content;
-        position: relative;
-        margin: 10px;
+        padding: 10px;
     }
 
-    .escode-switch-component > legend {
+    .escode-switch-component > fieldset{
+        border-radius: 10px;
+        padding: 15px;
+        border: 2px solid;
+        width: fit-content;
+        position: relative;
+    }
+
+    .escode-switch-component > fieldset > legend {
         line-height: 0px;
         font-weight: bold;
+    }
+
+    .escode-switch-component sub {
+        font-size: 70%;
+        margin-left: 2px;
     }
 `
 
 export const elements = {}
 
 
-export function esInit() {
+export function esConnected() {
 
     onElementUtils.start.call(this, {
         stylesheet: style,
@@ -32,8 +40,18 @@ export function esInit() {
 
 }
 
-export function esDelete () {
+export function esDisconnected () {
     onElementUtils.stop.call(this)
+
+    // Remove framing elements
+    for (let id in this.elements) {
+        const el = this.elements[id]
+        const container = el.parentNode?.parentNode
+        if (container){
+            container.parentNode.appendChild(el, container)
+            container.remove()
+        }
+    }
 }
 
 
@@ -46,18 +64,21 @@ export function register(el) {
     this.elements[id] = el
 
     // Label Element
+    const div = document.createElement('div')
+    div.classList.add('escode-switch-component')
+    div.setAttribute('data-switchid', id)
+
     const fieldset = document.createElement('fieldset')
-    fieldset.classList.add('escode-switch-component')
-    fieldset.setAttribute('data-switchid', id)
     const legend = document.createElement('legend')
-    legend.innerText =  id
+    legend.innerHTML =  `${id}<sub>${el.tagName}</sub>`
     fieldset.appendChild(legend)
+    div.appendChild(fieldset)
 
     // transfer display style
     const compStyles = window.getComputedStyle(el);
-    fieldset.style.display = compStyles.display
+    div.style.display = compStyles.display
 
-    el.parentNode.insertBefore(fieldset, el)
+    el.parentNode.insertBefore(div, el)
     fieldset.appendChild(el)
     this.count++
 
@@ -70,10 +91,11 @@ export default function (selection, command) {
 
     if (this.elements[selection]) {
 
-        const isFocused = document.activeElement === this.elements[selection]
-        if (!isFocused) this.elements[selection].focus() // When the user doesn't already have an element focused, this will now show the focus ring. Though it is there...
+        const el = this.elements[selection]
+        const isFocused = document.activeElement === el
+        if (!isFocused) el.focus() // When the user doesn't already have an element focused, this will now show the focus ring. Though it is there...
 
         // Automatically click on the second selection
-        if (command === 'click' || isFocused) this.elements[selection].click()
+        if (command === 'click' || isFocused) el.click()
     }
 }

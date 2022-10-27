@@ -184,7 +184,7 @@ export class Editor extends LitElement {
         const activeGraph = this.config.graph
         if (this.config.esc){
           const activeNode = activeGraph.nodes[node.tag]
-          activeNode.esDelete()
+          activeNode.esDisconnected()
           delete activeGraph.nodes[node.tag]
         }
       }
