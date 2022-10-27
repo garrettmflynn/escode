@@ -140,8 +140,8 @@ const demos = {
 
 const modes = {
     'Direct': 'direct',
-    'JSON': 'json',
     ['File Compilation']: 'compilation',
+    'JSON': 'json',
 }
 
 const main = document.getElementById('app') as HTMLElement
@@ -161,6 +161,24 @@ const monitor = new Monitor({
     polling: { sps: 60 } // Poll the ESM Object
 
 })
+
+const errorPage = document.createElement('div')
+Object.assign(errorPage.style, {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    width: '100%',
+})
+
+const h1 = document.createElement('h1')
+h1.innerText = 'Nope lol'
+const small = document.createElement('p')
+const errorDiv = document.createElement('div')
+errorDiv.appendChild(h1)
+errorDiv.appendChild(small)
+errorPage.appendChild(errorDiv)
+
 
 let asyncLoads = false
 async function init () {
@@ -230,68 +248,75 @@ restartButton.addEventListener('click', startFunction)
 let basicDemoSubs;
 async function start (demo = "basic", mode="direct") {
     
-        // ------------------ ESCompose ------------------
-        let selected = demos[demo]
-    
-    
-        let reference = selected.file
-
-        if (mode !== 'direct') {
-
-            const toCompile = mode === 'json' ? selected.json : selected.js
-
-                
-            const options: any = {}
-            options.relativeTo = window.location.href + 'apps/showcase' // Relative to the HTML page using this file bundle
-            options.collection = null //'global' // Specify which bundle to reference. Specify 'global' to use same bundle across all imports. Don't specify to create a new bundle
-            options.debug = true // Show debug messages
-            options.callbacks = {progress: {}}
-            options.fallback = true // We want to fallback to text import
+        try {
+            // ------------------ ESCompose ------------------
+            let selected = demos[demo]
         
-            options.filesystem = {
-                _fallbacks: selected.fallbacks
+        
+            let reference = selected.file
+
+            if (mode !== 'direct') {
+
+                const toCompile = mode === 'json' ? selected.json : selected.js
+
+                    
+                const options: any = {}
+                options.relativeTo = window.location.href + 'apps/showcase' // Relative to the HTML page using this file bundle
+                options.collection = null //'global' // Specify which bundle to reference. Specify 'global' to use same bundle across all imports. Don't specify to create a new bundle
+                options.debug = true // Show debug messages
+                options.callbacks = {progress: {}}
+                options.fallback = true // We want to fallback to text import
+            
+                options.filesystem = {
+                    _fallbacks: selected.fallbacks
+                }
+
+                reference = await esm.compile(toCompile, options).catch(e => {
+                    console.error('Compilation Failed:', e)
+                })
+
+                // ------------------ ESMpile (todo) ------------------
+                // for (let file in monitor.dependencies) {
+                //     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
+                // }
+
+                // reference = Object.assign({}, reference)
+        
+                console.log('ESMpile Result', reference)
             }
 
-            reference = await esm.compile(toCompile, options).catch(e => {
-                console.error('Compilation Failed:', e)
+
+
+            if (!reference) throw new Error('Reference has been resolved as undefined.')
+            if (errorPage.parentNode) errorPage.remove()
+
+            // Basic
+            if (demo === 'basic') {
+                const esmId = 'ESM'
+                const testComponent = reference.esDOM.test.esCompose // Grab from active reference
+                monitor.set(esmId, testComponent)
+                basicDemoSubs = monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
+            }
+                
+
+            // Create an active ES Component from a .esc file
+            const component = escompose.create(reference, {
+                monitor, // Use the existing monitor
+                // listeners: { static: false } // Will be able to track new keys added to the object
+                clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
+                listeners: { static: true },
+                nested: undefined
             })
 
-            // ------------------ ESMpile (todo) ------------------
-            // for (let file in monitor.dependencies) {
-            //     for (let dep in monitor.dependencies[file]) subscribe(dep, [], true)
-            // }
+            component.esParent = main // ensure this is added to something that is ESM...
 
-            // reference = Object.assign({}, reference)
-    
-            console.log('ESMpile Result', reference)
 
+
+            active = component
+        } catch (e) {
+            small.innerText = e.message
+            main.appendChild(errorPage)
         }
-
-        // Basic
-        if (demo === 'basic') {
-            const esmId = 'ESM'
-            const testComponent = reference.esDOM.test.esCompose // Grab from active reference
-            monitor.set(esmId, testComponent)
-            basicDemoSubs = monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
-        }
-            
-
-        // Create an active ES Component from a .esc file
-        const component = escompose.create(reference, {
-            monitor, // Use the existing monitor
-            // listeners: { static: false } // Will be able to track new keys added to the object
-            clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
-            listeners: { static: true },
-            nested: undefined
-        })
-
-        setTimeout(() => {
-         component.esParent = main // ensure this is added to something that is ESM...
-        }, 1000)
-
-
-
-        active = component
 }
 
 
