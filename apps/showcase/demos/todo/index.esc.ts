@@ -5,9 +5,9 @@ import * as removable from "../../../../components/ui/behaviors/removable.js"
 import * as button from  "../../../../components/ui/button.js"
 import * as store from  "../../../../components/storage/local/set.js"
 import * as load from  "../../../../components/storage/local/get.js"
+import * as remove from  "../../../../components/storage/local/remove.js"
 
 import onSubmit from  "./scripts/onSubmit.js"
-
 
 export const esComponents = {
     listItem: {
@@ -49,8 +49,20 @@ export const esDOM = {
                 }
             }
         },
+
+        clearButton: {
+            esElement: 'button',
+            esAttributes: {
+                innerHTML: 'Clear List'
+            },
+            esCompose: button
+        },
+
         store: {
             esCompose: store
+        },
+        remove: {
+            esCompose: remove
         },
         load: {
             esTrigger: ["todos"],
@@ -61,11 +73,28 @@ export const esListeners = {
 
     list: {
         load: true,
-        ['form.button']: true
+        ['form.button']: true,
+        ['remove']: {
+            esFormat: () => null
+        }
     },
 
     ['form.button']: {
         ['form.input']: true
+    },
+
+    ['form.input.esElement.value']: {
+        ['form.button']: {
+            esBranch: [
+                {condition: (input) => typeof input === 'string', value: ''},
+            ]
+        }
+    },
+
+    ['remove']: {
+        ['clearButton']: {
+            esFormat: () => 'todos'
+        }
     },
 
     store: {

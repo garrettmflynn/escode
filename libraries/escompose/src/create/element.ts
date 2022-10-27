@@ -83,24 +83,32 @@ export function create(id, esm: ESComponent, parent) {
     Object.defineProperty(esm, '__esReady', { value: isReady,  writable: false, enumerable: false })
 
 
+
+    const isEventListener = (key, value) => key.slice(0,2) === 'on' && typeof value === 'function'
+    const handleAttribute = (key, value, context) => {
+        if (!isEventListener(key, value) && typeof value === 'function') return value.call(context)
+         else return value
+    }
+
     const setAttributes = (attributes) => {
         if (esm.esElement instanceof Element) {
             for (let key in attributes) {
 
                 // Set Style Per Attribute
                 if (key === 'style') {
-                    for (let styleKey in attributes.style) esm.esElement.style[styleKey] = attributes.style[styleKey]
+                    for (let styleKey in attributes.style) esm.esElement.style[styleKey] = handleAttribute(key, attributes.style[styleKey], esm)
                 }
 
                 // Replace Whole Attribute
                 else {
-                    if (typeof attributes[key] === 'function') {
-                        const func = attributes[key];
+                    const value = attributes[key]
+                    if (isEventListener(key, value)) {
+                        const func = value;
                         esm.esElement[key] = (...args) => {
                             const context = esm.__esProxy ?? esm
                             return func.call(context ?? esm, ...args)
                         }; // replace this scope
-                    } else esm.esElement[key] = attributes[key];
+                    } else esm.esElement[key] = handleAttribute(key, value, esm)
                 }
             }
         }

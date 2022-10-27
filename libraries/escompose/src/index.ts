@@ -11,6 +11,7 @@ const listenerObject = Symbol('listenerObject')
 
 type anyObj = {[key: string]: any}
 type esComposeType = anyObj | anyObj[]
+
 const esMerge = (base, esCompose: esComposeType = {}, path: any[] = []) => {
 
     if (!Array.isArray(esCompose)) esCompose = [esCompose]
@@ -310,9 +311,14 @@ function pass(from, target, args, context) {
             let isValid = false
 
             config.esBranch.forEach(o => {
-                if (o.equals === args[0]) {
-                    if (o.hasOwnProperty('value'))  args[0] = o.value // set first argument to branch value
-                    isValid = true
+
+                let localValid: boolean[] = []
+                if ('condition' in o) localValid.push(o.condition(...args)) // Condition Function
+                if ('equals' in o) localValid.push(o.equals === args[0]) // Equality Check
+                isValid = localValid.length > 0 && localValid.reduce((a, b) => a && b, true)
+
+                if (isValid) {
+                    if ('value' in o)  args[0] = o.value // set first argument to branch value
                 }
             })
 
@@ -320,8 +326,10 @@ function pass(from, target, args, context) {
         }
     }
 
+
     // ------------------ Handle Target ------------------
     if (isValidInput) {
+
         // Set New Value on Parent
         if (target === toSet) {
             const parentPath = [id]

@@ -7,6 +7,7 @@ import { CanvasControls, CanvasProps, workerCanvasRoutes } from 'graphscript/ser
 
 // provide the functions for the canvas routes, in our case wrapping the webglplot renderer instead of our own canvas render
 const init = (options, canvas, context) => {
+
     plotter.initPlot(options);
 
     canvas.addEventListener('resize',(o) => {        
@@ -16,7 +17,6 @@ const init = (options, canvas, context) => {
 }
 
 const update = (options, canvas, context, input) => {
-    //console.log('update plotter')
     plotter.update(options._id, input);
 }
 
@@ -39,6 +39,12 @@ function create(context) {
     options.init = init;
     options.update = update;
     options.clear = clear;
+
+
+    // Grab Canvas from DOM
+    if (typeof options.overlay === 'string') options.overlay = document.querySelector(options.overlay) as HTMLCanvasElement;
+    if (typeof options.canvas === 'string') options.canvas = document.querySelector(options.canvas) as HTMLCanvasElement;
+
 
     if(options.worker) {
 

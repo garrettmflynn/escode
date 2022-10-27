@@ -4,14 +4,14 @@ import * as escompose from '../../libraries/escompose/src/index'
 import Monitor from '../../libraries/esmonitor/src/Monitor.js'
 // import ESC from "../../libraries/escode/src/core/index";
 // import validate from "../../libraries/escode/src/validate/index";
+import * as esm from '../../libraries/esmpile/src/index'
 
 
 // Basic ESC Demo
-import * as esm from '../../libraries/esmpile/src/index'
-import * as escFile from './index.esc'
-import * as escFallbacks from './fallbacks'
-const escJSON = './index.esc.json'
-const escJS = './index.esc.ts'
+import * as escFile from './demos/basic/index.esc'
+import * as escFallbacks from './demos/basic/fallbacks'
+const escJSON = './/demos/basic/index.esc.json'
+const escJS = './demos/basic/index.esc.ts'
 
 // Phaser Demo
 import * as phaserFile from './demos/phaser/index.esc'
@@ -40,34 +40,34 @@ const devicePhaserJS = './demos/phaser/versions/devices/index.esc.ts'
 // Todo Demo
 import * as todoFile from './demos/todo/index.esc'
 import todoFallbacks from './demos/todo/fallbacks'
-const todoJSON = './demos/todo/index.esc.ts'
+const todoJSON = './demos/todo/index.esc.json'
 const todoJS = './demos/todo/index.esc.ts'
-
-// Tutorial Demo
-import * as tutorialFile from './demos/tutorial/index.esc'
-import tutorialFallbacks from './demos/tutorial/fallbacks'
-const tutorialJSON = './demos/tutorial/index.esc.ts'
-const tutorialJS = './demos/tutorial/index.esc.ts'
 
 // Accessify Demo
 import * as accessifyFile from './demos/accessify/index.esc'
 import accessifyFallbacks from './demos/accessify/fallbacks'
-const accessifyJSON = './demos/accessify/index.esc.ts'
+const accessifyJSON = './demos/accessify/index.esc.json'
 const accessifyJS = './demos/accessify/index.esc.ts'
 
-// else if (demo === 'multiplayer') selected = multiplayerPhaserFile as string
-// else if (demo === 'device') selected = devicePhaserFile as string // BROKEN
-// else if (demo === 'todo') selected = todoFile as string
-// else if (demo === 'tutorial') selected = tutorialFile as string
-// else if (demo === 'accessify') selected = accessifyFile as string
+// Tutorial Demo
+import * as tutorialFile from './demos/tutorial/index.esc'
+import tutorialFallbacks from './demos/tutorial/fallbacks'
+const tutorialJSON = './demos/tutorial/index.esc.json'
+const tutorialJS = './demos/tutorial/index.esc.ts'
+
+// Signal Demo
+import * as signalFile from './demos/signal/index.esc'
+import signalFallbacks from './demos/signal/fallbacks'
+const signalJSON = './demos/signal/index.esc.json'
+const signalJS = './demos/signal/index.esc.ts'
 
 // // Broken
 // else if (demo === 'audiofeedback') selected = audiofeedbackFile as string
+// const audiofeedbackJSON = './demos/devices/audiofeedback/index.esc.ts'
 
 
 
 // ------------------ ES Components (more imports in files) ------------------
-const audiofeedbackJSON = './demos/devices/audiofeedback/index.esc.ts'
 
 const basicPackage = {
     file: escFile,
@@ -127,14 +127,30 @@ const accessifyPackage = {
     js: accessifyJS
 }
 
+const signalPackage = {
+    json: signalJSON,
+    fallbacks: signalFallbacks,
+    file: signalFile,
+    js: signalJS
+}
+
 const demos = {
+
+    // Complete Walkthrough
+    tutorial: tutorialPackage,
+
+    // Basic ESC Demos
     basic: basicPackage,
     animations: animationsPackage,
+    todo: todoPackage,
     phaser: phaserPackage,
     multiplayer: multiplayerPackage,
+
+    // Physiological Demos
+    signal: signalPackage,
     device: devicePackage,
-    todo: todoPackage,
-    tutorial: tutorialPackage,
+
+    // Complete Applications
     accessify: accessifyPackage
 }
 
@@ -159,7 +175,6 @@ const monitor = new Monitor({
     // },
     pathFormat: 'absolute',
     polling: { sps: 60 } // Poll the ESM Object
-
 })
 
 const errorPage = document.createElement('div')

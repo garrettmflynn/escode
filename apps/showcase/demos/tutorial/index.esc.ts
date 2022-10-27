@@ -1,6 +1,11 @@
-import * as demo1 from './components/demo1'
-import * as demo2 from './components/demo2'
-import * as demo3 from './components/demo3'
+import * as basicDemo from '../basic/index.esc'
+import * as todoDemo from '../todo/index.esc'
+import * as animationsDemo from '../animations/index.esc'
+import * as phaserDemo from '../phaser/index.esc'
+import * as multiplayerPhaserDemo from '../phaser/versions/multiplayer/index.esc'
+import * as devicePhaserDemo from '../phaser/versions/devices/index.esc'
+import * as signalDemo from '../signal/index.esc'
+
 import * as log from '../../../../components/basic/log.js'
 
 export const esAttributes = {
@@ -17,35 +22,42 @@ const demoEl = {
         // borderRadius: '10px',
         position: 'relative',
     }
-}  
-
-demo1.esAttributes.style = demoEl.style
-
-// Set Attributes for Demo 2
-Object.assign(demo2.esAttributes.style, demoEl.style)
-demo2.esDOM.game.esAttributes = {
-    // style: {
-    //     height: '400px',
-    //     width: '600px',
-    // }
 }
 
-demo3.esAttributes.style = demoEl.style
+const demos = {
+    basic: basicDemo,
+    todo: todoDemo,
+    animations: animationsDemo,
+    phaser: phaserDemo,
+    multiplayerPhaser: multiplayerPhaserDemo,
+
+    signal: signalDemo,
+    devicePhaser: devicePhaserDemo,
+}
+
+for (let key in demos) {
+    const demo = demos[key]
+    if (!demo.esAttributes) demo.esAttributes = {}
+    if (!demo.esAttributes.style) demo.esAttributes.style = {}
+    Object.assign(demo.esAttributes.style, demoEl.style)
+
+    if (key.includes('phaser')) demo.esAttributes.style.height = '400px'
+}
 
 export const esDOM = {
     log,
     h1: {
         esElement: 'h1',
         esAttributes: {
-            innerHTML: "How Does Signal Processing Work?"
+            innerHTML: "Welcome to ESCode"
         }
     },
     firstsection: {
         esDOM: {
             h2: {
-                esElement: 'h2', 
+                esElement: 'h2',
                 esAttributes: {
-                    innerHTML: "What are Signals?"
+                    innerHTML: "Getting Started"
                 }
             },
 
@@ -54,10 +66,10 @@ export const esDOM = {
                     p1: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML:  "Signals are information being carried in a medium like electricity or light that we can use to understand or communicate with each other."
+                            innerHTML: "ESCode is a rapid application development framework."
                         }
                     },
-                    demo1,
+                    demo1: demos.basic,
                 }
             },
 
@@ -67,10 +79,10 @@ export const esDOM = {
                     p2: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML:   "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
+                            innerHTML: "It can be used to make simple animations."
                         }
                     },
-                    demo2,
+                    demo2: demos.animations,
                 }
             },
 
@@ -80,10 +92,10 @@ export const esDOM = {
                     p3: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML:   "This makes it hard to use these signals to do things like control a game!"
+                            innerHTML: "Or control the information flow of more complicated applications."
                         }
                     },
-                    demo3
+                    demo3: demos.todo,
                 }
             },
 
@@ -93,12 +105,10 @@ export const esDOM = {
                     p4: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML: "We can filter some noise, but sometimes there are multiple sources of noise, in this case we still see signals from our power outlet, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
+                            innerHTML: "You can even use it to create games!"
                         }
                     },
-                    demo4: {
-                        esElement: demoEl
-                    },
+                    demo4: demos.phaser,
                 }
             },
 
@@ -108,12 +118,10 @@ export const esDOM = {
                     p5: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML: "To solve this we can apply multiple filters to block different ranges or specific frequencies. "
+                            innerHTML: "Adding another player is as simple as adding another Player component to the Game component."
                         }
                     },
-                    demo5: {
-                        esElement: demoEl
-                    },
+                    // demo5: demos.multiplayerPhaser,
                 }
             },
 
@@ -123,27 +131,118 @@ export const esDOM = {
                     p6: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML: "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
+                            innerHTML: "And adding another control method—such as physiological data—is as simple as adding a control source (e.g. a blink detector using electroencephalography, or EEG, data) and a listener that handles the control source's output!"
                         }
                     },
-                    demo6: {
-                        esElement: demoEl
-                    }
+                    // demo6: demos.devicePhaser,
                 }
             }
         }
-    }
-}
+        },
+        secondsection: {
+            esDOM: {
+                h2: {
+                    esElement: 'h2',
+                    esAttributes: {
+                        innerHTML: "What are Signals?"
+                    }
+                },
+
+                block1: {
+                    esDOM: {
+                        p1: {
+                            esElement: 'p',
+                            esAttributes: {
+                                innerHTML: "Signals are information being carried in a medium like electricity or light that we can use to understand or communicate with each other."
+                            }
+                        },
+                        demo1: demos.signal,
+                    }
+                },
 
 
+                block2: {
+                    esDOM: {
+                        p2: {
+                            esElement: 'p',
+                            esAttributes: {
+                                innerHTML: "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
+                            }
+                        },
+                        // demo2: demos.signal,
+                    }
+                },
 
-// const set = new Set()
-export const esListeners = {
-    'firstsection.block3.demo3.plotter': {
-        'firstsection.block2.demo2.datastreams': {
-            esFormat: ([data, timestamps, contentHint]) => {
-                return [{[contentHint]: data}]
+
+                block3: {
+                    esDOM: {
+                        p3: {
+                            esElement: 'p',
+                            esAttributes: {
+                                innerHTML: "This makes it hard to use these signals to do things like control a game!"
+                            }
+                        },
+                        // demo3: demos.signal,
+                    }
+                },
+
+
+                block4: {
+                    esDOM: {
+                        p4: {
+                            esElement: 'p',
+                            esAttributes: {
+                                innerHTML: "We can filter some noise, but sometimes there are multiple sources of noise, in this case we still see signals from our power outlet, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
+                            }
+                        },
+                        demo4: {
+                            esElement: demoEl
+                        },
+                    }
+                },
+
+
+                block5: {
+                    esDOM: {
+                        p5: {
+                            esElement: 'p',
+                            esAttributes: {
+                                innerHTML: "To solve this we can apply multiple filters to block different ranges or specific frequencies. "
+                            }
+                        },
+                        demo5: {
+                            esElement: demoEl
+                        },
+                    }
+                },
+
+
+                block6: {
+                    esDOM: {
+                        p6: {
+                            esElement: 'p',
+                            esAttributes: {
+                                innerHTML: "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
+                            }
+                        },
+                        demo6: {
+                            esElement: demoEl
+                        },
+                    }
+                }
             }
-        }
     }
 }
+
+
+
+// // const set = new Set()
+// export const esListeners = {
+//     'firstsection.block3.demo3.plotter': {
+//         'firstsection.block2.demo2.datastreams': {
+//             esFormat: ([data, timestamps, contentHint]) => {
+//                 return [{ [contentHint]: data }]
+//             }
+//         }
+//     }
+// }
