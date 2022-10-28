@@ -10,15 +10,20 @@ export const esAttributes = {
 }
 
 export const esDOM = {
+
+    // BCI2000 Controller
     bci2000: {
         esCompose: bci2000
     },
+
+    // Controls Overlay
     overlay: {
         esAttributes: {
             style: {
                 position: 'absolute',
                 top: '0',
                 left: '0',
+                zIndex: 1
             }
         },
         esDOM: {
@@ -36,10 +41,20 @@ export const esDOM = {
                 }
             },
         }
-    }
+    },
+
+    // Main UI
     signal: {
         esCompose: signal,
         esDOM: {
+            signalCanvas: {
+                width: '100%',
+                height: '100vh',
+            },
+            overlayCanvas: {
+                width: '100%',
+                height: '100vh',
+            },
             data: undefined // remove data generator
         },
         esListeners: {
@@ -54,10 +69,10 @@ export const paragraphs = {}
 
 export const esListeners = {
     'bci2000.ip': {
-        'select': true
+        'overlay.select': true
     },
     'bci2000.connect':{
-        'button': {
+        'overlay.button': {
             esBranch: [{equals: false, value: true}]
         }
     },
