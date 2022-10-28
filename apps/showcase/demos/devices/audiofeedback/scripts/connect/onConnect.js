@@ -1,16 +1,13 @@
-import { visualizeDirectory } from "../../../../../utils/BFS_CSV.js";
+import { visualizeDirectory } from "../../../utils/BFS_CSV.js"
 
 function onConnect(result){
-    console.log('session', result, this);
+
     let cap;
     let csvmenu;
 
-    let target = this
-    do {
-        target = target?.parent?.node
-    } while (target.parent && !target.esElement)
+    const parentNode = this.esElement.parentNode ?? document.body
 
-    const parentNode = target?.esElement ?? document.body
+    // TODO: Ensure that subprocesses come out
     if (typeof result.subprocesses === 'object') {
         if (result.subprocesses.csv) {
 
@@ -37,7 +34,7 @@ function onConnect(result){
 
     //console.log(result);
     let disc = document.createElement('button');
-    disc.innerHTML = `Disconnect ${this.selected} (${this.mode})`;
+    disc.innerHTML = `Disconnect`;
     disc.onclick = () => {
         result.disconnect();
         disc.remove();

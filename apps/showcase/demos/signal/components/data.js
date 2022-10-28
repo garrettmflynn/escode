@@ -1,4 +1,4 @@
-export let sampleCt = 1000
+export let sampleCt = 1
 export const nChannels = 0
 
 export const amplitudes = []

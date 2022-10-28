@@ -81,9 +81,7 @@ export const esListeners = {
     list: {
         load: true,
         ['form.button']: true,
-        ['remove']: {
-            esFormat: () => null
-        }
+        ['remove']: true
     },
 
     ['form.button']: {

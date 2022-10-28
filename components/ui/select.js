@@ -44,23 +44,23 @@ export const esConnected = function() {
 
     // Hide Dependent Elements
     element.onchange = (ev) => {
-        if (show) showHide(ev.target.value, options, element)
+        if (show) this.showHide(ev.target.value, options, element)
         this.default(ev.target.value)
     }
 
     const first = options?.[0]?.value
     setTimeout(() => {
-        if (show) showHide(first, options, element) // initialize show / hide
+        if (show) this.showHide(first, options, element) // initialize show / hide
         this.default(first)
     }, show ? 100 : 10) // wait longer to override other select compoents
 }
 
-function showHide(value, options, element) {
+export function showHide(value, options, element) {
     options.forEach((o) => {
         const el = element.parentNode.querySelector(`#${o.show}`)
         if (value === o.value) {
             el.style.display = ''
-            el.node.run(el.value) // run new value when shown
+            this.default(el.value) // run new value when shown
         }  else el.style.display = 'none'
     })
 }

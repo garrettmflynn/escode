@@ -92,7 +92,7 @@ const handleListenerValue = ({
      const fromStringPath = topPath.join(context.options.keySeparator)
 
       // Only subscribe once
-     const sub = (!listeners.has(fromStringPath)) ? context.monitor.on(fromSubscriptionPath, (path, _, args) => passToListeners(context, listeners, path, args)): undefined
+     const sub = (!listeners.has(fromStringPath)) ? context.monitor.on(fromSubscriptionPath, (path, _, update) => passToListeners(context, listeners, path, update)): undefined
 
      listeners.add(fromStringPath, toPath, { value, root }, sub)
 
@@ -232,7 +232,7 @@ const setListeners = (context, components) => {
 }
 
 
-function pass(from, target, args, context) {
+function pass(from, target, update, context) {
 
     const id = context.id
 
@@ -324,25 +324,18 @@ function pass(from, target, args, context) {
     let isValidInput = true
 
     if (config) {
-        if ('esFormat' in config) {
-            try {
-                args = config.esFormat(...args)
-                if (args === undefined) isValidInput = false
-                if (!Array.isArray(args)) args = [args]
-            } catch (e) { console.error('Failed to format arguments', e) }
-        }
 
         if ('esBranch' in config) {
 
             const isValid = config.esBranch.find(o => {
 
                 let localValid: boolean[] = []
-                if ('condition' in o) localValid.push(o.condition(...args)) // Condition Function
-                if ('equals' in o) localValid.push(o.equals === args[0]) // Equality Check
+                if ('condition' in o) localValid.push(o.condition(update)) // Condition Function
+                if ('equals' in o) localValid.push(o.equals === update) // Equality Check
                 const isValidLocal = localValid.length > 0 && localValid.reduce((a, b) => a && b, true)
 
                 if (isValidLocal) {
-                    if ('value' in o)  args[0] = o.value // set first argument to branch value
+                    if ('value' in o)  update = o.value // set first argument to branch value
                 }
 
                 return isValidLocal
@@ -350,10 +343,24 @@ function pass(from, target, args, context) {
 
             if (!isValid) isValidInput = false
         }
+
+
+        // NOTE: May turn into an array here
+        if ('esFormat' in config) {
+            try {
+                update = config.esFormat(update)
+                if (update === undefined) isValidInput = false
+            } catch (e) { console.error('Failed to format arguments', e) }
+        }
     }
 
     // ------------------ Handle Target ------------------
-    if (isValidInput) {
+    if (
+        isValidInput // Ensure input is valid
+        && update !== undefined // Ensure input is not exactly undefined (though null is fine)
+    ) {
+
+        const arrayUpdate = Array.isArray(update) ? update : [update]
 
         // Set New Value on Parent
         if (target === toSet) {
@@ -362,14 +369,14 @@ function pass(from, target, args, context) {
             parentPath.push(...key.split(context.options.keySeparator))
             const idx = parentPath.pop()
             const info = context.monitor.get(parentPath, 'info')
-            info.value[idx] = args[0]
+            info.value[idx] = update
         }
 
         // Direct Object with Default Function
-        else if (target?.default) target.default(...args)
+        else if (target?.default) target.default(...arrayUpdate)
 
         // Direct Function
-        else if (typeof target === 'function') target(...args)
+        else if (typeof target === 'function') target(...arrayUpdate)
 
         // Failed
         else {
@@ -383,7 +390,7 @@ function pass(from, target, args, context) {
     }
 }
 
-function passToListeners(context, listeners, name, ...args) {
+function passToListeners(context, listeners, name, update) {
 
     const sep = context.options.keySeparator
 
@@ -409,7 +416,7 @@ function passToListeners(context, listeners, name, ...args) {
                     root: info.root,
                     subscription: info.subscription,
                     __value: true
-                }, args, context)
+                }, update, context)
             } else if (typeof info === 'object') {
                 for (let key in info) {
                     pass(noDefault, {
@@ -418,7 +425,7 @@ function passToListeners(context, listeners, name, ...args) {
                         root: info[key].root,
                         subscription: info[key].subscription,
                         value: info[key].value,
-                    }, args, context)
+                    }, update, context)
                 }
             } else console.error('Improperly Formatted Listener', info)
         }

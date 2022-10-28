@@ -72,8 +72,15 @@ const signalJS = './demos/signal/index.esc.ts'
 // Noise Demo
 import * as noisySignalFile from './demos/signal/versions/noisy/index.esc'
 import noisySignalFallbacks from './demos/signal/versions/noisy/fallbacks'
-const noisySignalJSON = './demos/signal/versions/noisyindex.esc.json'
+const noisySignalJSON = './demos/signal/versions/noisy/index.esc.json'
 const noisySignalJS = './demos/signal/versions/noisy/index.esc.ts'
+
+// Audiofeedback Demo
+import * as audiofeedbackFile from './demos/devices/audiofeedback/index.esc'
+import audiofeedbackFallbacks from './demos/devices/audiofeedback/fallbacks'
+const audiofeedbackJSON = './demosdevices/audiofeedback/index.esc.json'
+const audiofeedbackJS = './demos/devices/audiofeedback/index.esc.ts'
+
 
 // // Broken
 // else if (demo === 'audiofeedback') selected = audiofeedbackFile as string
@@ -173,6 +180,14 @@ const noisySignalPackage = {
     js: noisySignalJS
 }
 
+const audiofeedbackPackage = {
+    name: 'HEG Audiofeedback',
+    json: audiofeedbackJSON,
+    fallbacks: audiofeedbackFallbacks,
+    file: audiofeedbackFile,
+    js: audiofeedbackJS
+}
+
 const demos = {
 
     // Complete Walkthrough
@@ -190,6 +205,8 @@ const demos = {
     signal: signalPackage,
     noisy: noisySignalPackage,
     device: devicePackage,
+
+    audiofeedback: audiofeedbackPackage,
 
     // Complete Applications
     accessify: accessifyPackage
@@ -376,6 +393,8 @@ async function start (demo = "basic", mode="direct") {
             small.innerText = e.message
             main.appendChild(errorPage)
         }
+
+        console.log('Active ES Component:', active)
 
 }
 

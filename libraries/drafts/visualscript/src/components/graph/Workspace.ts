@@ -18,6 +18,8 @@ export class GraphWorkspace extends LitElement {
 
     :host {
         overflow: hidden;
+        height: 100%;
+        display: block;
         --grid-size: 5000px;
         --grid-color: rgb(210, 210, 210);
     }
@@ -228,26 +230,82 @@ export class GraphWorkspace extends LitElement {
       } else await this.editing.link(info) // Link second port to the current edge
     }
 
+
+    // Currently laying out nodes in a rough square with more nodes in the columns
     autolayout = (nodes: GraphNode[] | Map<string, GraphNode> = this.nodes) => {
-      let count = 0
-      let rowLen = 5
-      let xOff = 100
-      let yOff = 150
+      let offset = 50
 
       const numNodes = (nodes instanceof Map) ? nodes.size : nodes.length
-      const width = Math.min(rowLen, numNodes) * xOff
-      const height = (1 + Math.floor(numNodes/rowLen)) * yOff
+      let nPerRow = Math.floor(Math.sqrt(numNodes))
+
+      // const parent =  this.parentNode as Element
+      // const viewWidth = parent.clientWidth
+      // const viewHeight = parent.clientHeight
+
+      let rowSizes = []
+      let colSizes = []
+      let info = []
+
+      nodes.forEach((n, i) => {
+        const col = i % nPerRow
+        const row = Math.floor(i/nPerRow)
+
+        const dimensions = [
+          {
+            value: col,
+            sizes: colSizes,
+            dimension: 'height'
+          },
+          {
+            value: row,
+            sizes: rowSizes,
+            dimension: 'width'
+          }
+        ]
+
+        const rect = n.getBoundingClientRect()
+        info.push({
+          rect,
+          col,
+          row
+        })
+
+        dimensions.forEach(o => {
+          let isNew = false
+          if (o.sizes[o.value] === undefined) {
+            isNew = true
+            o.sizes[o.value] = 0
+          }
+
+          o.sizes[o.value] += rect[o.dimension]
+          if (!isNew) o.sizes[o.value] += offset
+        })
+      })
 
       // Set top-left viewport location
-      this.context.point.x = width
-      this.context.point.y = Math.max((this.parentNode as Element).clientHeight / 2 , height)
+      const width = this.context.point.x = Math.max(...rowSizes)
+      const height = this.context.point.y = Math.max(...colSizes)
 
-      // Move nodes
-      nodes.forEach((n) => {
-        n.x = this.middle.x  + xOff*(count % rowLen) - width / 2
-        n.y =  this.middle.y  + yOff*(Math.floor(count/rowLen)) - height / 2
-        count++
+      // Actually move nodes
+      let rowAcc = []
+      let colAcc = []
+      nodes.forEach((n, i) => {
+        const nInfo = info[i]
+
+        if (colAcc[nInfo.col] === undefined) colAcc[nInfo.col] = 0
+        else colAcc[nInfo.col] += offset
+        
+        if (rowAcc[nInfo.row] === undefined) rowAcc[nInfo.row] = 0
+        else rowAcc[nInfo.row] += offset
+
+        n.x = this.middle.x  + colAcc[nInfo.col] - width // Set Column
+        n.y = this.middle.y  + rowAcc[nInfo.row] - height // Set Row
+
+        // Update with Shift
+        rowAcc[nInfo.row] += nInfo.rect.height
+        colAcc[nInfo.col] += nInfo.rect.width
       })
+
 
     }
 
