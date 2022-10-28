@@ -241,6 +241,7 @@ function pass(from, target, update, context) {
     parent = target.parent
     key = target.key
     root = target.root
+
     subscription = target.subscription
 
     const rootArr = root.split(context.options.keySeparator)
@@ -373,10 +374,14 @@ function pass(from, target, update, context) {
         }
 
         // Direct Object with Default Function
-        else if (target?.default) target.default(...arrayUpdate)
+        else if (target?.default) target.default.call(target, ...arrayUpdate) // Call with parent context
 
         // Direct Function
-        else if (typeof target === 'function') target(...arrayUpdate)
+        else if (typeof target === 'function') {
+            const noContext = parent[key][listenerObject]
+            if (noContext) target.call(context.instance, ...arrayUpdate) // Call with top-level context
+            else target(...arrayUpdate) // Call with default context
+        }
 
         // Failed
         else {
