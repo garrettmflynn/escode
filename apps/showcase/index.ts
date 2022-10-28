@@ -29,13 +29,20 @@ const animationsJS = './demos/animations/index.esc.ts'
 // Multiplayer Phaser Demo
 import * as multiplayerPhaserFile from './demos/phaser/versions/multiplayer/index.esc'
 import multiplayerPhaserFallbacks from './demos/phaser/versions/multiplayer/fallbacks'
-const multiplayerPhaserJSON = './demos/phaser/versions/versions/multiplayer/index.esc.json'
+const multiplayerPhaserJSON = './demos/phaser/versions/multiplayer/index.esc.json'
 const multiplayerPhaserJS = './demos/phaser/versions/multiplayer/index.esc.ts'
+
+// Speak Phaser Demo
+import * as speakPhaserFile from './demos/phaser/versions/speak/index.esc'
+import speakPhaserFallbacks from './demos/phaser/versions/speak/fallbacks'
+const speakPhaserJSON = './demos/phaser/versions/speak/index.esc.json'
+const speakPhaserJS = './demos/phaser/versions/speak/index.esc.ts'
+
 
 // Device Phaser Demo
 import * as devicePhaserFile from './demos/phaser/versions/devices/index.esc'
 import devicePhaserFallbacks from './demos/phaser/versions/devices/fallbacks'
-const devicePhaserJSON = './demos/phaser/versions/versions/devices/index.esc.json'
+const devicePhaserJSON = './demos/phaser/versions/devices/index.esc.json'
 const devicePhaserJS = './demos/phaser/versions/devices/index.esc.ts'
 
 // Todo Demo
@@ -62,6 +69,12 @@ import signalFallbacks from './demos/signal/fallbacks'
 const signalJSON = './demos/signal/index.esc.json'
 const signalJS = './demos/signal/index.esc.ts'
 
+// Noise Demo
+import * as noisySignalFile from './demos/signal/versions/noisy/index.esc'
+import noisySignalFallbacks from './demos/signal/versions/noisy/fallbacks'
+const noisySignalJSON = './demos/signal/versions/noisyindex.esc.json'
+const noisySignalJS = './demos/signal/versions/noisy/index.esc.ts'
+
 // // Broken
 // else if (demo === 'audiofeedback') selected = audiofeedbackFile as string
 // const audiofeedbackJSON = './demos/devices/audiofeedback/index.esc.ts'
@@ -71,6 +84,7 @@ const signalJS = './demos/signal/index.esc.ts'
 // ------------------ ES Components (more imports in files) ------------------
 
 const basicPackage = {
+    name: 'Basic',
     file: escFile,
     fallbacks: escFallbacks,
     json: escJSON,
@@ -78,6 +92,7 @@ const basicPackage = {
 }
 
 const phaserPackage = {
+    name: 'Game',
     file: phaserFile,
     fallbacks: phaserFallbacks,
     json: phaserJSON,
@@ -86,6 +101,7 @@ const phaserPackage = {
 }
 
 const animationsPackage = {
+    name: 'Animations',
     json: animationsJSON,
     fallbacks: animationsFallbacks,
     file: animationsFile,
@@ -94,6 +110,7 @@ const animationsPackage = {
 }
 
 const todoPackage = {
+    name: 'Todo',
     json: todoJSON,
     fallbacks: todoFallbacks,
     file: todoFile,
@@ -101,13 +118,23 @@ const todoPackage = {
 }
 
 const multiplayerPackage = {
+    name: 'Multiplayer Game',
     json: multiplayerPhaserJSON,
     fallbacks: multiplayerPhaserFallbacks,
     file: multiplayerPhaserFile,
     js: multiplayerPhaserJS
 }
 
+const speakPackage = {
+    name: 'Voice Controlled Game',
+    json: speakPhaserJSON,
+    fallbacks: speakPhaserFallbacks,
+    file: speakPhaserFile,
+    js: speakPhaserJS
+}
+
 const devicePackage = {
+    name: 'EMG-Controlled Game',
     json: devicePhaserJSON,
     fallbacks: devicePhaserFallbacks,
     file: devicePhaserFile,
@@ -115,6 +142,7 @@ const devicePackage = {
 }
 
 const tutorialPackage = {
+    name: 'ESCode Tutorial',
     json: tutorialJSON,
     fallbacks: tutorialFallbacks,
     file: tutorialFile,
@@ -122,6 +150,7 @@ const tutorialPackage = {
 }
 
 const accessifyPackage = {
+    name: 'Accessify',
     json: accessifyJSON,
     fallbacks: accessifyFallbacks,
     file: accessifyFile,
@@ -129,10 +158,19 @@ const accessifyPackage = {
 }
 
 const signalPackage = {
+    name: 'Signal',
     json: signalJSON,
     fallbacks: signalFallbacks,
     file: signalFile,
     js: signalJS
+}
+
+const noisySignalPackage = {
+    name: 'Noisy Signal',
+    json: noisySignalJSON,
+    fallbacks: noisySignalFallbacks,
+    file: noisySignalFile,
+    js: noisySignalJS
 }
 
 const demos = {
@@ -146,9 +184,11 @@ const demos = {
     todo: todoPackage,
     phaser: phaserPackage,
     multiplayer: multiplayerPackage,
+    speak: speakPackage,
 
     // Physiological Demos
     signal: signalPackage,
+    noisy: noisySignalPackage,
     device: devicePackage,
 
     // Complete Applications
@@ -215,7 +255,7 @@ const selects = [{
     element: document.getElementById('demoSelect') as HTMLSelectElement,
     key: 'demo',
     selected: localStorage.getItem('demo'),
-    options: Object.keys(demos)
+    options: demos
 },{
     element: document.getElementById('modeSelect') as HTMLSelectElement,
     key: 'mode',
@@ -224,14 +264,16 @@ const selects = [{
 }]
 
 selects.forEach(o => {
-    const isArray = Array.isArray(o.options)
     for (let key in o.options) {
         const option = document.createElement('option')
+
         const value = o.options[key]
-        option.value = value
-        const text = isArray ? o.options[key] : key
+        const hasName = value?.name
+
+        option.value = (hasName) ? key : value
+        const text = (hasName) ? hasName : key
         option.innerHTML = text[0].toUpperCase() + text.slice(1)
-        if (value === o.selected) option.selected = true
+        if (option.value === o.selected) option.selected = true
         o.element.appendChild(option)
     }
 })
@@ -329,13 +371,12 @@ async function start (demo = "basic", mode="direct") {
 
             component.esParent = main // ensure this is added to something that is ESM...
 
-
-
             active = component
         } catch (e) {
             small.innerText = e.message
             main.appendChild(errorPage)
         }
+
 }
 
 

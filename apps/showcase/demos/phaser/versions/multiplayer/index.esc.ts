@@ -5,16 +5,9 @@ import createCompanion from "../../scripts/player/create/companion.js"
 
 import * as phaser from '../../index.esc'
 
-const model = Object.assign({}, phaser) as any
-model.esDOM = Object.assign({}, model.esDOM) as any
-model.esDOM.game = Object.assign({}, model.esDOM.game) as any
-model.esDOM.game.esDOM = Object.assign({}, model.esDOM.game.esDOM) as any
+export const esCompose = phaser
 
-
-export const esAttributes = Object.assign({}, model.esAttributes)
-
-export const esListeners = Object.assign({}, model.esListeners)
-Object.assign(esListeners, {
+export const esListeners = {
 
     // Companion Controls
     ['game.companion.jump']: {
@@ -35,23 +28,28 @@ Object.assign(esListeners, {
             ]
         }
     }
-})
 
-model.esDOM.game.esDOM.companion = {
-    esCompose: player,
-    position: {
-        x: 100,
-        y: 200
-    },
-    size: {
-        offset: {
-            height: -8
-        }
-    },
-    bounce: 0.2,
-    collideWorldBounds: false,
-    create: createCompanion,
-    update
 }
 
-export const esDOM = model.esDOM
+export const esDOM = {
+    game: {
+        esDOM: {
+            companion: {
+                esCompose: player,
+                position: {
+                    x: 100,
+                    y: 200
+                },
+                size: {
+                    offset: {
+                        height: -8
+                    }
+                },
+                bounce: 0.2,
+                collideWorldBounds: false,
+                create: createCompanion,
+                update
+            }
+        }
+    }
+}

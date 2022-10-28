@@ -1,5 +1,5 @@
 
-import * as multiplayer from '../multiplayer/index.esc'
+import * as phaser from '../../index.esc'
 import * as average from "../../../../../../components/basic/average.js"
 import * as threshold from "../../../../../../components/basic/threshold.js"
 import * as button from "../../../../../../components/ui/button.js"
@@ -8,82 +8,85 @@ import * as start from "../../../../../../components/drafts/old/datastreams/comp
 import * as muse from "../../../../../../components/drafts/old/devices/muse/index.js"
 
 
-const model = Object.assign({}, multiplayer) as any
-model.esDOM = Object.assign({}, model.esDOM) as any
-model.esDOM.game = Object.assign({}, model.esDOM.game) as any
-model.esDOM.game.esDOM = Object.assign({}, model.esDOM.game.esDOM) as any
-model.esListeners = Object.assign({}, model.esListeners) as any
+// ----------------------------- Base Component -----------------------------
+export const esCompose = phaser
 
-model.esListeners.threshold = 'average'
-model.esListeners["game.companion.jump"].threshold = true
 
-model.esListeners.average = {
-    datastreams: true
+// ----------------------------- Will Merge In -----------------------------
+export const esAttributes = { style: { position: 'relative' } }
+
+export const esListeners = {
+    ['game.player.jump']: {
+        threshold: true
+    },
+    threshold: 'average',
+    average: {
+        datastreams: true
+    },
+    timeseries: {
+        datastreams: true
+    },
+    datastreams: 'muse',
+    muse: 'button'
 }
 
-model.esListeners.timeseries = {
-    datastreams: true
+export const esDOM = {
+
+    // ---------- Blink Detector ----------
+    average: {
+        maxBufferSize: 100,
+        buffer: [],
+        esCompose: average,
+    },
+    threshold: {
+        value: 300,
+        esCompose: threshold,
+    },
+
+    // ---------- Devices ----------
+    // synthetic: {
+    //     esCompose: synthetic,
+    // },
+    // ganglion: {
+    //     esCompose: ganglion,
+    // },
+    muse: {
+        esCompose: muse,
+    },
+
+    button: {
+        esElement: 'button',
+        esAttributes: {
+            innerText: 'Connect Muse',
+            style: {
+                zIndex: 100,
+                position: 'absolute',
+                top: '0',
+                left: '0',
+            }
+        },
+        esCompose: button,
+    },
+
+    timeseries: {
+        esElement: 'div',
+        esAttributes: {
+            style: {
+                position: "absolute",
+                bottom: "15px",
+                right: "15px",
+                width: "250px",
+                height: "150px",
+                "z-index": 100,
+            }
+        },
+        esCompose: timeseries
+     },
+
+    datastreams: {
+        esCompose: start,
+    },
 }
-
-model.esListeners.datastreams = 'muse'
-
-model.esListeners.muse = 'button'
-
-model.esDOM.average = {
-    maxBufferSize: 100,
-    buffer: [],
-    esCompose: average,
-}
-
-model.esDOM.threshold = {
-    value: 300,
-    esCompose: threshold,
-}
-
-// model.esDOM.synthetic = average
-// model.esDOM.ganglion = average
-model.esDOM.muse = {
-    esCompose: muse,
-}
-
-const buttonAttributes = {} as any
-buttonAttributes.innerText = 'Connect Muse'
-buttonAttributes.style = {
-    zIndex: 100,
-    position: 'absolute',
-    top: '0',
-    left: '0',
-}
-
-model.esDOM.button = {
-    esElement: 'button',
-    esAttributes: buttonAttributes,
-    esCompose: button,
-}
-
-const timeseriesAttributes = Object.assign({}, timeseries.esAttributes)
-timeseriesAttributes.style = {
-    position: "absolute",
-    bottom: "15px",
-    right: "15px",
-    width: "250px",
-    height: "150px",
-    "z-index": 100,
-}
-
-model.esDOM.timeseries = {
-   esElement: 'div',
-   esAttributes: timeseriesAttributes,
-   esCompose: timeseries
-}
-
-model.esDOM.datastreams = {
-    esCompose: start
-}
-
-export const esAttributes = Object.assign(Object.assign({}, model.esAttributes), { style: { position: 'relative' }})
-export const esListeners = model.esListeners
-export const esDOM = model.esDOM
 
 // {
 //     "esDOM": {

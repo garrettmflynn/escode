@@ -12,6 +12,7 @@ export const merge = (main, override, path: any[] = []) => {
             newKeys.delete(k)
 
             const thisPath = [...path, k]
+
             // Merge individual object keys
             if (typeof override[k] === 'object' && !Array.isArray(override[k])) {
                 if (typeof copy[k] === 'object') copy[k] =  merge(copy[k], override[k], thisPath)

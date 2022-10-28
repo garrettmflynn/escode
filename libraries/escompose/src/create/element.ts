@@ -260,9 +260,9 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     // Trigger state changes at the end (if not going to be done elsewhere)
     if (!states) {
         esm.esOnResize = finalStates.onresize
+        // console.error('Produced component', esm)
         esm.esParent = finalStates.parentNode
     }
 
     return element;
 }
-

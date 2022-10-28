@@ -11,6 +11,16 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
 
         const copy = clone.deep(esm) // Start with a deep copy. You must edit on the resulting object...
 
+        for (let name in esm.esDOM) {
+            const value = esm.esDOM[name]
+            const isUndefined = value == undefined
+            const type = (isUndefined) ? JSON.stringify(value) : typeof value
+            if (type != 'object') {
+                console.error(`Removing ${name} esDOM field that which is not an ES Component object. Got ${isUndefined ? type :`a ${type}`} instead.`)
+                delete esm.esDOM[name]
+            }
+        }
+
         // ------------------ Register Components ------------------
         let registry = esm.esComponents ?? {}
         for (let key in registry) {
@@ -40,6 +50,10 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                 if (typeof init === 'function') init()
                 else console.error(`Could not start component ${name} because it does not have an esConnected function`)
             }
+
+            // Call After Children + Before Running
+            const context = esm.__esProxy ?? esm
+            if (ogInit) ogInit.call(context)
 
             // Trigger Execution on Initialization
             if (esm.hasOwnProperty('esTrigger')) {
@@ -101,9 +115,6 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                     }
                 }
             }
-
-            const context = esm.__esProxy ?? esm
-            if (ogInit) ogInit.call(context)
         }
 
         const ogDelete = esm.esDisconnected;

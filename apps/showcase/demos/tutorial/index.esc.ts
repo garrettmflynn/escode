@@ -3,10 +3,11 @@ import * as todoDemo from '../todo/index.esc'
 import * as animationsDemo from '../animations/index.esc'
 import * as phaserDemo from '../phaser/index.esc'
 import * as multiplayerPhaserDemo from '../phaser/versions/multiplayer/index.esc'
+import * as speakPhaserDemo from '../phaser/versions/speak/index.esc'
+
 import * as devicePhaserDemo from '../phaser/versions/devices/index.esc'
 import * as signalDemo from '../signal/index.esc'
-
-import * as log from '../../../../components/basic/log.js'
+import * as noisySignalDemo from '../signal/versions/noisy/index.esc'
 
 export const esAttributes = {
     style: {
@@ -30,9 +31,13 @@ const demos = {
     animations: animationsDemo,
     phaser: phaserDemo,
     multiplayerPhaser: multiplayerPhaserDemo,
+    speakPhaser: speakPhaserDemo,
 
     signal: signalDemo,
+    noisySignal: noisySignalDemo,
+
     devicePhaser: devicePhaserDemo,
+    
 }
 
 const demoInfo = {} as any
@@ -57,7 +62,6 @@ for (let key in demos) {
 }
 
 export const esDOM = {
-    log,
     h1: {
         esElement: 'h1',
         esAttributes: {
@@ -133,7 +137,7 @@ export const esDOM = {
                             innerHTML: "Adding another player is as simple as adding another Player component to the Game component."
                         }
                     },
-                    // demo5: demoInfo.multiplayerPhaser,
+                    demo5: demoInfo.multiplayerPhaser,
                 }
             },
 
@@ -143,10 +147,10 @@ export const esDOM = {
                     p6: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML: "And adding another control method—such as physiological data—is as simple as adding a control source (e.g. a blink detector using electroencephalography, or EEG, data) and a listener that handles the control source's output!"
+                            innerHTML: "And adding another control method—such as voice control—is as simple as adding a control source (e.g. the native Speech Recognition API) and a listener that handles the control source's output!"
                         }
                     },
-                    // demo6: demoInfo.devicePhaser,
+                    demo6: demoInfo.speakPhaser,
                 }
             }
         }
@@ -181,7 +185,7 @@ export const esDOM = {
                                 innerHTML: "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
                             }
                         },
-                        // demo2: demoInfo.signal,
+                        demo2: demoInfo.noisySignal,
                     }
                 },
 
@@ -194,7 +198,7 @@ export const esDOM = {
                                 innerHTML: "This makes it hard to use these signals to do things like control a game!"
                             }
                         },
-                        // demo3: demoInfo.signal,
+                        demo3: demoInfo.devicePhaser,
                     }
                 },
 
@@ -208,7 +212,7 @@ export const esDOM = {
                             }
                         },
                         demo4: {
-                            esElement: demoEl
+                            esElement: 'div'
                         },
                     }
                 },
@@ -223,7 +227,7 @@ export const esDOM = {
                             }
                         },
                         demo5: {
-                            esElement: demoEl
+                            esElement: 'div'
                         },
                     }
                 },
@@ -238,7 +242,7 @@ export const esDOM = {
                             }
                         },
                         demo6: {
-                            esElement: demoEl
+                            esElement: 'div'
                         },
                     }
                 }

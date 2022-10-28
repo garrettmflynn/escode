@@ -14,13 +14,27 @@ type esComposeType = anyObj | anyObj[]
 
 const esMerge = (base, esCompose: esComposeType = {}, path: any[] = []) => {
 
+    // Ensure esCompose is an array
     if (!Array.isArray(esCompose)) esCompose = [esCompose]
-    let clonedEsCompose = esCompose.map(o => cloneUtils.deep(o) )
 
-    // Merge Traversal (i.e. only unset if undefined, otherwise drill into objects)
+    // Merge nested esCompose objects
+    let clonedEsCompose = esCompose.map(o => {
+        const clone = cloneUtils.deep(o) 
+        let arr: any[] = [clone]
+        let target = clone
+        while (target.esCompose) {
+            const val = target.esCompose
+            delete target.esCompose
+            target = val
+            arr.push(val)
+        }
+        return arr
+    }).flat()
+
+    // Merge base with full esCompose tree
     let merged = Object.assign({}, base) // basic clone
-
-    clonedEsCompose.reverse().forEach((toCompose) => merged = mergeUtil(Object.assign({}, toCompose), merged, path)) // Apply the first one last
+    delete merged.esCompose
+    clonedEsCompose.forEach((toCompose) => merged = mergeUtil(Object.assign({}, toCompose), merged, path))
 
     return merged
 }

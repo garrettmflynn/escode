@@ -24,8 +24,8 @@ const otherButton = {
 }
 
 
-const numbers = [ '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const grammar = `#JSGF V1.0; grammar numbers; public <number> = ${numbers.join(' | ')};`
+// const numbers = [ '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+// const grammar = `#JSGF V1.0; grammar numbers; public <number> = ${numbers.join(' | ')};`
 
 export const esAttributes = {
     style: {

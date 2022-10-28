@@ -124,13 +124,14 @@ export const esDOM = {
             overlayColor:'orange',
             generateNewLines: true,
             cleanGeneration: false,
-            lines: {}
+            lines: {},
         },
         
         esCompose: plotter
     },
     data: {
         sampleCt,
+        frequencies: [10],
         esCompose: data,
         esAnimate: true
     }
