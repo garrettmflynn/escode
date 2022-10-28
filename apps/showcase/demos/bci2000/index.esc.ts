@@ -6,6 +6,9 @@ import * as signal from "../signal/index.esc"
 export const esAttributes = {
     style: {
         position: 'relative',
+        overflow: 'scroll',
+        height: '100%',
+        width: '100%',
     }
 }
 
@@ -20,13 +23,29 @@ export const esDOM = {
     overlay: {
         esAttributes: {
             style: {
-                position: 'absolute',
-                top: '0',
-                left: '0',
-                zIndex: 1
+                position: 'fixed',
+                zIndex: 1,
+                color: 'white'
             }
         },
         esDOM: {
+            p: {
+                esElement: 'p',
+                esDOM: {
+                    header: {
+                        esElement: 'b',
+                        esAttributes: {
+                            innerText: 'Connection Status: '
+                        }
+                    },
+                    span: {
+                        esElement: 'span',
+                        esAttributes: {
+                            innerText: 'No Connection'
+                        }
+                    }
+                }
+            },
             select: {
                 esCompose: select,
                 options: {
@@ -55,6 +74,11 @@ export const esDOM = {
                 width: '100%',
                 height: '100vh',
             },
+            plotter: {        
+                options: {
+                    lineWidth: undefined,
+                }
+            },
             data: undefined // remove data generator
         },
         esListeners: {
@@ -79,8 +103,10 @@ export const esListeners = {
     "signal.plotter": {
         "bci2000.raw": true
     },
+
+    'overlay.p.span': 'bci2000.status',
     '': {
-        'bci2000.status': (...args) => console.log('BCI2000 Status', args),
+
         'bci2000.states.StimulusCode': (...args) => console.log('New StimulusCode', args),
 
         // 'bci2000.raw': function (raw) {

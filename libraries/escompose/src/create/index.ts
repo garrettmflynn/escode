@@ -132,7 +132,11 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
             if (esm.esListeners) esm.esListeners.__manager.clear()
 
             if (esm.esDOM) {
-                for (let name in esm.esDOM) esm.esDOM[name].esDisconnected()
+                for (let name in esm.esDOM) {
+                    const component = esm.esDOM[name]
+                    if (typeof component.esDisconnected === 'function') component.esDisconnected()
+                    else console.error('Could not disconnect component because it does not have an esDisconnected function', name, esm.esDOM)
+                }
             }
 
             if (esm.__esCode) esm.__esCode.remove() // Remove code editor
