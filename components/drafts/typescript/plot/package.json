@@ -1,6 +1,0 @@
-{
-    "dependencies": {
-        "graphscript": "^0.1.49",
-        "webgl-plot-utils": "0.3.13"
-    }
-}

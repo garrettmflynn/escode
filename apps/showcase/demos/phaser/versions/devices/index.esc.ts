@@ -3,9 +3,10 @@ import * as phaser from '../../index.esc'
 import * as average from "../../../../../../components/basic/average.js"
 import * as threshold from "../../../../../../components/basic/threshold.js"
 import * as button from "../../../../../../components/ui/button.js"
-import * as timeseries from '../../../../../../components/drafts/old/timeseries/index.js'
 import * as start from "../../../../../../components/drafts/old/datastreams/components/start.js"
 import * as muse from "../../../../../../components/drafts/old/devices/muse/index.js"
+import * as signal from "../../../signal/index.esc"
+console.log('signal', signal)
 
 
 // ----------------------------- Base Component -----------------------------
@@ -23,8 +24,12 @@ export const esListeners = {
     average: {
         datastreams: true
     },
-    timeseries: {
-        datastreams: true
+    ['signal.plotter']: {
+        datastreams: {
+            esFormat: (args) => { 
+                if (args) return {[args[2]]: args[0]} 
+            }
+        }
     },
     datastreams: 'muse',
     muse: 'button'
@@ -68,8 +73,8 @@ export const esDOM = {
         esCompose: button,
     },
 
-    timeseries: {
-        esElement: 'div',
+    signal: {
+        esCompose: signal,
         esAttributes: {
             style: {
                 position: "absolute",
@@ -77,11 +82,30 @@ export const esDOM = {
                 right: "15px",
                 width: "250px",
                 height: "150px",
-                "z-index": 100,
+                zIndex: 1,
             }
         },
-        esCompose: timeseries
-     },
+
+        esDOM: {
+            signalCanvas: {
+                width: '100%',
+                height: '150px',
+            },
+            overlayCanvas: {
+                width: '100%',
+                height: '150px',
+            },
+            plotter: {        
+                options: {
+                    lineWidth: undefined,
+                }
+            },
+            data: undefined // remove data generator
+        },
+        esListeners: {
+            'plotter': undefined
+        }
+    },
 
     datastreams: {
         esCompose: start,
