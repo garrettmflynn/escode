@@ -47,7 +47,7 @@ var getPathInfo = (path, options) => {
 };
 var runCallback = (callback, path, info2, output, setGlobal = true) => {
   if (callback instanceof Function) {
-    if (typeof output === "object" && typeof output.then === "function")
+    if (output && typeof output === "object" && typeof output.then === "function")
       output.then((value) => callback(path, info2, value));
     else
       callback(path, info2, output);
@@ -108,6 +108,7 @@ var Poller = class {
       if (this.#pollingId) {
         console.warn("[escode]: Stopped Polling!");
         clearInterval(this.#pollingId);
+        this.#pollingId = void 0;
       }
     };
     if (listeners2)
@@ -192,9 +193,7 @@ var fromInspectable = Symbol("fromInspectable");
 var keySeparator = ".";
 
 // ../common/pathHelpers.ts
-var hasKey = (key, obj) => {
-  return obj.hasOwnProperty(key) || key in obj;
-};
+var hasKey = (key, obj) => key in obj;
 var getFromPath = (baseObject, path, opts = {}) => {
   const fallbackKeys = opts.fallbacks ?? [];
   const keySeparator2 = opts.keySeparator ?? keySeparator;
@@ -205,17 +204,14 @@ var getFromPath = (baseObject, path, opts = {}) => {
   let exists;
   path = [...path];
   let ref = baseObject;
-  let inInspectable = false;
   for (let i = 0; i < path.length; i++) {
     if (!ref) {
       const message = `Could not get path`;
       console.error(message, path, ref);
       throw new Error(message);
     }
-    if (!inInspectable)
-      inInspectable = !!ref.__esInspectable;
     const str = path[i];
-    if (!hasKey(str, ref) && ref.hasOwnProperty("esDOM")) {
+    if (!hasKey(str, ref) && "esDOM" in ref) {
       for (let i2 in fallbackKeys) {
         const key = fallbackKeys[i2];
         if (hasKey(key, ref)) {
@@ -228,11 +224,8 @@ var getFromPath = (baseObject, path, opts = {}) => {
     if (exists)
       ref = ref[str];
     else {
-      if (!inInspectable)
-        console.error(`Will not get updates from: ${path.filter((str2) => typeof str2 === "string").join(keySeparator2)}`);
-      else if (!ref.__esInspectable)
-        console.warn("Might be ignoring incorrectly...");
-      return;
+      ref = void 0;
+      exists = true;
     }
   }
   if (opts.output === "info")
@@ -568,13 +561,24 @@ var info = (id, callback, path, originalValue, base, listeners2, options) => {
   };
   return info2;
 };
-var register = (info2, collection, lookup) => {
+var registerInLookup = (name, sub, lookups) => {
+  if (lookups) {
+    const id = Math.random();
+    lookups.symbol[sub] = {
+      name,
+      id
+    };
+    if (!lookups.name[name])
+      lookups.name[name] = {};
+    lookups.name[name][id] = sub;
+  }
+};
+var register = (info2, collection, lookups) => {
   const absolute = getPath("absolute", info2);
   if (!collection[absolute])
     collection[absolute] = {};
   collection[absolute][info2.sub] = info2;
-  if (lookup)
-    lookup[info2.sub] = absolute;
+  registerInLookup(absolute, info2.sub, lookups);
 };
 var listeners = {
   functions: functions2,
@@ -589,17 +593,17 @@ var set = (type, absPath, value, callback, base, allListeners, options) => {
     const path2 = getPath("absolute", fullInfo);
     allListeners[type][path2][fullInfo.sub] = fullInfo;
     if (allListeners.lookup)
-      allListeners.lookup[fullInfo.sub] = path2;
+      registerInLookup(path2, fullInfo.sub, allListeners.lookup);
   }
 };
 var get2 = (info2, collection) => collection[getPath("absolute", info2)];
-var handler = (info2, collection, subscribeCallback, lookup) => {
+var handler = (info2, collection, subscribeCallback, lookups) => {
   if (!get2(info2, collection)) {
     let parent = info2.parent;
     let val = parent[info2.last];
     subscribeCallback(val, parent);
   }
-  register(info2, collection, lookup);
+  register(info2, collection, lookups);
 };
 var setterExecution = (listeners2, value) => {
   return iterateSymbols(listeners2, (_, o) => {
@@ -607,7 +611,7 @@ var setterExecution = (listeners2, value) => {
     runCallback(o.callback, path, {}, value);
   });
 };
-function setters(info2, collection, lookup) {
+function setters(info2, collection, lookups) {
   handler(info2, collection, (value, parent) => {
     let val = value;
     if (!parent[isProxy]) {
@@ -635,7 +639,7 @@ function setters(info2, collection, lookup) {
         }
       }
     }
-  }, lookup);
+  }, lookups);
 }
 var functionExecution = (context, listeners2, func, args) => {
   listeners2 = Object.assign({}, listeners2);
@@ -648,7 +652,7 @@ var functionExecution = (context, listeners2, func, args) => {
   });
   return executionInfo;
 };
-function functions2(info2, collection, lookup) {
+function functions2(info2, collection, lookups) {
   handler(info2, collection, (_, parent) => {
     if (!parent[isProxy]) {
       parent[info2.last] = function(...args) {
@@ -656,7 +660,7 @@ function functions2(info2, collection, lookup) {
         return functionExecution(this, listeners2, info2.original, args);
       };
     }
-  }, lookup);
+  }, lookups);
 }
 
 // ../common/drill.js
@@ -684,7 +688,8 @@ var drillSimple = (obj, callback, options) => {
       };
       if (info2.object) {
         const name = info2.name;
-        if (name === "Object" || name === "Array") {
+        const isESM = esm(val);
+        if (isESM || name === "Object" || name === "Array") {
           info2.simple = true;
           const idx = seen.indexOf(val);
           if (idx !== -1)
@@ -712,6 +717,9 @@ var drillSimple = (obj, callback, options) => {
 };
 
 // src/Monitor.ts
+var createLookup = () => {
+  return { symbol: {}, name: {} };
+};
 var Monitor = class {
   constructor(opts = {}) {
     this.poller = new Poller();
@@ -723,7 +731,7 @@ var Monitor = class {
       polling: this.poller.listeners,
       functions: {},
       setters: {},
-      lookup: {}
+      lookup: createLookup()
     };
     this.references = {};
     this.get = (path, output) => {
@@ -745,9 +753,18 @@ var Monitor = class {
       const info2 = getPathInfo(absPath, this.options);
       return this.listen(info2.id, callback, info2.path);
     };
-    this.getInfo = (id, callback, path, original) => {
-      const info2 = info(id, callback, path, original, this.references, this.listeners, this.options);
-      this.listeners.lookup[info2.sub] = getPath("absolute", info2);
+    this.getInfo = (label, callback, path, original) => {
+      const info2 = info(label, callback, path, original, this.references, this.listeners, this.options);
+      const id = Math.random();
+      const lookups = this.listeners.lookup;
+      const name = getPath("absolute", info2);
+      lookups.symbol[info2.sub] = {
+        name,
+        id
+      };
+      if (!lookups.name[name])
+        lookups.name[name] = {};
+      lookups.name[name][id] = info2.sub;
       return info2;
     };
     this.listen = (id, callback, path = [], __internal = {}) => {
@@ -796,31 +813,30 @@ var Monitor = class {
         }, {
           condition: (_, val) => toMonitorInternally(val)
         });
-      } else {
-        let info2;
-        try {
-          if (__internalComplete.poll) {
-            info2 = this.getInfo(id, callback, arrayPath, ref);
-            this.poller.add(info2);
-          } else {
-            let type = "setters";
-            if (typeof ref === "function")
-              type = "functions";
-            info2 = this.getInfo(id, callback, arrayPath, ref);
-            this.add(type, info2);
-          }
-        } catch (e) {
-          console.error("Fallback to polling:", path, e);
+      }
+      let info2;
+      try {
+        if (__internalComplete.poll) {
           info2 = this.getInfo(id, callback, arrayPath, ref);
           this.poller.add(info2);
+        } else {
+          let type = "setters";
+          if (typeof ref === "function")
+            type = "functions";
+          info2 = this.getInfo(id, callback, arrayPath, ref);
+          this.add(type, info2);
         }
-        subs[getPath("absolute", info2)] = info2.sub;
-        if (this.options.onInit instanceof Function) {
-          const executionInfo = {};
-          for (let key in info2.infoToOutput)
-            executionInfo[key] = void 0;
-          this.options.onInit(getPath("output", info2), executionInfo);
-        }
+      } catch (e) {
+        console.error("Fallback to polling:", path, e);
+        info2 = this.getInfo(id, callback, arrayPath, ref);
+        this.poller.add(info2);
+      }
+      subs[getPath("absolute", info2)] = info2.sub;
+      if (this.options.onInit instanceof Function) {
+        const executionInfo = {};
+        for (let key in info2.infoToOutput)
+          executionInfo[key] = void 0;
+        this.options.onInit(getPath("output", info2), executionInfo);
       }
       return subs;
     };
@@ -855,7 +871,8 @@ var Monitor = class {
       return true;
     };
     this.unsubscribe = (sub) => {
-      const absPath = this.listeners.lookup[sub];
+      const info2 = this.listeners.lookup.symbol[sub];
+      const absPath = info2.name;
       const polling = this.poller.get(sub);
       const funcs = this.listeners.functions[absPath];
       const func = funcs?.[sub];
@@ -865,8 +882,10 @@ var Monitor = class {
         this.poller.remove(sub);
       else if (func) {
         delete funcs[sub];
-        if (!Object.getOwnPropertySymbols(funcs).length)
+        if (!Object.getOwnPropertySymbols(funcs).length) {
           func.current = func.original;
+          delete this.listeners.functions[absPath];
+        }
       } else if (setter) {
         delete setters2[sub];
         if (!Object.getOwnPropertySymbols(setters2).length) {
@@ -874,13 +893,18 @@ var Monitor = class {
           const last = setter.last;
           const value = parent[last];
           Object.defineProperty(parent, last, { value, writable: true });
+          delete this.listeners.setters[absPath];
         }
       } else
         return false;
-      delete this.listeners.lookup[sub];
+      delete this.listeners.lookup.symbol[sub];
+      const nameLookup = this.listeners.lookup.name[info2.name];
+      delete nameLookup[info2.id];
+      if (!Object.getOwnPropertyNames(nameLookup).length)
+        delete this.listeners.lookup.name[info2.name];
     };
     Object.defineProperty(this.listeners, "lookup", {
-      value: {},
+      value: createLookup(),
       enumerable: false,
       configurable: false
     });

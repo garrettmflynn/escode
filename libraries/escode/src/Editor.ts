@@ -88,14 +88,6 @@ export class Editor extends LitElement {
       graph: undefined,
     }
 
-    esc: {
-      monitor?: Monitor,
-      listeners: { static: boolean }
-    } = {
-      monitor: undefined,
-      listeners: { static: true }
-    }
-
     modal = new Modal()
     ui = document.createElement('visualscript-tab') 
     files = new Panel()
@@ -213,25 +205,8 @@ export class Editor extends LitElement {
     }
 
     createComponent = (esc, nestedInfo: any = undefined) => {
-      if (!this.esc.monitor) {
-        this.esc.monitor = new Monitor({
-          // onInit: logUpdate,
-          // onUpdate: {
-          //     callback: logUpdate,
-          //     info: {
-          //         performance: true
-          //     }
-          // },
-          pathFormat: 'absolute',
-          polling: { sps: 60 }
-      })
-    }
-
       // Create an active ES Component from a .esc file
-      return createComponent(esc, {
-        ...this.esc,
-        nested: nestedInfo
-      })
+      return createComponent(esc, { nested: nestedInfo  })
     }
 
     // TODO: Assign ES Component types

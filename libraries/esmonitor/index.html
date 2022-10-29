@@ -179,7 +179,11 @@
 
     const promises = runs.map(async runOrder => {
 
+        // ---------------- Command Setup ----------------
+        const firstRunCommand = runOrder[0]
+        const isStatic = !firstRunCommand || firstRunCommand.type === 'static'
         
+        // ---------------- Element Setup ----------------
         const div = document.createElement('div')
         const header = document.createElement('h2')
 
@@ -200,6 +204,21 @@
         let subscriptions = {}
 
         const monitor = new Monitor()
+
+
+        // ------------ ESM Test ------------
+        try {
+            const esm = await import('./demo/test.js') // ESM Version
+            console.log('esm', esm)
+            const esmProxy = monitor.set('esm', esm, {static: isStatic})
+            const esmSubs = monitor.on('esm', (...args) => {
+                console.log('ESM Updated', ...args)
+            })
+            esm.default()
+            setTimeout(() => monitor.remove(esmSubs), 1000/60) /// Listen for no longer than required...
+        } catch (e) {
+            console.error('ESM Failed:', e)
+        }
 
         // ---------------- Register Object ----------------
 
@@ -228,11 +247,10 @@
             actor: createActor()
         }
 
-        const firstRunCommand = runOrder[0]
-        const isStatic = !firstRunCommand || firstRunCommand.type === 'static'
-
         const actorProxy = monitor.set(id, actor, {static: isStatic})
         const storeProxy = monitor.set(storeId, store, {static: isStatic})
+
+
         monitor.set(objectId, objects, {static: isStatic}) // TODO: Set static false here...
 
         const toPass = {
@@ -246,6 +264,8 @@
             const subs = toRun[type](o.object, monitor, toPass, headerText)
             for (let sub in subs) subscriptions[sub] = subs[sub]
         })
+
+
 
 
         const initalValue = 1

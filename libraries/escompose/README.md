@@ -6,7 +6,7 @@
 
 **ES Components** is a standard for transforming ES Modules into standardized Web Components to simplify the process of authoring composable web applications.
 
-The **escompose** library uses [graphscript](https://github.com/brainsatplay/graphscript) to compile ES Components into Web Components that respond to each other. 
+The **escompose** library transforms ES Components into Web Components that respond to each other. 
 
 > **escompose** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
 

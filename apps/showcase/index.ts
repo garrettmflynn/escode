@@ -1,7 +1,6 @@
 
 // -------------- Import Modules --------------
 import * as escompose from '../../libraries/escompose/src/index'
-import Monitor from '../../libraries/esmonitor/src/Monitor.js'
 // import ESC from "../../libraries/escode/src/core/index";
 // import validate from "../../libraries/escode/src/validate/index";
 import * as esm from '../../libraries/esmpile/src/index'
@@ -19,18 +18,6 @@ const main = document.getElementById('app') as HTMLElement
 
 // ------------------ ESMonitor ------------------
 // let logUpdate = (path, info, newVal?: any) =>  console.log('Update:', path, info, newVal)
-
-const monitor = new Monitor({
-    // onInit: logUpdate,
-    // onUpdate: {
-    //     callback: logUpdate,
-    //     info: {
-    //         performance: true
-    //     }
-    // },
-    pathFormat: 'absolute',
-    polling: { sps: 60 } // Poll the ESM Object
-})
 
 const errorPage = document.createElement('div')
 Object.assign(errorPage.style, {
@@ -103,10 +90,6 @@ function startFunction () {
     })
 
     if (active?.esDisconnected) active.esDisconnected()
-    if (basicDemoSubs) {
-        monitor.remove(basicDemoSubs)
-        basicDemoSubs = undefined
-    }
     
     console.log(`---------------- Starting ${args[0]} demo in ${args[1]} mode ----------------`)
 
@@ -117,7 +100,6 @@ restartButton.addEventListener('click', startFunction)
 
 
 
-let basicDemoSubs;
 async function start (demo = "basic", mode="direct") {
     
         try {
@@ -161,23 +143,11 @@ async function start (demo = "basic", mode="direct") {
 
             if (!reference) throw new Error('Reference has been resolved as undefined.')
             if (errorPage.parentNode) errorPage.remove()
-
-            // Basic
-            if (demo === 'basic') {
-                const esmId = 'ESM'
-                const testComponent = reference.esDOM.test.esCompose // Grab from active reference
-                monitor.set(esmId, testComponent)
-                basicDemoSubs = monitor.on(esmId, (path, _, update) =>  console.log('Polling Result:', path, update))
-            }
                 
-
             // Create an active ES Component from a .esc file
             const component = escompose.create(reference, {
-                monitor, // Use the existing monitor
-                // listeners: { static: false } // Will be able to track new keys added to the object
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 listeners: { static: true },
-                nested: undefined,
                 utilities: {
                     code: escode.Editor
                 }

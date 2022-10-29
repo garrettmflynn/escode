@@ -6,8 +6,6 @@ import * as button from "../../../../../../components/ui/button.js"
 import * as start from "../../../../../../components/drafts/old/datastreams/components/start.js"
 import * as muse from "../../../../../../components/drafts/old/devices/muse/index.js"
 import * as signal from "../../../signal/index.esc"
-console.log('signal', signal)
-
 
 // ----------------------------- Base Component -----------------------------
 export const esCompose = phaser
