@@ -8,6 +8,10 @@ import { Options } from '../../../common/types';
 const animations = {}
 
 export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
+    
+        const states = {
+            connected: false,
+        }
 
         const copy = clone.deep(esm) // Start with a deep copy. You must edit on the resulting object...
 
@@ -30,8 +34,8 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
         }
     
         // ------------------ Produce a Complete ESM Element ------------------
-        const states = {}
-        let el = element.create(id, esm, parent, states,  utilities);
+
+        let el = element.create(id, esm, parent, states, utilities);
 
         const finalStates = states as element.ESComponentStates
         
@@ -43,6 +47,8 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
         esm.esConnected = async () => {
 
             await esm.esReady
+            states.connected = true
+
 
             // Start Nested Components
             for (let name in esm.esDOM) {
@@ -50,6 +56,18 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                 if (typeof init === 'function') init()
                 else console.error(`Could not start component ${name} because it does not have an esConnected function`)
             }
+
+            // Retroactively setting the esCode editor on children of the focus element
+            const esCode = esm.esParent?.esComponent?.__esCode
+            if (esCode) esm.__esCode = esCode
+
+
+            // Register Source Text
+           const source = esm.esSourceText
+           if (source && esm.__esCode) {
+                const path = esm.__isESComponent
+                esm.__esCode.addFile(path, source)
+           }
 
             // Call After Children + Before Running
             const context = esm.__esProxy ?? esm

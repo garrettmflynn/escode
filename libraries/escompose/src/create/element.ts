@@ -4,6 +4,11 @@ import { ESComponent, ESElementInfo } from "../component";
 
 
 export type ESComponentStates = {
+
+    // Initial
+    connected: boolean,
+
+    // Element
     element: ESComponent['esElement']
     attributes: ESComponent['esAttributes']
     parentNode: ESComponent['esParent']
@@ -152,9 +157,11 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                 states.element = v
 
                 // Trigger esParent Setter on Nested Components
-                for (let name in esm.esDOM) {
-                    const component = esm.esDOM[name] as ESComponent;
-                    component.esParent = v
+                if (states.connected) {
+                    for (let name in esm.esDOM) {
+                        const component = esm.esDOM[name] as ESComponent;
+                        component.esParent = v
+                    }
                 }
 
                 // Set Attributes
@@ -188,6 +195,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                 if (v) {
 
                     // --------------------------- Place inside ESCode Instance (if created) ---------------------------
+                    
                     if (esm.__esCode) {
                         esm.__esCode.setComponent(esm) // Set the target component
                         v.appendChild(esm.__esCode); // Append ESCode where the component should be
@@ -237,15 +245,18 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     // --------------------------- Spawn ESCode Instance ---------------------------
     if (esm.esCode) {
         let config = esm.esCode
-        let cls = utilities.code
+        let cls = utilities.code?.class
+
         if (!cls) {
-            if (typeof esm.esCode === 'function') {
-                cls = esm.esCode
-                config = true
-            } else console.error('Editor class not provided in options.utilities.code')
-        }  else {
-            let finalConfig = ((typeof config === 'boolean') ? {} : config) as EditorProps
-            const esCode = new cls(finalConfig)
+            if (typeof esm.esCode === 'function') cls = esm.esCode
+            else console.error('Editor class not provided in options.utilities.code')
+        }
+
+        if (cls) {
+            let options = utilities.code?.options ?? {}
+            options = ((typeof config === 'boolean') ? options : {...options, ...config}) as EditorProps
+            const esCode = new cls(options)
+            esCode.start() // start the editor
             Object.defineProperty(esm, '__esCode', { value: esCode })
         }
     }

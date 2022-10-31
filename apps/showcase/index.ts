@@ -145,11 +145,22 @@ async function start (demo = "basic", mode="direct") {
             if (errorPage.parentNode) errorPage.remove()
                 
             // Create an active ES Component from a .esc file
-            const component = escompose.create(reference, {
+            const component = await escompose.create(reference, {
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 listeners: { static: true },
                 utilities: {
-                    code: escode.Editor
+                    code: {
+                        class: escode.Editor,
+                        options: {}
+                    },
+                    bundle: {
+                        function: esm.bundle.get,
+                        options: {}
+                    },
+                    compile: {
+                        function: esm.compile,
+                        options: {}
+                    }
                 }
             })
 

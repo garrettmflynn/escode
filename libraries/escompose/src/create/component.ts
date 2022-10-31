@@ -53,6 +53,7 @@ export const define = (config, esm) => {
 
             connectedCallback() {
                 console.log('Custom element added to page.');
+                this.__esComponent.__esReady();
             }
 
             disconnectedCallback() {

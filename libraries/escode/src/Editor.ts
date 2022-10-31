@@ -14,6 +14,8 @@ import createComponent from '../../escompose/src/index'
 
 // Default ES Component Pool for Plugins
 import * as components from '../../../components/index.js'
+import Bundle from '../../esmpile/src/Bundle';
+import { esSourceText } from '../../escompose/src/component';
 
 
 export type EditorProps = {
@@ -103,6 +105,10 @@ export class Editor extends LitElement {
       mode: 'filesystem'
     })
 
+    filesystem = {}
+
+    onCreateFile?: Function
+
     constructor(props:EditorProps={}) {
       super();
 
@@ -148,7 +154,7 @@ export class Editor extends LitElement {
         const activeGraph = this.config.graph
 
         if (this.config.esc) {
-          const component = this.createComponent(node.info, {
+          const component = await this.createComponent(node.info, {
             parent: this.config.esc,
             name: node.tag
           })
@@ -204,6 +210,44 @@ export class Editor extends LitElement {
       this.setGraph(graph) // forward to ESCode setter
     }
 
+
+    addFile = (path: string, files: esSourceText) => {
+      if (path && files) {
+
+        let arrayFiles = (Array.isArray(files)) ? files : [files]
+
+        arrayFiles = arrayFiles.map(f => {
+          const isStr = typeof f === 'string'
+          const all = [f]
+          if (!isStr && f.dependencies) all.push(...f.dependencies.values())
+          return all
+        }).flat()
+
+        arrayFiles.forEach(f =>  {
+          if (typeof f === 'string') this.filesystem[path] = f
+          else {
+            const split = f.info.uri.split('/')
+
+            let target = this.filesystem
+            const name = split.pop()
+            split.forEach((s, i) => {
+              if (!target[s]) target[s] = {}
+              target = target[s]
+            })
+
+            target[name] = f
+          }
+        })
+
+        this.setFilesystem(this.filesystem)
+      }
+    }
+
+    setFilesystem = (filesystem) => {
+      this.filesystem = filesystem
+      this.tree.set(this.filesystem)
+    }
+
     createComponent = (esc, nestedInfo: any = undefined) => {
       // Create an active ES Component from a .esc file
       return createComponent(esc, { nested: nestedInfo  })
@@ -222,7 +266,10 @@ export class Editor extends LitElement {
       if (!attachedToThis) Object.defineProperty(component, '__esCode', {value: this}) // Setting esCode to the component
 
       const local = {}
-      for (let key in component.esDOM) local[key] = component.esDOM[key].esOriginal
+      for (let key in component.esDOM) {
+        const esc = component.esDOM[key]
+        local[key] = esc.esOriginal
+      }
       
       this.setPlugins({
         ['Local Components']: {
@@ -282,24 +329,24 @@ export class Editor extends LitElement {
       // TODO: Only Show ESM at Top Level. Show editable things
       // const isValidPlugin = this.isPlugin(f)
 
-      const openTabs: {[x:string]: any} = {}
-
-      // show/hide files tab
-      if (this.config.app?.filesystem) {
 
       // Add Tab On Click
       this.tree.oncreate = async (type, item) => {
 
         if (type === 'file') {
-          const path = item.key
-          const rangeFile = this.config.app.filesystem.open(path, true)
-          return rangeFile
+          if (this.onCreateFile){
+            const path = item.key
+            const rangeFile = this.onCreateFile() //this.config.app.filesystem.open(path, true)
+            return rangeFile
+          } else console.error('Cannot create file...')
         }
       }
 
       this.tree.onClick = async (key, obj) => {
+        
+        if (Array.isArray(obj)) obj = obj[0] // Only grab first...
 
-        const isFile = !!obj.path
+        const isFile = true //!!obj.path
         const id = obj.path ?? key
         const existingTab = this.files.tabs.get(id)
         if (!existingTab){
@@ -356,53 +403,50 @@ export class Editor extends LitElement {
         
         // ---------- Update Editors ----------
 
-        const canGet = {
-          metadata: this.config.app.plugins.metadata,
-          package: this.config.app.plugins.package,
-          module: this.config.app.plugins.module
-        }
+        // const canGet = {
+        //   metadata: this.config.app.plugins.metadata,
+        //   package: this.config.app.plugins.package,
+        //   module: this.config.app.plugins.module
+        // }
 
-        let metadata = (canGet.metadata) ? (await this.config.app.plugins.metadata(obj.path) ?? await obj.body) : undefined
-        const module = (canGet.module) ? await this.config.app.plugins.module(obj.path) : obj.operator
-        const pkg = (canGet.package) ? await this.config.app.plugins.package(obj.path) : undefined
+        // let metadata = (canGet.metadata) ? (await this.config.app.plugins.metadata(obj.path) ?? await obj.body) : undefined
+        // const module = (canGet.module) ? await this.config.app.plugins.module(obj.path) : obj.operator
+        // const pkg = (canGet.package) ? await this.config.app.plugins.package(obj.path) : undefined
 
-        // Merge package with metadata
-        if (pkg) metadata = Object.assign(JSON.parse(JSON.stringify(pkg)), metadata)
+        // // Merge package with metadata
+        // if (pkg) metadata = Object.assign(JSON.parse(JSON.stringify(pkg)), metadata)
 
-        // Plugin Info
-        if (tabInfo.plugin) {
-          tabInfo.plugin.set( module, metadata )
-        }
+        // // Plugin Info
+        // if (tabInfo.plugin) {
+        //   tabInfo.plugin.set( module, metadata )
+        // }
 
-        // Object Editor
-        if (tabInfo.object){
-          tabInfo.object.set(module)
-          tabInfo.object.header = metadata.name ?? obj.name ?? obj.tag
-        }
+        // // Object Editor
+        // if (tabInfo.object){
+        //   tabInfo.object.set(module)
+        //   tabInfo.object.header = metadata.name ?? obj.name ?? obj.tag
+        // }
 
         // Code Editor
-        if (tabInfo.code){
-          const text = (isFile) ? await obj.text : obj.operator.toString()
+        if (tabInfo.code && isFile){
+          const text = obj.info.text.original // Get the original text
+
           tabInfo.code.value = text
 
           let tmpVar = undefined
           const tempSave = (isFile) ? (text) => obj.text = text : (text) => tmpVar = text
           tabInfo.code.onInput = tempSave,
           tabInfo.code.onSave = async () => {
-
-              if (isFile) await obj.save()
-              else obj.operator = (0,eval)(tmpVar)
-
-              await this.config.app.start()
+              await obj.save()
+              // await this.config.app.start() // TODO: restart the app
           }
         }
 
-        openTabs[id] = tabInfo.tab
+        // openTabs[id] = tabInfo.tab
       } else {
         existingTab.toggle.select()
       }
     } 
-  }
 
 
     this.properties.set(allProperties)
@@ -415,7 +459,7 @@ export class Editor extends LitElement {
     })
 
 
-    let treeObject = this.config.app.filesystem?.files?.system
+    let treeObject = this.filesystem // this.config.app.filesystem?.files?.system
     this.tree.set(treeObject ?? {})
 
     this.fileUpdate = this.fileUpdate + 1
@@ -448,7 +492,7 @@ export class Editor extends LitElement {
       const graphTab = new Tab({name: 'Graph'})
       graphTab.appendChild(this.graph)
       panel.addTab(graphTab)
-      if (this.config.app?.filesystem) panel.addTab(this.filesTab)
+      panel.addTab(this.filesTab)
 
       // return html`
       //     ${this.modal}

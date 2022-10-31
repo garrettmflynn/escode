@@ -1,4 +1,5 @@
 import { Editor, EditorProps } from "../../escode/src"
+import Bundle from "../../esmpile/src/Bundle"
 
 type ComponentElement = Element & { [x:string]: any }
 
@@ -18,6 +19,8 @@ export type ESDefineInfo = {
 }
 
 export type ESElementArray = [ESDefineInfo['name'], {extends: ESDefineInfo['extends']}]
+
+export type esSourceText = string | (string | Bundle)[]
 
 type GeneralElementType = baseESElement | ESElementInfo
 export type ESComponent<ElementType = GeneralElementType>  = {
@@ -54,7 +57,11 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     __esCode: Editor
 
 
+    esSourceText: esSourceText
+
+
     __isESComponent: string, // Path of the Component
     __esProxy: ProxyConstructor,
+    
 
 }

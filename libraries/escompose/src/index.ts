@@ -12,42 +12,90 @@ const listenerObject = Symbol('listenerObject')
 type anyObj = {[key: string]: any}
 type esComposeType = anyObj | anyObj[]
 
-const esMerge = (base, esCompose: esComposeType = {}, path: any[] = []) => {
+
+const esCompile = async (o, utilities) => {
+    if (typeof o === 'string') {
+
+        // Get Text Bundle
+        if (typeof utilities.bundle.function === 'function') {
+            const foo = utilities.bundle.function
+            const options = utilities.bundle.options
+            if (!options.bundler) options.bundler = 'datauri' // link as datauri
+            if (!options.bundle) options.bundle = Math.random() // link across all bundles
+            const bundle = foo(o, options)
+
+            // Track Bundle Resolution
+            await bundle.resolve()
+            o = Object.assign({}, bundle.result)
+            
+            // Track Source Text
+            if (!o.esSourceText) o.esSourceText = []
+            o.esSourceText.push(bundle) // can be string or bundle
+        } 
+        
+        // Just Compile
+        else if (typeof utilities.compile.function === 'function') {
+            const resolved = await utilities.compile.function(o, utilities.compile.options)
+            o = resolved
+        } 
+        
+        // Show Error Message
+        else {
+            console.error('Cannot transform esCompose string without a compose utility function')
+            o = {}
+        }
+
+        return cloneUtils.deep(o) 
+    }
+
+    return o
+}
+
+const esMerge = async (base, esCompose: esComposeType = {}, path: any[] = [], utilities: any = {}) => {
 
     // Ensure esCompose is an array
     if (!Array.isArray(esCompose)) esCompose = [esCompose]
 
     // Merge nested esCompose objects
-    let clonedEsCompose = esCompose.map(o => {
-        const clone = cloneUtils.deep(o) 
-        let arr: any[] = [clone]
-        let target = clone
-        while (target.esCompose) {
-            const val = target.esCompose
-            delete target.esCompose
-            target = val
-            arr.push(val)
-        }
+    let clonedEsCompose = await Promise.all(esCompose.map(async o => {
+
+       const compiled = await esCompile(o, utilities) // Resolve from text if required
+
+       let arr: any[] = [compiled]
+       let target = compiled
+       while (target.esCompose) {
+           const val = target.esCompose
+           delete target.esCompose
+           target = await esCompile(val, utilities) // Resolve from text if required
+           arr.push(target)
+       }
+
         return arr
-    }).flat()
+    }))
+
+    const flat = clonedEsCompose.flat()
+
 
     // Merge base with full esCompose tree
-    let merged = Object.assign({}, base) // basic clone
+    let merged = cloneUtils.deep(base) // deep clone
     delete merged.esCompose
-    clonedEsCompose.forEach((toCompose) => merged = mergeUtil(Object.assign({}, toCompose), merged, path))
+
+    flat.forEach((toCompose) => {
+        merged = mergeUtil(toCompose, merged, path)
+    })
 
     return merged
 }
 
 // TODO: Ensure that this doesn't have a circular reference
-const esDrill = (o, id: string | symbol, parent?, opts?) => {
+const esDrill = async (o, id: string | symbol, parent?, opts?) => {
 
     const parentId = parent?.__isESComponent
     const path = (parentId) ? [parentId, id] : ((typeof id === 'string') ? [id] : [])
 
     // TODO: Search the entire object for the esCompose key. Then execute this merge script
     // ------------------ Merge ESM with esCompose Properties ------------------
-    const merged = esMerge(o, o.esCompose, path)
+    const merged = await esMerge(o, o.esCompose, path, opts.utilities)
     delete merged.esCompose
 
     // ------------------ Create Instance with Special Keys ------------------
@@ -59,7 +107,7 @@ const esDrill = (o, id: string | symbol, parent?, opts?) => {
     if (instance.esDOM) {
         for (let name in instance.esDOM) {
             const base = instance.esDOM[name]
-            const thisInstance = esDrill(base, name, instance, opts) // converting from top to bottom
+            const thisInstance = await esDrill(base, name, instance, opts) // converting from top to bottom
             instance.esDOM[name] = thisInstance // replace in config
         }
     }
@@ -440,9 +488,7 @@ function passToListeners(context, listeners, name, update) {
 
 
 const toSet = Symbol('toSet')
-export const create = (config, options: Partial<Options> = {}) => {
-
-    
+export const create = async (config, options: Partial<Options> = {}) => {
 
     // -------------- Create Complete Options Object --------------
 
@@ -458,7 +504,6 @@ export const create = (config, options: Partial<Options> = {}) => {
         }
         monitor = new Monitor(options.monitor)
     }
-
 
     if (options.clone) config = cloneUtils.deep(config) // NOTE: If this doesn't happen, the reference will be modified by the create function
 
@@ -482,14 +527,14 @@ export const create = (config, options: Partial<Options> = {}) => {
     if (options.nested?.parent && options.nested?.name){
 
         // TODO: Figure out how to pass the path for real...
-        fullInstance = esDrill(config, options.nested.name, options.nested.parent, drillOpts)
+        fullInstance = await esDrill(config, options.nested.name, options.nested.parent, drillOpts)
 
         // TODO: Add listeners...
 
     } else {
 
         const id = Symbol('root')
-        const instance = esDrill(config, id, undefined, drillOpts)
+        const instance = await esDrill(config, id, undefined, drillOpts)
 
         fullInstance = instance // cloneUtils.deep(instance)
 

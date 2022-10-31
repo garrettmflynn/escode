@@ -10,13 +10,10 @@ script.src = 'https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser-arcade-phys
 document.head.appendChild(script)
 
 // Handle async loading
-let nodes = {}
-let onResolve = null
+let nodes = []
 
 if (!('Phaser' in window)) script.onload = () => {
-    if (onResolve instanceof Function) onResolve(window.Phaser) // resolve previous promise
-    for (let tag in nodes)  nodes[tag].default() // run created nodes when initialized // TODO: Is broken...
-    // for (let tag in nodes) nodes[tag].default() 
+    nodes.forEach(n => n.default()) // run created nodes when initialized
 }
 
 const call = (func, ctx, ...args) => {
@@ -28,9 +25,21 @@ export const config = defaultConfig
 
 export let game;
 
+export const container = null // Always create a container with its own scope
+
+export const pointerEvents = false
+
 export function esConnected() {
+
+    // Allow scrolling on phaser games
+    this.container = document.createElement('div')
+    if (!this.pointerEvents) this.container.style.pointerEvents = 'none'
+    this.container.style.width = '100%'
+    this.container.style.height = '100%'
+    this.esElement.appendChild(this.container)
+
     if (window.Phaser) this.default() // run node if phaser exists
-     else nodes[this._unique] = this // set link to node
+    else nodes.push(this)
 }
 
 export function esDisconnected() {
@@ -42,13 +51,13 @@ export default async function(){
     const instance = this
 
     // Get Phaser
-    const Phaser = window.Phaser ?? await new Promise(resolve => onResolve = resolve)
+    const Phaser =  window.Phaser
 
     // Get Config
     let cfg = (typeof this.config === 'function') ? this.config(window.Phaser) : this.config;
     let defaultCfg = (typeof config === 'function') ? config(window.Phaser) : config;
     let mergedConfig = merge(defaultCfg, cfg) // merge config with default config
-    mergedConfig.parent =  this.esElement // set parent node
+    mergedConfig.parent =  this.container // set parent node
 
     // Handle Game Initialization
     return new Promise((resolve) => {

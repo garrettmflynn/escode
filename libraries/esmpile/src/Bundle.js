@@ -409,7 +409,6 @@ export default class Bundle {
             this.addDependency(bundle)
     
             // Get Bundle Value
-            console.log(bundle.status)
             if (!bundle.status) {
                 const options = { output: {}, ...this.options }
                 options.output.text = true // import from text

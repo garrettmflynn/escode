@@ -1,4 +1,6 @@
-import { Editor } from "../escode/src";
+import { Editor, EditorProps } from "../escode/src";
+import * as esm from "../esmpile/src";
+
 import Monitor from "../esmonitor/src";
 import { MonitorOptions } from "../esmonitor/src/types";
 
@@ -16,6 +18,17 @@ export type Options = {
     }, // Add ES Component types here
 
     utilities: {
-        code?: typeof Editor
+        code?: {
+            class: typeof Editor,
+            options: EditorProps
+        },
+        bundle?: {
+            function: typeof esm.bundle.get,
+            options: any
+        }
+        compile?: {
+            function: typeof esm.compile,
+            options: any
+        }
     }
 }
