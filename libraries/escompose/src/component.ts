@@ -39,6 +39,7 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     esConnected: Function
     esReady: Promise<void>
     __esReady: Function // Trigger for ready
+    __esReadyPromises: Promise<void>[]
     esDisconnected: Function
 
     // HTML-Specific

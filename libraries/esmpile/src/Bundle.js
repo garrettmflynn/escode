@@ -138,13 +138,13 @@ export default class Bundle {
                         })) // set bundler for all entries
                     }
 
-                    console.warn('Awaited all!', this.uri)
+                    // console.warn('Awaited all!', this.uri)
 
                 }
 
                 const isComplete = ['success', 'failed']
                 if (isComplete.includes(entrypoint?.status)) {
-                    console.log('Creating a promise')
+                    // console.log('Creating a promise')
                     if (!bundler) this.result = await this.resolve() // Direct Import
                     else if (lastBundleType) this.encoded = await this.bundle(lastBundleType) // Swap Bundler Type
                     else this.result = await this.resolve() // Full Resolution
@@ -205,7 +205,9 @@ export default class Bundle {
     // Update Bundle
     #text
     #buffer
-    get text() {return this.#text}
+    get text() {
+        return this.#text ?? this.info.text.original
+    }
     set text(text) {
         this.#text = text
         this.encoded = this.bundle('text').catch(e => { 
@@ -300,7 +302,7 @@ export default class Bundle {
             // ------------------- Replace Nested Imports -------------------
             catch (e) {
 
-                console.warn('initial error', e)
+                // console.warn('initial error', e)
 
                 // ------------------- Get Import Details -------------------
                 this.imports = {} // permanent collection of imports
@@ -355,7 +357,7 @@ export default class Bundle {
         } 
         // ------------------- Catch Aborted Requests -------------------
         catch (e) {
-            console.log('compile error', e)
+            // console.log('compile error', e)
             throw e
         }
 
@@ -415,7 +417,7 @@ export default class Bundle {
                 const newBundle = await this.get(correctPath, options)
                 await newBundle.resolve(path)
             } else {
-                console.log('waiting...', this.uri, bundle.uri)
+                // console.log('waiting...', this.uri, bundle.uri)
 
                 let done = false
                 setTimeout(() => {
@@ -423,10 +425,10 @@ export default class Bundle {
                     console.log('Took too long...')
                     bundle.promises.result.reject()
                     bundle.promises.encoded.reject()
-                }, 100)
+                }, 5000)
                 
                 await bundle.result // wait for bundle to resolve
-                console.log('done!', this.uri, bundle.uri)
+                // console.log('done!', this.uri, bundle.uri)
                 done = true
 
             }
@@ -636,23 +638,24 @@ export default class Bundle {
                 // Handle Resolution Errors
                 catch (e) {
 
-                    console.log('Not compiled', this.url, e)
+                    if (e) {
+                        if (this.options.fetch?.signal?.aborted) throw e
 
-                    if (this.options.fetch?.signal?.aborted) throw e
-
-                    // TODO: Can use these as defaults
-                    else {
-                        const noBase = pathUtils.absolute(uri) ? pathUtils.noBase(uri, this.options, true) : pathUtils.noBase(this.url, this.options, true)
-                        console.warn(`Failed to fetch ${uri}. Checking filesystem references...`);
-                        const filesystemFallback = this.options.filesystem?._fallbacks?.[noBase];
-                        if (filesystemFallback) {
-                            console.warn(`Got fallback reference (module only) for ${uri}.`);
-                            result = filesystemFallback;
-                            Object.defineProperty(info, 'fallback', { value: true, enumerable: false })
-                        } else {
-                            const middle = "was not resolved locally. You can provide a direct reference to use in";
-                            if (e.message.includes(middle)) throw e;
-                            else throw errors.create(uri, noBase);
+                        // TODO: Can use these as defaults
+                        else {
+                            const noBase = pathUtils.absolute(uri) ? pathUtils.noBase(uri, this.options, true) : pathUtils.noBase(this.url, this.options, true)
+                            console.warn(`Failed to fetch ${uri}. Checking filesystem references...`);
+                            const filesystemFallback = this.options.filesystem?._fallbacks?.[noBase];
+                            if (filesystemFallback) {
+                                console.warn(`Got fallback reference (module only) for ${uri}.`);
+                                result = filesystemFallback;
+                                throw new Error('Fallbacks are broken...')
+                                // Object.defineProperty(info, 'fallback', { value: true, enumerable: false })
+                            } else {
+                                const middle = "was not resolved locally. You can provide a direct reference to use in";
+                                if (e.message.includes(middle)) throw e;
+                                else throw errors.create(uri, noBase);
+                            }
                         }
                     }
                 }

@@ -2,8 +2,18 @@ import * as test from '../../../../components/tests/basic/index.js'
 import * as button from '../../../../components/ui/button.js'
 
 
-const testURL = './components/tests/basic/index.js'
-const buttonURL = './components/ui/button.js'
+const testURL = '../../../../components/tests/basic/index.js'
+const buttonURL = '../../../../components/ui/button.js'
+
+const testInfo = {
+    url: testURL,
+    reference: test
+}
+
+const buttonInfo = {
+    url: buttonURL,
+    reference: button
+}
 
 const id = 'test'
 const buttonComponentId = 'button'
@@ -17,7 +27,7 @@ export const esAttributes = {
 export const esDOM = {
 
     [id]: {
-        esCompose: testURL, // test
+        esCompose: testInfo.reference, // test
         esListeners: {
             'imports.passedWithListener': `imports.nExecution`,
             ['ARBITRARY']: {
@@ -63,7 +73,7 @@ export const esDOM = {
                     },
 
                     // Primary Button Component
-                    buttonURL // button
+                    buttonInfo.reference // button
                 ],
                 esTrigger: {value: true, __internal: true}
             },

@@ -6,6 +6,11 @@ import * as escompose from '../../libraries/escompose/src/index'
 import * as esm from '../../libraries/esmpile/src/index'
 import * as escode from '../../libraries/escode/src/index'
 
+import canvasWorker from '../../components/ui/plot/utils/canvas.worker'
+import * as plotUtils from '../../components/ui/plot/utils/index'
+import * as timeseriesComponent from '../../components/ui/plot/timeseries'
+import * as signalComponent from './demos/signal/index.esc'
+
 import demos from './demos' // All demos in one file
 
 const modes = {
@@ -109,14 +114,18 @@ async function start (demo = "basic", mode="direct") {
         
             let reference = selected.file
 
+            const nodeModules =  window.location.href + 'node_modules'
+
             if (mode !== 'direct') {
 
+                const relativeTo = window.location.href + 'apps/showcase' // Relative to the HTML page using this file bundle
                 const toCompile = mode === 'json' ? selected.json : selected.js
 
                     
                 const options: any = {}
-                options.relativeTo = window.location.href + 'apps/showcase' // Relative to the HTML page using this file bundle
-                options.collection = null //'global' // Specify which bundle to reference. Specify 'global' to use same bundle across all imports. Don't specify to create a new bundle
+                options.relativeTo = relativeTo
+                options.nodeModules = nodeModules
+                options.collection = 'global' // Specify which bundle to reference. Specify 'global' to use same bundle across all imports. Don't specify to create a new bundle
                 options.debug = true // Show debug messages
                 options.callbacks = {progress: {}}
                 options.fallback = true // We want to fallback to text import
@@ -143,8 +152,21 @@ async function start (demo = "basic", mode="direct") {
 
             if (!reference) throw new Error('Reference has been resolved as undefined.')
             if (errorPage.parentNode) errorPage.remove()
+
                 
             // Create an active ES Component from a .esc file
+
+            const relativeTo = window.location.href + 'apps/showcase/demos/tutorial' // Only used by the tutorial here...
+
+            // // TODO: Fix so this works without fallbacks
+            // const filesystem = {
+            //     _fallbacks: {
+            //         './components/ui/plot/utils/canvas.worker.ts': canvasWorker,
+            //         './components/ui/plot/utils/index.ts': plotUtils,
+            //         './components/ui/plot/timeseries.ts': timeseriesComponent,
+            //         './apps/showcase/demos/signal/index.esc.ts': signalComponent,
+            //     }
+            // }
             const component = await escompose.create(reference, {
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 listeners: { static: true },
@@ -155,11 +177,19 @@ async function start (demo = "basic", mode="direct") {
                     },
                     bundle: {
                         function: esm.bundle.get,
-                        options: {}
+                        options: {
+                            relativeTo,
+                            nodeModules,
+                            // filesystem
+                        }
                     },
                     compile: {
                         function: esm.compile,
-                        options: {}
+                        options: {
+                            relativeTo,
+                            nodeModules,
+                            // filesystem
+                        }
                     }
                 }
             })

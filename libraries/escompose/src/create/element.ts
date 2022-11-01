@@ -92,11 +92,13 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
     // track if ready
     Object.defineProperty(esm, 'esReady', {
-        value: new Promise(resolve => isReady = () => resolve(true)),
+        value: new Promise(resolve => isReady = async () => {
+            resolve(true)
+        }),
         writable: false,
         enumerable: false,
     })
-
+    
     // trigger if ready
     Object.defineProperty(esm, '__esReady', { value: isReady,  writable: false, enumerable: false })
 
@@ -216,7 +218,9 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                 v instanceof HTMLElement // Is element
                 // && !v.hasAttribute('__isescomponent')  // Is not an ES Component (which are observed elsewhere...)
                 // && v.isConnected // Is connected to the DOM
-            ) esm.__esReady()
+            ) {
+                esm.__esReady()
+            }
         },
         enumerable:true
     });

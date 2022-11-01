@@ -12,43 +12,76 @@ const listenerObject = Symbol('listenerObject')
 type anyObj = {[key: string]: any}
 type esComposeType = anyObj | anyObj[]
 
+const createErrorComponent = (message) => {
+    return {
+        esElement: 'p',
+        esDOM: {
+            b: {
+                esElement: 'b',
+                esAttributes: {
+                    innerText: 'Error: '
+                }
+            },
+            span: {
+                esElement: 'span',
+                esAttributes: {
+                    innerText: message
+                }
+            }
+        }
+    }
+}
+
 
 const esCompile = async (o, utilities) => {
-    if (typeof o === 'string') {
 
-        // Get Text Bundle
-        if (typeof utilities.bundle.function === 'function') {
-            const foo = utilities.bundle.function
-            const options = utilities.bundle.options
-            if (!options.bundler) options.bundler = 'datauri' // link as datauri
-            if (!options.bundle) options.bundle = Math.random() // link across all bundles
-            const bundle = foo(o, options)
-
-            // Track Bundle Resolution
-            await bundle.resolve()
-            o = Object.assign({}, bundle.result)
+        try {
             
-            // Track Source Text
-            if (!o.esSourceText) o.esSourceText = []
-            o.esSourceText.push(bundle) // can be string or bundle
-        } 
-        
-        // Just Compile
-        else if (typeof utilities.compile.function === 'function') {
-            const resolved = await utilities.compile.function(o, utilities.compile.options)
-            o = resolved
-        } 
-        
-        // Show Error Message
-        else {
-            console.error('Cannot transform esCompose string without a compose utility function')
-            o = {}
+            // Special URL key
+            let uri = (typeof o === 'string') ? o : o.esURI
+
+            if (uri) {
+
+                // Get Text Bundle
+                if (typeof utilities.bundle.function === 'function') {
+                    const foo = utilities.bundle.function
+                    const options = utilities.bundle.options
+                    if (!options.bundler) options.bundler = 'datauri' // link as datauri
+                    if (!options.bundle) options.collection ='global' // same collection across all instances on the page
+                    const bundle = foo(uri, options)
+
+                    // Track Bundle Resolution
+                    await bundle.resolve()
+                    o = Object.assign({}, bundle.result)
+                    
+                    // Track Source Text
+                    if (!o.esSourceText) o.esSourceText = []
+                    o.esSourceText.push(bundle) // can be string or bundle
+                } 
+                
+                // Just Compile
+                else if (typeof utilities.compile.function === 'function') {
+                    const resolved = await utilities.compile.function(o, utilities.compile.options)
+                    o = resolved
+                } 
+                
+                // Show Error Message
+                else {
+                    throw new Error('Cannot transform esCompose string without a compose utility function')
+                }
+            }
+        } catch (e) {
+            console.error(e)
+
+            // Insert an Error Component
+            if (o.esReference) {
+                console.warn('[escompose]: Falling back to ES Component reference...')
+                o = o.esReference // fallback to reference key
+            }
+            else o = createErrorComponent(e.message)
         }
 
         return cloneUtils.deep(o) 
-    }
-
-    return o
 }
 
 const esMerge = async (base, esCompose: esComposeType = {}, path: any[] = [], utilities: any = {}) => {
@@ -77,7 +110,7 @@ const esMerge = async (base, esCompose: esComposeType = {}, path: any[] = [], ut
 
 
     // Merge base with full esCompose tree
-    let merged = cloneUtils.deep(base) // deep clone
+    let merged = Object.assign({}, base) // shallow clone
     delete merged.esCompose
 
     flat.forEach((toCompose) => {
@@ -105,10 +138,15 @@ const esDrill = async (o, id: string | symbol, parent?, opts?) => {
 
     // ------------------ Convert Nested Components ------------------
     if (instance.esDOM) {
+        
         for (let name in instance.esDOM) {
             const base = instance.esDOM[name]
-            const thisInstance = await esDrill(base, name, instance, opts) // converting from top to bottom
-            instance.esDOM[name] = thisInstance // replace in config
+            const promise = esDrill(base, name, instance, opts) // converting from top to bottom
+            instance.esDOM[name] = promise
+            
+            promise.then(res => {
+                instance.esDOM[name] = res // replace the base with the converted component
+            })
         }
     }
 
@@ -523,47 +561,55 @@ export const create = async (config, options: Partial<Options> = {}) => {
     let fullInstance;
 
 
-    let toTrigger;
-    if (options.nested?.parent && options.nested?.name){
+        let context;
 
-        // TODO: Figure out how to pass the path for real...
-        fullInstance = await esDrill(config, options.nested.name, options.nested.parent, drillOpts)
+        if (options.nested?.parent && options.nested?.name){
 
-        // TODO: Add listeners...
+            // TODO: Figure out how to pass the path for real...
+            fullInstance = await esDrill(config, options.nested.name, options.nested.parent, drillOpts)
 
-    } else {
+            // TODO: Add listeners...
 
-        const id = Symbol('root')
-        const instance = await esDrill(config, id, undefined, drillOpts)
+        } else {
 
-        fullInstance = instance // cloneUtils.deep(instance)
+            const id = Symbol('root')
+            const instance = await esDrill(config, id, undefined, drillOpts)
 
-        monitor.set(id, fullInstance, fullOptions.listeners) // Setting root instance
+            fullInstance = instance // cloneUtils.deep(instance)
 
-        const context = {
-            id,
-            instance: fullInstance,
-            monitor,
-            options: fullOptions
+            monitor.set(id, fullInstance, fullOptions.listeners) // Setting root instance
+
+            context = {
+                id,
+                instance: fullInstance,
+                monitor,
+                options: fullOptions
+            }
         }
 
-        toTrigger = setListeners(context, components)
-    }
 
-    // Triggering appropriate listeners before connection
-    toTrigger.forEach(o => {
-        const res = monitor.get(o.path, 'info')
-        if (typeof res.value === 'function') {
-            const args = (Array.isArray(o.config.esTrigger)) ? o.config.esTrigger : [o.config.esTrigger]
-            res.value(...args)
-        }
-        else console.error('Cannot yet trigger values...', o)
-    })
+        // Signal connection to the entire application
+       fullInstance.esConnected(() => {
 
-    // Signal connection to the entire application
-    fullInstance.esConnected()
+            if (context) {
 
-    return fullInstance as ESComponent
+                const toTrigger = setListeners(context, components)
+
+                // Triggering appropriate listeners before complete connection
+                toTrigger.forEach(o => {
+                    const res = monitor.get(o.path, 'info')
+                    if (typeof res.value === 'function') {
+                        const args = (Array.isArray(o.config.esTrigger)) ? o.config.esTrigger : [o.config.esTrigger]
+                        res.value(...args)
+                    }
+                    else console.error('Cannot yet trigger values...', o)
+                })
+
+            }
+
+        }, true)
+
+        return fullInstance as ESComponent
 }
 
 export default create

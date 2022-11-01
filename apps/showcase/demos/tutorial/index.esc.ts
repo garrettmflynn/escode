@@ -26,17 +26,44 @@ const demoEl = {
 }
 
 const demos = {
-    basic: basicDemo,
-    todo: todoDemo,
-    animations: animationsDemo,
-    phaser: phaserDemo,
-    multiplayerPhaser: multiplayerPhaserDemo,
-    speakPhaser: speakPhaserDemo,
+    basic: {
+        esURI: '../basic/index.esc',
+        esReference: basicDemo
+    },
+    todo: {
+        esURI: '../todo/index.esc',
+        esReference: todoDemo
+    },
+    animations: {
+        esURI: '../animations/index.esc',
+        esReference: animationsDemo
+    },
+    phaser: {
+        esURI: '../phaser/index.esc',
+        esReference: phaserDemo
+    },
+    multiplayerPhaser: {
+        esURI: '../phaser/versions/multiplayer/index.esc',
+        esReference: multiplayerPhaserDemo
+    },
+    speakPhaser: {
+        esURI: '../phaser/versions/speak/index.esc',
+        esReference: speakPhaserDemo
+    },
 
-    signal: signalDemo,
-    noisySignal: noisySignalDemo,
+    signal: {
+        esURI: '../signal/index.esc',
+        esReference: signalDemo
+    },
+    noisySignal: {
+        esURI: '../signal/versions/noisy/index.esc',
+        esReference: noisySignalDemo
+    },
 
-    devicePhaser: devicePhaserDemo,
+    devicePhaser: {
+        esURI: '../phaser/versions/devices/index.esc',
+        esReference: devicePhaserDemo
+    },
     
 }
 
@@ -85,7 +112,9 @@ export const esDOM = {
                             innerHTML: "Brains@Play is a rapid application development framework."
                         }
                     },
-                    demo1: demoInfo.basic,
+                    demo1: {
+                        esCompose: demoInfo.basic,
+                    },
                 }
             },
 

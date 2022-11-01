@@ -9,12 +9,10 @@ import { Tab, Panel, Tree, CodeEditor, ObjectEditor, GraphEditor, Modal, global 
 import { GraphEdge } from '../../drafts/visualscript/src/components/graph/Edge';
 
 // ESCompose and ESMonitor Dependencies
-import Monitor from '../../esmonitor/src/Monitor';
 import createComponent from '../../escompose/src/index'
 
 // Default ES Component Pool for Plugins
 import * as components from '../../../components/index.js'
-import Bundle from '../../esmpile/src/Bundle';
 import { esSourceText } from '../../escompose/src/component';
 
 
@@ -214,19 +212,26 @@ export class Editor extends LitElement {
     addFile = (path: string, files: esSourceText) => {
       if (path && files) {
 
+        const trigger =  Object.keys(this.filesystem).length === 0
+
         let arrayFiles = (Array.isArray(files)) ? files : [files]
 
-        arrayFiles = arrayFiles.map(f => {
+        const flattenDependencies = (f) => { 
           const isStr = typeof f === 'string'
           const all = [f]
-          if (!isStr && f.dependencies) all.push(...f.dependencies.values())
+          if (!isStr && f.dependencies) {
+            const arr = Array.from(f.dependencies.values())
+            all.push(...arr.map(flattenDependencies).flat())
+          }
           return all
-        }).flat()
+        }
+
+        arrayFiles = arrayFiles.map(flattenDependencies).flat()
 
         arrayFiles.forEach(f =>  {
           if (typeof f === 'string') this.filesystem[path] = f
           else {
-            const split = f.info.uri.split('/')
+            const split = f.name.split('/')
 
             let target = this.filesystem
             const name = split.pop()
@@ -239,13 +244,16 @@ export class Editor extends LitElement {
           }
         })
 
-        this.setFilesystem(this.filesystem)
+        this.setFilesystem(this.filesystem, trigger)
       }
     }
 
-    setFilesystem = (filesystem) => {
+    setFilesystem = (filesystem, trigger?: boolean) => {
       this.filesystem = filesystem
       this.tree.set(this.filesystem)
+      if (trigger) {
+        this.fileUpdate = this.fileUpdate + 1
+      }
     }
 
     createComponent = (esc, nestedInfo: any = undefined) => {
@@ -429,7 +437,7 @@ export class Editor extends LitElement {
 
         // Code Editor
         if (tabInfo.code && isFile){
-          const text = obj.info.text.original // Get the original text
+          const text = obj.info.text.original // Always get the original text
 
           tabInfo.code.value = text
 
@@ -492,7 +500,7 @@ export class Editor extends LitElement {
       const graphTab = new Tab({name: 'Graph'})
       graphTab.appendChild(this.graph)
       panel.addTab(graphTab)
-      panel.addTab(this.filesTab)
+      if (Object.keys(this.filesystem).length) panel.addTab(this.filesTab)
 
       // return html`
       //     ${this.modal}

@@ -373,7 +373,14 @@ export class GraphWorkspace extends LitElement {
         }
 
         for (let key in this.graph.edges) {
-          const nodeEdges = this.graph.edges[key]
+          
+          let nodeEdges = this.graph.edges[key]
+
+          // String shortcut
+          if (typeof nodeEdges === 'string') {
+              nodeEdges = {[nodeEdges]: true}
+          }
+
           for (let targetKey in nodeEdges) {
 
           const output = (this.edgeMode === 'from') ? this.match(key) : this.match(targetKey)
@@ -415,10 +422,15 @@ export class GraphWorkspace extends LitElement {
         if (temp) match = temp
       })
 
-      let port = match.ports.get(portName);
-      if (!port) {
-        // alert('Port not found: ' + route)
-        port = match.addPort({tag: portName})
+      let port;
+      try {
+        port = match.ports.get(portName);
+        if (!port) {
+          // alert('Port not found: ' + route)
+          port = match.addPort({tag: portName})
+        }
+      } catch (e) {
+        console.error('failed to get port', e, route, this.nodes)
       }
       
       return {

@@ -1,7 +1,6 @@
 import * as player from "../../../../../../components/phaser/player.js"
 import update from "../../scripts/player/update.js"
 import createCompanion from "../../scripts/player/create/companion.js"
-// import equals from "../../../../components/basic/equals.js"
 
 import * as phaser from '../../index.esc'
 
@@ -28,7 +27,6 @@ export const esListeners = {
             ]
         }
     }
-
 }
 
 export const esDOM = {
