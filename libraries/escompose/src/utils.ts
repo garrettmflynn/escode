@@ -1,3 +1,24 @@
+const isPromise = (o) => typeof o === 'object' && typeof o.then === 'function'
+
+// Resolve if promise or object
+export const resolve = (object, callback?) => {
+
+    // can resolve arrays with promises
+    if (typeof object === 'object' && Array.isArray(object) && object.find(v => isPromise(v))) object = Promise.all(object)
+
+    // resolves with or without callback 
+    if (isPromise(object)) {
+        return new Promise(resolve => {
+            object.then((res) => {
+                const output = (callback) ? callback(res) : res
+                resolve(output)
+            })
+        })
+    } else {
+        return (callback) ? callback(object) : object
+    }
+}
+
 // Merge individual object keys AND nest functions to maintain their bindings
 
 export const merge = (main, override, path: any[] = []) => {

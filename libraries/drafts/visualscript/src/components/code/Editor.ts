@@ -3538,6 +3538,8 @@ export class CodeEditor extends LitElement {
           });
         }
 
+        this.monaco.updateOptions({ readOnly: true })
+
         const model = this.monaco.getModel()
         model.setValue(this.value)
         model.onDidChangeContent((ev) => {

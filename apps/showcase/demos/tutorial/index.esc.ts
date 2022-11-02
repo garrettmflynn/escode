@@ -71,18 +71,22 @@ const demoInfo = {} as any
 
 const maxHeight = '300px'
 
+// const esCode = undefined 
+
+const esCode = {
+    style: {
+        height: maxHeight,
+        border: '2px solid'
+    }
+}
+
 for (let key in demos) {
     demoInfo[key] = {
         esCompose: demos[key],
         esAttributes: {
             style: Object.assign({}, demoEl.style)
         },
-        esCode: {
-            style: {
-                height: maxHeight,
-                border: '2px solid'
-            }
-        }
+        esCode
     }
 
     // if (key.includes('phaser')) demoInfo[key].esAttributes.style.height = maxHeight
@@ -112,9 +116,7 @@ export const esDOM = {
                             innerHTML: "Brains@Play is a rapid application development framework."
                         }
                     },
-                    demo1: {
-                        esCompose: demoInfo.basic,
-                    },
+                    demo1: demoInfo.basic,
                 }
             },
 

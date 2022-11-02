@@ -7,11 +7,19 @@ import * as nodeModules from './utils/nodeModules.js'
 import * as errors from './utils/errors.js'
 import * as polyfills from './utils/polyfills.js'
 import * as sourceMap from './utils/sourceMap.js';
+import { esSourceKey } from '../../common/standards.js';
 
 if (!globalThis.REMOTEESM_BUNDLES) globalThis.REMOTEESM_BUNDLES = {global: {}} // Share references between loaded dataurl instances
 const global = globalThis.REMOTEESM_BUNDLES.global
 
 const noEncoding = `No buffer or text to bundle for`
+
+// const esSourceString = (bundle) => `\n export const __esSource = globalThis.REMOTEESM_BUNDLES["${bundle.collection}"]["${bundle.name}"]` // Export bundle from module...
+// const esSourceString = (bundle) => `\n export const __esSource = true` // Export bundle from module...
+
+const esSourceString = (bundle) => `
+export const ${esSourceKey} = () => globalThis.REMOTEESM_BUNDLES["${bundle.collection}"]["${bundle.name}"];
+` // Export bundle from module...
 
 // Import ES6 Modules (and replace their imports with actual file imports!)
 // TODO: Handle exports without stalling...
@@ -293,6 +301,12 @@ export default class Bundle {
 
                 if (info){
                     this.info = info
+
+                    // Always Add Custom Export
+                    const srcStr = esSourceString(this)
+                    if (!this.info.text.updated.includes(srcStr)) this.info.text.updated += srcStr
+
+
                     this.url = this.info.uri // reset this bundle's name
                     this.buffer = this.info.buffer
                     await this.encoded // resolve after successful encoding  
@@ -394,7 +408,9 @@ export default class Bundle {
             splitVars.forEach(insertVariable)
         }
 
+        // Update Line Text
         this.info.text.updated = this.info.text.updated.replace(info.current.line, newImport)
+
         info.current.line = newImport
         info.current.path = encoded
 
@@ -663,6 +679,7 @@ export default class Bundle {
                 await this.encoded // ensure properly encoded
                 this.status = 'success'
                 this.notify(this)
+
                 resolve(result)
             } catch (e) {
                 this.status = 'failed'               

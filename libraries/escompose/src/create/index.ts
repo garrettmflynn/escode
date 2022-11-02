@@ -4,7 +4,6 @@ import * as standards from '../../../common/standards';
 import * as clone from "../../../common/clone.js"
 import { Options } from '../../../common/types';
 
-
 const animations = {}
 
 export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
@@ -35,6 +34,14 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                 const info = esm.esElement
                 if (info.name && info.extends) component.define(info, esm)
             }
+
+
+            // ------------------ Register Sources ------------------
+            if (esm[standards.esSourceKey]) {
+                esm.esSource =  esm[standards.esSourcKey]()
+                delete esm[standards.esSourceKey]
+            }
+          
         
             // ------------------ Produce a Complete ESM Element ------------------
 
@@ -72,13 +79,13 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                 const esCode = esm.esParent?.esComponent?.__esCode
                 if (esCode) esm.__esCode = esCode
 
-
-                // Register Source Text
-                const source = esm.esSourceText
-                if (source && esm.__esCode) {
-                    const path = esm.__isESComponent
-                    esm.__esCode.addFile(path, source)
-                }
+                // Check esSource (set from esmpile)
+                const source = esm.esSource
+                if (source) {
+                        const path = esm.__isESComponent
+                        if (esm.__esCode) esm.__esCode.addFile(path, source)
+                    }
+                
 
                 // Call After Children + Before Running
                 const context = esm.__esProxy ?? esm

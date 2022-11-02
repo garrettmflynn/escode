@@ -13,7 +13,7 @@ import createComponent from '../../escompose/src/index'
 
 // Default ES Component Pool for Plugins
 import * as components from '../../../components/index.js'
-import { esSourceText } from '../../escompose/src/component';
+import { esSource } from '../../escompose/src/component';
 
 
 export type EditorProps = {
@@ -209,7 +209,7 @@ export class Editor extends LitElement {
     }
 
 
-    addFile = (path: string, files: esSourceText) => {
+    addFile = (path: string, files: esSource) => {
       if (path && files) {
 
         const trigger =  Object.keys(this.filesystem).length === 0

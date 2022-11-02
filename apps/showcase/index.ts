@@ -167,7 +167,7 @@ async function start (demo = "basic", mode="direct") {
             //         './apps/showcase/demos/signal/index.esc.ts': signalComponent,
             //     }
             // }
-            const component = await escompose.create(reference, {
+            const component = await escompose.create(reference, {esParent: main}, {
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 listeners: { static: true },
                 utilities: {
@@ -194,10 +194,9 @@ async function start (demo = "basic", mode="direct") {
                 }
             })
 
-            component.esParent = main // ensure this is added to something that is ESM...
-
             active = component
         } catch (e) {
+            console.error(e)
             small.innerText = e.message
             main.appendChild(errorPage)
         }

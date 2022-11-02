@@ -1,4 +1,5 @@
 import createComponent from '../index'
+import { resolve } from '../utils'
 
 // Allow Specifying a Customized Element using Autonomous Element format
 const registry = {}
@@ -43,17 +44,18 @@ export const define = (config, esm) => {
         
         // Create a New Class Per Definition
         class ESComponent extends BaseClass {
-            __esComponent;
+            esComponent;
 
             constructor(properties){
                 super(properties)
-                esm.esElement = this // Attach self as an esElement
-                this.__esComponent = createComponent(esm) // Attach all the properties appropriately
+                resolve(createComponent(esm), res => {
+                    res.esElement = this
+                })
             }
 
             connectedCallback() {
                 console.log('Custom element added to page.');
-                this.__esComponent.__esReady();
+                this.esComponent.__esReady();
             }
 
             disconnectedCallback() {

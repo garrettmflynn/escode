@@ -1,6 +1,7 @@
 import { Options } from "../../../common/types";
 import { EditorProps } from "../../../escode/src";
 import { ESComponent, ESElementInfo } from "../component";
+import { resolve } from "../utils";
 
 
 export type ESComponentStates = {
@@ -14,6 +15,8 @@ export type ESComponentStates = {
     parentNode: ESComponent['esParent']
     onresize: ESComponent['esOnResize']
     onresizeEventCallback: Function,
+
+    esSource?: ESComponent['esSource']
 }
 
 export function create(id, esm: ESComponent, parent, states?, utilities: Options['utilities'] = {}) {
@@ -159,10 +162,12 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                 states.element = v
 
                 // Trigger esParent Setter on Nested Components
-                if (states.connected) {
+                if (esm.__isESComponent !== undefined) {
                     for (let name in esm.esDOM) {
-                        const component = esm.esDOM[name] as ESComponent;
-                        component.esParent = v
+                        const component = esm.esDOM[name] as ESComponent | Promise<ESComponent>; // TODO: Ensure that this is resolved first...
+                        resolve(component, (res) => {
+                            res.esParent = v;
+                        })
                     }
                 }
 
@@ -197,11 +202,21 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                 if (v) {
 
                     // --------------------------- Place inside ESCode Instance (if created) ---------------------------
-                    
+
+                    const desiredPosition = esm.esChildPosition
+                    const nextPosition = v.children.length
+
+                    let ref = esm.esElement
                     if (esm.__esCode) {
-                        esm.__esCode.setComponent(esm) // Set the target component
-                        v.appendChild(esm.__esCode); // Append ESCode where the component should be
-                    } else v.appendChild(esm.esElement);
+                        esm.__esCode.setComponent(esm); // Set the target component
+                        ref = esm.__esCode
+                    } 
+
+                    // Resolved After Siblings Have Been Added
+                    if (desiredPosition !== undefined && desiredPosition < nextPosition) v.children[desiredPosition].insertAdjacentElement('beforebegin', ref)
+                   
+                    // Resolved Immediately or Before Siblings
+                    else v.appendChild(ref);
                 }
             } 
             

@@ -20,7 +20,7 @@ export type ESDefineInfo = {
 
 export type ESElementArray = [ESDefineInfo['name'], {extends: ESDefineInfo['extends']}]
 
-export type esSourceText = string | (string | Bundle)[]
+export type esSource = string | (string | Bundle)[]
 
 type GeneralElementType = baseESElement | ESElementInfo
 export type ESComponent<ElementType = GeneralElementType>  = {
@@ -35,6 +35,8 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     esDOM: {
         [x:string]: ESComponent // General Components
     }
+
+    esChildPosition?: number // Will be resolved automatically if not set
 
     esConnected: Function
     esReady: Promise<void>
@@ -58,7 +60,7 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     __esCode: Editor
 
 
-    esSourceText: esSourceText
+    esSource: esSource // Also set in esmpile
 
 
     __isESComponent: string, // Path of the Component
