@@ -3,17 +3,17 @@ import * as component from "./component";
 import * as standards from '../../../common/standards';
 import * as clone from "../../../common/clone.js"
 import { Options } from '../../../common/types';
+import { options } from '../../../../components/ui/select';
 
 const animations = {}
 
-export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
+export default (id, esm, parent?, opts: Partial<Options> = {}) => {
     
         const states = {
             connected: false,
         }
 
         const copy = clone.deep(esm) // Start with a deep copy. You must edit on the resulting object...
-
 
         try {
 
@@ -38,28 +38,25 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
 
             // ------------------ Register Sources ------------------
             if (esm[standards.esSourceKey]) {
-                esm.esSource =  esm[standards.esSourcKey]()
+                esm.esSource =  esm[standards.esSourceKey]()
                 delete esm[standards.esSourceKey]
             }
           
         
             // ------------------ Produce a Complete ESM Element ------------------
 
-            let el = element.create(id, esm, parent, states, utilities);
+            let el = element.create(id, esm, parent, states, opts.utilities);
 
             const finalStates = states as element.ESComponentStates
             
             esm.esElement = el
 
             // ------------------ Declare Special Functions ------------------
-            // Delete Function
-            const ogInit = esm.esConnected;
-            esm.esConnected = async (onReadyCallback?: Function) => {
 
+            const esConnectedAsync = async (onReadyCallback) => {
                 await esm.esReady
 
                 states.connected = true
-
 
                 // Initialize Nested Components (and wait for them to be done)
                 for (let name in esm.esDOM) {
@@ -70,11 +67,12 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                     else console.error(`Could not start component ${name} because it does not have an esConnected function`)
                 }
 
-
-                // Callback when then entire object is ready
                 if (onReadyCallback) await onReadyCallback()
 
+            }
 
+            const esConnectedMain = () => {
+                
                 // Retroactively setting the esCode editor on children of the focus element
                 const esCode = esm.esParent?.esComponent?.__esCode
                 if (esCode) esm.__esCode = esCode
@@ -85,7 +83,7 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                         const path = esm.__isESComponent
                         if (esm.__esCode) esm.__esCode.addFile(path, source)
                     }
-                
+
 
                 // Call After Children + Before Running
                 const context = esm.__esProxy ?? esm
@@ -130,6 +128,7 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                         }
                         // Set Interval
                         else {
+                            runFuncs() // run initially
                             info.id = setInterval(() => runFuncs(), 1000/interval)
                             animations[interval].stop = () => clearInterval(info.id)
                         } 
@@ -153,12 +152,29 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                 }
             }
 
+            // Delete Function
+            const ogInit = esm.esConnected;
+            esm.esConnected = (onReadyCallback?: Function) => {
+                if (options.synchronous) {
+                    esConnectedAsync(onReadyCallback)
+                    esConnectedMain()
+                    return esm
+                } else {
+                    return esConnectedAsync(async () => {
+                        if (onReadyCallback) await onReadyCallback() // Callback when then entire object is ready
+                        esConnectedMain()
+                        return esm
+                    })
+                }
+            }
+
             const ogDelete = esm.esDisconnected;
             esm.esDisconnected = function () {
 
                 if ( this.esElement instanceof Element) {
                     this.esElement.remove(); 
-                    if( this.onremove) {
+                    this.esParent = null
+                    if(this.onremove) {
                         const context = esm.__esProxy ?? esm
                         this.onremove.call(context); 
                     }
@@ -183,7 +199,7 @@ export default (id, esm, parent?, utilities: Options['utilities'] = {}) => {
                 // Replace Updated Keywords with Original Values
                 esm.esConnected = ogInit
                 esm.esDisconnected = ogDelete
-
+                return esm
             }
 
             // -------- Bind Functions to GraphNode --------

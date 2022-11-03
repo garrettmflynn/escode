@@ -4,6 +4,12 @@ import * as escFallbacks from './demos/basic/fallbacks'
 const escJSON = './/demos/basic/index.esc.json'
 const escJS = './demos/basic/index.esc.ts'
 
+// Basic ESC Demo
+import * as graphFile from './demos/graph/index.esc'
+import * as graphFallbacks from './demos/graph/fallbacks'
+const graphJSON = './/demos/graph/index.esc.json'
+const graphJS = './demos/graph/index.esc.ts'
+
 // Phaser Demo
 import * as phaserFile from './demos/phaser/index.esc'
 import phaserFallbacks from './demos/phaser/versions/devices/fallbacks'
@@ -74,7 +80,6 @@ const audiofeedbackJS = './demos/devices/audiofeedback/index.esc.ts'
 // BCI2000 Demo
 import * as bci2000File from './demos/bci2000/index.esc'
 import bci2000Fallbacks from './demos/bci2000/fallbacks'
-import bci2000 from '../../components/devices/bci2000'
 const bci2000JSON = './demos/bci2000/index.esc.json'
 const bci2000JS = './demos/bci2000/index.esc.ts'
 
@@ -94,6 +99,14 @@ const basicPackage = {
     fallbacks: escFallbacks,
     json: escJSON,
     js: escJS
+}
+
+const graphPackage = {
+    name: 'GraphScript Test',
+    file: graphFile,
+    fallbacks: graphFallbacks,
+    json: graphJSON,
+    js: graphJS
 }
 
 const phaserPackage = {
@@ -217,7 +230,10 @@ const demos = {
     bci2000: bci2000Package,
 
     // Complete Applications
-    accessify: accessifyPackage
+    accessify: accessifyPackage,
+
+    // Graph Demo
+    graph: graphPackage,
 }
 
 

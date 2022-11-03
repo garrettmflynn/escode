@@ -33,24 +33,28 @@ const createErrorComponent = (message) => {
 }
 
 
-const esCompile = (o, utilities) => {
+const esCompile = (o, opts: any = {}) => {
             
         // Special URL key
         let uri = (typeof o === 'string') ? o : o.esURI
 
-        if (uri) {
+        if (uri && opts.utilities) {
+
+            if (opts.synchronous) console.error('Synchronous mode is not compatible with asynchronous source text loaders.')
 
             return new Promise(async (resolve) => {
 
                 try {
 
                     // Get Text Bundle
-                    if (typeof utilities.bundle.function === 'function') {
-                        const foo = utilities.bundle.function
-                        const options = utilities.bundle.options ?? {}
+                    const bundleOpts = opts.utilities.bundle
+                    const compileOpts = opts.utilities.compile
+
+                    if (typeof bundleOpts.function === 'function') {
+                        const options = bundleOpts.options ?? {}
                         if (!options.bundler) options.bundler = 'datauri' // link as datauri
                         if (!options.bundle) options.collection ='global' // same collection across all instances on the page
-                        const bundle = foo(uri, options)
+                        const bundle = bundleOpts.function(uri, options)
 
                         // Track Bundle Resolution
                         await bundle.resolve()
@@ -58,8 +62,8 @@ const esCompile = (o, utilities) => {
                     } 
                     
                     // Just Compile
-                    else if (typeof utilities.compile.function === 'function') {
-                        const resolved = await utilities.compile.function(o, utilities.compile.options)
+                    else if (typeof compileOpts.function === 'function') {
+                        const resolved = await compileOpts.function(o, compileOpts.options)
                         o = resolved
                     } 
                     
@@ -78,20 +82,19 @@ const esCompile = (o, utilities) => {
 
                 resolve(cloneUtils.deep(o))
             })
-
         }
 
         return cloneUtils.deep(o) 
 }
 
-const esMerge = (base, esCompose: esComposeType = {}, path: any[] = [], utilities: any = {}) => {
+const esMerge = (base, esCompose: esComposeType = {}, path: any[] = [], opts: any = {}) => {
 
     // Ensure esCompose is an array
     if (!Array.isArray(esCompose)) esCompose = [esCompose]
 
     // Merge nested esCompose objects
     let promise = utils.resolve(esCompose.map(o => {
-       const compiled = esCompile(o, utilities) // Resolve from text if required
+       const compiled = esCompile(o, opts) // Resolve from text if required
        return utils.resolve(compiled, (compiled) => {
 
             let arr: any[] = [compiled]
@@ -99,7 +102,7 @@ const esMerge = (base, esCompose: esComposeType = {}, path: any[] = [], utilitie
             while (target.esCompose) {
                 const val = target.esCompose
                 delete target.esCompose
-                target = utils.resolve(esCompile(val, utilities)) // Resolve from text if required
+                target = utils.resolve(esCompile(val, opts)) // Resolve from text if required
 
                 arr.push(target)
             }
@@ -116,6 +119,7 @@ const esMerge = (base, esCompose: esComposeType = {}, path: any[] = [], utilitie
         flat.forEach((toCompose) => {
             merged = utils.merge(toCompose, merged, path);
         });
+
         return merged;
 
     })
@@ -130,14 +134,14 @@ const esDrill = (o, id: string | symbol, toMerge = {}, parent?, opts?) => {
     // TODO: Search the entire object for the esCompose key. Then execute this merge script
     // ------------------ Merge ESM with esCompose Properties ------------------
     const firstMerge = utils.merge(toMerge, o, path);
-    const merged = esMerge(firstMerge, o.esCompose, path, opts.utilities)
+    const merged = esMerge(firstMerge, o.esCompose, path, opts)
 
-    return utils.resolve(merged, (merged) => {
+    const res = utils.resolve(merged, (merged) => {
 
         delete merged.esCompose
 
         // ------------------ Create Instance with Special Keys ------------------
-        const instance = createComponent(id, merged, parent, opts.utilities)
+        const instance = createComponent(id, merged, parent, opts)
         const savePath = path.join(opts.keySeparator ?? standards.keySeparator)
         if (opts?.components) opts.components[savePath] = { instance, depth: (parent) ? path.length + 1 : path.length }
 
@@ -161,7 +165,10 @@ const esDrill = (o, id: string | symbol, toMerge = {}, parent?, opts?) => {
                 }
 
                 const promise = esDrill(base, name, undefined, instance, opts); // converting from top to bottom
+                
                 instance.esDOM[name] = promise;
+
+
                 resolve(promise, (res) => {
                     instance.esDOM[name] = res; // replace the promise with the converted component
                 })
@@ -170,6 +177,8 @@ const esDrill = (o, id: string | symbol, toMerge = {}, parent?, opts?) => {
 
         return instance
     })
+
+    return res
 
 }
 
@@ -198,7 +207,9 @@ const handleListenerValue = ({
      const fromStringPath = topPath.join(context.options.keySeparator)
 
       // Only subscribe once
-     const sub = (!listeners.has(fromStringPath)) ? context.monitor.on(fromSubscriptionPath, (path, _, update) => passToListeners(context, listeners, path, update)): undefined
+     const sub = (!listeners.has(fromStringPath)) ? context.monitor.on(fromSubscriptionPath, (path, _, update) => {
+        return passToListeners(context, listeners, path, update)
+     }): undefined
 
      listeners.add(fromStringPath, toPath, { value, root }, sub)
 
@@ -297,6 +308,7 @@ class ListenerManager {
 
 }
 
+
 const setListeners = (context, components) => {
 
     // const listeners = new ListenerManager() // Uses from —> to syntax
@@ -338,6 +350,8 @@ const setListeners = (context, components) => {
 }
 
 
+const isConfigObject = (o) => 'esFormat' in o || 'esBranch' in o || 'esTrigger' in o || 'esBind' in o
+
 function pass(from, target, update, context) {
 
     const id = context.id
@@ -360,6 +374,7 @@ function pass(from, target, update, context) {
     const type = typeof target
 
     const checkIfSetter = (path, willSet) => {
+
         const info = context.monitor.get(path, 'info')
         if (info.exists) {
             const val = info.value
@@ -391,6 +406,16 @@ function pass(from, target, update, context) {
 
     // ------------------ Grab Correct Target to Listen To ------------------
 
+
+    const getPathArray = (latest) => {
+        const path = [id]
+        const topPath: any[] = []
+        if (root) topPath.push(...rootArr) // correcting for relative string
+        topPath.push(...latest.split(context.options.keySeparator))
+        path.push(...topPath)
+        return path
+    }
+
     // Confirmation of the target
     if (typeof target === 'boolean') {
         if (!isValue) transform(true)
@@ -399,11 +424,7 @@ function pass(from, target, update, context) {
 
     // Name of the target
     else if (type === 'string') {
-        const path = [id]
-        const topPath: any[] = []
-        if (root) topPath.push(...rootArr) // correcting for relative string
-        topPath.push(...ogValue.split(context.options.keySeparator))
-        path.push(...topPath)
+        const path = getPathArray(ogValue)
         checkIfSetter(path, true)
 
         if (isValue) {
@@ -415,53 +436,87 @@ function pass(from, target, update, context) {
     else if (target && type === 'object') {
 
         // Check if configuration object
-        const isConfig = 'esFormat' in ogValue || 'esBranch' in ogValue || 'esTrigger' in ogValue
+        const isConfig = isConfigObject(ogValue)
 
         if (isConfig) {
-            transform(true)
+
+            if ('value' in ogValue) {
+                if (isValue) {
+                    target = parent[key] = ogValue.value // setting value
+                } else {
+                    target = parent[key].value = ogValue.value // setting value
+                }
+            } else transform(true)
+
             if (ogValue){
                 if (ogValue) config = ogValue
-                Object.defineProperty(parent[key], 'esConfig', { value: config })
             }
-        }
-    }
 
+            Object.defineProperty(parent[key], 'esConfig', { value: config })
+        }
+
+    }
 
     // ------------------ Special Keywords ------------------
     let isValidInput = true
 
     if (config) {
 
-        if ('esBranch' in config) {
+        
+        if ('esBind' in config) {
 
-            const isValid = config.esBranch.find(o => {
-
-                let localValid: boolean[] = []
-                if ('condition' in o) localValid.push(o.condition(update)) // Condition Function
-                if ('equals' in o) localValid.push(o.equals === update) // Equality Check
-                const isValidLocal = localValid.length > 0 && localValid.reduce((a, b) => a && b, true)
-
-                if (isValidLocal) {
-                    if ('value' in o)  update = o.value // set first argument to branch value
+            // (de)Register listeners at runtime...
+            const path = getPathArray(config.esBind.original ?? config.esBind)
+            if (typeof config.esBind === 'string') {
+                const res = context.monitor.get(path)
+                if (!res)  target = `because ${path.slice(1).join(context.options.keySeparator)} does not point correctly to an existing component.`
+                else {
+                    config.esBind = {
+                        value: res,
+                        original: config.esBind
+                    }
                 }
+            } else if (!config.esBind.value.esParent) {
+                target = `because ${config.esBind.original ?? id.toString()} has become unparented.`
+            }
 
-                return isValidLocal
-            })
+        } 
+        
+        else {
 
-            if (!isValid) isValidInput = false
-        }
+            if ('esBranch' in config) {
+
+                const isValid = config.esBranch.find(o => {
+
+                    let localValid: boolean[] = []
+                    if ('condition' in o) localValid.push(o.condition(update)) // Condition Function
+                    if ('equals' in o) localValid.push(o.equals === update) // Equality Check
+                    const isValidLocal = localValid.length > 0 && localValid.reduce((a, b) => a && b, true)
+
+                    if (isValidLocal) {
+                        if ('value' in o)  update = o.value // set first argument to branch value
+                    }
+
+                    return isValidLocal
+                })
+
+                if (!isValid) isValidInput = false
+            }
 
 
-        // NOTE: May turn into an array here
-        if ('esFormat' in config) {
-            try {
-                update = config.esFormat(update)
-                if (update === undefined) isValidInput = false
-            } catch (e) { console.error('Failed to format arguments', e) }
+            // NOTE: May turn into an array here
+            if ('esFormat' in config) {
+                try {
+                    update = config.esFormat(update)
+                    if (update === undefined) isValidInput = false
+                } catch (e) { console.error('Failed to format arguments', e) }
+            }
+
         }
     }
 
     // ------------------ Handle Target ------------------
+
     if (
         isValidInput // Ensure input is valid
         && update !== undefined // Ensure input is not exactly undefined (though null is fine)
@@ -485,16 +540,16 @@ function pass(from, target, update, context) {
         // Direct Function
         else if (typeof target === 'function') {
             const noContext = parent[key][listenerObject]
-            if (noContext) target.call(context.instance, ...arrayUpdate) // Call with top-level context
+            if (noContext) target.call(config?.esBind?.value ?? context.instance, ...arrayUpdate) // Call with top-level context
             else target(...arrayUpdate) // Call with default context
         }
 
         // Failed
         else {
 
-            let baseMessage = `listener: ${from} —> ${key}`
+            let baseMessage = (key) ? `listener: ${from} —> ${key}` : `listener from ${from}`
             if (parent) {
-                console.error(`Deleting ${baseMessage}`, parent[key], target)
+                console.warn(`Deleting ${baseMessage}`, target)
                 delete parent[key]
             } else console.error(`Failed to add ${baseMessage}`, target)
         }
@@ -575,7 +630,8 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
     const drillOpts = {
         components,
         keySeparator: fullOptions.keySeparator,
-        utilities: fullOptions.utilities
+        utilities: fullOptions.utilities,
+        synchronous: fullOptions.synchronous,
     }
 
         let instancePromiseOrObject;
@@ -584,25 +640,33 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
         let context;
 
         const onConnected = (instance) => {
-            instance.esConnected(() => {
 
-                if (context) {
-    
-                    const toTrigger = setListeners(context, components)
-    
-                    // Triggering appropriate listeners before complete connection
-                    toTrigger.forEach(o => {
-                        const res = monitor.get(o.path, 'info')
-                        if (typeof res.value === 'function') {
-                            const args = (Array.isArray(o.config.esTrigger)) ? o.config.esTrigger : [o.config.esTrigger]
-                            res.value(...args)
-                        }
-                        else console.error('Cannot yet trigger values...', o)
-                    })
-    
-                }
-    
-            }, true)
+            const noParent = !instance.esParent // Do not wait if no parent is given (since the app is only ready when placed in the DOM)
+            
+            if (noParent) return instance
+            else return new Promise(resolve => {
+                 const possiblePromise = instance.esConnected(() => {
+
+                    if (context && options.listen !== false) {
+        
+                        const toTrigger = setListeners(context, components)
+
+                        // Triggering appropriate listeners before complete connection
+                        toTrigger.forEach(o => {
+                            const res = monitor.get(o.path, 'info')
+                            if (typeof res.value === 'function') {
+                                const args = (Array.isArray(o.config.esTrigger)) ? o.config.esTrigger : [o.config.esTrigger]
+                                res.value(...args)
+                            }
+                            else console.error('Cannot yet trigger values...', o)
+                        })
+        
+                    }
+        
+                }, true)
+
+                utils.resolve(possiblePromise, () => resolve(instance))
+        })
         }
 
 
@@ -611,12 +675,11 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
             // TODO: Figure out how to pass the path for real...
             instancePromiseOrObject = esDrill(config, options.nested.name, toMerge, options.nested.parent, drillOpts)
 
-            utils.resolve(instancePromiseOrObject, onConnected) // TODO: Test if adding listeners works...
+            return utils.resolve(instancePromiseOrObject, onConnected)
         } else {
 
             const id = Symbol('root')
             instancePromiseOrObject = esDrill(config, id, toMerge, undefined, drillOpts)
-
 
             const set = (instance) => {
 
@@ -630,13 +693,11 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
                 }
 
                 // Signal connection to the entire application
-                onConnected(instance)
+                return onConnected(instance) // potentially returns a promise
             }
 
-            utils.resolve(instancePromiseOrObject, set)
+            return utils.resolve(instancePromiseOrObject, set)
         }
-
-        return instancePromiseOrObject as (ESComponent | Promise<ESComponent>)
 }
 
 export default create

@@ -8,10 +8,10 @@ export const resolve = (object, callback?) => {
 
     // resolves with or without callback 
     if (isPromise(object)) {
-        return new Promise(resolve => {
-            object.then((res) => {
+        return new Promise(resolvePromise => {
+            object.then(async (res) => {
                 const output = (callback) ? callback(res) : res
-                resolve(output)
+                resolvePromise(output)
             })
         })
     } else {
@@ -66,6 +66,6 @@ export const merge = (main, override, path: any[] = []) => {
 
         newKeys.forEach(k => copy[k] = override[k])
     }
-    
+
     return copy // named exports
 }

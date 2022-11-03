@@ -11,7 +11,11 @@ export type Options = {
     listeners?: {
         static?: boolean
     },
+
+    listen?: boolean,
     clone?: boolean,
+    synchronous?: boolean, // TODO: Test if this really works...
+
     nested: {
         parent: any,
         name: any,

@@ -14,6 +14,7 @@ export const deep = (obj, opts={}) => {
 
     drillSimple(obj, (key, val, info) => {
         if (info.simple && info.object) return Array.isArray(val) ? [] : {}
+        // else if (info.typeof === 'function') return val.bind({})
         else return val
     }, opts)
 

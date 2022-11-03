@@ -1,3 +1,4 @@
+import { esCompose } from "../../../../apps/showcase/demos/phaser/versions/multiplayer/index.esc";
 import { Options } from "../../../common/types";
 import { EditorProps } from "../../../escode/src";
 import { ESComponent, ESElementInfo } from "../component";
@@ -19,6 +20,26 @@ export type ESComponentStates = {
     esSource?: ESComponent['esSource']
 }
 
+
+function checkESCompose (esCompose) {
+    if (!esCompose) return false
+    const isArr = Array.isArray(esCompose)
+    return (isArr) ? !esCompose.reduce((a,b) => a * (checkForInternalElements(b) ? 0 : 1), true) : checkForInternalElements(esCompose)
+}
+
+function checkForInternalElements(node){
+    if (node.esElement || checkESCompose(node.esCompose)) return true
+    else if (node.esDOM) return check(node.esDOM)
+}
+
+function check (target) {
+    for (let key in target) {
+        const node = target[key]
+        let res = checkForInternalElements(node)
+        if (res) return true
+    }
+}
+
 export function create(id, esm: ESComponent, parent, states?, utilities: Options['utilities'] = {}) {
 
     // --------------------------- Get Element ---------------------------
@@ -27,9 +48,9 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     let info: undefined | ESElementInfo;
     if (!(element instanceof Element)) {
 
-        const hasChildren = esm.esDOM && Object.keys(esm.esDOM).length > 0
 
-        const defaultTagName = hasChildren ? 'div' : 'link'
+        const mustShow = checkForInternalElements(esm)
+        const defaultTagName = mustShow ? 'div' : 'link'
 
         // Nothing Defined
         if (element === undefined) element = defaultTagName

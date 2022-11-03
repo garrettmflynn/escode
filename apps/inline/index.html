@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+
+            html, body {
+                height: 100vh;
+                width: 100vw;
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                padding: 50px;
+            }
+
+            #readouts {
+                display: flex;
+                width: 100%;
+                height: 100%;
+                overflow: scroll;
+            }
+
+            #readouts > * {
+                flex-grow: 1;
+            }
+
+        </style>
+    </head>
+    <body>  
+        <div id="readouts"></div>
+        <script src="dist/index.js">
+        </script>
+    </body>
+</html>
+        

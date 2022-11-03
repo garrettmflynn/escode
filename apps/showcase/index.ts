@@ -6,10 +6,10 @@ import * as escompose from '../../libraries/escompose/src/index'
 import * as esm from '../../libraries/esmpile/src/index'
 import * as escode from '../../libraries/escode/src/index'
 
-import canvasWorker from '../../components/ui/plot/utils/canvas.worker'
-import * as plotUtils from '../../components/ui/plot/utils/index'
-import * as timeseriesComponent from '../../components/ui/plot/timeseries'
-import * as signalComponent from './demos/signal/index.esc'
+// import canvasWorker from '../../components/ui/plot/utils/canvas.worker'
+// import * as plotUtils from '../../components/ui/plot/utils/index'
+// import * as timeseriesComponent from '../../components/ui/plot/timeseries'
+// import * as signalComponent from './demos/signal/index.esc'
 
 import demos from './demos' // All demos in one file
 
@@ -202,6 +202,17 @@ async function start (demo = "basic", mode="direct") {
         }
 
         console.log('Active ES Component:', active)
+
+
+        if (demo === 'graph') {
+
+            active.esDOM.nodeB.x += 1; //should trigger nodeA listener
+
+            active.esDOM.nodeB.esDOM.nodeC.default(4); //should trigger nodeA listener
+
+            active.esDOM.nodeA.jump();
+
+        }
 
 }
 
