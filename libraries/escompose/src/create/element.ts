@@ -220,7 +220,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
             if (v?.esElement instanceof Element) v = v.esElement
             if (esm.esElement instanceof Element) {
                 if(esm.esElement.parentNode) esm.esElement.remove()
-                if (v) {
+                if (v instanceof Element) {
 
                     // --------------------------- Place inside ESCode Instance (if created) ---------------------------
 
@@ -312,7 +312,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     if (!states) {
         esm.esOnResize = finalStates.onresize
         // console.error('Produced component', esm)
-        esm.esParent = finalStates.parentNode
+        if (finalStates.parentNode) esm.esParent = finalStates.parentNode
     }
 
     return element;

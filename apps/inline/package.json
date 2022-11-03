@@ -21,8 +21,9 @@
   ],
   "author": "",
   "license": "AGPL-3.0-or-later",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "escompose": "^0.0.27"
+  },
   "nodemonConfig": {
     "env": {
       "NODEMON": true

@@ -1,42 +1,68 @@
-import * as escompose from "../../libraries/escompose/src/index"
+import * as escompose from "escompose/src/index" 
 
+// export const esc = (esc, options = {}) => {
+//     return escompose.create(esc, options, {listen: true, clone: true})
+// }
 
-export const esc = (esc, options = {}) => {
-    return escompose.create(esc, options, {listen: true, clone: true})
-}
+export const from = (gs) => {
 
-export const gsToESC = (gs) => {
+    let globalListeners = {['']: {}}
 
-    const drill = (target, acc={}) => {
+    const drill = (target, acc: any={}, path: string[] = []) => {
 
         const nodeInfo = target._node
         delete target._node
 
         acc = Object.assign(acc, target)
 
-        if (nodeInfo) {
-            if (nodeInfo._children) {
+        if (typeof target === 'function' && path.length) {
+            acc.default = target
+        } else if (nodeInfo) {
+            if (nodeInfo.children) {
                 acc.esDOM = {} // intantiate the esDOM object
-                for (let key in nodeInfo._children) {
-                    const child = nodeInfo._children[key]
-                    acc.esDOM[key] = drill(child, {})
+                for (let key in nodeInfo.children) {
+                    const child = nodeInfo.children[key]
+                    acc.esDOM[key] = drill(child, {}, [...path, key])
                 }
             }
+
+            if (nodeInfo.listeners) {
+                for (let key in nodeInfo.listeners) {
+
+                    // TODO: Handle other listener cases
+                    globalListeners[''][key] = {
+                        value: nodeInfo.listeners[key],
+                        esBind: path.join('.') // TODO: Make this responsive to other separators
+                    }
+                }
+            }
+
+            // Convert operator to default function
+            if (nodeInfo.operator && !acc.default) acc.default = nodeInfo.operator
+
+            // Convert loop to interval
+            if(nodeInfo.loop) acc.esAnimate = nodeInfo.loop / 1000
         }
 
         return acc
     }
 
-    const res = drill(gs)
-    console.log('ESC', res)
-    return res
+    if (!('_node' in gs)) gs = {
+        _node: {
+            children: gs
+        }
+    }
+
+    const esc = drill(gs)
+    esc.esListeners = globalListeners
+    return esc
 }
 
-export const escToGS = (esc) => {
+export const to = (esc) => {
 
     let listeners = {}
 
-    const drill = (target, acc={}, prevKey) => {
+    const drill = (target, acc: any = {}, prevKey = '') => {
 
         // Track Listeners
         if (target.esListeners) {

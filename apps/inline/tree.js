@@ -16,18 +16,22 @@ const nodeAInstance = Object.assign({}, nodeA)
                     _node:{
                         operator:function(a) { 
                             this.z += a; 
-                            const div = document.getElementById('tree')
+
+                            const id = this._node ? 'tree' : 'gsXesc'
+                            const div = document.getElementById(id)
                             div.innerHTML += `<li>nodeC z prop added to</li>`
                             return this.z; 
                         },
                         listeners:{
                             'nodeA.x':function(newX) { 
-                                const div = document.getElementById('tree')
+                                const id = this._node ? 'tree' : 'gsXesc'
+                                const div = document.getElementById(id)
                                 div.innerHTML += `<li>nodeA x prop updated ${newX}</li>`
 
                             },
                             'nodeA.jump':function(jump) { 
-                                const div = document.getElementById('tree')
+                                const id = this._node ? 'tree' : 'gsXesc'
+                                const div = document.getElementById(id)
                                 div.innerHTML += `<li>nodeA ${jump}</li>`
                             }
                         }
@@ -43,8 +47,9 @@ const nodeAInstance = Object.assign({}, nodeA)
     nodeE:{
         _node:{
             loop:1000,
-            operator:()=>{
-                const div = document.getElementById('tree')
+            operator:function(){
+                const id = this._node ? 'tree' : 'gsXesc'
+                const div = document.getElementById(id)
                 div.innerHTML += `<li>looped!</li>`
             }
         }

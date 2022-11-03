@@ -15,7 +15,6 @@ export const esDOM = {
             nodeC: {
                 esCompose: nodeC,
                 default: function(a) { 
-
                     this.z += a; 
                     const id = this._node ? escxgsId : escId
                     const esmDiv = document.getElementById(id)

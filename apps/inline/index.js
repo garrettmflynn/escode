@@ -2,7 +2,10 @@
 import { Graph } from "../../libraries/external/graphscript/index"
 import * as esc from '../showcase/demos/graph/index.esc'
 import tree from './tree.js'
-import * as transform from './transform.js'
+import * as transform from "../../libraries/escomposer/src/schema"
+import * as escompose from "../../libraries/escompose/src/index"
+
+import { deep } from "../../libraries/common/clone";
 
 const divs = {};
 
@@ -13,7 +16,7 @@ const trees = [
     {id: 'tree', value: tree},
     {id: 'esc', value: esc},
     {id: 'escXgs', value: esc},
-    {id: 'gsXesc', value: tree}
+    {id: 'gsXesc', value: deep(tree) } // Otherwise I get node properties...
 ];
 
 const readouts = document.getElementById('readouts')
@@ -35,10 +38,7 @@ for (let i in trees){
 
 
     const transformToESC =  o.id == toESC
-    if (transformToESC) {
-        tree = transform.gsToESC(tree)
-        continue;
-    }
+    if (transformToESC)  tree = transform.graphscript.from(tree)
 
 
     // Convert to GS
@@ -54,6 +54,8 @@ for (let i in trees){
                         
                 const popped = tree.esDOM.nodeB.esDisconnected()  
 
+                divs[o.id].innerHTML += '<li><b>nodeB popped!</b></li>'
+
                 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
             
                 tree.esDOM.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
@@ -61,24 +63,25 @@ for (let i in trees){
                 setTimeout(()=>{ 
 
                     tree.esDOM.nodeE.esDisconnected()  
-                    divs[o.id].innerHTML += '<li>nodeE stopped...</li>'
-            
+                    divs[o.id].innerHTML += '<li><b>nodeE popped!</b></li>'
+
                 }, 5500)
 
             }
 
             // NOTE: This is how you declare this to work with the ESCompose object inline
-            transform.esc(tree, { esParent: divs[o.id] }).then(onConnected)
+            escompose.create(tree, { esParent: divs[o.id] }, {listen: true, clone: true}).then(onConnected)
 
             // // NOTE: Works with no esParent originally—but listeners will not be placed before onconnect declarations
-            // const res = transform.esc(tree)
+            // const res = transform.graphscript.esc(tree)
             // res.esParent = divs[o.id]
             // onConnected(res)            
 
         continue;
     }
     else if (o.id === toGS) {
-        tree = transform.escToGS(tree)
+        tree = transform.graphscript.to(tree)
+        console.log('Got', tree)
     }
 
 
@@ -135,16 +138,20 @@ for (let i in trees){
 
     let popped = graph.remove('nodeB');
 
+    divs[o.id].innerHTML += '<li><b>nodeB popped!</b></li>'
+
     graph2.add(popped); //reparent nodeB to the parent graph
 
     popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
+
+    // popped._node.children.nodeC._node.operator(1);
 
     graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 
     setTimeout(()=>{ 
 
         graph.remove('nodeE'); 
-        divs[o.id].innerHTML += '<li>nodeE popped!</li>'
+        divs[o.id].innerHTML += '<li><b>nodeE popped!</b></li>'
 
     },5500)
 

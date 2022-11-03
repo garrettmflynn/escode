@@ -228,9 +228,11 @@ class ListenerManager {
     monitor: Monitor
     original = {};
     active = {}
+    rootPath: string
 
-    constructor (monitor, listeners = {}) {
+    constructor (monitor, listeners = {}, rootPath = '') {
         this.monitor = monitor
+        this.rootPath = rootPath
         this.register(listeners)
     }
 
@@ -294,10 +296,16 @@ class ListenerManager {
 
     }
 
-    clear = () => {
+    clear = (name) => {
+
+        const toCheck = (!name || !this.rootPath) ? name : [this.rootPath, name].join(this.monitor.options.keySeparator)
         Object.keys(this.active).forEach(from => {
             Object.keys(this.active[from]).forEach(to => {
-                this.remove(from, to)
+                if (
+                    !toCheck 
+                    || from.slice(0, toCheck.length) === toCheck // Matches from
+                    || to.slice(0, toCheck.length) === toCheck // Matches to
+                ) this.remove(from, to)
             })
         })
     }
@@ -317,8 +325,9 @@ const setListeners = (context, components) => {
 
     for (let root in components) {
         const info = components[root]
-        const to = info.instance.esListeners  // Uses to —> from syntax
-        const listeners = new ListenerManager(context.monitor, to) // Uses from —> to syntax
+        const to = info.instance.esListeners ?? {}  // Uses to —> from syntax | Always set
+        const listeners = new ListenerManager(context.monitor, to, root) // Uses from —> to syntax
+        info.instance.esListeners = to // Replace with listeners assigned (in case of unassigned)
 
         for (let toPath in to) {
             const from = to[toPath]

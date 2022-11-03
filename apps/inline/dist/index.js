@@ -285,9 +285,10 @@
             configurable: true
           };
           Object.defineProperty(this, k, definition);
-          let dec = Object.getOwnPropertyDescriptor(props, k);
+          const ogProps = this._node.initial;
+          let dec = Object.getOwnPropertyDescriptor(ogProps, k);
           if (dec === void 0 || dec?.configurable)
-            Object.defineProperty(props, k, definition);
+            Object.defineProperty(ogProps, k, definition);
         }
       }
     }
@@ -319,6 +320,7 @@
               this._node.loaders[l](p, parent, this);
             }
             let nd = new GraphNode(p, parent, this);
+            t[key] = nd;
             this._node.tree[nd._node.tag] = p;
             this.set(nd._node.tag, nd);
             if (nd._node.listeners) {
@@ -354,10 +356,23 @@
         }
       };
       this.subscribe = (node, key, callback) => {
-        if (node instanceof GraphNode)
-          return node._subscribe(callback, key);
-        else
-          return this.get(node)?._subscribe(callback, key);
+        if (!(node instanceof GraphNode))
+          node = this.get(node);
+        let sub;
+        if (node instanceof GraphNode) {
+          sub = node._subscribe(callback, key);
+          let ondelete = () => {
+            node._unsubscribe(sub, key);
+          };
+          if (node._node.ondelete) {
+            if (Array.isArray(node._node.ondelete)) {
+              node._node.ondelete.push(ondelete);
+            } else
+              node._node.ondelete = [ondelete, node._node.ondelete];
+          } else
+            node._node.ondelete = [ondelete];
+        }
+        return sub;
       };
       this.unsubscribe = (node, key, sub) => {
         if (node instanceof GraphNode) {
@@ -679,8 +694,9 @@
   });
   var x3 = 1;
   var y3 = 2;
-  var jump2 = () => {
-    const treeDiv = document.getElementById("tree");
+  var jump2 = function() {
+    const id = this._node ? "tree" : "gsXesc";
+    const treeDiv = document.getElementById(id);
     treeDiv.innerHTML += `<li>jump!</li>`;
     return "jumped!";
   };
@@ -688,15 +704,18 @@
     listeners: {
       "nodeB.x": function(newX) {
         this.x = newX;
-        const treeDiv = document.getElementById("tree");
+        const id = this._node ? "tree" : "gsXesc";
+        const treeDiv = document.getElementById(id);
         treeDiv.innerHTML += `<li>nodeB x prop changed: ${newX}</li>`;
       },
       "nodeB.nodeC": function(op_result) {
-        const treeDiv = document.getElementById("tree");
+        const id = this._node ? "tree" : "gsXesc";
+        const treeDiv = document.getElementById(id);
         treeDiv.innerHTML += `<li>nodeC operator returned: ${op_result}</li>`;
       },
       "nodeB.nodeC.z": function(newZ) {
-        const treeDiv = document.getElementById("tree");
+        const id = this._node ? "tree" : "gsXesc";
+        const treeDiv = document.getElementById(id);
         treeDiv.innerHTML += `<li>nodeC z prop changed: ${newZ}</li>`;
       }
     }
@@ -716,17 +735,20 @@
             _node: {
               operator: function(a) {
                 this.z += a;
-                const div = document.getElementById("tree");
+                const id = this._node ? "tree" : "gsXesc";
+                const div = document.getElementById(id);
                 div.innerHTML += `<li>nodeC z prop added to</li>`;
                 return this.z;
               },
               listeners: {
                 "nodeA.x": function(newX) {
-                  const div = document.getElementById("tree");
+                  const id = this._node ? "tree" : "gsXesc";
+                  const div = document.getElementById(id);
                   div.innerHTML += `<li>nodeA x prop updated ${newX}</li>`;
                 },
                 "nodeA.jump": function(jump3) {
-                  const div = document.getElementById("tree");
+                  const id = this._node ? "tree" : "gsXesc";
+                  const div = document.getElementById(id);
                   div.innerHTML += `<li>nodeA ${jump3}</li>`;
                 }
               }
@@ -741,14 +763,22 @@
     nodeE: {
       _node: {
         loop: 1e3,
-        operator: () => {
-          const div = document.getElementById("tree");
+        operator: function() {
+          const id = this._node ? "tree" : "gsXesc";
+          const div = document.getElementById(id);
           div.innerHTML += `<li>looped!</li>`;
         }
       }
     }
   };
   var tree_default = tree;
+
+  // ../../libraries/escomposer/src/schema/graphscript.ts
+  var graphscript_exports = {};
+  __export(graphscript_exports, {
+    from: () => from,
+    to: () => to
+  });
 
   // ../../libraries/common/check.js
   var moduleStringTag = "[object Module]";
@@ -1868,7 +1898,7 @@
         if (esm2.esElement instanceof Element) {
           if (esm2.esElement.parentNode)
             esm2.esElement.remove();
-          if (v) {
+          if (v instanceof Element) {
             const desiredPosition = esm2.esChildPosition;
             const nextPosition = v.children.length;
             let ref = esm2.esElement;
@@ -1934,7 +1964,8 @@
     }
     if (!states) {
       esm2.esOnResize = finalStates.onresize;
-      esm2.esParent = finalStates.parentNode;
+      if (finalStates.parentNode)
+        esm2.esParent = finalStates.parentNode;
     }
     return element;
   }
@@ -2119,8 +2150,10 @@
               info2.id = setInterval(() => runFuncs(), 1e3 / interval);
               animations[interval].stop = () => clearInterval(info2.id);
             }
-          } else
+          } else {
+            esm2.default();
             animations[interval].objects[id2] = esm2;
+          }
           esm2.esAnimate = {
             id: id2,
             original,
@@ -2152,18 +2185,16 @@
       };
       const ogDelete = esm2.esDisconnected;
       esm2.esDisconnected = function() {
-        if (this.esElement instanceof Element) {
-          this.esElement.remove();
-          this.esParent = null;
-          if (this.onremove) {
-            const context2 = esm2.__esProxy ?? esm2;
-            this.onremove.call(context2);
-          }
-        }
         if (esm2.esAnimate && typeof esm2.esAnimate.stop === "function")
           esm2.esAnimate.stop();
         if (esm2.esListeners)
           esm2.esListeners.__manager.clear();
+        let target = esm2;
+        while (target.esParent?.hasAttribute("__isescomponent")) {
+          target = target.esElement.parentNode.esComponent;
+          if (target.esListeners?.__manager)
+            target.esListeners.__manager.clear(esm2.__isESComponent);
+        }
         if (esm2.esDOM) {
           for (let name in esm2.esDOM) {
             const component = esm2.esDOM[name];
@@ -2171,6 +2202,13 @@
               component.esDisconnected();
             else
               console.error("Could not disconnect component because it does not have an esDisconnected function", name, esm2.esDOM);
+          }
+        }
+        if (this.esElement instanceof Element) {
+          this.esElement.remove();
+          if (this.onremove) {
+            const context2 = esm2.__esProxy ?? esm2;
+            this.onremove.call(context2);
           }
         }
         if (esm2.__esCode)
@@ -2208,7 +2246,7 @@
       esm2.esParent = finalStates.parentNode;
       return esm2;
     } catch (e) {
-      console.error(`Failed to create an ES Component (${id}):`, e);
+      console.error(`Failed to create an ES Component (${typeof id === "string" ? id : id.toString()}):`, e);
       return copy;
     }
   };
@@ -2366,7 +2404,7 @@
     };
   };
   var ListenerManager = class {
-    constructor(monitor, listeners2 = {}) {
+    constructor(monitor, listeners2 = {}, rootPath = "") {
       this.original = {};
       this.active = {};
       this.register = (listeners2) => {
@@ -2377,7 +2415,7 @@
           writable: true
         });
       };
-      this.add = (from, to, value = true, subscription = this.active[from].sub) => {
+      this.add = (from2, to2, value = true, subscription = this.active[from2].sub) => {
         let root = "";
         if (value?.hasOwnProperty("root"))
           root = value.root;
@@ -2385,29 +2423,29 @@
           value = value.value;
         else
           console.error("No root provided for new edge...");
-        if (!this.active[from])
-          this.active[from] = {};
-        this.active[from][to] = {
+        if (!this.active[from2])
+          this.active[from2] = {};
+        this.active[from2][to2] = {
           value,
           root,
           subscription,
           [listenerObject]: true
         };
-        let base = this.original[to];
+        let base = this.original[to2];
         if (!base)
-          base = this.original[to] = {};
+          base = this.original[to2] = {};
         if (typeof base !== "object") {
           if (typeof base === "function")
-            base = this.original[to] = { [Symbol("function listener")]: base };
+            base = this.original[to2] = { [Symbol("function listener")]: base };
           else
-            base = this.original[to] = { [base]: true };
+            base = this.original[to2] = { [base]: true };
         }
-        base[from] = value;
+        base[from2] = value;
       };
-      this.remove = (from, to) => {
+      this.remove = (from2, to2) => {
         const toRemove = [
-          { ref: this.active, path: [from, to], unlisten: true },
-          { ref: this.original, path: [to, from] }
+          { ref: this.active, path: [from2, to2], unlisten: true },
+          { ref: this.original, path: [to2, from2] }
         ];
         toRemove.forEach((o) => {
           const { ref, path, unlisten } = o;
@@ -2424,16 +2462,19 @@
             delete ref[path[0]];
         });
       };
-      this.clear = () => {
-        Object.keys(this.active).forEach((from) => {
-          Object.keys(this.active[from]).forEach((to) => {
-            this.remove(from, to);
+      this.clear = (name) => {
+        const toCheck = !name || !this.rootPath ? name : [this.rootPath, name].join(this.monitor.options.keySeparator);
+        Object.keys(this.active).forEach((from2) => {
+          Object.keys(this.active[from2]).forEach((to2) => {
+            if (!toCheck || from2.slice(0, toCheck.length) === toCheck || to2.slice(0, toCheck.length) === toCheck)
+              this.remove(from2, to2);
           });
         });
       };
-      this.has = (from) => !!this.active[from];
-      this.get = (from) => this.active[from];
+      this.has = (from2) => !!this.active[from2];
+      this.get = (from2) => this.active[from2];
       this.monitor = monitor;
+      this.rootPath = rootPath;
       this.register(listeners2);
     }
   };
@@ -2441,35 +2482,36 @@
     let toTrigger = [];
     for (let root in components) {
       const info2 = components[root];
-      const to = info2.instance.esListeners;
-      const listeners2 = new ListenerManager(context.monitor, to);
-      for (let toPath in to) {
-        const from = to[toPath];
+      const to2 = info2.instance.esListeners ?? {};
+      const listeners2 = new ListenerManager(context.monitor, to2, root);
+      info2.instance.esListeners = to2;
+      for (let toPath in to2) {
+        const from2 = to2[toPath];
         const mainInfo = {
           context,
           root,
           toPath,
           listeners: listeners2
         };
-        if (from && typeof from === "object") {
-          for (let fromPath in from) {
-            const config = from[fromPath];
+        if (from2 && typeof from2 === "object") {
+          for (let fromPath in from2) {
+            const config = from2[fromPath];
             const info3 = handleListenerValue({ ...mainInfo, fromPath, config });
             if (info3.config.esTrigger)
               toTrigger.push(info3);
           }
         } else {
           if (typeof toPath === "string")
-            handleListenerValue({ ...mainInfo, fromPath: from, config: toPath });
+            handleListenerValue({ ...mainInfo, fromPath: from2, config: toPath });
           else
-            console.error("Improperly Formatted Listener", to);
+            console.error("Improperly Formatted Listener", to2);
         }
       }
     }
     return toTrigger;
   };
   var isConfigObject = (o) => "esFormat" in o || "esBranch" in o || "esTrigger" in o || "esBind" in o;
-  function pass(from, target, update, context) {
+  function pass(from2, target, update, context) {
     const id = context.id;
     let parent, key, root, subscription;
     const isValue = target?.__value;
@@ -2613,7 +2655,7 @@
         else
           target(...arrayUpdate);
       } else {
-        let baseMessage = key ? `listener: ${from} \u2014> ${key}` : `listener from ${from}`;
+        let baseMessage = key ? `listener: ${from2} \u2014> ${key}` : `listener from ${from2}`;
         if (parent) {
           console.warn(`Deleting ${baseMessage}`, target);
           delete parent[key];
@@ -2730,33 +2772,51 @@
   var src_default2 = create2;
   var resolve2 = resolve;
 
-  // transform.js
-  var esc = (esc2, options2 = {}) => {
-    return create2(esc2, options2, { listen: true, clone: true });
-  };
-  var gsToESC = (gs) => {
-    const drill = (target, acc = {}) => {
+  // ../../libraries/escomposer/src/schema/graphscript.ts
+  var from = (gs) => {
+    let globalListeners = { [""]: {} };
+    const drill = (target, acc = {}, path = []) => {
       const nodeInfo = target._node;
       delete target._node;
       acc = Object.assign(acc, target);
-      if (nodeInfo) {
-        if (nodeInfo._children) {
+      if (typeof target === "function" && path.length) {
+        acc.default = target;
+      } else if (nodeInfo) {
+        if (nodeInfo.children) {
           acc.esDOM = {};
-          for (let key in nodeInfo._children) {
-            const child = nodeInfo._children[key];
-            acc.esDOM[key] = drill(child, {});
+          for (let key in nodeInfo.children) {
+            const child = nodeInfo.children[key];
+            acc.esDOM[key] = drill(child, {}, [...path, key]);
           }
         }
+        if (nodeInfo.listeners) {
+          for (let key in nodeInfo.listeners) {
+            globalListeners[""][key] = {
+              value: nodeInfo.listeners[key],
+              esBind: path.join(".")
+            };
+          }
+        }
+        if (nodeInfo.operator && !acc.default)
+          acc.default = nodeInfo.operator;
+        if (nodeInfo.loop)
+          acc.esAnimate = nodeInfo.loop / 1e3;
       }
       return acc;
     };
-    const res = drill(gs);
-    console.log("ESC", res);
-    return res;
+    if (!("_node" in gs))
+      gs = {
+        _node: {
+          children: gs
+        }
+      };
+    const esc = drill(gs);
+    esc.esListeners = globalListeners;
+    return esc;
   };
-  var escToGS = (esc2) => {
+  var to = (esc) => {
     let listeners2 = {};
-    const drill = (target, acc = {}, prevKey) => {
+    const drill = (target, acc = {}, prevKey = "") => {
       if (target.esListeners) {
         Object.keys(target.esListeners).forEach((str) => {
           Object.keys(target.esListeners[str]).forEach((key) => {
@@ -2798,7 +2858,7 @@
       });
       return acc;
     };
-    const component = create2(esc2, void 0, { listen: false, synchronous: true });
+    const component = create2(esc, void 0, { listen: false, synchronous: true });
     const tree2 = drill({ esDOM: { component } })._node.children.component._node.children;
     tree2._node = { listeners: listeners2[""] };
     return tree2;
@@ -2812,7 +2872,7 @@
     { id: "tree", value: tree_default },
     { id: "esc", value: index_esc_exports },
     { id: "escXgs", value: index_esc_exports },
-    { id: "gsXesc", value: tree_default }
+    { id: "gsXesc", value: deep(tree_default) }
   ];
   var readouts = document.getElementById("readouts");
   for (let i in trees) {
@@ -2826,27 +2886,27 @@
       divs[o.id].innerHTML = `<h1>${o.id}</h1>`;
     }
     const transformToESC = o.id == toESC;
-    if (transformToESC) {
-      tree2 = gsToESC(tree2);
-      continue;
-    }
+    if (transformToESC)
+      tree2 = graphscript_exports.from(tree2);
     if (o.id === "esc" || transformToESC) {
       const onConnected = (tree3) => {
         tree3.esDOM.nodeB.x += 1;
         tree3.esDOM.nodeB.esDOM.nodeC.default(4);
         tree3.esDOM.nodeA.jump();
         const popped2 = tree3.esDOM.nodeB.esDisconnected();
+        divs[o.id].innerHTML += "<li><b>nodeB popped!</b></li>";
         popped2.x += 1;
         tree3.esDOM.nodeA.jump();
         setTimeout(() => {
           tree3.esDOM.nodeE.esDisconnected();
-          divs[o.id].innerHTML += "<li>nodeE stopped...</li>";
+          divs[o.id].innerHTML += "<li><b>nodeE popped!</b></li>";
         }, 5500);
       };
-      esc(tree2, { esParent: divs[o.id] }).then(onConnected);
+      create2(tree2, { esParent: divs[o.id] }, { listen: true, clone: true }).then(onConnected);
       continue;
     } else if (o.id === toGS) {
-      tree2 = escToGS(tree2);
+      tree2 = graphscript_exports.to(tree2);
+      console.log("Got", tree2);
     }
     let graph = new Graph({
       tree: tree2,
@@ -2895,12 +2955,13 @@
     };
     let graph2 = new Graph({ tree: tree22 });
     let popped = graph.remove("nodeB");
+    divs[o.id].innerHTML += "<li><b>nodeB popped!</b></li>";
     graph2.add(popped);
     popped.x += 1;
     graph.get("nodeA").jump();
     setTimeout(() => {
       graph.remove("nodeE");
-      divs[o.id].innerHTML += "<li>nodeE popped!</li>";
+      divs[o.id].innerHTML += "<li><b>nodeE popped!</b></li>";
     }, 5500);
   }
 })();

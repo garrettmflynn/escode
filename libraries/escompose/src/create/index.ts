@@ -135,7 +135,11 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                     } 
                     
                     // Add to Objects
-                    else animations[interval].objects[id] = esm
+                    else {
+                        esm.default() // run initially
+                        animations[interval].objects[id] = esm
+                    }
+
 
                     esm.esAnimate =  {
                         id,
@@ -171,17 +175,17 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
             const ogDelete = esm.esDisconnected;
             esm.esDisconnected = function () {
 
-                if ( this.esElement instanceof Element) {
-                    this.esElement.remove(); 
-                    this.esParent = null
-                    if(this.onremove) {
-                        const context = esm.__esProxy ?? esm
-                        this.onremove.call(context); 
-                    }
-                }
-
                 if ( esm.esAnimate && typeof esm.esAnimate.stop === 'function') esm.esAnimate.stop()
+
+                // Clear all listeners below this node
                 if (esm.esListeners) esm.esListeners.__manager.clear()
+
+                // Clear all listeners above this node that reference it
+                let target = esm
+                while (target.esParent?.hasAttribute('__isescomponent')) {
+                    target = target.esElement.parentNode.esComponent
+                    if (target.esListeners?.__manager) target.esListeners.__manager.clear(esm.__isESComponent)
+                }
 
                 if (esm.esDOM) {
                     for (let name in esm.esDOM) {
@@ -191,7 +195,17 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                     }
                 }
 
-                if (esm.__esCode) esm.__esCode.remove() // Remove code editor
+                // Remove Element
+                if ( this.esElement instanceof Element) {
+                    this.esElement.remove();
+                    if(this.onremove) {
+                        const context = esm.__esProxy ?? esm
+                        this.onremove.call(context); 
+                    }
+                }
+
+                // Remove code editor
+                if (esm.__esCode) esm.__esCode.remove() 
 
                 const context = esm.__esProxy ?? esm
                 if (ogDelete) ogDelete.call(context)
@@ -232,7 +246,7 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
             return esm;
 
         } catch (e){ 
-            console.error(`Failed to create an ES Component (${id}):`, e)
+            console.error(`Failed to create an ES Component (${typeof id === 'string' ? id : id.toString()}):`, e)
             return copy
         }
 }
