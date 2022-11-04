@@ -40,8 +40,6 @@ const esCompile = (o, opts: any = {}) => {
 
         if (uri && opts.utilities) {
 
-            if (opts.synchronous) console.error('Synchronous mode is not compatible with asynchronous source text loaders.')
-
             return new Promise(async (resolve) => {
 
                 try {
@@ -59,6 +57,8 @@ const esCompile = (o, opts: any = {}) => {
                         // Track Bundle Resolution
                         await bundle.resolve()
                         o = Object.assign({}, bundle.result)
+
+                        console.log('Got From Bundle', o, uri)
                     } 
                     
                     // Just Compile
@@ -321,7 +321,7 @@ const setListeners = (context, components) => {
 
     // const listeners = new ListenerManager() // Uses from —> to syntax
 
-    let toTrigger: any[] = []
+    let toRun: any[] = []
 
     for (let root in components) {
         const info = components[root]
@@ -339,11 +339,12 @@ const setListeners = (context, components) => {
                 listeners
             }
 
+
             if (from && typeof from === 'object') {
                 for (let fromPath in from) {
                     const config = from[fromPath]
                     const info = handleListenerValue({...mainInfo, fromPath, config})
-                    if (info.config.esTrigger) toTrigger.push(info)
+                    if (info.config.esTrigger) toRun.push(info)
                 }
             } 
             
@@ -355,7 +356,7 @@ const setListeners = (context, components) => {
         }
     }
 
-   return toTrigger // Trigger after all listeners are set
+   return toRun // Trigger after all listeners are set
 }
 
 
@@ -640,7 +641,7 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
         components,
         keySeparator: fullOptions.keySeparator,
         utilities: fullOptions.utilities,
-        synchronous: fullOptions.synchronous,
+        await: fullOptions.await,
     }
 
         let instancePromiseOrObject;
@@ -658,10 +659,10 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
 
                     if (context && options.listen !== false) {
         
-                        const toTrigger = setListeners(context, components)
+                        const toRun = setListeners(context, components)
 
                         // Triggering appropriate listeners before complete connection
-                        toTrigger.forEach(o => {
+                        toRun.forEach(o => {
                             const res = monitor.get(o.path, 'info')
                             if (typeof res.value === 'function') {
                                 const args = (Array.isArray(o.config.esTrigger)) ? o.config.esTrigger : [o.config.esTrigger]
@@ -669,12 +670,15 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
                             }
                             else console.error('Cannot yet trigger values...', o)
                         })
-        
+            
                     }
         
                 }, true)
 
-                utils.resolve(possiblePromise, () => resolve(instance))
+                utils.resolve(possiblePromise, (toRun) => {
+                    toRun.forEach(o => o.ref.default(o.args)) // Resolve esTrigger values on the nodes
+                    resolve(instance)
+                })
         })
         }
 

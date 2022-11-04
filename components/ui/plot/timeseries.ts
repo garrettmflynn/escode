@@ -44,7 +44,7 @@ export const esDOM = {
 
     plotter: {        
         options: {
-            worker:true, //use an offscreen canvas
+            worker: true, //use an offscreen canvas // TODO: Properly load workers from text
             overlayFont:'10px Verdana',
             overlayColor:'orange',
             generateNewLines: true,

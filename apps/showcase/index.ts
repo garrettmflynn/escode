@@ -94,7 +94,10 @@ function startFunction () {
         return val
     })
 
-    if (active?.esDisconnected) active.esDisconnected()
+    if (active?.esDisconnected) {
+        active.esDisconnected()
+        active = undefined
+    }
     
     console.log(`---------------- Starting ${args[0]} demo in ${args[1]} mode ----------------`)
 
@@ -167,9 +170,12 @@ async function start (demo = "basic", mode="direct") {
             //         './apps/showcase/demos/signal/index.esc.ts': signalComponent,
             //     }
             // }
-            const component = await escompose.create(reference, {esParent: main}, {
+            const component = escompose.create(reference, {esParent: main}, {
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
-                listeners: { static: true },
+                
+                await: true,
+
+                // For Editor Creation + Source Text Loading
                 utilities: {
                     code: {
                         class: escode.Editor,
@@ -194,7 +200,38 @@ async function start (demo = "basic", mode="direct") {
                 }
             })
 
-            active = component
+            await component.then((thisActive) => {
+
+                active = thisActive
+
+                if (demo === 'graph') {
+
+                    const graphDemo = thisActive
+        
+                    graphDemo.esDOM.nodeB.x += 1; //should trigger nodeA listener
+        
+                    graphDemo.esDOM.nodeB.esDOM.nodeC.default(4); //should trigger nodeA listener
+                
+                    graphDemo.esDOM.nodeA.jump();
+                            
+                    const popped = graphDemo.esDOM.nodeB //.esDisconnected()  // DON'T REMOVE SINCE YOU'LL LOSE ACCESS TO THE DOM
+        
+                    graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
+        
+                    popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
+                
+                    graphDemo.esDOM.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
+        
+                    setTimeout(()=>{ 
+                        if (graphDemo === active) {
+                            graphDemo.esDOM.nodeE.esDisconnected()  
+                            graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
+                        }
+                    }, 5500)
+        
+                }
+            })
+
         } catch (e) {
             console.error(e)
             small.innerText = e.message
@@ -202,17 +239,6 @@ async function start (demo = "basic", mode="direct") {
         }
 
         console.log('Active ES Component:', active)
-
-
-        if (demo === 'graph') {
-
-            active.esDOM.nodeB.x += 1; //should trigger nodeA listener
-
-            active.esDOM.nodeB.esDOM.nodeC.default(4); //should trigger nodeA listener
-
-            active.esDOM.nodeA.jump();
-
-        }
 
 }
 

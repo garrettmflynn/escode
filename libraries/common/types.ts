@@ -14,7 +14,10 @@ export type Options = {
 
     listen?: boolean,
     clone?: boolean,
+
+    // TODO: Make these the same...
     synchronous?: boolean, // TODO: Test if this really works...
+    await?: boolean, // Return a promise that resolves after the entire app is ready
 
     nested: {
         parent: any,

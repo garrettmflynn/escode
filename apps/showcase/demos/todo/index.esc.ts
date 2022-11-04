@@ -80,7 +80,11 @@ export const esListeners = {
 
     list: {
         load: true,
-        ['form.button']: true,
+        ['form.button']: {
+            esBranch: [
+                {condition: (input) => typeof input === 'string'},
+            ]
+        },
         ['remove']: true
     },
 
@@ -88,7 +92,7 @@ export const esListeners = {
         ['form.input']: true
     },
 
-    ['form.input.esElement.value']: {
+    ['form.input']: {
         ['form.button']: {
             esBranch: [
                 {condition: (input) => typeof input === 'string', value: ''},

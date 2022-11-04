@@ -14,6 +14,9 @@ const global = globalThis.REMOTEESM_BUNDLES.global
 
 const noEncoding = `No buffer or text to bundle for`
 
+const toWait = 10000
+const waitedFor = (toWait).toFixed(1)
+
 // const esSourceString = (bundle) => `\n export const __esSource = globalThis.REMOTEESM_BUNDLES["${bundle.collection}"]["${bundle.name}"]` // Export bundle from module...
 // const esSourceString = (bundle) => `\n export const __esSource = true` // Export bundle from module...
 
@@ -301,12 +304,6 @@ export default class Bundle {
 
                 if (info){
                     this.info = info
-
-                    // Always Add Custom Export
-                    const srcStr = esSourceString(this)
-                    if (!this.info.text.updated.includes(srcStr)) this.info.text.updated += srcStr
-
-
                     this.url = this.info.uri // reset this bundle's name
                     this.buffer = this.info.buffer
                     await this.encoded // resolve after successful encoding  
@@ -436,12 +433,13 @@ export default class Bundle {
                 // console.log('waiting...', this.uri, bundle.uri)
 
                 let done = false
+
                 setTimeout(() => {
                     if (done) return
-                    console.log('Took too long...')
+                    console.error(`Took too long (${waitedFor}s)...`)
                     bundle.promises.result.reject()
                     bundle.promises.encoded.reject()
-                }, 5000)
+                }, toWait)
                 
                 await bundle.result // wait for bundle to resolve
                 // console.log('done!', this.uri, bundle.uri)
@@ -472,6 +470,7 @@ export default class Bundle {
     // Get Encoded Promise
     bundle = (type="buffer") => {
 
+        const isText = type === "text"
         this.options._esmpile.lastBundle = type // register last bundle type
         this.promises.encoded.promise = new Promise (async (resolve, reject) => {
 
@@ -480,7 +479,7 @@ export default class Bundle {
 
             try {
 
-            let bufferOrText = (type === 'text') ? this.info.text.updated :  this.buffer 
+            let bufferOrText = (isText) ? this.info.text.updated :  this.buffer 
 
                 if (!bufferOrText) {
                     if (this.info.fallback) this.encoded = this.info.fallback
@@ -495,6 +494,25 @@ export default class Bundle {
                         bufferOrText = compile.typescript(this.info, type)
                         mimeType = mimeTypes.js
                         break;
+                }
+
+                if (mimeType === mimeTypes.js) {
+                    // Always Add Custom Export
+                    const srcStr = esSourceString(this)
+
+                    let text = bufferOrText
+                    if (!isText) text = new TextDecoder().decode(bufferOrText)
+                    if (isText) {
+                        const update = !bufferOrText.includes(srcStr)
+                        if (update) {
+                            bufferOrText += srcStr
+                            this.info.text.updated = text = bufferOrText
+                        }
+                    }
+
+                    if (!isText) {
+                        this.#buffer = bufferOrText = new TextEncoder().encode(text)
+                    }
                 }
             
             

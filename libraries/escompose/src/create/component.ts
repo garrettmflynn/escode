@@ -50,6 +50,7 @@ export const define = (config, esm) => {
                 super(properties)
                 resolve(createComponent(esm), res => {
                     res.esElement = this
+                    this.esComponent = res
                 })
             }
 

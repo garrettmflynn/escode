@@ -3,7 +3,7 @@ export const esElement = 'ul'  // default element
 export const itemType = 'li'
 export const items = []
 export default function (...args) {
-
+    
     // Clear items
     if (args[0] === null && args.length === 1) {
         this.items = []

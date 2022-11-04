@@ -1,7 +1,7 @@
 import {WebglLinePlotUtil, WebglLinePlotProps} from 'webgl-plot-utils';//'../../../webgl-plot-utils/webgl-plot-utils'//
 let plotter = new WebglLinePlotUtil();
 
-import canvasworker from './canvas.worker'
+import canvasworker from './canvas.worker' // NOTE: This breaks on text compilation...
 
 import { CanvasControls, CanvasProps, workerCanvasRoutes } from 'graphscript/services/worker/WorkerCanvas' //../../../GraphServiceRouter/services/worker/WorkerCanvas'//'graphscript/services/worker/WorkerCanvas';
 
@@ -35,6 +35,8 @@ export let options: CanvasProps & {
 export let canvas: WebglLinePlotProps['canvas']
 export let overlay: WebglLinePlotProps['overlay']
 
+export const failed = false
+
 
 function create(context) {
 
@@ -44,29 +46,38 @@ function create(context) {
     options.clear = clear;
 
     // Grab Canvas from DOM
-    if (typeof context.overlay === 'string') context.overlay = document.querySelector(this.overlay) as HTMLCanvasElement;
-    if (typeof context.canvas === 'string') context.canvas = document.querySelector(this.canvas) as HTMLCanvasElement;
+    if (typeof context.overlay === 'string') context.overlay = document.querySelector(context.overlay) as HTMLCanvasElement;
+    if (typeof context.canvas === 'string') context.canvas = document.querySelector(context.canvas) as HTMLCanvasElement;
 
     options.canvas = context.canvas;
     options.overlay = context.overlay;
 
-    if(options.worker) {
+    try {
+        if(options.worker) {
 
-        if(options.worker === true) options.worker = new Worker(canvasworker);
-        else if (typeof options.worker === 'string' || options.worker instanceof Blob) options.worker = new Worker(options.worker as any);
-        
-        if(options.overlay) {
-            let offscreen = (options.overlay as any).transferControlToOffscreen();
-            options.overlay = offscreen;
-            options.transfer = [options.overlay];
+            if(options.worker === true) {
+                if (typeof canvasworker === 'object') options.worker = canvasworker;
+                else options.worker = new Worker(canvasworker);
+            } else if (typeof options.worker === 'string' || options.worker instanceof Blob) options.worker = new Worker(options.worker as any);
+            
+            if(options.overlay) {
+                let offscreen = (options.overlay as any).transferControlToOffscreen();
+                options.overlay = offscreen;
+                options.transfer = [options.overlay];
+            }
         }
-    }
 
-    context.plot = workerCanvasRoutes.Renderer(options) as CanvasControls;
-    return context.plot
+        context.plot = workerCanvasRoutes.Renderer(options) as CanvasControls;
+        return context.plot
+    } catch (e) {
+        console.error('Could not create canvas with worker', e)
+        context.failed = true
+    }
 }
 
 export default function (args) {
-    if (!this.plot) create(this) // NOTE: Using global scope will result in issues since the (wrapper) promise is not awaited
-    this.plot.update(args);
+    if (!this.failed){
+        if (!this.plot) create(this) // NOTE: Using global scope will result in issues since the (wrapper) promise is not awaited
+        if (this.plot) this.plot.update(args);
+    }
 }

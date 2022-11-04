@@ -70,7 +70,7 @@ for (let i in trees){
             }
 
             // NOTE: This is how you declare this to work with the ESCompose object inline
-            escompose.create(tree, { esParent: divs[o.id] }, {listen: true, clone: true}).then(onConnected)
+            escompose.create(tree, { esParent: divs[o.id] }, {listen: true, clone: true, await: true}).then(onConnected)
 
             // // NOTE: Works with no esParent originally—but listeners will not be placed before onconnect declarations
             // const res = transform.graphscript.esc(tree)

@@ -294,7 +294,7 @@
     }
   };
   var Graph = class {
-    constructor(options2) {
+    constructor(options) {
       this._node = {
         tag: `graph${Math.floor(Math.random() * 1e15)}`,
         nodes: /* @__PURE__ */ new Map(),
@@ -326,6 +326,7 @@
             if (nd._node.listeners) {
               listeners2[nd._node.tag] = nd._node.listeners;
             } else if (nd._node.children) {
+              nd._node.children = Object.assign({}, nd._node.children);
               this.recursiveSet(nd._node.children, nd, listeners2);
             }
           }
@@ -383,10 +384,10 @@
       this.setState = (update) => {
         this._node.state.setState(update);
       };
-      if (options2) {
-        recursivelyAssign.call(this, this._node, options2);
-        if (options2.tree)
-          this.setTree(options2.tree);
+      if (options) {
+        recursivelyAssign.call(this, this._node, options);
+        if (options.tree)
+          this.setTree(options.tree);
       }
     }
     setTree(tree2) {
@@ -425,6 +426,7 @@
         listeners2[node._node.tag] = node._node.listeners;
       }
       if (node._node.children) {
+        node._node.children = Object.assign({}, node._node.children);
         this.recursiveSet(node._node.children, node, listeners2);
       }
       this.setListeners(listeners2);
@@ -568,12 +570,26 @@
     x: () => x,
     y: () => y
   });
+
+  // ../showcase/demos/graph/utils/index.js
+  var getTopNode = (target) => {
+    while (target.esParent && target.esParent.hasAttribute("__isescomponent")) {
+      const component = target.esParent.esComponent;
+      if (component.esParent)
+        target = component;
+      else
+        break;
+    }
+    return target.esParent ?? target.esElement;
+  };
+
+  // ../showcase/demos/graph/components/nodeA.esc.js
   var x = 1;
   var y = 2;
   function jump() {
     const id = this._node ? "escXgs" : "esc";
-    const escDiv = document.getElementById(id);
-    escDiv.innerHTML += `<li>jump!</li>`;
+    const escDiv = document.getElementById(id) ?? getTopNode(this);
+    escDiv.insertAdjacentHTML("beforeend", `<li>jump!</li>`);
     return "jumped!";
   }
 
@@ -606,31 +622,40 @@
   var escId = "esc";
   var escxgsId = "escXgs";
   var esDOM = {
-    nodeA: nodeA_esc_exports,
+    nodeA: {
+      esElement: "div",
+      esCompose: nodeA_esc_exports
+    },
     nodeB: {
+      esElement: "div",
       esCompose: nodeB_esc_exports,
       esDOM: {
         nodeC: {
+          esElement: "div",
           esCompose: nodeC_esc_exports,
           default: function(a) {
             this.z += a;
             const id = this._node ? escxgsId : escId;
-            const esmDiv = document.getElementById(id);
+            const esmDiv = document.getElementById(id) ?? getTopNode(this);
             if (esmDiv)
-              esmDiv.innerHTML += `<li>nodeC z prop added to</li>`;
+              esmDiv.insertAdjacentHTML("beforeend", `<li>nodeC z prop added to</li>`);
             return this.z;
           }
         }
       }
     },
-    nodeD: nodeD_esc_exports,
+    nodeD: {
+      esElement: "div",
+      esCompose: nodeD_esc_exports
+    },
     nodeE: {
+      esElement: "div",
       esAnimate: 1,
       default: function() {
         const id = this._node ? escxgsId : escId;
-        const esmDiv = document.getElementById(id);
+        const esmDiv = document.getElementById(id) ?? getTopNode(this);
         if (esmDiv)
-          esmDiv.innerHTML += `<li>looped!</li>`;
+          esmDiv.insertAdjacentHTML("beforeend", `<li>looped!</li>`);
       }
     }
   };
@@ -639,44 +664,44 @@
       "nodeA.x": {
         value: function(newX) {
           const id = this._node ? escxgsId : escId;
-          const esmDiv = document.getElementById(id);
+          const esmDiv = document.getElementById(id) ?? getTopNode(this);
           if (esmDiv)
-            esmDiv.innerHTML += `<li>nodeA x prop updated ${newX}</li>`;
+            esmDiv.insertAdjacentHTML("beforeend", `<li>nodeA x prop updated ${newX}</li>`);
         },
         esBind: "nodeB.nodeC"
       },
       "nodeA.jump": {
         value: function(jump3) {
-          const esmDiv = document.getElementById(this._node ? escxgsId : escId);
+          const esmDiv = document.getElementById(this._node ? escxgsId : escId) ?? getTopNode(this);
           if (esmDiv)
-            esmDiv.innerHTML += `<li>nodeA ${jump3}</li>`;
+            esmDiv.insertAdjacentHTML("beforeend", `<li>nodeA ${jump3}</li>`);
         },
         esBind: "nodeB.nodeC"
       },
       "nodeB.x": {
         value: function(newX) {
           this.x = newX;
-          const esmDiv = document.getElementById(this._node ? escxgsId : escId);
+          const esmDiv = document.getElementById(this._node ? escxgsId : escId) ?? getTopNode(this);
           if (esmDiv)
-            esmDiv.innerHTML += `<li>nodeB x prop changed: ${newX}</li>`;
+            esmDiv.insertAdjacentHTML("beforeend", `<li>nodeB x prop changed: ${newX}</li>`);
           return newX;
         },
         esBind: "nodeA"
       },
       "nodeB.nodeC": {
         value: function(op_result) {
-          const esmDiv = document.getElementById(this._node ? escxgsId : escId);
+          const esmDiv = document.getElementById(this._node ? escxgsId : escId) ?? getTopNode(this);
           if (esmDiv)
-            esmDiv.innerHTML += `<li>nodeC operator returned: ${op_result}</li>`;
+            esmDiv.insertAdjacentHTML("beforeend", `<li>nodeC operator returned: ${op_result}</li>`);
           return op_result;
         },
         esBind: "nodeA"
       },
       "nodeB.nodeC.z": {
         value: function(newZ) {
-          const esmDiv = document.getElementById(this._node ? escxgsId : escId);
+          const esmDiv = document.getElementById(this._node ? escxgsId : escId) ?? getTopNode(this);
           if (esmDiv)
-            esmDiv.innerHTML += `<li>nodeC z prop changed: ${newZ}</li>`;
+            esmDiv.insertAdjacentHTML("beforeend", `<li>nodeC z prop changed: ${newZ}</li>`);
           return newZ;
         },
         esBind: "nodeA"
@@ -810,10 +835,10 @@
     const filtered = pathType.filter((v) => typeof v === "string");
     return filtered.join(info2.keySeparator);
   };
-  var getPathInfo = (path, options2) => {
+  var getPathInfo = (path, options) => {
     let splitPath = path;
     if (typeof path === "string")
-      splitPath = path.split(options2.keySeparator);
+      splitPath = path.split(options.keySeparator);
     else if (typeof path === "symbol")
       splitPath = [path];
     return {
@@ -1271,28 +1296,28 @@
         path: (path2) => path2.filter((str) => !baseOptions.fallbacks || !baseOptions.fallbacks.includes(str))
       }, id);
     }
-    let options2 = { keySeparator: baseOptions.keySeparator, ...opts };
-    setFromPath(path, value, ref, options2);
+    let options = { keySeparator: baseOptions.keySeparator, ...opts };
+    setFromPath(path, value, ref, options);
     return value;
   };
 
   // ../../libraries/esmonitor/src/listeners.ts
-  var info = (id, callback, path, originalValue, base, listeners2, options2) => {
+  var info = (id, callback, path, originalValue, base, listeners2, options) => {
     if (typeof path === "string")
-      path = path.split(options2.keySeparator);
-    const relativePath = path.join(options2.keySeparator);
+      path = path.split(options.keySeparator);
+    const relativePath = path.join(options.keySeparator);
     const refs = base;
     const get3 = (path2) => {
       return getFromPath(base, path2, {
-        keySeparator: options2.keySeparator,
-        fallbacks: options2.fallbacks
+        keySeparator: options.keySeparator,
+        fallbacks: options.fallbacks
       });
     };
-    const set2 = (path2, value) => setFromOptions(path2, value, options2, {
+    const set2 = (path2, value) => setFromOptions(path2, value, options, {
       reference: base,
       listeners: listeners2
     });
-    let onUpdate = options2.onUpdate;
+    let onUpdate = options.onUpdate;
     let infoToOutput = {};
     if (onUpdate && typeof onUpdate === "object" && onUpdate.callback instanceof Function) {
       infoToOutput = onUpdate.info ?? {};
@@ -1301,15 +1326,15 @@
     const absolute = [id, ...path];
     let pathInfo = {
       absolute,
-      relative: relativePath.split(options2.keySeparator),
+      relative: relativePath.split(options.keySeparator),
       parent: absolute.slice(0, -1)
     };
-    pathInfo.output = pathInfo[options2.pathFormat];
+    pathInfo.output = pathInfo[options.pathFormat];
     const completePathInfo = pathInfo;
     const info2 = {
       id,
       path: completePathInfo,
-      keySeparator: options2.keySeparator,
+      keySeparator: options.keySeparator,
       infoToOutput,
       callback: (...args) => {
         const output = callback(...args);
@@ -1362,9 +1387,9 @@
     functions: functions2,
     setters
   };
-  var set = (type, absPath, value, callback, base, allListeners, options2) => {
-    const { id, path } = getPathInfo(absPath, options2);
-    const fullInfo = info(id, callback, path, value, base, listeners, options2);
+  var set = (type, absPath, value, callback, base, allListeners, options) => {
+    const { id, path } = getPathInfo(absPath, options);
+    const fullInfo = info(id, callback, path, value, base, listeners, options);
     if (listeners[type])
       listeners[type](fullInfo, allListeners[type], allListeners.lookup);
     else {
@@ -1442,13 +1467,13 @@
   }
 
   // ../../libraries/common/drill.js
-  var drillSimple = (obj, callback, options2) => {
-    let accumulator = options2.accumulator;
+  var drillSimple = (obj, callback, options) => {
+    let accumulator = options.accumulator;
     if (!accumulator)
-      accumulator = options2.accumulator = {};
-    const ignore = options2.ignore || [];
-    const path = options2.path || [];
-    const condition = options2.condition || true;
+      accumulator = options.accumulator = {};
+    const ignore = options.ignore || [];
+    const path = options.path || [];
+    const condition = options.condition || true;
     const seen = [];
     const fromSeen = [];
     let drill = (obj2, acc = {}, globalInfo) => {
@@ -1951,9 +1976,9 @@
           console.error("Editor class not provided in options.utilities.code");
       }
       if (cls) {
-        let options2 = utilities.code?.options ?? {};
-        options2 = typeof config === "boolean" ? options2 : { ...options2, ...config };
-        const esCode = new cls(options2);
+        let options = utilities.code?.options ?? {};
+        options = typeof config === "boolean" ? options : { ...options, ...config };
+        const esCode = new cls(options);
         esCode.start();
         Object.defineProperty(esm2, "__esCode", { value: esCode });
       }
@@ -1973,9 +1998,9 @@
   // ../../libraries/escompose/src/create/component.ts
   var registry = {};
   var ogCreateElement = document.createElement;
-  document.createElement = function(name, options2) {
+  document.createElement = function(name, options) {
     const info2 = registry[name];
-    const created = info2 && !info2.autonomous ? ogCreateElement.call(this, info2.tag, { is: name }) : ogCreateElement.call(this, name, options2);
+    const created = info2 && !info2.autonomous ? ogCreateElement.call(this, info2.tag, { is: name }) : ogCreateElement.call(this, name, options);
     return created;
   };
   var tagToClassMap = {
@@ -2054,9 +2079,6 @@
     }, opts);
     return opts.accumulator;
   };
-
-  // ../../components/ui/select.js
-  var options = {};
 
   // ../../libraries/escompose/src/create/index.ts
   var animations = {};
@@ -2170,55 +2192,55 @@
       };
       const ogInit = esm2.esConnected;
       esm2.esConnected = (onReadyCallback) => {
-        if (options.synchronous) {
-          esConnectedAsync(onReadyCallback);
-          esConnectedMain();
-          return esm2;
-        } else {
+        if (opts.await) {
           return esConnectedAsync(async () => {
             if (onReadyCallback)
               await onReadyCallback();
             esConnectedMain();
             return esm2;
           });
+        } else {
+          esConnectedAsync(onReadyCallback);
+          esConnectedMain();
+          return esm2;
         }
       };
       const ogDelete = esm2.esDisconnected;
       esm2.esDisconnected = function() {
-        if (esm2.esAnimate && typeof esm2.esAnimate.stop === "function")
-          esm2.esAnimate.stop();
-        if (esm2.esListeners)
-          esm2.esListeners.__manager.clear();
-        let target = esm2;
+        if (this.esAnimate && typeof this.esAnimate.stop === "function")
+          this.esAnimate.stop();
+        if (this.esListeners)
+          this.esListeners.__manager.clear();
+        let target = this;
         while (target.esParent?.hasAttribute("__isescomponent")) {
           target = target.esElement.parentNode.esComponent;
           if (target.esListeners?.__manager)
-            target.esListeners.__manager.clear(esm2.__isESComponent);
+            target.esListeners.__manager.clear(this.__isESComponent);
         }
-        if (esm2.esDOM) {
-          for (let name in esm2.esDOM) {
-            const component = esm2.esDOM[name];
+        if (this.esDOM) {
+          for (let name in this.esDOM) {
+            const component = this.esDOM[name];
             if (typeof component.esDisconnected === "function")
               component.esDisconnected();
             else
-              console.error("Could not disconnect component because it does not have an esDisconnected function", name, esm2.esDOM);
+              console.warn("Could not disconnect component because it does not have an esDisconnected function", name, this.esDOM);
           }
         }
         if (this.esElement instanceof Element) {
           this.esElement.remove();
           if (this.onremove) {
-            const context2 = esm2.__esProxy ?? esm2;
+            const context2 = this.__esProxy ?? this;
             this.onremove.call(context2);
           }
         }
-        if (esm2.__esCode)
-          esm2.__esCode.remove();
-        const context = esm2.__esProxy ?? esm2;
+        if (this.__esCode)
+          this.__esCode.remove();
+        const context = this.__esProxy ?? this;
         if (ogDelete)
           ogDelete.call(context);
-        esm2.esConnected = ogInit;
-        esm2.esDisconnected = ogDelete;
-        return esm2;
+        this.esConnected = ogInit;
+        this.esDisconnected = ogDelete;
+        return this;
       };
       for (let key in esm2) {
         if (typeof esm2[key] === "function") {
@@ -2275,19 +2297,17 @@
   var esCompile = (o, opts = {}) => {
     let uri = typeof o === "string" ? o : o.esURI;
     if (uri && opts.utilities) {
-      if (opts.synchronous)
-        console.error("Synchronous mode is not compatible with asynchronous source text loaders.");
       return new Promise(async (resolve3) => {
         try {
           const bundleOpts = opts.utilities.bundle;
           const compileOpts = opts.utilities.compile;
           if (typeof bundleOpts.function === "function") {
-            const options2 = bundleOpts.options ?? {};
-            if (!options2.bundler)
-              options2.bundler = "datauri";
-            if (!options2.bundle)
-              options2.collection = "global";
-            const bundle = bundleOpts.function(uri, options2);
+            const options = bundleOpts.options ?? {};
+            if (!options.bundler)
+              options.bundler = "datauri";
+            if (!options.bundle)
+              options.collection = "global";
+            const bundle = bundleOpts.function(uri, options);
             await bundle.resolve();
             o = Object.assign({}, bundle.result);
           } else if (typeof compileOpts.function === "function") {
@@ -2700,31 +2720,31 @@
     });
   }
   var toSet = Symbol("toSet");
-  var create2 = (config, toMerge = {}, options2 = {}) => {
+  var create2 = (config, toMerge = {}, options = {}) => {
     let monitor;
-    if (options2.monitor instanceof src_default) {
-      monitor = options2.monitor;
-      options2.keySeparator = monitor.options.keySeparator;
+    if (options.monitor instanceof src_default) {
+      monitor = options.monitor;
+      options.keySeparator = monitor.options.keySeparator;
     } else {
-      if (!options2.monitor)
-        options2.monitor = {};
-      if (!options2.monitor.keySeparator) {
-        if (!options2.keySeparator)
-          options2.keySeparator = keySeparator;
-        options2.monitor.keySeparator = options2.keySeparator;
+      if (!options.monitor)
+        options.monitor = {};
+      if (!options.monitor.keySeparator) {
+        if (!options.keySeparator)
+          options.keySeparator = keySeparator;
+        options.monitor.keySeparator = options.keySeparator;
       }
-      monitor = new src_default(options2.monitor);
+      monitor = new src_default(options.monitor);
     }
-    if (options2.clone)
+    if (options.clone)
       config = deep(config);
     monitor.options.fallbacks = ["esDOM"];
-    const fullOptions = options2;
+    const fullOptions = options;
     const components = {};
     const drillOpts = {
       components,
       keySeparator: fullOptions.keySeparator,
       utilities: fullOptions.utilities,
-      synchronous: fullOptions.synchronous
+      await: fullOptions.await
     };
     let instancePromiseOrObject;
     let context;
@@ -2735,7 +2755,7 @@
       else
         return new Promise((resolve3) => {
           const possiblePromise = instance.esConnected(() => {
-            if (context && options2.listen !== false) {
+            if (context && options.listen !== false) {
               const toTrigger = setListeners(context, components);
               toTrigger.forEach((o) => {
                 const res = monitor.get(o.path, "info");
@@ -2750,8 +2770,8 @@
           resolve(possiblePromise, () => resolve3(instance));
         });
     };
-    if (options2.nested?.parent && options2.nested?.name) {
-      instancePromiseOrObject = esDrill(config, options2.nested.name, toMerge, options2.nested.parent, drillOpts);
+    if (options.nested?.parent && options.nested?.name) {
+      instancePromiseOrObject = esDrill(config, options.nested.name, toMerge, options.nested.parent, drillOpts);
       return resolve(instancePromiseOrObject, onConnected);
     } else {
       const id = Symbol("root");
@@ -2858,7 +2878,7 @@
       });
       return acc;
     };
-    const component = create2(esc, void 0, { listen: false, synchronous: true });
+    const component = create2(esc, void 0, { listen: false, await: false });
     const tree2 = drill({ esDOM: { component } })._node.children.component._node.children;
     tree2._node = { listeners: listeners2[""] };
     return tree2;
@@ -2902,7 +2922,7 @@
           divs[o.id].innerHTML += "<li><b>nodeE popped!</b></li>";
         }, 5500);
       };
-      create2(tree2, { esParent: divs[o.id] }, { listen: true, clone: true }).then(onConnected);
+      create2(tree2, { esParent: divs[o.id] }, { listen: true, clone: true, await: true }).then(onConnected);
       continue;
     } else if (o.id === toGS) {
       tree2 = graphscript_exports.to(tree2);

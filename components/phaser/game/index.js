@@ -20,6 +20,9 @@ const call = (func, ctx, ...args) => {
     if (typeof func === 'function') func.call(ctx, args)
 }
 
+
+export const esElement = 'div' // Just to force above nodes to show up in the DOM
+
 export const preload = []
 export const config = defaultConfig
 

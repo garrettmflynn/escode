@@ -233,6 +233,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                         ref = esm.__esCode
                     } 
 
+
                     // Resolved After Siblings Have Been Added
                     if (desiredPosition !== undefined && desiredPosition < nextPosition) v.children[desiredPosition].insertAdjacentElement('beforebegin', ref)
                    

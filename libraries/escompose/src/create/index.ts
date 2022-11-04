@@ -3,7 +3,6 @@ import * as component from "./component";
 import * as standards from '../../../common/standards';
 import * as clone from "../../../common/clone.js"
 import { Options } from '../../../common/types';
-import { options } from '../../../../components/ui/select';
 
 const animations = {}
 
@@ -35,13 +34,6 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                 if (info.name && info.extends) component.define(info, esm)
             }
 
-
-            // ------------------ Register Sources ------------------
-            if (esm[standards.esSourceKey]) {
-                esm.esSource =  esm[standards.esSourceKey]()
-                delete esm[standards.esSourceKey]
-            }
-          
         
             // ------------------ Produce a Complete ESM Element ------------------
 
@@ -54,6 +46,8 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
             // ------------------ Declare Special Functions ------------------
 
             const esConnectedAsync = async (onReadyCallback) => {
+
+                let toRun: any[] = []
                 await esm.esReady
 
                 states.connected = true
@@ -63,12 +57,23 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                     let component = esm.esDOM[name]
                     if (typeof component === 'object' && typeof component.then === 'function' ) component = esm.esDOM[name] = await component
                     const init = component.esConnected
-                    if (typeof init === 'function') await init()
+                    if (typeof init === 'function') toRun.push(...await init())
                     else console.error(`Could not start component ${name} because it does not have an esConnected function`)
                 }
 
                 if (onReadyCallback) await onReadyCallback()
 
+                // Trigger Execution on Initialization
+                if ('esTrigger' in esm) {
+                    if (!Array.isArray(esm.esTrigger)) esm.esTrigger = []
+                    toRun.push({
+                        ref: esm,
+                        args: esm.esTrigger
+                    })
+                    delete esm.esTrigger
+                }
+
+                return toRun
             }
 
             const esConnectedMain = () => {
@@ -77,24 +82,19 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                 const esCode = esm.esParent?.esComponent?.__esCode
                 if (esCode) esm.__esCode = esCode
 
-                // Check esSource (set from esmpile)
-                const source = esm.esSource
+                // ------------------ Register Sources (from esmpile)- -----------------
+                let source = esm[standards.esSourceKey]
                 if (source) {
-                        const path = esm.__isESComponent
-                        if (esm.__esCode) esm.__esCode.addFile(path, source)
-                    }
+                    if (typeof source === 'function') source = esm.esSource = source()
+                    delete esm[standards.esSourceKey]
+                    const path = esm.__isESComponent
+                    if (esm.__esCode) esm.__esCode.addFile(path, source)
+                }
 
 
-                // Call After Children + Before Running
+                // Call After Children + Before Running (...TODO: Is this right?)
                 const context = esm.__esProxy ?? esm
                 if (ogInit) ogInit.call(context)
-
-                // Trigger Execution on Initialization
-                if (esm.hasOwnProperty('esTrigger')) {
-                    if (!Array.isArray(esm.esTrigger)) esm.esTrigger = []
-                    esm.default(...esm.esTrigger)
-                    delete esm.esTrigger
-                }
 
                 // Run as an Animation
                 if (esm.esAnimate) {
@@ -159,39 +159,43 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
             // Delete Function
             const ogInit = esm.esConnected;
             esm.esConnected = (onReadyCallback?: Function) => {
-                if (options.synchronous) {
-                    esConnectedAsync(onReadyCallback)
-                    esConnectedMain()
-                    return esm
-                } else {
+
+                // Ensure asynchronous loading
+                if (opts.await) {
                     return esConnectedAsync(async () => {
                         if (onReadyCallback) await onReadyCallback() // Callback when then entire object is ready
                         esConnectedMain()
-                        return esm
                     })
+                } 
+                
+                // Default to attempted synchronous loading
+                else {
+                    const toRun = esConnectedAsync(onReadyCallback)
+                    esConnectedMain()
+                    return toRun
                 }
             }
 
             const ogDelete = esm.esDisconnected;
             esm.esDisconnected = function () {
 
-                if ( esm.esAnimate && typeof esm.esAnimate.stop === 'function') esm.esAnimate.stop()
+                if ( this.esAnimate && typeof this.esAnimate.stop === 'function') this.esAnimate.stop()
 
                 // Clear all listeners below this node
-                if (esm.esListeners) esm.esListeners.__manager.clear()
+                if (this.esListeners) this.esListeners.__manager.clear()
 
                 // Clear all listeners above this node that reference it
-                let target = esm
+                let target = this
                 while (target.esParent?.hasAttribute('__isescomponent')) {
                     target = target.esElement.parentNode.esComponent
-                    if (target.esListeners?.__manager) target.esListeners.__manager.clear(esm.__isESComponent)
+                    if (target.esListeners?.__manager) target.esListeners.__manager.clear(this.__isESComponent)
                 }
 
-                if (esm.esDOM) {
-                    for (let name in esm.esDOM) {
-                        const component = esm.esDOM[name]
+                if (this.esDOM) {
+                    for (let name in this.esDOM) {
+                        const component = this.esDOM[name]
                         if (typeof component.esDisconnected === 'function') component.esDisconnected()
-                        else console.error('Could not disconnect component because it does not have an esDisconnected function', name, esm.esDOM)
+                        else console.warn('Could not disconnect component because it does not have an esDisconnected function', name, this.esDOM)
                     }
                 }
 
@@ -199,21 +203,21 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                 if ( this.esElement instanceof Element) {
                     this.esElement.remove();
                     if(this.onremove) {
-                        const context = esm.__esProxy ?? esm
+                        const context = this.__esProxy ?? this
                         this.onremove.call(context); 
                     }
                 }
 
                 // Remove code editor
-                if (esm.__esCode) esm.__esCode.remove() 
+                if (this.__esCode) this.__esCode.remove() 
 
-                const context = esm.__esProxy ?? esm
+                const context = this.__esProxy ?? this
                 if (ogDelete) ogDelete.call(context)
 
                 // Replace Updated Keywords with Original Values
-                esm.esConnected = ogInit
-                esm.esDisconnected = ogDelete
-                return esm
+                this.esConnected = ogInit
+                this.esDisconnected = ogDelete
+                return this
             }
 
             // -------- Bind Functions to GraphNode --------
