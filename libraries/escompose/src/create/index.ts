@@ -3,35 +3,42 @@ import * as component from "./component";
 import * as standards from '../../../common/standards';
 import * as clone from "../../../common/clone.js"
 import { Options } from '../../../common/types';
-import * as define from './define';
-
-const animations = {}
+import * as define from './define'
+import * as helpers from './helpers/index'
 
 export default (id, esm, parent?, opts: Partial<Options> = {}) => {
     
         const states = {
             connected: false,
+            initial: {
+                start: esm[standards.specialKeys.start],
+                stop: esm[standards.specialKeys.stop],
+            }
         }
+
+        define.value(standards.specialKeys.states, states, esm)
+        define.value(standards.specialKeys.options, opts, esm)
 
         const copy = clone.deep(esm) // Start with a deep copy. You must edit on the resulting object...
 
         try {
 
-            for (let name in esm.esDOM) {
-                const value = esm.esDOM[name]
+            const hierarchyKey = standards.specialKeys.hierarchy
+            for (let name in esm[hierarchyKey]) {
+                const value = esm[hierarchyKey][name]
                 const isUndefined = value == undefined
                 const type = (isUndefined) ? JSON.stringify(value) : typeof value
                 if (type != 'object') {
-                    console.error(`Removing ${name} esDOM field that which is not an ES Component object. Got ${isUndefined ? type :`a ${type}`} instead.`)
-                    delete esm.esDOM[name]
+                    console.error(`Removing ${name} ${hierarchyKey} field that which is not an ES Component object. Got ${isUndefined ? type :`a ${type}`} instead.`)
+                    delete esm[hierarchyKey][name]
                 }
             }
 
             // ------------------ Register Components ------------------
-            let registry = esm.esComponents ?? {}
+            let registry = esm[standards.specialKeys.webcomponents] ?? {}
             for (let key in registry) {
                 const esm = registry[key]
-                const info = esm.esElement
+                const info = esm[standards.specialKeys.element]
                 if (info.name && info.extends) component.define(info, esm)
             }
 
@@ -42,173 +49,14 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
 
             const finalStates = states as element.ESComponentStates
             
-            esm.esElement = el
+            esm[standards.specialKeys.element] = el
 
             // ------------------ Declare Special Functions ------------------
 
-            const esConnectedAsync = async (onReadyCallback) => {
-
-                await esm.esReady
-
-                const name = esm.__isESComponent
-                states.connected = true
-
-                // Initialize Nested Components (and wait for them to be done)
-                for (let name in esm.esDOM) {
-                    let component = esm.esDOM[name]
-                    const promise = component.__esComponentPromise
-                    if (promise && typeof promise.then === 'function' ) component = esm.esDOM[name] = await promise // Wait for the component to be ready
-                    const init = component.esConnected
-                    if (typeof init === 'function') await init()
-                    else console.error(`Could not start component ${name} because it does not have an esConnected function`)
-                }
-
-                if (onReadyCallback) await onReadyCallback()
-            }
-
-            const esConnectedMain = () => {
-
-                // ------------------ Register Sources (from esmpile) -----------------
-                let source = esm[standards.esSourceKey]
-                if (source) {
-                    if (typeof source === 'function') source = esm.esSource = source()
-                    delete esm[standards.esSourceKey]
-                    const path = esm.__isESComponent
-                    if (esm.__esCode) esm.__esCode.addFile(path, source)
-                }
-
-                // ------------------ Retroactively set esCode editor on children of the focus element -----------------
-                const esCode = esm.esParent?.esComponent?.__esCode
-                if (esCode) define.value('__esCode', esCode, esm)
-
-                // Call After Children + Before Running (...TODO: Is this right?)
-                const context = esm.__esProxy ?? esm
-                if (ogInit) ogInit.call(context)
-
-                // Run as an Animation
-                if (esm.esAnimate) {
-                    let original = esm.esAnimate
-
-                    const id = Math.random()
-                    const interval = (typeof original === 'number') ? original : 'global'
-
-                    if (!animations[interval]) {
-                    
-                        const info = animations[interval] = {objects: {[id]: esm}} as any
-
-                        const objects = info.objects
-                        const runFuncs = () => {
-                            for (let key in objects) objects[key].default()
-                        }
-
-                        // Global Animation Frames
-                        if (interval === 'global') {
-                            const callback = () => {
-                                runFuncs()
-                                info.id = window.requestAnimationFrame(callback)
-                            }
-
-                            callback()
-
-                            animations[interval].stop = () => {
-                                window.cancelAnimationFrame(info.id)
-                                info.cancel = true
-                            }
-                        }
-                        // Set Interval
-                        else {
-                            runFuncs() // run initially
-                            info.id = setInterval(() => runFuncs(), 1000/interval)
-                            animations[interval].stop = () => clearInterval(info.id)
-                        } 
-                    } 
-                    
-                    // Add to Objects
-                    else {
-                        esm.default() // run initially
-                        animations[interval].objects[id] = esm
-                    }
-
-
-                    esm.esAnimate =  {
-                        id,
-                        original,
-                        stop: () => {
-                            delete animations[interval].objects[id]
-                            esm.esAnimate = original // Replace with original function
-                            if (Object.keys(animations[interval].objects).length === 0) {
-                                animations[interval].stop()
-                                delete animations[interval]
-                            }
-                        }
-                    }
-                }
-            }
-
             // Delete Function
-            const ogInit = esm.esConnected;
-            esm.esConnected = (onReadyCallback?: Function) => {
+            esm[standards.specialKeys.start] = () => helpers.start.call(esm, standards.specialKeys)
 
-                // Ensure asynchronous loading
-                if (opts.await) {
-                    return esConnectedAsync(async () => {
-                        if (onReadyCallback) await onReadyCallback() // Callback when then entire object is ready
-                        esConnectedMain()
-                    })
-                } 
-                
-                // Default to attempted synchronous loading
-                else {
-                    const toRun = esConnectedAsync(onReadyCallback)
-                    esConnectedMain()
-                    return toRun
-                }
-            }
-
-            const ogDelete = esm.esDisconnected;
-            esm.esDisconnected = function () {
-
-                if ( this.esAnimate && typeof this.esAnimate.stop === 'function') this.esAnimate.stop()
-
-                // Clear all listeners below this node
-                console.log('Got', this)
-                this.__esManager.clear()
-
-                // Clear all listeners above this node that reference it
-                let target = this
-                while (target.esParent?.hasAttribute('__isescomponent')) {
-                    target = target.esElement.parentNode.esComponent
-                    if (target._esManager) target.__esManager.clear(this.__isESComponent)
-                }
-
-                if (this.esDOM) {
-                    for (let name in this.esDOM) {
-                        const component = this.esDOM[name]
-                        if (typeof component.esDisconnected === 'function') component.esDisconnected()
-                        else console.warn('Could not disconnect component because it does not have an esDisconnected function', name, this.esDOM)
-                    }
-                }
-
-                // Remove Element
-                if ( this.esElement instanceof Element) {
-                    this.esElement.remove();
-                    if(this.onremove) {
-                        const context = this.__esProxy ?? this
-                        this.onremove.call(context); 
-                    }
-                }
-
-                // Remove code editor
-                if (this.__esCode) this.__esCode.remove() 
-
-                const context = this.__esProxy ?? this
-                if (ogDelete) ogDelete.call(context)
-
-                // Replace Updated Keywords with Original Values
-                this.esConnected = ogInit
-                this.esDisconnected = ogDelete
-                return this
-            }
+            esm[standards.specialKeys.stop] = () => helpers.stop.call(esm, standards.specialKeys)
 
             // -------- Bind Functions to Node --------
             for (let key in esm) {
@@ -217,7 +65,7 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                     if (desc && desc.get && !desc.set) esm = Object.assign({}, esm) // Support ESM Modules: Only make a copy if a problem
                     const og = esm[key]
                     esm[key] = (...args) =>  {
-                        const context = esm.__esProxy ?? esm
+                        const context = esm[standards.specialKeys.proxy] ?? esm
                         return og.call(context, ...args)
                     }
                 }
@@ -225,17 +73,18 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
 
             const isESC = {value: '', enumerable: false} as any
             if (typeof id === 'string') {
-                if (parent?.__isESComponent) isESC.value = [parent.__isESComponent, id]
+                const path = parent[standards.specialKeys.path]
+                if (path) isESC.value = [path, id]
                 else isESC.value = [id]
                 isESC.value = isESC.value.join(standards.keySeparator)
             }
 
-            Object.defineProperty(esm, '__isESComponent', isESC)    
-            Object.defineProperty(esm, 'esOriginal', {value: copy, enumerable: false})    
+            Object.defineProperty(esm, standards.specialKeys.path, isESC)    
+            Object.defineProperty(esm, standards.specialKeys.original, {value: copy, enumerable: false})    
 
             // Trigger state changes at the end
-            esm.esOnResize = finalStates.onresize
-            esm.esParent = finalStates.parentNode
+            esm[standards.specialKeys.resize] = finalStates.onresize
+            esm[standards.specialKeys.parent] = finalStates.parentNode
 
             return esm;
 

@@ -53,37 +53,38 @@ function create(context) {
     options.overlay = context.overlay;
     const originalOptions = {...options}
 
+
     try {
         if(options.worker) {
 
-            if(options.worker === true) {
-                if (typeof canvasworker === 'object') options.worker = canvasworker;
-                else options.worker = new Worker(canvasworker);
-            } else if (typeof options.worker === 'string' || options.worker instanceof Blob) options.worker = new Worker(options.worker as any);
-            
-            if(options.overlay) {
-                let offscreen = (options.overlay as any).transferControlToOffscreen();
-                options.overlay = offscreen;
-                options.transfer = [options.overlay];
+            try {
+
+                if(options.worker === true) {
+                    if (typeof canvasworker === 'object') options.worker = canvasworker;
+                    else options.worker = new Worker(canvasworker);
+                } else if (typeof options.worker === 'string' || options.worker instanceof Blob) options.worker = new Worker(options.worker as any);
+                
+                if(options.overlay) {
+                    let offscreen = (options.overlay as any).transferControlToOffscreen();
+                    options.overlay = offscreen;
+                    options.transfer = [options.overlay];
+                }
+
+                context.plot = workerCanvasRoutes.Renderer(options) as CanvasControls;
+            } catch (e) {
+                originalOptions.worker = false;
+                console.warn('Could not create canvas with worker. Will try to use a standard canvas instead.', originalOptions, e)
             }
         }
 
-        context.plot = workerCanvasRoutes.Renderer(options) as CanvasControls;
-    } catch (e) {
+        context.plot = workerCanvasRoutes.Renderer(originalOptions) as CanvasControls;
 
-        // Resetting
-        originalOptions.worker = false;
 
-        // Plotting
-        try {
-            context.plot = workerCanvasRoutes.Renderer(originalOptions) as CanvasControls;
-            console.warn('Could not create canvas with worker. Using a standard canvas instead', originalOptions)
-        } catch {
-            console.error('Could not create a plot using the current options')
-            context.failed = true
-        }
-  
+    } catch (e){
+        console.error('Could not create a plot using the current options', e)
+        context.failed = true
     }
+
     return context.plot
 }
 

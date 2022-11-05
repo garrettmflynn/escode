@@ -1,8 +1,8 @@
-import { esCompose } from "../../../../apps/showcase/demos/phaser/versions/multiplayer/index.esc";
 import { Options } from "../../../common/types";
 import { EditorProps } from "../../../escode/src";
 import { ESComponent, ESElementInfo } from "../component";
 import { resolve } from "../utils";
+import { specialKeys } from "../../../common/standards";
 
 
 export type ESComponentStates = {
@@ -16,6 +16,11 @@ export type ESComponentStates = {
     parentNode: ESComponent['esParent']
     onresize: ESComponent['esOnResize']
     onresizeEventCallback: Function,
+
+    initial: {
+        start: ESComponent['esConnected'],
+        stop: ESComponent['esDisconnected']
+    }
 
     esSource?: ESComponent['esSource']
 }
@@ -43,8 +48,8 @@ function check (target) {
 export function create(id, esm: ESComponent, parent, states?, utilities: Options['utilities'] = {}) {
 
     // --------------------------- Get Element ---------------------------
-    let element = esm.esElement as ESComponent['esElement'] | null; // Always create div at the least
-    const attributes = esm.esAttributes
+    let element = esm[specialKeys.element] as ESComponent['esElement'] | null; // Always create div at the least
+    const attributes = esm[specialKeys.attributes]
 
     let info: undefined | ESElementInfo;
     if (!(element instanceof Element)) {
@@ -74,8 +79,8 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
         const noInput = Symbol('no input to the default function')
         if (!esm.hasOwnProperty('default')) {
             esm.default = function(input = noInput) { 
-                if (input !== noInput) this.esElement.innerText = input  // Set the text of the associated element
-                return this.esElement // return whole element
+                if (input !== noInput) this[specialKeys.element].innerText = input  // Set the text of the associated element
+                return this[specialKeys.element] // return whole element
             }
         }
     }
@@ -87,8 +92,8 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     let intermediateStates = states || {}
     intermediateStates.element = element,
     intermediateStates.attributes = attributes,
-    intermediateStates.parentNode = esm.esParent ?? ((parent?.esElement instanceof Element) ? parent.esElement : undefined),
-    intermediateStates.onresize = esm.esOnResize,
+    intermediateStates.parentNode = esm[specialKeys.parent] ?? ((parent?.[specialKeys.element] instanceof Element) ? parent[specialKeys.element] : undefined),
+    intermediateStates.onresize = esm[specialKeys.resize],
     intermediateStates.onresizeEventCallback = undefined
 
     const finalStates = intermediateStates as ESComponentStates
@@ -116,7 +121,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     let isReady; 
 
     // track if ready
-    Object.defineProperty(esm, 'esReady', {
+    Object.defineProperty(esm, `${specialKeys.connected}`, {
         value: new Promise(resolve => isReady = async () => {
             resolve(true)
         }),
@@ -125,7 +130,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     })
     
     // trigger if ready
-    Object.defineProperty(esm, '__esReady', { value: isReady,  writable: false, enumerable: false })
+    Object.defineProperty(esm, `__${specialKeys.connected}`, { value: isReady,  writable: false, enumerable: false })
 
 
 
@@ -136,12 +141,12 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     }
 
     const setAttributes = (attributes) => {
-        if (esm.esElement instanceof Element) {
+        if (esm[specialKeys.element] instanceof Element) {
             for (let key in attributes) {
 
                 // Set Style Per Attribute
                 if (key === 'style') {
-                    for (let styleKey in attributes.style) esm.esElement.style[styleKey] = handleAttribute(key, attributes.style[styleKey], esm)
+                    for (let styleKey in attributes.style) esm[specialKeys.element].style[styleKey] = handleAttribute(key, attributes.style[styleKey], esm)
                 }
 
                 // Replace Whole Attribute
@@ -149,17 +154,17 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                     const value = attributes[key]
                     if (isEventListener(key, value)) {
                         const func = value;
-                        esm.esElement[key] = (...args) => {
-                            const context = esm.__esProxy ?? esm
+                        esm[specialKeys.element][key] = (...args) => {
+                            const context = esm[specialKeys.proxy] ?? esm
                             return func.call(context ?? esm, ...args)
                         }; // replace this scope
-                    } else esm.esElement[key] = handleAttribute(key, value, esm)
+                    } else esm[specialKeys.element][key] = handleAttribute(key, value, esm)
                 }
             }
         }
     }
 
-    Object.defineProperty(esm, 'esAttributes', {
+    Object.defineProperty(esm, specialKeys.attributes, {
         get: () => states.attributes,
         set: (value) => {
             states.attributes = value;
@@ -168,7 +173,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     })
 
     // Listen for Changes to Element
-    Object.defineProperty(esm, 'esElement', {
+    Object.defineProperty(esm, specialKeys.element, {
         get: function() {
             if (states.element instanceof Element) return states.element
         },
@@ -184,11 +189,11 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                 states.element = v
 
                 // Trigger esParent Setter on Nested Components
-                if (esm.__isESComponent !== undefined) {
-                    for (let name in esm.esDOM) {
-                        const component = esm.esDOM[name] as ESComponent | Promise<ESComponent>; // TODO: Ensure that this is resolved first...
+                if (esm[specialKeys.path] !== undefined) {
+                    for (let name in esm[specialKeys.hierarchy]) {
+                        const component = esm[specialKeys.hierarchy][name] as ESComponent | Promise<ESComponent>; // TODO: Ensure that this is resolved first...
                         resolve(component, (res) => {
-                            res.esParent = v;
+                            res[specialKeys.parent] = v;
                         })
                     }
                 }
@@ -204,9 +209,9 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
         configurable: false
     })
 
-    Object.defineProperty(esm, 'esParent', {
+    Object.defineProperty(esm, specialKeys.parent, {
         get:function () { 
-            if (esm.esElement instanceof Element) return esm.esElement.parentNode; 
+            if (esm[specialKeys.element] instanceof Element) return esm[specialKeys.element].parentNode; 
         },
         set:(v) => { 
 
@@ -218,21 +223,22 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
             }
 
             // Set Parent Node on Element
-            if (v?.esElement instanceof Element) v = v.esElement
-            if (esm.esElement instanceof Element) {
-                if(esm.esElement.parentNode) esm.esElement.remove()
+            if (v?.[specialKeys.element] instanceof Element) v = v[specialKeys.element]
+            if (esm[specialKeys.element] instanceof Element) {
+                if(esm[specialKeys.element].parentNode) esm[specialKeys.element].remove()
                 if (v instanceof Element) {
 
                     // --------------------------- Place inside ESCode Instance (if created) ---------------------------
 
-                    const desiredPosition = esm.esChildPosition
+                    const desiredPosition = esm[specialKeys.childPosition]
                     const nextPosition = v.children.length
 
-                    let ref = esm.esElement
-                    const esCode = esm.__esCode
+                    let ref = esm[specialKeys.element]
+                    const esCode = esm[`__${specialKeys.editor}`]
                     if (esCode) {
                         ref = esCode // Set inside parent. Set focused component in esConnected
                     }
+
 
                     // Resolved After Siblings Have Been Added
                     if (desiredPosition !== undefined && desiredPosition < nextPosition) v.children[desiredPosition].insertAdjacentElement('beforebegin', ref)
@@ -260,23 +266,23 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                 // && !v.hasAttribute('__isescomponent')  // Is not an ES Component (which are observed elsewhere...)
                 // && v.isConnected // Is connected to the DOM
             ) {
-                esm.__esReady()
+                esm[`__${specialKeys.connected}`]()
             }
         },
         enumerable:true
     });
 
     // On Resize Function
-    let onresize = esm.esOnResize
-    Object.defineProperty(esm,'esOnResize',{
+    let onresize = esm[specialKeys.resize]
+    Object.defineProperty(esm,specialKeys.resize,{
         get: function() { return onresize },
         set: function(foo) {
             states.onresize = foo
             if (states.onresizeEventCallback) window.removeEventListener('resize', states.onresizeEventCallback) // Stop previous listener
             if (states.onresize) {
                 states.onresizeEventCallback = (ev) => { 
-                    if ( states.onresize && esm.esElement instanceof Element ) {
-                        const context = esm.__esProxy ?? esm
+                    if ( states.onresize && esm[specialKeys.element] instanceof Element ) {
+                        const context = esm[specialKeys.proxy] ?? esm
                         return foo.call(context, ev) 
                     }
                 };
@@ -288,34 +294,35 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
 
     // --------------------------- Spawn ESCode Instance ---------------------------
-    if (esm.esCode) {
-        let config = esm.esCode
+    if (esm[specialKeys.editor]) {
+        let config = esm[specialKeys.editor]
         let cls = utilities.code?.class
 
         if (!cls) {
-            if (typeof esm.esCode === 'function') cls = esm.esCode
+            if (typeof config === 'function') cls = config
             else console.error('Editor class not provided in options.utilities.code')
         }
+
 
         if (cls) {
             let options = utilities.code?.options ?? {}
             options = ((typeof config === 'boolean') ? options : {...options, ...config}) as EditorProps
             const esCode = new cls(options)
             esCode.start() // start the editor
-            Object.defineProperty(esm, '__esCode', { value: esCode })
+            Object.defineProperty(esm, `__${specialKeys.editor}`, { value: esCode })
         }
     }
     
 
     // NOTE: If you're drilling elements, this WILL cause for infinite loop when drilling an object with getters
     if (esm.esElement instanceof Element) {
-        esm.esElement.esComponent = esm
-        esm.esElement.setAttribute('__isescomponent', '')
+        esm[specialKeys.element][specialKeys.component] = esm
+        esm[specialKeys.element].setAttribute(specialKeys.component, '')
     }
 
     // Trigger state changes at the end (if not going to be done elsewhere)
     if (!states) {
-        esm.esOnResize = finalStates.onresize
+        esm[specialKeys.resize] = finalStates.onresize
         // console.error('Produced component', esm)
         if (finalStates.parentNode) esm.esParent = finalStates.parentNode
     }
