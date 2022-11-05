@@ -1,6 +1,6 @@
 {
   "name": "escode",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A visual programming system for ESM files",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
