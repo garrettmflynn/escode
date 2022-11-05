@@ -3,9 +3,29 @@ import * as standards from './standards'
 
 const hasKey = (key, obj) =>  key in obj
 
+
+const getShortcut = (path, shortcuts, keySeparator) => {
+    const sc = shortcuts[path[0]]
+    if (sc) {
+        const value = sc[path.slice(1).join(keySeparator)]
+        if (value) return value
+    }
+}
+
 export const getFromPath = (baseObject, path, opts: any = {}) => {
+
+
     const fallbackKeys = opts.fallbacks ?? []
     const keySeparator = opts.keySeparator ?? standards.keySeparator
+
+    if (opts.shortcuts) {
+        const shortcut = getShortcut(path, opts.shortcuts, keySeparator)
+        if (shortcut) {
+            if (opts.output === 'info') return { value: shortcut, exists: true, shortcut: true }
+            else return shortcut
+        }
+    }
+
 
     if (typeof path === 'string') path = path.split(keySeparator)
     else if (typeof path == 'symbol') path = [path]
@@ -60,6 +80,9 @@ export const setFromPath = (path: PathFormat, value: any, ref:any, opts: SetValu
 
     const copy = [...path]
     const last = copy.pop() as string | symbol
+
+    if (ref.esDOM) ref = ref.esDOM 
+
     for (let i = 0; i < copy.length; i++) {
         const str = copy[i]  
         let has = hasKey(str, ref)

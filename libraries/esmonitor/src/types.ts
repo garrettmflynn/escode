@@ -52,6 +52,7 @@ export type PollingOptions = {
 export type InternalOptions = {
     poll: boolean,
     seen: any[] // Check for circular references
+    shortcut: ReferenceShortcut
 }
 
 export type Info = {
@@ -107,4 +108,9 @@ export type ListenerRegistry = {
     setters: ListenerPool,
     polling: Poller['listeners'],
     lookup: ListenerLookups
+}
+
+export type ReferenceShortcut = {
+    ref: any,
+    path: ArrayPath
 }

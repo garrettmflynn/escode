@@ -128,12 +128,11 @@ export class Editor extends LitElement {
       const getTags = (edge) => {
         const fullOutTag = `${edge.output.node.tag}.${edge.output.tag}`
         const fullInTag = `${edge.input.node.tag}.${edge.input.tag}`
-        const checkFor = '.default' // no default
         const tags =  (
           // (this.graph.workspace.edgeMode  === 'from') ? 
           [fullOutTag, fullInTag] 
           // : [fullInTag, fullOutTag]
-        ).map(str => (str?.slice(-checkFor.length) === checkFor) ? str.slice(0, -checkFor.length) : str)
+        )
         return tags
       }
 
@@ -141,7 +140,7 @@ export class Editor extends LitElement {
 
         if (this.config.esc){         
           let tags = getTags(edge)
-          this.config.graph.edges.__manager.add(tags[0], tags[1], edge.info)
+          this.config.esc.__esManager.add(tags[0], tags[1], edge.info)
         } else {
           console.error('New edge cannot be handled...')
         }
@@ -171,7 +170,7 @@ export class Editor extends LitElement {
         if (edge.input && edge.output){
           if (this.config.esc){
             const tags = getTags(edge)
-            this.config.graph.edges.__manager.remove(tags[0], tags[1], edge.info)
+            this.config.esc.__esManager.remove(tags[0], tags[1])
           } else {
             console.error('Edge removal cannot be handled...')
           }

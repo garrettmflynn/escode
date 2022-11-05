@@ -49,9 +49,9 @@ export default class Monitor {
         this.poller.setOptions(opts.polling)
     }
 
-    get = (path, output?) => {
+    get = (path, output?, reference = this.references) => {
 
-        return getFromPath(this.references, path, {
+        return getFromPath(reference, path, {
             keySeparator: this.options.keySeparator,
             fallbacks: this.options.fallbacks,
             output
@@ -100,7 +100,7 @@ export default class Monitor {
 
         let baseRef = this.references[id]
         if (!baseRef) {
-            console.error(`Reference ${id} does not exist.`)
+            console.error(`Reference does not exist.`, id)
             return
         }
 
@@ -114,7 +114,7 @@ export default class Monitor {
         if (!this.references[id]) this.references[id] = baseRef // Setting base reference
 
         // Drill Reference based on Path
-        let ref = this.get([id, ...arrayPath]) // Muting error about not being able to find the listener...
+        const ref = this.get([id, ...arrayPath])
 
         // Create listeners for Objects
         const toMonitorInternally = (val, allowArrays=false) => {
@@ -157,8 +157,9 @@ export default class Monitor {
         try {
             
             // Force Polling
+            info = this.getInfo(id, callback, arrayPath, ref)
+
             if (__internalComplete.poll) {
-                info = this.getInfo(id, callback, arrayPath, ref)
                 this.poller.add(info)
             }
 
@@ -167,14 +168,12 @@ export default class Monitor {
 
                 let type = 'setters' // trigger setters
                 if (typeof ref === 'function') type = 'functions' // intercept function calls
-                info = this.getInfo(id, callback, arrayPath, ref)
 
                 this.add(type, info)
             }
             
         } catch (e) {
             console.error('Fallback to polling:', path, e)
-            info = this.getInfo(id, callback, arrayPath, ref)
             this.poller.add(info)
             // __internalComplete.poll = true
         }

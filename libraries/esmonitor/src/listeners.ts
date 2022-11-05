@@ -1,26 +1,38 @@
-import { ListenerInfo, ListenerLookups, ListenerPool, ListenerRegistry, MonitorOptions } from "./types"
+import { ArrayPath, ListenerInfo, ListenerLookups, ListenerPool, ListenerRegistry, MonitorOptions, ReferenceShortcut } from "./types"
 import * as utils from './utils'
 import * as infoUtils from './info'
 import { isProxy } from './globals'
 import { getFromPath } from "../../common/pathHelpers"
 import { setFromOptions } from "./optionsHelpers"
 
-export const info = (id, callback, path, originalValue, base, listeners, options: MonitorOptions) => {
+export const info = (id, callback, path, originalValue, base, listeners, options: MonitorOptions, refShortcut: Partial<ReferenceShortcut> = {}) => {
     if (typeof path === 'string') path = path.split(options.keySeparator)
     const relativePath = path.join(options.keySeparator)
 
     const refs = base
-    const get = (path) => {
-        return getFromPath(base, path, {
+
+    const shortcutRef = refShortcut.ref
+    const shortcutPath = refShortcut.path
+
+    const get = (path: ArrayPath) => {
+        const thisBase = shortcutRef ?? base
+ 
+        const res = getFromPath(thisBase, path, {
             keySeparator: options.keySeparator,
             fallbacks: options.fallbacks,
         })
+
+        return res
     }
 
-    const set = (path, value) => setFromOptions(path, value, options, {
-        reference: base,
-        listeners
-    })
+    const set = (path: ArrayPath, value) => {
+        const thisBase = shortcutRef ?? base
+
+        setFromOptions(path, value, options, {
+            reference: thisBase,
+            listeners
+        })
+    }
 
     // Derive onUpdate Function
     let onUpdate = options.onUpdate
@@ -56,10 +68,10 @@ export const info = (id, callback, path, originalValue, base, listeners, options
             // Return Standard Output
             return output
         }, 
-        get current() { return get(info.path.absolute) },
-        set current(val) { set(info.path.absolute, val) },
+        get current() { return get(shortcutPath ?? info.path.absolute) },
+        set current(val) { set(shortcutPath ?? info.path.absolute, val) },
         get parent() { 
-            return get(info.path.parent) 
+            return get(shortcutPath ? shortcutPath?.slice(0,-1) : info.path.parent) 
         },
         get reference(){ return refs[id] },
         set reference(val){ refs[id] = val },
@@ -196,7 +208,8 @@ export function functions (info: ListenerInfo, collection: ListenerPool, lookups
         if (!parent[isProxy]) { 
             parent[info.last] = function (...args) {
                 const listeners = collection[utils.getPath('absolute', info)]
-                return functionExecution(this, listeners, info.original, args)
+                const got = functionExecution(this, listeners, info.original, args)
+                return got
             }
         }
     }, lookups)

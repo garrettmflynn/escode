@@ -1,5 +1,5 @@
 import * as utils from './utils'
-import { ListenerInfo, PollingOptions } from './types'
+import { ListenerInfo, PollingOptions, ReferenceShortcut } from './types'
 
 const defaultSamplingRate = 60
 

@@ -106,9 +106,10 @@ export class GraphNode extends LitElement {
 
     updatePorts = (info=this.info) => {
 
-      // Add ports for each non-esX property
       Object.keys(info).forEach(tag => {
-        if (tag.slice(0,2) === 'es') return
+        if (tag.slice(0,2) === 'es') return // no esX properties
+        if (tag[0] === '_') return // no underscore (pseudo-private) properties
+
         if (this.ports.has(tag)) return
         this.addPort({ tag })
       })
@@ -153,7 +154,8 @@ export class GraphNode extends LitElement {
     addPort = (info: GraphPortProps) => {
       const port = new GraphPort(Object.assign({node: this}, info))
       this.ports.set(port.tag, port)
-      if (this.shadowRoot) this.shadowRoot.getElementById('ports').appendChild(port) // Adding port to rendered html
+      const ports = this.shadowRoot && this.shadowRoot.getElementById('ports')
+      if (ports) ports.appendChild(port) // Adding port to rendered html
       return port
     }
     

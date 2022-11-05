@@ -51,6 +51,7 @@ function create(context) {
 
     options.canvas = context.canvas;
     options.overlay = context.overlay;
+    const originalOptions = {...options}
 
     try {
         if(options.worker) {
@@ -68,11 +69,22 @@ function create(context) {
         }
 
         context.plot = workerCanvasRoutes.Renderer(options) as CanvasControls;
-        return context.plot
     } catch (e) {
-        console.error('Could not create canvas with worker', e)
-        context.failed = true
+
+        // Resetting
+        originalOptions.worker = false;
+
+        // Plotting
+        try {
+            context.plot = workerCanvasRoutes.Renderer(originalOptions) as CanvasControls;
+            console.warn('Could not create canvas with worker. Using a standard canvas instead', originalOptions)
+        } catch {
+            console.error('Could not create a plot using the current options')
+            context.failed = true
+        }
+  
     }
+    return context.plot
 }
 
 export default function (args) {

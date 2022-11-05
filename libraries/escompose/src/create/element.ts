@@ -44,12 +44,13 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
     // --------------------------- Get Element ---------------------------
     let element = esm.esElement as ESComponent['esElement'] | null; // Always create div at the least
+    const attributes = esm.esAttributes
 
     let info: undefined | ESElementInfo;
     if (!(element instanceof Element)) {
 
 
-        const mustShow = checkForInternalElements(esm)
+        const mustShow = (attributes && Object.keys(attributes).length) || checkForInternalElements(esm)
         const defaultTagName = mustShow ? 'div' : 'link'
 
         // Nothing Defined
@@ -85,7 +86,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     // Track All States
     let intermediateStates = states || {}
     intermediateStates.element = element,
-    intermediateStates.attributes = esm.esAttributes,
+    intermediateStates.attributes = attributes,
     intermediateStates.parentNode = esm.esParent ?? ((parent?.esElement instanceof Element) ? parent.esElement : undefined),
     intermediateStates.onresize = esm.esOnResize,
     intermediateStates.onresizeEventCallback = undefined
@@ -228,17 +229,20 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                     const nextPosition = v.children.length
 
                     let ref = esm.esElement
-                    if (esm.__esCode) {
-                        esm.__esCode.setComponent(esm); // Set the target component
-                        ref = esm.__esCode
-                    } 
-
+                    const esCode = esm.__esCode
+                    if (esCode) {
+                        ref = esCode // Set inside parent. Set focused component in esConnected
+                    }
 
                     // Resolved After Siblings Have Been Added
                     if (desiredPosition !== undefined && desiredPosition < nextPosition) v.children[desiredPosition].insertAdjacentElement('beforebegin', ref)
                    
                     // Resolved Immediately or Before Siblings
                     else v.appendChild(ref);
+
+                    // ------------------ Visualize with ESCode -----------------
+                    if (esCode) esCode.setComponent(esm); // Set the target component
+                    
                 }
             } 
             

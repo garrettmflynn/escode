@@ -214,7 +214,7 @@ async function start (demo = "basic", mode="direct") {
                 
                     graphDemo.esDOM.nodeA.jump();
                             
-                    const popped = graphDemo.esDOM.nodeB //.esDisconnected()  // DON'T REMOVE SINCE YOU'LL LOSE ACCESS TO THE DOM
+                    const popped = graphDemo.esDOM.nodeB.esDisconnected()
         
                     graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
         

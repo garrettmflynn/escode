@@ -19,8 +19,8 @@
         }
         return this.data;
       };
-      this.setValue = (key, value) => {
-        this.data[key] = value;
+      this.setValue = (key, value2) => {
+        this.data[key] = value2;
         if (this.triggers[key])
           this.triggers[key].forEach((obj) => obj.onchange(this.data[key]));
       };
@@ -56,8 +56,8 @@
       };
       this.subscribeTriggerOnce = (key, onchange) => {
         let sub;
-        let changed = (value) => {
-          onchange(value);
+        let changed = (value2) => {
+          onchange(value2);
           this.unsubscribeTrigger(key, sub);
         };
         sub = this.subscribeTrigger(key, changed);
@@ -560,6 +560,7 @@
   var index_esc_exports = {};
   __export(index_esc_exports, {
     esDOM: () => esDOM,
+    esElement: () => esElement,
     esListeners: () => esListeners
   });
 
@@ -580,7 +581,7 @@
       else
         break;
     }
-    return target.esParent ?? target.esElement;
+    return target.esElement;
   };
 
   // ../showcase/demos/graph/components/nodeA.esc.js
@@ -621,17 +622,15 @@
   // ../showcase/demos/graph/index.esc.js
   var escId = "esc";
   var escxgsId = "escXgs";
+  var esElement = "div";
   var esDOM = {
     nodeA: {
-      esElement: "div",
       esCompose: nodeA_esc_exports
     },
     nodeB: {
-      esElement: "div",
       esCompose: nodeB_esc_exports,
       esDOM: {
         nodeC: {
-          esElement: "div",
           esCompose: nodeC_esc_exports,
           default: function(a) {
             this.z += a;
@@ -645,11 +644,9 @@
       }
     },
     nodeD: {
-      esElement: "div",
       esCompose: nodeD_esc_exports
     },
     nodeE: {
-      esElement: "div",
       esAnimate: 1,
       default: function() {
         const id = this._node ? escxgsId : escId;
@@ -849,7 +846,7 @@
   var runCallback = (callback, path, info2, output, setGlobal = true) => {
     if (callback instanceof Function) {
       if (output && typeof output === "object" && typeof output.then === "function")
-        output.then((value) => callback(path, info2, value));
+        output.then((value2) => callback(path, info2, value2));
       else
         callback(path, info2, output);
     }
@@ -1036,7 +1033,7 @@
     else
       return ref;
   };
-  var setFromPath = (path, value, ref, opts = {}) => {
+  var setFromPath = (path, value2, ref, opts = {}) => {
     const create3 = opts?.create ?? false;
     const keySeparator2 = opts?.keySeparator ?? keySeparator;
     if (typeof path === "string")
@@ -1063,7 +1060,7 @@
       if (ref.esDOM)
         ref = ref.esDOM;
     }
-    ref[last] = value;
+    ref[last] = value2;
   };
 
   // ../../libraries/esmonitor/src/inspectable/handlers.ts
@@ -1253,15 +1250,15 @@
         Object.defineProperty(target, "__esInspectable", { value: this, enumerable: false });
         for (let key in target) {
           if (!this.parent) {
-            let value = target[key];
-            if (typeof value === "function") {
-              target[key] = async (...args) => await this.proxy[key]({ [fromInspectable]: true, value }, ...args);
+            let value2 = target[key];
+            if (typeof value2 === "function") {
+              target[key] = async (...args) => await this.proxy[key]({ [fromInspectable]: true, value: value2 }, ...args);
             } else {
               try {
                 Object.defineProperty(target, key, {
-                  get: () => value,
+                  get: () => value2,
                   set: (val) => {
-                    value = val;
+                    value2 = val;
                     this.proxy[key] = { [fromInspectable]: true, value: val };
                   },
                   enumerable: true,
@@ -1280,7 +1277,7 @@
   };
 
   // ../../libraries/esmonitor/src/optionsHelpers.ts
-  var setFromOptions = (path, value, baseOptions, opts) => {
+  var setFromOptions = (path, value2, baseOptions, opts) => {
     const ref = opts.reference;
     const id = Array.isArray(path) ? path[0] : typeof path === "string" ? path.split(baseOptions.keySeparator)[0] : path;
     let isDynamic = opts.hasOwnProperty("static") ? !opts.static : false;
@@ -1289,7 +1286,7 @@
       console.warn("Falling back to using function interception and setters...");
     }
     if (isDynamic) {
-      value = new Inspectable(value, {
+      value2 = new Inspectable(value2, {
         pathFormat: baseOptions.pathFormat,
         keySeparator: baseOptions.keySeparator,
         listeners: opts.listeners,
@@ -1297,8 +1294,8 @@
       }, id);
     }
     let options = { keySeparator: baseOptions.keySeparator, ...opts };
-    setFromPath(path, value, ref, options);
-    return value;
+    setFromPath(path, value2, ref, options);
+    return value2;
   };
 
   // ../../libraries/esmonitor/src/listeners.ts
@@ -1313,7 +1310,7 @@
         fallbacks: options.fallbacks
       });
     };
-    const set2 = (path2, value) => setFromOptions(path2, value, options, {
+    const set2 = (path2, value2) => setFromOptions(path2, value2, options, {
       reference: base,
       listeners: listeners2
     });
@@ -1387,9 +1384,9 @@
     functions: functions2,
     setters
   };
-  var set = (type, absPath, value, callback, base, allListeners, options) => {
+  var set = (type, absPath, value2, callback, base, allListeners, options) => {
     const { id, path } = getPathInfo(absPath, options);
-    const fullInfo = info(id, callback, path, value, base, listeners, options);
+    const fullInfo = info(id, callback, path, value2, base, listeners, options);
     if (listeners[type])
       listeners[type](fullInfo, allListeners[type], allListeners.lookup);
     else {
@@ -1408,15 +1405,15 @@
     }
     register(info2, collection, lookups);
   };
-  var setterExecution = (listeners2, value) => {
+  var setterExecution = (listeners2, value2) => {
     return iterateSymbols(listeners2, (_, o) => {
       const path = getPath("output", o);
-      runCallback(o.callback, path, {}, value);
+      runCallback(o.callback, path, {}, value2);
     });
   };
   function setters(info2, collection, lookups) {
-    handler(info2, collection, (value, parent) => {
-      let val = value;
+    handler(info2, collection, (value2, parent) => {
+      let val = value2;
       if (!parent[isProxy]) {
         let redefine = true;
         try {
@@ -1544,13 +1541,13 @@
           output
         });
       };
-      this.set = (path, value, opts = {}) => {
+      this.set = (path, value2, opts = {}) => {
         const optsCopy = { ...opts };
         if (!optsCopy.reference)
           optsCopy.reference = this.references;
         if (!optsCopy.listeners)
           optsCopy.listeners = this.listeners;
-        return setFromOptions(path, value, this.options, optsCopy);
+        return setFromOptions(path, value2, this.options, optsCopy);
       };
       this.on = (absPath, callback) => {
         const info2 = getPathInfo(absPath, this.options);
@@ -1694,8 +1691,8 @@
           if (!Object.getOwnPropertySymbols(setters2).length) {
             const parent = setter.parent;
             const last = setter.last;
-            const value = parent[last];
-            Object.defineProperty(parent, last, { value, writable: true });
+            const value2 = parent[last];
+            Object.defineProperty(parent, last, { value: value2, writable: true });
             delete this.listeners.setters[absPath];
           }
         } else
@@ -1844,12 +1841,12 @@
       enumerable: false
     });
     Object.defineProperty(esm2, "__esReady", { value: isReady, writable: false, enumerable: false });
-    const isEventListener = (key, value) => key.slice(0, 2) === "on" && typeof value === "function";
-    const handleAttribute = (key, value, context) => {
-      if (!isEventListener(key, value) && typeof value === "function")
-        return value.call(context);
+    const isEventListener = (key, value2) => key.slice(0, 2) === "on" && typeof value2 === "function";
+    const handleAttribute = (key, value2, context) => {
+      if (!isEventListener(key, value2) && typeof value2 === "function")
+        return value2.call(context);
       else
-        return value;
+        return value2;
     };
     const setAttributes = (attributes) => {
       if (esm2.esElement instanceof Element) {
@@ -1858,23 +1855,23 @@
             for (let styleKey in attributes.style)
               esm2.esElement.style[styleKey] = handleAttribute(key, attributes.style[styleKey], esm2);
           } else {
-            const value = attributes[key];
-            if (isEventListener(key, value)) {
-              const func = value;
+            const value2 = attributes[key];
+            if (isEventListener(key, value2)) {
+              const func = value2;
               esm2.esElement[key] = (...args) => {
                 const context = esm2.__esProxy ?? esm2;
                 return func.call(context ?? esm2, ...args);
               };
             } else
-              esm2.esElement[key] = handleAttribute(key, value, esm2);
+              esm2.esElement[key] = handleAttribute(key, value2, esm2);
           }
         }
       }
     };
     Object.defineProperty(esm2, "esAttributes", {
       get: () => states.attributes,
-      set: (value) => {
-        states.attributes = value;
+      set: (value2) => {
+        states.attributes = value2;
         if (states.attributes)
           setAttributes(states.attributes);
       }
@@ -1927,14 +1924,16 @@
             const desiredPosition = esm2.esChildPosition;
             const nextPosition = v.children.length;
             let ref = esm2.esElement;
-            if (esm2.__esCode) {
-              esm2.__esCode.setComponent(esm2);
-              ref = esm2.__esCode;
+            const esCode = esm2.__esCode;
+            if (esCode) {
+              ref = esCode;
             }
             if (desiredPosition !== void 0 && desiredPosition < nextPosition)
               v.children[desiredPosition].insertAdjacentElement("beforebegin", ref);
             else
               v.appendChild(ref);
+            if (esCode)
+              esCode.setComponent(esm2);
           }
         } else {
           console.error("No element was created for this Component...", esm2);
@@ -2028,6 +2027,7 @@
           super(properties);
           resolve(src_default2(esm2), (res) => {
             res.esElement = this;
+            this.esComponent = res;
           });
         }
         connectedCallback() {
@@ -2080,6 +2080,16 @@
     return opts.accumulator;
   };
 
+  // ../../libraries/escompose/src/create/define.ts
+  var value = (name, value2, object) => {
+    Object.defineProperty(object, name, {
+      value: value2,
+      writable: false,
+      configurable: false,
+      enumerable: false
+    });
+  };
+
   // ../../libraries/escompose/src/create/index.ts
   var animations = {};
   var create_default = (id, esm2, parent, opts = {}) => {
@@ -2089,9 +2099,9 @@
     const copy = deep(esm2);
     try {
       for (let name in esm2.esDOM) {
-        const value = esm2.esDOM[name];
-        const isUndefined = value == void 0;
-        const type = isUndefined ? JSON.stringify(value) : typeof value;
+        const value2 = esm2.esDOM[name];
+        const isUndefined = value2 == void 0;
+        const type = isUndefined ? JSON.stringify(value2) : typeof value2;
         if (type != "object") {
           console.error(`Removing ${name} esDOM field that which is not an ES Component object. Got ${isUndefined ? type : `a ${type}`} instead.`);
           delete esm2.esDOM[name];
@@ -2104,14 +2114,11 @@
         if (info2.name && info2.extends)
           define(info2, esm3);
       }
-      if (esm2[esSourceKey]) {
-        esm2.esSource = esm2[esSourceKey]();
-        delete esm2[esSourceKey];
-      }
       let el = create(id, esm2, parent, states, opts.utilities);
       const finalStates = states;
       esm2.esElement = el;
       const esConnectedAsync = async (onReadyCallback) => {
+        let toRun = [];
         await esm2.esReady;
         states.connected = true;
         for (let name in esm2.esDOM) {
@@ -2120,32 +2127,39 @@
             component = esm2.esDOM[name] = await component;
           const init = component.esConnected;
           if (typeof init === "function")
-            await init();
+            toRun.push(...await init());
           else
             console.error(`Could not start component ${name} because it does not have an esConnected function`);
         }
         if (onReadyCallback)
           await onReadyCallback();
+        if ("esTrigger" in esm2) {
+          if (!Array.isArray(esm2.esTrigger))
+            esm2.esTrigger = [];
+          toRun.push({
+            ref: esm2,
+            args: esm2.esTrigger
+          });
+          delete esm2.esTrigger;
+        }
+        return toRun;
       };
       const esConnectedMain = () => {
-        const esCode = esm2.esParent?.esComponent?.__esCode;
-        if (esCode)
-          esm2.__esCode = esCode;
-        const source = esm2.esSource;
+        let source = esm2[esSourceKey];
         if (source) {
+          if (typeof source === "function")
+            source = esm2.esSource = source();
+          delete esm2[esSourceKey];
           const path = esm2.__isESComponent;
           if (esm2.__esCode)
             esm2.__esCode.addFile(path, source);
         }
+        const esCode = esm2.esParent?.esComponent?.__esCode;
+        if (esCode)
+          value("__esCode", esCode, esm2);
         const context = esm2.__esProxy ?? esm2;
         if (ogInit)
           ogInit.call(context);
-        if (esm2.hasOwnProperty("esTrigger")) {
-          if (!Array.isArray(esm2.esTrigger))
-            esm2.esTrigger = [];
-          esm2.default(...esm2.esTrigger);
-          delete esm2.esTrigger;
-        }
         if (esm2.esAnimate) {
           let original = esm2.esAnimate;
           const id2 = Math.random();
@@ -2197,12 +2211,11 @@
             if (onReadyCallback)
               await onReadyCallback();
             esConnectedMain();
-            return esm2;
           });
         } else {
-          esConnectedAsync(onReadyCallback);
+          const toRun = esConnectedAsync(onReadyCallback);
           esConnectedMain();
-          return esm2;
+          return toRun;
         }
       };
       const ogDelete = esm2.esDisconnected;
@@ -2394,78 +2407,128 @@
     });
     return res;
   };
-  var handleListenerValue = ({
-    context,
-    root,
-    fromPath,
-    toPath,
-    config,
-    listeners: listeners2
-  }) => {
-    const fromSubscriptionPath = [context.id];
-    const topPath = [];
-    if (root)
-      topPath.push(...root.split(context.options.keySeparator));
-    if (fromPath)
-      topPath.push(...fromPath.split(context.options.keySeparator));
-    fromSubscriptionPath.push(...topPath);
-    const obj = context.monitor.get(fromSubscriptionPath);
-    if (obj?.hasOwnProperty("__isESComponent"))
-      fromSubscriptionPath.push(defaultPath);
-    const value = config;
-    const fromStringPath = topPath.join(context.options.keySeparator);
-    const sub = !listeners2.has(fromStringPath) ? context.monitor.on(fromSubscriptionPath, (path, _, update) => {
-      return passToListeners(context, listeners2, path, update);
-    }) : void 0;
-    listeners2.add(fromStringPath, toPath, { value, root }, sub);
-    return {
-      path: fromSubscriptionPath,
-      config
-    };
-  };
+  var initializedStatus = "INITIALIZED";
+  var registeredStatus = "REGISTERED";
+  var globalListeners = {};
   var ListenerManager = class {
-    constructor(monitor, listeners2 = {}, rootPath = "") {
+    constructor(listeners2 = {}, root, context) {
       this.original = {};
       this.active = {};
+      this.context = {};
+      this.rootPath = "";
+      this.status = "";
+      this.#toRun = [];
       this.register = (listeners2) => {
-        this.original = listeners2;
         Object.defineProperty(listeners2, "__manager", {
           value: this,
           enumerable: false,
           writable: true
         });
+        for (let toPath in listeners2) {
+          const from2 = listeners2[toPath];
+          if (!from2) {
+            console.warn("Skipping empty listener:", toPath);
+            continue;
+          }
+          if (from2 && typeof from2 === "object") {
+            for (let fromPath in from2)
+              this.add(fromPath, toPath, from2[fromPath]);
+          } else {
+            if (typeof toPath === "string")
+              this.add(from2, toPath, toPath);
+            else
+              console.error("Improperly Formatted Listener", toPath);
+          }
+        }
+        this.status = registeredStatus;
       };
-      this.add = (from2, to2, value = true, subscription = this.active[from2].sub) => {
-        let root = "";
-        if (value?.hasOwnProperty("root"))
-          root = value.root;
-        if (value?.hasOwnProperty("value"))
-          value = value.value;
-        else
-          console.error("No root provided for new edge...");
-        if (!this.active[from2])
-          this.active[from2] = {};
-        this.active[from2][to2] = {
-          value,
-          root,
+      this.#initialize = (o) => {
+        const res = this.context.monitor.get(o.path, "info");
+        if (typeof res.value === "function") {
+          const args = Array.isArray(o.args) ? o.args : [o.args];
+          res.value(...args);
+        } else
+          console.error("Cannot yet trigger values...", o);
+      };
+      this.initialize = (o) => {
+        if (!this.status)
+          this.#toRun.push(o);
+        else if (this.status === registeredStatus) {
+          this.status = initializedStatus;
+          this.#toRun.forEach(this.#initialize);
+        } else
+          this.#initialize(o);
+      };
+      this.#getAbsolutePath = (name) => {
+        return !name || !this.rootPath || name.includes(this.rootPath) ? name : [this.rootPath, name].join(this.context.monitor.options.keySeparator);
+      };
+      this.#getPathInfo = (path) => {
+        path = this.#getAbsolutePath(path);
+        const array = [this.context.id, ...path.split(this.context.options.keySeparator)];
+        const obj = this.context.monitor.get(array);
+        if (obj?.hasOwnProperty("__isESComponent"))
+          array.push(defaultPath);
+        path = array.slice(1).join(this.context.options.keySeparator);
+        const rel = this.rootPath ? path.replace(`${this.rootPath}.`, "") : path;
+        return {
+          absolute: {
+            value: path,
+            array
+          },
+          relative: {
+            value: rel,
+            array: rel.split(this.context.options.keySeparator)
+          }
+        };
+      };
+      this.add = (from2, to2, value2 = true, subscription = this.active[from2]?.sub) => {
+        const fromInfo = this.#getPathInfo(from2);
+        const toInfo = this.#getPathInfo(to2);
+        if (!subscription) {
+          subscription = this.context.monitor.on(fromInfo.absolute.array, (path, _, update) => {
+            return passToListeners(this, path, update);
+          });
+        }
+        if (!this.active[fromInfo.absolute.value])
+          this.active[fromInfo.absolute.value] = {};
+        const info2 = this.active[fromInfo.absolute.value][toInfo.absolute.value] = {
+          value: value2,
           subscription,
           [listenerObject]: true
         };
-        let base = this.original[to2];
+        let base = this.original[toInfo.relative.value];
         if (!base)
-          base = this.original[to2] = {};
+          base = this.original[toInfo.relative.value] = {};
         if (typeof base !== "object") {
           if (typeof base === "function")
-            base = this.original[to2] = { [Symbol("function listener")]: base };
+            base = this.original[toInfo.relative.value] = { [Symbol("function listener")]: base };
           else
-            base = this.original[to2] = { [base]: true };
+            base = this.original[toInfo.relative.value] = { [base]: true };
         }
-        base[from2] = value;
+        base[fromInfo.relative.value] = value2;
+        const args = value2.esTrigger;
+        if (args)
+          this.initialize({
+            path: fromInfo.absolute.array,
+            args
+          });
+        let target = globalListeners;
+        const globalPath = fromInfo.absolute.array.slice(1);
+        const last = globalPath.pop();
+        globalPath.forEach((key) => {
+          if (!target)
+            target[key] = {};
+          target = target[key];
+        });
+        target[last] = true;
+        return info2;
       };
       this.remove = (from2, to2) => {
+        const fromInfo = this.#getPathInfo(from2);
+        const toInfo = this.#getPathInfo(to2);
         const toRemove = [
-          { ref: this.active, path: [from2, to2], unlisten: true },
-          { ref: this.original, path: [to2, from2] }
+          { ref: this.active, path: [fromInfo.absolute.value, toInfo.absolute.value], unlisten: true },
+          { ref: this.original, path: [toInfo.relative.value, fromInfo.relative.value] }
         ];
         toRemove.forEach((o) => {
           const { ref, path, unlisten } = o;
@@ -2475,71 +2538,61 @@
             delete base[path[1]];
             if (Object.keys(base).length === 0) {
               delete ref[path[0]];
-              if (unlisten && info2.subscription)
-                this.monitor.remove(info2.subscription);
+              if (unlisten && info2.subscription) {
+                this.context.monitor.remove(info2.subscription);
+              }
             }
           } else
             delete ref[path[0]];
         });
       };
       this.clear = (name) => {
-        const toCheck = !name || !this.rootPath ? name : [this.rootPath, name].join(this.monitor.options.keySeparator);
+        const value2 = this.#getAbsolutePath(name);
         Object.keys(this.active).forEach((from2) => {
           Object.keys(this.active[from2]).forEach((to2) => {
-            if (!toCheck || from2.slice(0, toCheck.length) === toCheck || to2.slice(0, toCheck.length) === toCheck)
+            if (!value2 || from2.slice(0, value2.length) === value2 || to2.slice(0, value2.length) === value2)
               this.remove(from2, to2);
           });
         });
       };
       this.has = (from2) => !!this.active[from2];
       this.get = (from2) => this.active[from2];
-      this.monitor = monitor;
-      this.rootPath = rootPath;
+      this.context = context;
+      this.rootPath = root;
+      let target = globalListeners;
+      root.split(this.context.options.keySeparator).forEach((key) => {
+        if (!target)
+          target[key] = {};
+        target = target[key];
+      });
+      if (target)
+        console.error("AHHHHHHHH");
       this.register(listeners2);
     }
+    #toRun;
+    #initialize;
+    #getAbsolutePath;
+    #getPathInfo;
   };
   var setListeners = (context, components) => {
-    let toTrigger = [];
+    let toRun = [];
     for (let root in components) {
       const info2 = components[root];
       const to2 = info2.instance.esListeners ?? {};
-      const listeners2 = new ListenerManager(context.monitor, to2, root);
+      const listeners2 = new ListenerManager(to2, root, context);
       info2.instance.esListeners = to2;
-      for (let toPath in to2) {
-        const from2 = to2[toPath];
-        const mainInfo = {
-          context,
-          root,
-          toPath,
-          listeners: listeners2
-        };
-        if (from2 && typeof from2 === "object") {
-          for (let fromPath in from2) {
-            const config = from2[fromPath];
-            const info3 = handleListenerValue({ ...mainInfo, fromPath, config });
-            if (info3.config.esTrigger)
-              toTrigger.push(info3);
-          }
-        } else {
-          if (typeof toPath === "string")
-            handleListenerValue({ ...mainInfo, fromPath: from2, config: toPath });
-          else
-            console.error("Improperly Formatted Listener", to2);
-        }
-      }
+      toRun.push(listeners2.initialize);
     }
-    return toTrigger;
+    return toRun;
   };
   var isConfigObject = (o) => "esFormat" in o || "esBranch" in o || "esTrigger" in o || "esBind" in o;
   function pass(from2, target, update, context) {
     const id = context.id;
-    let parent, key, root, subscription;
+    let parent, key, subscription;
     const isValue = target?.__value;
     parent = target.parent;
     key = target.key;
-    root = target.root;
     subscription = target.subscription;
-    const rootArr = root.split(context.options.keySeparator);
     const info2 = target.parent[key];
     target = info2.value;
     let config = info2?.esConfig;
@@ -2550,10 +2603,9 @@
       if (info3.exists) {
         const val = info3.value;
         const noDefault = typeof val !== "function" && !val?.default;
-        const value = noDefault ? toSet : val;
+        const value2 = noDefault ? toSet : val;
         const res = {
-          value,
-          root,
+          value: value2,
           subscription
         };
         if (willSet) {
@@ -2562,20 +2614,16 @@
         }
         return res;
       } else
-        return { value: void 0, root: void 0 };
+        return { value: void 0 };
     };
     const transform = (willSet) => {
       const fullPath = [id];
-      if (root)
-        fullPath.push(...rootArr);
       fullPath.push(...key.split(context.options.keySeparator));
       return checkIfSetter(fullPath, willSet);
     };
     const getPathArray = (latest) => {
       const path = [id];
       const topPath = [];
-      if (root)
-        topPath.push(...rootArr);
       topPath.push(...latest.split(context.options.keySeparator));
       path.push(...topPath);
       return path;
@@ -2660,8 +2708,6 @@
       const arrayUpdate = Array.isArray(update) ? update : [update];
       if (target === toSet) {
         const parentPath = [id];
-        if (root)
-          parentPath.push(...rootArr);
         parentPath.push(...key.split(context.options.keySeparator));
         const idx = parentPath.pop();
         const info3 = context.monitor.get(parentPath, "info");
@@ -2684,32 +2730,28 @@
       }
     }
   }
-  function passToListeners(context, listeners2, name, update) {
-    const sep = context.options.keySeparator;
-    const check2 = `${sep}${defaultPath}`;
-    const noDefault = name.slice(-check2.length) === check2 ? name.slice(0, -check2.length) : name;
+  function passToListeners(listeners2, name, update) {
+    const context = listeners2.context;
     const listenerGroups = [{
-      info: listeners2.get(noDefault),
-      name: noDefault
+      info: listeners2.get(name),
+      name
     }];
     listenerGroups.forEach((group) => {
       const info2 = group.info;
       if (info2) {
         if (info2[listenerObject]) {
-          pass(noDefault, {
+          pass(name, {
             value: info2.value,
             parent: listeners2.active,
             key: group.name,
-            root: info2.root,
             subscription: info2.subscription,
             __value: true
           }, update, context);
         } else if (typeof info2 === "object") {
           for (let key in info2) {
-            pass(noDefault, {
+            pass(name, {
               parent: info2,
               key,
-              root: info2[key].root,
               subscription: info2[key].subscription,
               value: info2[key].value
             }, update, context);
@@ -2756,18 +2798,14 @@
         return new Promise((resolve3) => {
           const possiblePromise = instance.esConnected(() => {
             if (context && options.listen !== false) {
-              const toTrigger = setListeners(context, components);
-              toTrigger.forEach((o) => {
-                const res = monitor.get(o.path, "info");
-                if (typeof res.value === "function") {
-                  const args = Array.isArray(o.config.esTrigger) ? o.config.esTrigger : [o.config.esTrigger];
-                  res.value(...args);
-                } else
-                  console.error("Cannot yet trigger values...", o);
-              });
+              const toRun = setListeners(context, components);
+              toRun.forEach((func) => func());
             }
           }, true);
-          resolve(possiblePromise, () => resolve3(instance));
+          resolve(possiblePromise, (toRun) => {
+            toRun.forEach((o) => o.ref.default(o.args));
+            resolve3(instance);
+          });
         });
     };
     if (options.nested?.parent && options.nested?.name) {
@@ -2794,7 +2832,7 @@
 
   // ../../libraries/escomposer/src/schema/graphscript.ts
   var from = (gs) => {
-    let globalListeners = { [""]: {} };
+    let globalListeners2 = { [""]: {} };
     const drill = (target, acc = {}, path = []) => {
       const nodeInfo = target._node;
       delete target._node;
@@ -2811,7 +2849,7 @@
         }
         if (nodeInfo.listeners) {
           for (let key in nodeInfo.listeners) {
-            globalListeners[""][key] = {
+            globalListeners2[""][key] = {
               value: nodeInfo.listeners[key],
               esBind: path.join(".")
             };
@@ -2831,7 +2869,7 @@
         }
       };
     const esc = drill(gs);
-    esc.esListeners = globalListeners;
+    esc.esListeners = globalListeners2;
     return esc;
   };
   var to = (esc) => {

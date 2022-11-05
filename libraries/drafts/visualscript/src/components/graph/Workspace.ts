@@ -377,9 +377,7 @@ export class GraphWorkspace extends LitElement {
           let nodeEdges = this.graph.edges[key]
 
           // String shortcut
-          if (typeof nodeEdges === 'string') {
-              nodeEdges = {[nodeEdges]: true}
-          }
+          if (typeof nodeEdges === 'string') nodeEdges = {[nodeEdges]: true}
 
           for (let targetKey in nodeEdges) {
 

@@ -284,12 +284,8 @@ export const esDOM = {
 
 
 // // const set = new Set()
-// export const esListeners = {
-//     'firstsection.block3.demo3.plotter': {
-//         'firstsection.block2.demo2.datastreams': {
-//             esFormat: ([data, timestamps, contentHint]) => {
-//                 return [{ [contentHint]: data }]
-//             }
-//         }
-//     }
-// }
+export const esListeners = {
+    'secondsection.block6.demo6': {
+        'firstsection.block2.demo2.counter': true
+    }
+}

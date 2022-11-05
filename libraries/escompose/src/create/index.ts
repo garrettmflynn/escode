@@ -3,6 +3,7 @@ import * as component from "./component";
 import * as standards from '../../../common/standards';
 import * as clone from "../../../common/clone.js"
 import { Options } from '../../../common/types';
+import * as define from './define';
 
 const animations = {}
 
@@ -47,42 +48,27 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
 
             const esConnectedAsync = async (onReadyCallback) => {
 
-                let toRun: any[] = []
                 await esm.esReady
 
+                const name = esm.__isESComponent
                 states.connected = true
 
                 // Initialize Nested Components (and wait for them to be done)
                 for (let name in esm.esDOM) {
                     let component = esm.esDOM[name]
-                    if (typeof component === 'object' && typeof component.then === 'function' ) component = esm.esDOM[name] = await component
+                    const promise = component.__esComponentPromise
+                    if (promise && typeof promise.then === 'function' ) component = esm.esDOM[name] = await promise // Wait for the component to be ready
                     const init = component.esConnected
-                    if (typeof init === 'function') toRun.push(...await init())
+                    if (typeof init === 'function') await init()
                     else console.error(`Could not start component ${name} because it does not have an esConnected function`)
                 }
 
                 if (onReadyCallback) await onReadyCallback()
-
-                // Trigger Execution on Initialization
-                if ('esTrigger' in esm) {
-                    if (!Array.isArray(esm.esTrigger)) esm.esTrigger = []
-                    toRun.push({
-                        ref: esm,
-                        args: esm.esTrigger
-                    })
-                    delete esm.esTrigger
-                }
-
-                return toRun
             }
 
             const esConnectedMain = () => {
-                
-                // Retroactively setting the esCode editor on children of the focus element
-                const esCode = esm.esParent?.esComponent?.__esCode
-                if (esCode) esm.__esCode = esCode
 
-                // ------------------ Register Sources (from esmpile)- -----------------
+                // ------------------ Register Sources (from esmpile) -----------------
                 let source = esm[standards.esSourceKey]
                 if (source) {
                     if (typeof source === 'function') source = esm.esSource = source()
@@ -91,6 +77,9 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                     if (esm.__esCode) esm.__esCode.addFile(path, source)
                 }
 
+                // ------------------ Retroactively set esCode editor on children of the focus element -----------------
+                const esCode = esm.esParent?.esComponent?.__esCode
+                if (esCode) define.value('__esCode', esCode, esm)
 
                 // Call After Children + Before Running (...TODO: Is this right?)
                 const context = esm.__esProxy ?? esm
@@ -182,13 +171,14 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                 if ( this.esAnimate && typeof this.esAnimate.stop === 'function') this.esAnimate.stop()
 
                 // Clear all listeners below this node
-                if (this.esListeners) this.esListeners.__manager.clear()
+                console.log('Got', this)
+                this.__esManager.clear()
 
                 // Clear all listeners above this node that reference it
                 let target = this
                 while (target.esParent?.hasAttribute('__isescomponent')) {
                     target = target.esElement.parentNode.esComponent
-                    if (target.esListeners?.__manager) target.esListeners.__manager.clear(this.__isESComponent)
+                    if (target._esManager) target.__esManager.clear(this.__isESComponent)
                 }
 
                 if (this.esDOM) {
@@ -220,7 +210,7 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                 return this
             }
 
-            // -------- Bind Functions to GraphNode --------
+            // -------- Bind Functions to Node --------
             for (let key in esm) {
                 if (typeof esm[key] === 'function') {
                     const desc = Object.getOwnPropertyDescriptor(esm, key)

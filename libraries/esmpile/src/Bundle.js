@@ -15,7 +15,7 @@ const global = globalThis.REMOTEESM_BUNDLES.global
 const noEncoding = `No buffer or text to bundle for`
 
 const toWait = 10000
-const waitedFor = (toWait).toFixed(1)
+const waitedFor = (toWait/1000).toFixed(1)
 
 // const esSourceString = (bundle) => `\n export const __esSource = globalThis.REMOTEESM_BUNDLES["${bundle.collection}"]["${bundle.name}"]` // Export bundle from module...
 // const esSourceString = (bundle) => `\n export const __esSource = true` // Export bundle from module...
@@ -436,7 +436,7 @@ export default class Bundle {
 
                 setTimeout(() => {
                     if (done) return
-                    console.error(`Took too long (${waitedFor}s)...`)
+                    console.error(`Took too long (${waitedFor}s)...`, bundle.uri)
                     bundle.promises.result.reject()
                     bundle.promises.encoded.reject()
                 }, toWait)
@@ -502,17 +502,14 @@ export default class Bundle {
 
                     let text = bufferOrText
                     if (!isText) text = new TextDecoder().decode(bufferOrText)
-                    if (isText) {
-                        const update = !bufferOrText.includes(srcStr)
-                        if (update) {
-                            bufferOrText += srcStr
-                            this.info.text.updated = text = bufferOrText
-                        }
+
+                    const update = !text.includes(srcStr)
+                    if (update) {
+                        text += srcStr
+                        this.info.text.updated = text
                     }
 
-                    if (!isText) {
-                        this.#buffer = bufferOrText = new TextEncoder().encode(text)
-                    }
+                    if (!isText) this.#buffer = bufferOrText = new TextEncoder().encode(text)
                 }
             
             
