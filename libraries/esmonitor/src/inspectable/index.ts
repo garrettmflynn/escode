@@ -1,7 +1,7 @@
 import * as handlers from './handlers';
 import * as check from '../../../common/check'
 import { ArrayPath, ListenerRegistry, InspectableOptions } from '../types';
-import * as standards from '../../../common/standards'
+import * as standards from '../../../esc/standards'
 import { setFromPath } from '../../../common/pathHelpers';
 import { isProxy, fromInspectable } from '../globals';
 

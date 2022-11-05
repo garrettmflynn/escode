@@ -5,7 +5,7 @@ import animate from './animate'
 
 
 function start(keys) {
-    basicStart.call(this, keys, [
+    return basicStart.call(this, keys, [
         function () { animate.call(this, keys)}
     ])
 }

@@ -1,0 +1,21 @@
+{
+  "name": "edgelord",
+  "version": "0.0.0",
+  "description": "Control the information flow of your application",
+  "author": "Garrett Flynn <garrettmflynn@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "private": false,
+
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brainsatplay/escode.git"
+  }
+}

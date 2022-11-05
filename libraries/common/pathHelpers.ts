@@ -1,5 +1,5 @@
 import { PathFormat, SetValueOptions } from "../esmonitor/src/types"
-import * as standards from './standards'
+import * as standards from '../esc/standards'
 
 const hasKey = (key, obj) =>  key in obj
 

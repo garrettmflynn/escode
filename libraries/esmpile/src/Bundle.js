@@ -7,7 +7,7 @@ import * as nodeModules from './utils/nodeModules.js'
 import * as errors from './utils/errors.js'
 import * as polyfills from './utils/polyfills.js'
 import * as sourceMap from './utils/sourceMap.js';
-import { esSourceKey } from '../../common/standards.js';
+import { esSourceKey } from '../../esc/standards.js';
 
 if (!globalThis.REMOTEESM_BUNDLES) globalThis.REMOTEESM_BUNDLES = {global: {}} // Share references between loaded dataurl instances
 const global = globalThis.REMOTEESM_BUNDLES.global

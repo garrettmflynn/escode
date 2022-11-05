@@ -13,7 +13,7 @@ import createComponent from '../../escompose/src/index'
 
 // Default ES Component Pool for Plugins
 import * as components from '../../../components/index.js'
-import { esSource } from '../../escompose/src/component';
+import { esSource } from '../../esc/esc';
 
 
 export type EditorProps = {

@@ -7,7 +7,7 @@ import { iterateSymbols, getPath, getPathInfo } from './utils.js'
 import { drillSimple } from '../../common/drill.js'
 import { getFromPath } from '../../common/pathHelpers.js'
 
-import * as standards from '../../common/standards'
+import * as standards from '../../esc/standards'
 import { setFromOptions } from './optionsHelpers.js'
 
 const createLookup = () => {

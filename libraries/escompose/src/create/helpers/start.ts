@@ -1,5 +1,5 @@
 
-import * as standards from '../../../../common/standards';
+import * as standards from '../../../../esc/standards';
 import * as define from '../define';
 
 export default function (keys, callbacks, asyncCallback?: Function) {
@@ -14,9 +14,8 @@ export default function (keys, callbacks, asyncCallback?: Function) {
     
     // Default to attempted synchronous loading
     else {
-        const toRun = asyncConnect.call(this, asyncCallback)
-        connect.call(this)
-        return toRun
+        asyncConnect.call(this, keys, asyncCallback)
+        return connect.call(this, keys)
     }
 }
 
@@ -37,9 +36,11 @@ async function asyncConnect (keys, onReadyCallback) {
     }
 
     if (onReadyCallback) await onReadyCallback()
+
+    return this
 }
 
-async function connect (keys, callbacks: Function[] = []) {
+function connect (keys, callbacks: Function[] = []) {
 
     // ------------------ Register Sources (from esmpile) -----------------
     const privateEditorKey = `__${keys.editor}`
@@ -59,7 +60,8 @@ async function connect (keys, callbacks: Function[] = []) {
     const context = this[keys.proxy] ?? this
     if (this[keys.states].initial.start) this[keys.states].initial.start.call(context)
 
-    // Run as an Animation
+    // Run Callbacks (e.g. start animations)
     callbacks.forEach(f => f.call(this))
 
+    return this
 }

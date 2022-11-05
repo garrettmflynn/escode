@@ -1,6 +1,6 @@
 import * as element from './element'
 import * as component from "./component";
-import * as standards from '../../../common/standards';
+import * as standards from '../../../esc/standards';
 import * as clone from "../../../common/clone.js"
 import { Options } from '../../../common/types';
 import * as define from './define'

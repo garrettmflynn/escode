@@ -1,8 +1,8 @@
 import { Options } from "../../../common/types";
 import { EditorProps } from "../../../escode/src";
-import { ESComponent, ESElementInfo } from "../component";
+import { ESComponent, ESElementInfo } from "../../../esc/esc";
 import { resolve } from "../utils";
-import { specialKeys } from "../../../common/standards";
+import { specialKeys } from "../../../esc/standards";
 
 
 export type ESComponentStates = {

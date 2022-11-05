@@ -173,7 +173,7 @@ async function start (demo = "basic", mode="direct") {
             const component = escompose.create(reference, {esParent: main}, {
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 
-                await: true,
+                await: true, 
 
                 // For Editor Creation + Source Text Loading
                 utilities: {
@@ -200,37 +200,39 @@ async function start (demo = "basic", mode="direct") {
                 }
             })
 
-            await component.then((thisActive) => {
 
-                active = thisActive
+            const esc = await component // Promise for self is resolved
+            await esc.esReady // All children promises are resolved (if await is false)
 
-                if (demo === 'graph') {
 
-                    const graphDemo = thisActive
-        
-                    graphDemo.esDOM.nodeB.x += 1; //should trigger nodeA listener
-        
-                    graphDemo.esDOM.nodeB.esDOM.nodeC.default(4); //should trigger nodeA listener
-                
-                    graphDemo.esDOM.nodeA.jump();
-                            
-                    const popped = graphDemo.esDOM.nodeB.esDisconnected()
-        
-                    graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
-        
-                    popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
-                
-                    graphDemo.esDOM.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
-        
-                    setTimeout(()=>{ 
-                        if (graphDemo === active) {
-                            graphDemo.esDOM.nodeE.esDisconnected()  
-                            graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
-                        }
-                    }, 5500)
-        
-                }
-            })
+            active = esc
+
+            if (demo === 'graph') {
+
+                const graphDemo = esc
+    
+                graphDemo.esDOM.nodeB.x += 1; //should trigger nodeA listener
+    
+                graphDemo.esDOM.nodeB.esDOM.nodeC.default(4); //should trigger nodeA listener
+            
+                graphDemo.esDOM.nodeA.jump();
+                        
+                const popped = graphDemo.esDOM.nodeB.esDisconnected()
+    
+                graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
+    
+                popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
+            
+                graphDemo.esDOM.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
+    
+                setTimeout(()=>{ 
+                    if (graphDemo === active) {
+                        graphDemo.esDOM.nodeE.esDisconnected()  
+                        graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
+                    }
+                }, 5500)
+    
+            }
 
         } catch (e) {
             console.error(e)
