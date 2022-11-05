@@ -47,6 +47,8 @@ export default function hierarchy(o, id: string | symbol, toMerge = {}, parent?,
 
            const promises = Object.entries(instance[specialKeys.hierarchy]).map(async ([name, base]: [string, any], i) => {
 
+                base = Object.assign({}, base) // Break ESM reference (to write a childPosition property)
+
                 const pos = base[specialKeys.childPosition]
                 if (pos !== undefined) {
                     if (positions.has(pos)) console.warn(`[escompose]: Duplicate ${specialKeys.childPosition} value of ${pos} found in ${name} of ${instance[specialKeys.path]}`)

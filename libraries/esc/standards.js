@@ -4,6 +4,9 @@ export const defaultPath = 'default'
 
 export const esSourceKey = '__esmpileSourceBundle'
 
+export const isPrivate = (key) => false //key[0] === '_' // No private keys
+
+
 export const specialKeys = {
 
     start: 'esConnected', // asked to start

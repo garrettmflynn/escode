@@ -5,6 +5,8 @@ import './Port';
 import { GraphEdge } from './Edge';
 import { GraphPort, GraphPortProps } from './Port';
 
+export const isPrivate = (key) => key[0] === '_' // NOTE: Is redeclared from common/standards.js
+
 export type GraphNodeProps = {
   workspace?: GraphWorkspace
   x?: number;
@@ -108,7 +110,7 @@ export class GraphNode extends LitElement {
 
       Object.keys(info).forEach(tag => {
         if (tag.slice(0,2) === 'es') return // no esX properties
-        if (tag[0] === '_') return // no underscore (pseudo-private) properties
+        if (isPrivate(tag)) return // no underscore (pseudo-private) properties
 
         if (this.ports.has(tag)) return
         this.addPort({ tag })

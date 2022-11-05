@@ -60,6 +60,7 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
 
             // -------- Bind Functions to Node --------
             for (let key in esm) {
+                if (standards.isPrivate(key)) continue;
                 if (typeof esm[key] === 'function') {
                     const desc = Object.getOwnPropertyDescriptor(esm, key)
                     if (desc && desc.get && !desc.set) esm = Object.assign({}, esm) // Support ESM Modules: Only make a copy if a problem

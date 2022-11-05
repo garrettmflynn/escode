@@ -48,10 +48,11 @@ export const merge = (main, override, path: any[] = []) => {
                 if (isFunc && !original.functionList) original.functionList = [original]
 
                 const newFunc = override[k]
-                if (!isFunc || !original.functionList.includes(newFunc)) {
-                    const func = copy[k] = function (...args) {
-                        if (isFunc) original.call(this, ...args) // TODO: See if there is a more performant way to do this
-                        newFunc.call(this, ...args)
+                if (!isFunc) copy[k] = newFunc
+                else if (!original.functionList.includes(newFunc)) {
+                    const func = copy[k] = function(...args) {
+                        original.call(this, ...args);
+                        return newFunc.call(this, ...args);
                     } as Function & {functionList?: Function[]}
 
                     if (!func.functionList) func.functionList = [original]

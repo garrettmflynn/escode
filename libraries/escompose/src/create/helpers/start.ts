@@ -42,8 +42,13 @@ async function asyncConnect (keys, onReadyCallback) {
 
 function connect (keys, callbacks: Function[] = []) {
 
-    // ------------------ Register Sources (from esmpile) -----------------
     const privateEditorKey = `__${keys.editor}`
+
+    // ------------------ Retroactively set esCode editor on children of the focus element -----------------
+    const esCode = this[keys.parent]?.[keys.component]?.[privateEditorKey]
+    if (esCode) define.value(privateEditorKey, esCode, this)
+        
+    // ------------------ Register Sources (from esmpile) -----------------
     let source = this[standards.esSourceKey]
     if (source) {
         if (typeof source === 'function') source = this[keys.source] = source()
@@ -51,10 +56,6 @@ function connect (keys, callbacks: Function[] = []) {
         const path = this[keys.path]
         if (this[privateEditorKey]) this[privateEditorKey].addFile(path, source)
     }
-
-    // ------------------ Retroactively set esCode editor on children of the focus element -----------------
-    const esCode = this[keys.parent]?.[keys.component]?.[privateEditorKey]
-    if (esCode) define.value(privateEditorKey, esCode, this)
 
     // Call After Children + Before Running (...TODO: Is this right?)
     const context = this[keys.proxy] ?? this

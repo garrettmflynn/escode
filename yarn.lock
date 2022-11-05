@@ -5754,7 +5754,7 @@
 
 "escompose@*", "escompose@file:/Users/garrettflynn/Documents/Github/escode/libraries/escompose":
   "resolved" "file:libraries/escompose"
-  "version" "0.1.0"
+  "version" "0.1.2"
 
 "escomposer@file:/Users/garrettflynn/Documents/Github/escode/libraries/escomposer":
   "resolved" "file:libraries/escomposer"
@@ -5854,7 +5854,7 @@
 
 "esmpile@*", "esmpile@^0.1.1", "esmpile@file:/Users/garrettflynn/Documents/Github/escode/libraries/esmpile":
   "resolved" "file:libraries/esmpile"
-  "version" "0.1.2"
+  "version" "0.1.3"
   dependencies:
     "node-fetch" "^3.2.10"
 
