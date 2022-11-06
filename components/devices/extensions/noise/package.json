@@ -1,0 +1,6 @@
+{
+    "name": "escode-device-noise",
+    "main": "dist/index.esm.js",
+    "type": "module",
+    "version": "0.0.0"
+}
