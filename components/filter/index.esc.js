@@ -5,8 +5,8 @@ export const ref = undefined
 
 export const settings = {
     sps: 512,
-    useBandpass: true,
-    useDCBlock: true,
+    // useBandpass: true,
+    // useDCBlock: true,
 }
 
 export const esListeners = {

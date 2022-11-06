@@ -1,6 +1,6 @@
 
-import * as signal from "../../../../components/ui/plot/timeseries";
-import * as devices from "../../../../components/ui/devices/index.esc.js"
+import * as timeseries from "../../../../components/ui/plot/timeseries/index.esc";
+import * as devices from "../../../../components/devices/ui/index.esc.js"
 
 // import * as data from '../../../../components/devices/synthetic.js'
 // const numSeconds = 3
@@ -8,7 +8,7 @@ import * as devices from "../../../../components/ui/devices/index.esc.js"
 // const animationRate = 256
 // const nSec = (numSeconds * animationRate) * sampleCt
 
-export const esCompose = signal
+export const esCompose = timeseries
 
 export const esDOM = {
     // data: {
@@ -18,7 +18,7 @@ export const esDOM = {
     //     esAnimate: animationRate
     // },
     devices,
-    // plotter: {
+    // plot: {
     //     options: {
     //         linePoints: nSec
     //     }
@@ -26,6 +26,6 @@ export const esDOM = {
 }
 
 export const esListeners = {
-    // 'plotter': 'data'
-    'plotter': 'devices.output'
+    // 'plot': 'data'
+    'plot': 'devices.output'
 }

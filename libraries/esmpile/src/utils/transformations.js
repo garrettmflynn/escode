@@ -3,7 +3,7 @@ import * as pathUtils from "./path.js"
 
 const extensionTransformations = ['ts', 'js']
 
-const allTransformations = [...extensionTransformations, transformation]
+const allTransformations = [null, ...extensionTransformations, transformation]
 
 
 export const get = (uri) => {
@@ -27,10 +27,10 @@ export const get = (uri) => {
         })
 
         // Likely a Node Module (package.json)
-        if (uri.split('/').length === 1) return [transformation, ...mapped]
+        if (uri.split('/').length === 1) return [transformation, uri, ...mapped]
 
-        // Likely a File. Maybe a Node Module (package.json)
-        else return [...mapped, transformation]
+        // Likely a CDN link or File. Maybe a Node Module (package.json)
+        else return [uri, ...mapped, transformation]
     }
 
     // Path Change First

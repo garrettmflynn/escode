@@ -13,6 +13,7 @@ export const noExtension = (path, repExt = 'js') => {
 }
 
 export const transformation = async (path, transformation, opts, force) => {
+    if (!transformation) return path
     const type = typeof transformation
     if (type === 'string' && (!force || force === 'string')) {
         return noExtension(path, transformation)

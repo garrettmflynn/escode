@@ -2,10 +2,9 @@
 import * as phaser from '../../index.esc'
 import * as average from "../../../../../../components/basic/average.js"
 import * as threshold from "../../../../../../components/basic/threshold.js"
-import * as muse from "../../../../../../components/drafts/old/devices/muse/index.js"
 import * as signal from "../../../signal/index.esc"
-import * as devices from "../../../../../../components/ui/devices/index.esc.js"
-import * as filter from "../../../../../../components/devices/filter.esc.js"
+import * as devices from "../../../../../../components/devices/ui/index.esc.js"
+import * as filter from "../../../../../../components/devices/extensions/filter/index.esc.js"
 
 // ----------------------------- Base Component -----------------------------
 export const esCompose = phaser
@@ -27,7 +26,7 @@ export const esListeners = {
             }
         }
     },
-    ['signal.plotter']: {
+    ['signal.plot']: {
         'devices.output': true
     },
 }
@@ -36,28 +35,17 @@ export const esDOM = {
 
     // ---------- Blink Detector ----------
     average: {
-        maxBufferSize: 100,
+        maxBufferSize: 20,
         buffer: [],
         esCompose: average,
     },
     threshold: {
-        value: 300,
+        value: 30,
         esCompose: threshold,
     },
 
-    // ---------- Devices ----------
-    // synthetic: {
-    //     esCompose: synthetic,
-    // },
-    // ganglion: {
-    //     esCompose: ganglion,
-    // },
-    muse: {
-        esCompose: muse,
-    },
-
     devices: {
-        esCompose: [devices, filter],
+        esCompose: [filter, devices],
     },
 
     signal: {
@@ -95,7 +83,7 @@ export const esDOM = {
             },
         },
         esListeners: {
-            'plotter': false
+            'plot': false
         }
     },
 }

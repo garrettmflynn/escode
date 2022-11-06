@@ -25,7 +25,7 @@ export default function hierarchy(o, id: string | symbol, toMerge = {}, parent?,
 
     const res = resolve(merged, (merged) => {
 
-        delete merged[specialKeys.compose]
+        // delete merged[specialKeys.compose]
 
         // ------------------ Create Instance with Special Keys ------------------
         const instance = createComponent(id, merged, parent, opts)

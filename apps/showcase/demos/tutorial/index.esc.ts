@@ -248,7 +248,18 @@ export const esDOM = {
                                 innerHTML: "This makes it hard to use these signals to do things like control a game!"
                             }
                         },
-                        demo3: demoInfo.devicePhaser,
+                        demo3: {
+                            esCompose: demoInfo.devicePhaser,
+                            esDOM: {
+                                devices: {
+                                    esAttributes: {
+                                        style: {
+                                            display:'none'
+                                        }
+                                    }
+                                }
+                            }
+                        },
                     }
                 },
 
@@ -261,7 +272,25 @@ export const esDOM = {
                                 innerHTML: "We can filter some noise, but sometimes there are multiple sources of noise, in this case we still see signals from our power outlet, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
                             }
                         },
-                        demo4: demoInfo.noisySignal,
+                        demo4: {
+                            esCompose: demoInfo.filteredSignal,
+
+                            // Apply Demo-Specific Filter Bank
+                            esDOM: {
+                                devices: {
+                                    esDOM: {
+                                        filter: {
+                                            settings: {
+                                                useBandpass: true,
+                                                useDCBlock: true,
+                                                useNotch50: false,
+                                                useNotch60: false,
+                                            },
+                                        }
+                                    }
+                                },
+                            }
+                        }
                     }
                 },
 
@@ -274,7 +303,9 @@ export const esDOM = {
                                 innerHTML: "To solve this we can apply multiple filters to block different ranges or specific frequencies. "
                             }
                         },
-                        demo5: demoInfo.filteredSignal,
+                        demo5: {
+                            esCompose: demoInfo.filteredSignal,
+                        }
                     }
                 },
 
@@ -287,7 +318,18 @@ export const esDOM = {
                                 innerHTML: "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
                             }
                         },
-                        demo6: demoInfo.devicePhaser,
+                        demo6: {
+                            esCompose: demoInfo.devicePhaser,
+                            esDOM: {
+                                devices: {
+                                    esAttributes: {
+                                        style: {
+                                            display:'none'
+                                        }
+                                    }
+                                }
+                            }
+                        },
                     }
                 }
             }
@@ -303,25 +345,32 @@ const listeners = {
 
 
 const phaser = [3,6]
+const filtered = [4,5]
+
 // Wire together all the data demos
 const n = 6
 for (let i = 1; i < n + 1; i++) {
     const list = {}
+    const spsUpdates = {}
     for (let j = 1; j < n + 1; j++) {
         if (i !== j) {
             list[`secondsection.block${j}.demo${j}.devices.connect`] = true
+            spsUpdates[`secondsection.block${j}.demo${j}.devices.connect.sps`] = true
         }
     }
 
+    if (filtered.includes(i)) listeners[`secondsection.block${i}.demo${i}.devices.filter.settings.sps`] = spsUpdates
     if (!phaser.includes(i)) listeners[`secondsection.block${i}.demo${i}.devices.ondata`] = list
 }
 
 // Mirror the data above
 phaser.forEach(i => {
-    listeners[`secondsection.block${i}.demo${i}.devices.ondata`] = {
-        [`secondsection.block${i-1}.demo${i-1}.devices.ondata`]: true
+    listeners[`secondsection.block${i}.demo${i}.devices.output`] = {
+        [`secondsection.block${i-1}.demo${i-1}.devices.output`]: true
     }
 })
 
 // // const set = new Set()
 export const esListeners = listeners
+
+console.log('Got listeners', listeners)

@@ -332,15 +332,13 @@ class Edgelord {
 pass = (from, target, update) => {
 
     const id = this.context.id
-
-    let parent, key
     const isValue = target?.__value
-    parent = target.parent
-    key = target.key
+    let parent = target.parent
+    let to = target.key
 
 
     // const rootArr = root.split(this.context.options.keySeparator)
-    const info = target.parent[key]
+    const info = target.parent[to]
     target = info.value
 
     let config = info?.[configKey] // Grab config
@@ -360,7 +358,7 @@ pass = (from, target, update) => {
 
             if (willSet) {
                 target = res.value
-                parent[key] = res
+                parent[to] = res
             }
 
             return res
@@ -371,7 +369,7 @@ pass = (from, target, update) => {
     const transform = (willSet?) => {
         const fullPath = [id]
         // if (root) fullPath.push(...rootArr) // correcting for relative string
-        fullPath.push(...key.split(this.context.options.keySeparator))
+        fullPath.push(...to.split(this.context.options.keySeparator))
         return checkIfSetter(fullPath, willSet)
     }
 
@@ -399,8 +397,8 @@ pass = (from, target, update) => {
         checkIfSetter(path, true)
 
         if (isValue) {
-            parent[key] = { [ogValue]: parent[key] }
-            key = ogValue
+            parent[to] = { [ogValue]: parent[to] }
+            to = ogValue
         }
     }
 
@@ -413,9 +411,9 @@ pass = (from, target, update) => {
 
             if ('value' in ogValue) {
                 if (isValue) {
-                    target = parent[key] = ogValue.value // setting value
+                    target = parent[to] = ogValue.value // setting value
                 } else {
-                    target = parent[key].value = ogValue.value // setting value
+                    target = parent[to].value = ogValue.value // setting value
                 }
             } else transform(true)
 
@@ -423,7 +421,7 @@ pass = (from, target, update) => {
                 if (ogValue) config = ogValue
             }
 
-            Object.defineProperty(parent[key], configKey, { value: config })
+            Object.defineProperty(parent[to], configKey, { value: config })
         }
 
     }
@@ -498,13 +496,15 @@ pass = (from, target, update) => {
         && update !== undefined // Ensure input is not exactly undefined (though null is fine)
     ) {
 
+        // console.log('from', from, to)
+
         const arrayUpdate = Array.isArray(update) ? update : [update]
 
         // Set New Value on Parent
         if (target === toSet) {
             const parentPath = [id]
             // if (root) parentPath.push(...rootArr) // TODO: Check if this needs fixing
-            parentPath.push(...key.split(this.context.options.keySeparator))
+            parentPath.push(...to.split(this.context.options.keySeparator))
             const idx = parentPath.pop()
             const info = this.context.monitor.get(parentPath, 'info')
             info.value[idx] = update
@@ -515,7 +515,7 @@ pass = (from, target, update) => {
 
         // Direct Function
         else if (typeof target === 'function') {
-            const noContext = parent[key][listenerObject]
+            const noContext = parent[to][listenerObject]
             if (noContext) target.call(config?.[specialKeys.listeners.bind]?.value ?? this.context.instance, ...arrayUpdate) // Call with top-level context
             else target(...arrayUpdate) // Call with default context
         }
@@ -523,10 +523,10 @@ pass = (from, target, update) => {
         // Failed
         else {
 
-            let baseMessage = (key) ? `listener: ${from} —> ${key}` : `listener from ${from}`
+            let baseMessage = (to) ? `listener: ${from} —> ${to}` : `listener from ${from}`
             if (parent) {
                 console.warn(`Deleting ${baseMessage}`, target)
-                delete parent[key]
+                delete parent[to]
             } else console.error(`Failed to add ${baseMessage}`, target)
         }
     }

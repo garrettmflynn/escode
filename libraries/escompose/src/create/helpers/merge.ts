@@ -1,6 +1,7 @@
 type anyObj = {[key: string]: any}
 type esComposeType = anyObj | anyObj[]
 
+import { deep } from "../../../../common/clone"
 // Standard Notation
 import { specialKeys } from "../../../../esc/standards"
 
@@ -18,27 +19,33 @@ export default function merge (base, esCompose: esComposeType = {}, path: any[] 
     // Merge nested esCompose objects
     let promise = resolve(esCompose.map(o => {
        const compiled = compile(o, opts) // Resolve from text if required
-       return resolve(compiled, (compiled) => {
 
-            let arr: any[] = [compiled]
-            let target = compiled
-            while (target[specialKeys.compose]) {
-                const val = target[specialKeys.compose]
+       const checkAndPushTo = (target, acc: any[] = [], forcePush = true) => {
+
+        if (Array.isArray(target)) target.forEach(o => checkAndPushTo(o, acc), true)
+
+        else if (target[specialKeys.compose]) { 
+
+                acc.push(target)
+
+                const val = target[specialKeys.compose]    
                 delete target[specialKeys.compose]
-                target = resolve(compile(val, opts)) // Resolve from text if required
+                const newTarget = resolve(compile(val, opts)) // Resolve from text if required
+                checkAndPushTo(newTarget, acc)
+        }
+        else if (forcePush) acc.push(target)
 
-                arr.push(target)
-            }
-
-            return arr
-        })
+        return acc
+       }
+       
+       return resolve(compiled, (compiled) => checkAndPushTo(compiled))
     }))
 
     return resolve(promise, (clonedEsCompose) => {
 
         const flat = clonedEsCompose.flat();
         let merged = Object.assign({}, base);
-        delete merged[specialKeys.compose];
+        // delete merged[specialKeys.compose];
         flat.forEach((toCompose) => {
             merged = mergeUtility(toCompose, merged, path);
         });

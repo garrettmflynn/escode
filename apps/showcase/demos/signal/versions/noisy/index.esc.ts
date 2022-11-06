@@ -1,20 +1,23 @@
 import * as signal from '../../index.esc'
-import * as noise from '../../../../../../components/devices/noise.esc.js'
+import * as noise from '../../../../../../components/devices/extensions/noise/index.esc.js'
 
+const power = [50, 60]
+const movement = [1]
 
-const customNoise = {
+const noiseOverride =  {
     esDOM: {
-        noise: {
-            frequencies: [[10, 1, 60]]
-        }
-    },
-    esCompose: noise
-}
-export const esCompose = signal
-
-export const esDOM = {
-    devices: {
-        esCompose: customNoise
+        devices: noise
     }
 }
 
+export const esDOM =  {
+    devices:{
+        esDOM: {
+            noise: {
+                frequencies: [[...movement, ...power]] // setting custom frequencies
+            }
+        }
+    }
+}
+
+export const esCompose = [noiseOverride, signal]

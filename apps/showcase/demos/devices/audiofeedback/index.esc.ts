@@ -3,10 +3,10 @@ const kalimba =  "./apps/showcase/demos/devices/assets/kalimba.wav"
 const phonk =  "./apps/showcase/demos/devices/assets/phonk.wav"
 const synthflute =  "./apps/showcase/demos/devices/assets/synthflute.wav"
 
-import * as devices from "../../../../../components/ui/devices/index.esc"
+import * as devices from "../../../../../components/devices/ui/index.esc"
 import subprocesses from "./scripts/connect/subprocesses.js"
 import onconnect from "./scripts/connect/onConnect.js"
-import * as preprocess from  "../../../../../components/devices/heg/preprocess.js"
+import * as preprocess from  "../../../../../components/devices/modalities/heg/preprocess.js"
 
 import * as audio from "../../../../../components/ui/audio/index.esc"
 import button from "../../../../../components/ui/button"

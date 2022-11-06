@@ -1,4 +1,4 @@
-import * as bci2000 from "../../../../components/devices/bci2000/index.js"
+import * as bci2000 from "../../../../components/devices/modalities/bci2000/index.js"
 import * as button from "../../../../components/ui/button.js"
 import * as select from "../../../../components/ui/select.js"
 import * as signal from "../signal/index.esc"
@@ -66,15 +66,7 @@ export const esDOM = {
     signal: {
         esCompose: signal,
         esDOM: {
-            signalCanvas: {
-                width: '100%',
-                height: '100vh',
-            },
-            overlayCanvas: {
-                width: '100%',
-                height: '100vh',
-            },
-            plotter: {        
+            plot: {        
                 options: {
                     lineWidth: undefined,
                 }
@@ -82,7 +74,7 @@ export const esDOM = {
             data: undefined // remove data generator
         },
         esListeners: {
-            'plotter': undefined
+            'plot': undefined
         }
     }
 }
@@ -100,7 +92,7 @@ export const esListeners = {
             esBranch: [{equals: false, value: true}]
         }
     },
-    "signal.plotter": {
+    "signal.plot": {
         "bci2000.raw": true
     },
 

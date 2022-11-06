@@ -1,4 +1,6 @@
 {
+    "name": "escode-filter",
+    "type": "module",
     "dependencies": {
         "biquadjs": "1.0.0"
     }

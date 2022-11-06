@@ -13,7 +13,7 @@
             "esDOM": {
                 "devices": {
                     "tagName": "div",
-                            "esCompose": "../../../../components/ui/devices/index.esc.json",
+                            "esCompose": "../../../../components/devices/ui/index.esc.json",
                             "connectmode": {
                                 "options": [
                                     {

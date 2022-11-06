@@ -1,11 +1,27 @@
 
-import * as signal from '../../index.esc'
-import * as filter from '../../../../../../components/devices/filter.esc.js'
+import * as signal from '../noisy/index.esc'
+import * as filter from '../../../../../../components/devices/extensions/filter/index.esc.js'
 
-export const esCompose = signal
+
+const filterOverride = {
+    esDOM: {
+        devices: filter
+    }
+}
+
+export const esCompose = [filterOverride, signal]
 
 export const esDOM = {
     devices: {
-        esCompose: filter // TODO: Merge so that this never overwrites an existing array...
-    }
+        esDOM: {
+            filter: {
+                settings: {
+                    useBandpass: true,
+                    useDCBlock: true,
+                    useNotch50: true,
+                    useNotch60: true,
+                },
+            }
+        }
+    },
 }
