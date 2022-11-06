@@ -8,6 +8,9 @@ import * as speakPhaserDemo from '../phaser/versions/speak/index.esc'
 import * as devicePhaserDemo from '../phaser/versions/devices/index.esc'
 import * as signalDemo from '../signal/index.esc'
 import * as noisySignalDemo from '../signal/versions/noisy/index.esc'
+import * as filteredSignalDemo from '../signal/versions/filtered/index.esc'
+
+import * as audiofeedbackDemo from '../devices/audiofeedback/index.esc'
 
 export const esAttributes = {
     style: {
@@ -60,9 +63,19 @@ const demos = {
         esReference: noisySignalDemo
     },
 
+    filteredSignal: {
+        esURI: '../signal/versions/filtered/index.esc',
+        esReference: filteredSignalDemo
+    },
+
     devicePhaser: {
         esURI: '../phaser/versions/devices/index.esc',
         esReference: devicePhaserDemo
+    },
+
+    audiofeedback: {
+        esURI: '../devices/audiofeedback/index.esc',
+        esReference: audiofeedbackDemo
     },
     
 }
@@ -93,6 +106,7 @@ for (let key in demos) {
 }
 
 export const esDOM = {
+
     h1: {
         esElement: 'h1',
         esAttributes: {
@@ -126,7 +140,12 @@ export const esDOM = {
                     p2: {
                         esElement: 'p',
                         esAttributes: {
-                            innerHTML: "It can be used to make simple animations."
+                            innerHTML: "It can be used to make simple animations: "
+                        },
+                        esDOM: {
+                            readout: {
+                                esElement: 'span',
+                            },
                         }
                     },
                     demo2: demoInfo.animations,
@@ -242,9 +261,7 @@ export const esDOM = {
                                 innerHTML: "We can filter some noise, but sometimes there are multiple sources of noise, in this case we still see signals from our power outlet, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
                             }
                         },
-                        demo4: {
-                            esElement: 'div'
-                        },
+                        demo4: demoInfo.noisySignal,
                     }
                 },
 
@@ -257,9 +274,7 @@ export const esDOM = {
                                 innerHTML: "To solve this we can apply multiple filters to block different ranges or specific frequencies. "
                             }
                         },
-                        demo5: {
-                            esElement: 'div'
-                        },
+                        demo5: demoInfo.filteredSignal,
                     }
                 },
 
@@ -272,9 +287,7 @@ export const esDOM = {
                                 innerHTML: "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
                             }
                         },
-                        demo6: {
-                            esElement: 'div'
-                        },
+                        demo6: demoInfo.devicePhaser,
                     }
                 }
             }
@@ -282,10 +295,33 @@ export const esDOM = {
 }
 
 
+const listeners = {
+    'firstsection.block2.p2.readout': {
+        'firstsection.block2.demo2.counter': true
+    },
+}
+
+
+const phaser = [3,6]
+// Wire together all the data demos
+const n = 6
+for (let i = 1; i < n + 1; i++) {
+    const list = {}
+    for (let j = 1; j < n + 1; j++) {
+        if (i !== j) {
+            list[`secondsection.block${j}.demo${j}.devices.connect`] = true
+        }
+    }
+
+    if (!phaser.includes(i)) listeners[`secondsection.block${i}.demo${i}.devices.ondata`] = list
+}
+
+// Mirror the data above
+phaser.forEach(i => {
+    listeners[`secondsection.block${i}.demo${i}.devices.ondata`] = {
+        [`secondsection.block${i-1}.demo${i-1}.devices.ondata`]: true
+    }
+})
 
 // // const set = new Set()
-export const esListeners = {
-    'secondsection.block6.demo6': {
-        'firstsection.block2.demo2.counter': true
-    }
-}
+export const esListeners = listeners

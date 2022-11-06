@@ -127,7 +127,12 @@ class Edgelord {
     }
 
     #getAbsolutePath = (name) => {
-        return (!name || !this.rootPath || name.includes(this.rootPath)) ? name : [this.rootPath, name].join(this.context.monitor.options.keySeparator)
+        const sep = this.context.monitor.options.keySeparator
+        return (
+            !name 
+            || !this.rootPath 
+            || (this.rootPath === name.slice(0, this.rootPath.length) && name[this.rootPath.length] === sep)
+        ) ? name : [this.rootPath, name].join(sep)
     }
 
     #getPathInfo = (path) => {
@@ -160,6 +165,7 @@ class Edgelord {
 
     add = (from, to, value: any = true, subscription) => {
 
+        if (!value) return // Any non-truthy value is not accepted
 
         const fromInfo = this.#getPathInfo(from)
         const toInfo = this.#getPathInfo(to)
@@ -327,12 +333,11 @@ pass = (from, target, update) => {
 
     const id = this.context.id
 
-    let parent, key, subscription
+    let parent, key
     const isValue = target?.__value
     parent = target.parent
     key = target.key
 
-    subscription = target.subscription
 
     // const rootArr = root.split(this.context.options.keySeparator)
     const info = target.parent[key]

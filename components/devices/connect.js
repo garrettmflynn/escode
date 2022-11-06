@@ -19,6 +19,8 @@ export const transferred = {
     canvas: false
 }
 
+export const sps = undefined // Notify users of sps changes
+
 export default async function (selected, o) {
 
             if (o?._internal) return selected // pass new data to children
@@ -27,8 +29,8 @@ export default async function (selected, o) {
 
             const devices = this.thirdPartyDecoder?.Devices ?? this.decoder.Devices
 
-            this.device = devices[this.mode][this.selected]
-
+            this.device = devices[this.mode]?.[this.selected]
+            
             if (!this.device) {
                 console.warn('Device not found...', this.mode, this.selected)
                 return;
@@ -50,8 +52,8 @@ export default async function (selected, o) {
                     routes,
                     subprocesses,
                     workerUrl: this.workerUrl,
-                    ondecoded: (...args) => {
-                        if (this.ondecoded) this.ondecoded(...args)
+                    ondecoded: (args) => {
+                        if (this.ondecoded) this.ondecoded(args)
                         this.default(args, {_internal: true})
                     },
                 }
@@ -59,6 +61,8 @@ export default async function (selected, o) {
     
             if (info && typeof this.onconnect === 'function') {
                 this.info = await info
+                this.sps = this.device.sps // Notify of sps
+
                 this.onconnect.call(this, this.info)
                 return this.info
             }

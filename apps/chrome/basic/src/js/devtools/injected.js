@@ -13,7 +13,7 @@ send({ name: 'echo', id: echoId }, '*');
 
 const components = []
 const esmonitor = window.ESMonitorState
-document.body.querySelectorAll('[__isescomponent]').forEach(o => {
+document.body.querySelectorAll('[escomponent]').forEach(o => {
     if (o.esComponent) components.push(o.esComponent)
 })
 
@@ -165,7 +165,7 @@ window.addEventListener('message', function(event) {
 
   document.addEventListener('contextmenu', function(ev) {
     const target = ev.target
-    const isESComponent = target.hasAttribute('__isescomponent')
+    const isESComponent = target.hasAttribute('escomponent')
     if (isESComponent) {
         send({ focus: target.esComponent.__isESComponent }, '*');
     }

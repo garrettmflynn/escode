@@ -2,14 +2,13 @@
 import * as phaser from '../../index.esc'
 import * as average from "../../../../../../components/basic/average.js"
 import * as threshold from "../../../../../../components/basic/threshold.js"
-import * as button from "../../../../../../components/ui/button.js"
-import * as start from "../../../../../../components/drafts/old/datastreams/components/start.js"
 import * as muse from "../../../../../../components/drafts/old/devices/muse/index.js"
 import * as signal from "../../../signal/index.esc"
+import * as devices from "../../../../../../components/ui/devices/index.esc.js"
+import * as filter from "../../../../../../components/devices/filter.esc.js"
 
 // ----------------------------- Base Component -----------------------------
 export const esCompose = phaser
-
 
 // ----------------------------- Will Merge In -----------------------------
 export const esAttributes = { style: { position: 'relative' } }
@@ -20,17 +19,17 @@ export const esListeners = {
     },
     threshold: 'average',
     average: {
-        datastreams: true
-    },
-    ['signal.plotter']: {
-        datastreams: {
-            esFormat: (args) => { 
-                if (args) return {[args[2]]: args[0]} 
+        'devices.output': {
+            esFormat: (o) => { 
+                const res = o[0]
+                if (!res) return
+                else return [res] // First channel only
             }
         }
     },
-    datastreams: 'muse',
-    muse: 'button'
+    ['signal.plotter']: {
+        'devices.output': true
+    },
 }
 
 export const esDOM = {
@@ -57,18 +56,8 @@ export const esDOM = {
         esCompose: muse,
     },
 
-    button: {
-        esElement: 'button',
-        esAttributes: {
-            innerText: 'Connect Muse',
-            style: {
-                zIndex: 100,
-                position: 'absolute',
-                top: '0',
-                left: '0',
-            }
-        },
-        esCompose: button,
+    devices: {
+        esCompose: [devices, filter],
     },
 
     signal: {
@@ -85,28 +74,29 @@ export const esDOM = {
         },
 
         esDOM: {
+
+            devices: undefined, // unsetting device
+
             signalCanvas: {
-                width: '100%',
-                height: '150px',
+                esAttributes: {
+                    style: {
+                        width: '100%',
+                        height: '150px'
+                    }
+                },
             },
             overlayCanvas: {
-                width: '100%',
-                height: '150px',
+                esAttributes: {
+                    style: {
+                        width: '100%',
+                        height: '150px'
+                    }
+                },
             },
-            plotter: {        
-                options: {
-                    lineWidth: undefined,
-                }
-            },
-            data: undefined // remove data generator
         },
         esListeners: {
-            'plotter': undefined
+            'plotter': false
         }
-    },
-
-    datastreams: {
-        esCompose: start,
     },
 }
 

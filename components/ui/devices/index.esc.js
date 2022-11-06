@@ -1,45 +1,88 @@
-import * as select from '../select.js'
-import * as button from '../button.js'
-import * as connect from '../../devices/connect.js'
+import * as base from './base.esc.js'
+import * as thirdPartyDecoder from "device-decoder.third-party"
+import * as preprocess from '../../devices/preprocess.esc.js'
 
-export const esDOM = {
-    connectmode: {
-        esCompose: select
-    },
-    selectUSB: {
-        esCompose: select
-    },
-    selectBLE: {
-        esCompose: select
-    },
-    selectBLEOther: {
-        esCompose:select
-    },
-    selectOther: {
-        esCompose: select
-    },
-    connect: {
-        esCompose: connect
-    },
-    toConnect: {
-        esAttributes: {
-            innerHTML: "Connect"
-        },
-        esCompose: button
+export const esCompose = base
+
+export const esAttributes = {
+    style: {
+        zIndex: 100,
+        position: 'absolute',
+        top: '0',
+        right: '0',
+        left: '0',
     }
 }
 
-export const esListeners = {
-    toConnect: {
-        selectBLE: true,
-        selectUSB: true,
-        selectBLEOther: true,
-        selectOther: true,
+export const esDOM = {
+       connectmode: {
+        options: [
+            {
+                value: "OTHER",
+                show: "selectOther"
+            },
+            {
+                value: "BLE",
+                show: "selectBLE"
+            },
+            {
+                value: "USB",
+                show: "selectUSB"
+            },
+            {
+                value: "BLE_OTHER",
+                show: "selectBLEOther"
+            }
+        ]
     },
+    selectUSB: {
+        options: {
+            cyton:"Open BCI Cyton",
+            cyton_daisy:"Open BCI Cyton x2 (daisy chain mode)",
+            freeeeg32:"FreeEEG32",
+            freeeeg32_optical:"FreeEEG32 optical cable",
+            freeeeg128: "FreeEEG128",
+            nrf5x: "nRF5x board"
+        },
+    },
+    selectBLE: {
+        options: {
+            nrf5x: "nRF5x board"
+        },
+    },
+    selectBLEOther: {
+        options: {
+            muse: "Muse",
+            ganglion: "Ganglion"
+        },
+    },
+    selectOther: {
+        options: {
+            simulator: "Simulator"
+        },
+    },
+
+    // Add Third Party Decoders
     connect: {
-        toConnect: true
+        thirdPartyDecoder,
+        // workerUrl: {
+        //     esCompose: "./scripts/workers/stream.big.worker.js",
+        // },
     },
-    "connect.mode": {
-        connectmode: true
+
+    // Add Preprocessing Step
+    preprocess: preprocess
+}
+
+export const esListeners = {
+
+    // Redirect through Preprocessing
+    preprocess: {
+        ondata: true
+    },
+
+    output: {
+        ondata: false,
+        preprocess: true
     }
 }

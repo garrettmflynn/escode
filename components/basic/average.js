@@ -4,6 +4,7 @@ export let maxBufferSize = 100
 export let buffer;
 
 export default function (input) {
+
     const max = this.maxBufferSize
     const isBuffer = Array.isArray(this.buffer)
     let buffer = isBuffer ? this.buffer : []
@@ -14,5 +15,6 @@ export default function (input) {
     }
 
     if (isBuffer && buffer.length > max) buffer = buffer.splice(-max)
-    return buffer.reduce((a,b) => a + b, 0) / buffer.length
+    const res = buffer.reduce((a,b) => a + b, 0) / buffer.length
+    return res
 }

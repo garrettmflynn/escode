@@ -574,7 +574,7 @@
 
   // ../showcase/demos/graph/utils/index.js
   var getTopNode = (target) => {
-    while (target.esParent && target.esParent.hasAttribute("__isescomponent")) {
+    while (target.esParent && target.esParent.hasAttribute("escomponent")) {
       const component = target.esParent.esComponent;
       if (component.esParent)
         target = component;
@@ -1984,7 +1984,7 @@
     }
     if (esm2.esElement instanceof Element) {
       esm2.esElement.esComponent = esm2;
-      esm2.esElement.setAttribute("__isescomponent", "");
+      esm2.esElement.setAttribute("escomponent", "");
     }
     if (!states) {
       esm2.esOnResize = finalStates.onresize;
@@ -2225,7 +2225,7 @@
         if (this.esListeners)
           this.esListeners.__manager.clear();
         let target = this;
-        while (target.esParent?.hasAttribute("__isescomponent")) {
+        while (target.esParent?.hasAttribute("escomponent")) {
           target = target.esElement.parentNode.esComponent;
           if (target.esListeners?.__manager)
             target.esListeners.__manager.clear(this.__isESComponent);

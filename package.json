@@ -9,6 +9,7 @@
     "start": "tinybuild"
   },
   "dependencies": {
+    "device-decoder.third-party": "^0.1.3",
     "howler": "^2.2.3"
   }
 }

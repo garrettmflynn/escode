@@ -36,7 +36,8 @@ export const esListeners = {
                 {equals: 'jump', value: true},
             ]
         },
-    }
+    },
+    
 }
 
 export const esDOM = {

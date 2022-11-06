@@ -84,7 +84,7 @@ selects.forEach(o => {
     }
 })
 
-const restartButton = document.getElementById('restartButton') as HTMLButtonElement
+const resetButton = document.getElementById('resetButton') as HTMLButtonElement
 
 function startFunction () {
 
@@ -104,7 +104,7 @@ function startFunction () {
     start(...args)
 }
 selects.forEach(o => o.element.addEventListener('change', startFunction))
-restartButton.addEventListener('click', startFunction)
+resetButton.addEventListener('click', startFunction)
 
 
 
@@ -181,22 +181,22 @@ async function start (demo = "basic", mode="direct") {
                         class: escode.Editor,
                         options: {}
                     },
-                    bundle: {
-                        function: esm.bundle.get,
-                        options: {
-                            relativeTo,
-                            nodeModules,
-                            // filesystem
-                        }
-                    },
-                    compile: {
-                        function: esm.compile,
-                        options: {
-                            relativeTo,
-                            nodeModules,
-                            // filesystem
-                        }
-                    }
+                    // bundle: {
+                    //     function: esm.bundle.get,
+                    //     options: {
+                    //         relativeTo,
+                    //         nodeModules,
+                    //         // filesystem
+                    //     }
+                    // },
+                    // compile: {
+                    //     function: esm.compile,
+                    //     options: {
+                    //         relativeTo,
+                    //         nodeModules,
+                    //         // filesystem
+                    //     }
+                    // }
                 }
             })
 

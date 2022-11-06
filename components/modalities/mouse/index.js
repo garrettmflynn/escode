@@ -37,7 +37,7 @@ export const esAttributes = {
 export function esConnected () {
 
     // Replace default element with an image of cursor
-    if (this.esElement instanceof HTMLLinkElement){
+    if (this.esElement instanceof HTMLDivElement && this.esElement.innerHTML === ''){
         const el = document.createElement('img')
         el.src = 'https://media.geeksforgeeks.org/wp-content/uploads/20200319212118/cursor2.png'
         el.width = this.size.width

@@ -20,7 +20,7 @@ export function esConnected() {
 
         const timer = globalThis.setInterval(() => {
             
-            if (this.popup.closed !== false) { // !== is required for compatibility with Opera
+            if (this.popup && this.popup.closed !== false) { // !== is required for compatibility with Opera
                 globalThis.clearInterval(timer);
                 this.esDisconnected()
             }

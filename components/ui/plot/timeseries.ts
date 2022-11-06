@@ -1,26 +1,17 @@
 
 import * as plotter from "./utils/index";
-import * as data from '../../devices/synthetic.js'
 import * as canvasComponent from '../canvas.js'
-
-
-const width = '100%'
-const height = 200 // TODO: Allow this to also expand...
- 
-const sampleCt = 1
-const animationRate = 256
-const nSec = (1 * animationRate) * sampleCt
 
 export const esAttributes = {
     style: {
+        width: '100%',
+        height: '100%',
         position: 'relative'
     }
 }
 
 export const esDOM = {
     signalCanvas: {
-        width,
-        height,
         esCompose: canvasComponent,
         esAttributes: {
             style: {
@@ -30,8 +21,6 @@ export const esDOM = {
     },
     
     overlayCanvas: {
-        width,
-        height,
         esCompose: canvasComponent,
         esAttributes: {
             style: {
@@ -51,17 +40,10 @@ export const esDOM = {
             cleanGeneration: false,
             lines: {},
             lineWidth: 0.01,
-            linePoints: nSec,
         },
         
         esCompose: plotter
     },
-    data: {
-        sampleCt,
-        frequencies: [10],
-        esCompose: data,
-        esAnimate: animationRate
-    }
 }
 
 export const esListeners = {
@@ -75,5 +57,4 @@ export const esListeners = {
             esTrigger: true
         },
     },
-    'plotter': 'data'
 }

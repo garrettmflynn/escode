@@ -34,7 +34,7 @@ export const specialKeys = {
 
     childPosition: 'esChildPosition',
 
-    attribute: '__isescomponent',
+    attribute: 'escomponent',
 
     parent: 'esParent',
     component: 'esComponent',

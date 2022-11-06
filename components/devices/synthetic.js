@@ -18,7 +18,6 @@ export function esConnected () {
         const nF = f.length
         const nA = a?.length
 
-        const aLen = nF ?? 1
         if (a == undefined) this.amplitudes[i] = new Array(nF ?? 1).fill(1)
         else if (!Array.isArray(a)) this.amplitudes[i] = new Array(aConfig).fill(a)
         else if (nA < nF) this.amplitudes[i] = new Array(nF ?? 1).fill(a[0])
@@ -32,15 +31,23 @@ export function esConnected () {
 
 }
 
-export default function () {
+const getTime = (timestamps, k) =>  (timestamps[k] ?? Date.now())/1000
+
+
+export default function (
+    count = this.sampleCt, 
+    frequencies = this.frequencies,
+    amplitudes = this.amplitudes,
+    timestamps = []
+    ) {
 
     let output = {}
-    this.frequencies.forEach((freqs, i) => {
-        const amps = this.amplitudes[i]
-        output[i] = new Array(this.sampleCt).fill(0)
+    frequencies.forEach((freqs, i) => {
+        const amps = amplitudes[i]
+        output[i] = new Array(count).fill(0)
         freqs.forEach((f, j) => {
-            const a = amps[j]
-            output[i] = output[i].map((v, k) => v + a*Math.sin(2*Math.PI*(f)*(Date.now()/1000+(k/this.sampleCt))))
+            const a = amps?.[j] ?? 1
+            output[i] = output[i].map((v, k) => v + a*Math.sin(2*Math.PI*(f)*(getTime(timestamps, k)+(k/count))))
         })
     })
 

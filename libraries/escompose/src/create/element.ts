@@ -104,7 +104,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     //         for(var i = 0; i < mutation.addedNodes.length; i++) {
     //             const node = mutation.addedNodes[i] as any
     //             if (node.hasAttribute instanceof Function){
-    //                 if (node.hasAttribute('__isescomponent')) node.esComponent.__esReady()
+    //                 if (node.hasAttribute('escomponent')) node.esComponent.__esReady()
     //             }
     //         }
     //     })
@@ -263,7 +263,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
             if (
                 v instanceof HTMLElement // Is element
-                // && !v.hasAttribute('__isescomponent')  // Is not an ES Component (which are observed elsewhere...)
+                // && !v.hasAttribute('escomponent')  // Is not an ES Component (which are observed elsewhere...)
                 // && v.isConnected // Is connected to the DOM
             ) {
                 esm[`__${specialKeys.connected}`]()

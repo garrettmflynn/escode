@@ -9,7 +9,7 @@ window.postMessage({ name: 'echo', source: id, id: echoId }, '*');
 
 const components = []
 const state = window.ESMonitorState
-document.body.querySelectorAll('[__isescomponent]').forEach(o => {
+document.body.querySelectorAll('[escomponent]').forEach(o => {
     if (o.esComponent) components.push(o.esComponent)
 })
 

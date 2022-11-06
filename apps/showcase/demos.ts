@@ -71,6 +71,13 @@ import noisySignalFallbacks from './demos/signal/versions/noisy/fallbacks'
 const noisySignalJSON = './demos/signal/versions/noisy/index.esc.json'
 const noisySignalJS = './demos/signal/versions/noisy/index.esc.ts'
 
+
+// Filter Demo
+import * as filteredSignalFile from './demos/signal/versions/filtered/index.esc'
+import filteredSignalFallbacks from './demos/signal/versions/filtered/fallbacks'
+const filteredSignalJSON = './demos/signal/versions/filtered/index.esc.json'
+const filteredSignalJS = './demos/signal/versions/filtered/index.esc.ts'
+
 // Audiofeedback Demo
 import * as audiofeedbackFile from './demos/devices/audiofeedback/index.esc'
 import audiofeedbackFallbacks from './demos/devices/audiofeedback/fallbacks'
@@ -191,6 +198,13 @@ const noisySignalPackage = {
     js: noisySignalJS
 }
 
+const filteredSignalPackage = {
+    name: 'Filtered Signal',
+    json: filteredSignalJSON,
+    fallbacks: filteredSignalFallbacks,
+    file: filteredSignalFile,
+    js: filteredSignalJS
+}
 const audiofeedbackPackage = {
     name: 'HEG Audiofeedback',
     json: audiofeedbackJSON,
@@ -224,6 +238,7 @@ const demos = {
     // Physiological Demos
     signal: signalPackage,
     noisy: noisySignalPackage,
+    filtered: filteredSignalPackage,
     device: devicePackage,
 
     audiofeedback: audiofeedbackPackage,

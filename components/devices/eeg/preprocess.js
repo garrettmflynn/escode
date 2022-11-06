@@ -19,8 +19,6 @@ export function reset(input) {
 export default function preprocess(input) {
     if (!this.stats) this.stats = reset(true)
 
-
-    console.log('Data', input)
     this.stats.latestRaw = input;
 
     let rmskeys = Object.keys(this.stats.latestRMS ?? {}); //1 second RMS average used as predicted value for getting the error
@@ -42,7 +40,7 @@ export default function preprocess(input) {
         // if(recording) {
         //     info.routes.csv2.worker.post('appendCSV',this.stats.sampleError)
         // }
-        requestAnimationFrame(rmseanim);
+        // requestAnimationFrame(rmseanim);
     }
 
     return this.stats

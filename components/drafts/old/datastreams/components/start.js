@@ -3,6 +3,7 @@ import dataDevices from "./index.js"
 
 const operator = async function (input, ...recursiveData) {
 
+    console.log('Got', input)
     if (input === 'data') return recursiveData
     else {
         // Activate the Specified Device
