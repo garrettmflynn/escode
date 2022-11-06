@@ -1,6 +1,6 @@
 {
   "name": "escompose",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A standard for transforming ES Modules into linked Web Components",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
