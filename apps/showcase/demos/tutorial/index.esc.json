@@ -1,7 +1,7 @@
 {
-"esDOM": {
+"__children": {
     "h1": {
-        "esElement": {
+        "__element": {
             "element": "h1",
             "attributes": {
                 "innerHTML": "How Does Signal Processing Work?"
@@ -9,9 +9,9 @@
         }
     },
     "firstsection": {
-        "esDOM": {
+        "__children": {
             "h2": {
-                "esElement": {
+                "__element": {
                     "element": "h2",
                     "attributes": {
                         "innerHTML": "What are Signals?"
@@ -20,9 +20,9 @@
             },
 
             "block1": {
-                "esDOM": {
+                "__children": {
                     "p1": {
-                        "esElement": {
+                        "__element": {
                             "element": "p",
                             "attributes": {
                                 "innerHTML": "Signals are information being carried in a medium like electricity or light that we can use to understand or communicate with each other."
@@ -35,9 +35,9 @@
 
 
             "block2": {
-                "esDOM": {
+                "__children": {
                     "p2": {
-                        "esElement": {
+                        "__element": {
                             "element": "p",
                             "attributes": {
                                 "innerHTML": "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
@@ -50,9 +50,9 @@
 
 
             "block3": {
-                "esDOM": {
+                "__children": {
                     "p3": {
-                        "esElement": {
+                        "__element": {
                             "element": "p",
                             "attributes": {
                                 "innerHTML": "This makes it hard to use these signals to do things like control a game!"
@@ -60,16 +60,16 @@
                         }
                     },
                     "demo3": {
-                        "esElement": "./components/demo3"
+                        "__element": "./components/demo3"
                     }
                 }
             },
 
 
             "block4": {
-                "esDOM": {
+                "__children": {
                     "p4": {
-                        "esElement": {
+                        "__element": {
                             "element": "p",
                             "attributes": {
                                 "innerHTML": "We can filter some noise, but sometimes there are multiple sources of noise, in this case we still see signals from our power outlet, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
@@ -77,16 +77,16 @@
                         }
                     },
                     "demo4": {
-                        "esElement": "./components/demo4"
+                        "__element": "./components/demo4"
                     }
                 }
             },
 
 
             "block5": {
-                "esDOM": {
+                "__children": {
                     "p5": {
-                        "esElement": {
+                        "__element": {
                             "element": "p",
                             "attributes": {
                                 "innerHTML": "To solve this we can apply multiple filters to block different ranges or specific frequencies. "
@@ -94,16 +94,16 @@
                         }
                     },
                     "demo5": {
-                        "esElement": "./components/demo5"
+                        "__element": "./components/demo5"
                     }
                 }
             },
 
 
             "block6": {
-                "esDOM": {
+                "__children": {
                     "p6": {
-                        "esElement": {
+                        "__element": {
                             "element": "p",
                             "attributes": {
                                 "innerHTML": "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
@@ -111,7 +111,7 @@
                         }
                     },
                     "demo6": {
-                        "esElement": "./components/demo6"
+                        "__element": "./components/demo6"
                     }
                 }
             }
@@ -119,7 +119,7 @@
     }
 },
 
-"esListeners": {
+"__listeners": {
 
 }
 }

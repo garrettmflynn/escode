@@ -20,7 +20,7 @@ export default function (keys) {
         for (let name in this[keys.hierarchy]) {
             const component = this[keys.hierarchy][name]
             if (typeof component[keys.stop] === 'function') component[keys.stop]()
-            else console.warn('Could not disconnect component because it does not have an esDisconnected function', name, this.esDOM)
+            else console.warn('Could not disconnect component because it does not have an __disconnected function', name, this.__children)
         }
     }
 

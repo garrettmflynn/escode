@@ -4,14 +4,14 @@
     export const canvas = null
     export const ctx = null
 
-    export const esElement = 'canvas'
+    export const __element = 'canvas'
 
-    export function esConnected() { 
+    export function __connected() { 
 
-        if (this.esElement instanceof HTMLCanvasElement) this.canvas = this.esElement
+        if (this.__element instanceof HTMLCanvasElement) this.canvas = this.__element
         else {
             this.canvas = document.createElement('canvas')
-            this.esElement.appendChild(this.canvas)
+            this.__element.appendChild(this.canvas)
         }
 
         this.canvas.width = this.canvas.clientWidth;
@@ -24,7 +24,7 @@
 
 
     // Auto-Animate
-    export const esAnimate = true
+    export const __animate = true
 
     export default function(input) {
 

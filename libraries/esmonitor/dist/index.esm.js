@@ -211,7 +211,7 @@ var getFromPath = (baseObject, path, opts = {}) => {
       throw new Error(message);
     }
     const str = path[i];
-    if (!hasKey(str, ref) && "esDOM" in ref) {
+    if (!hasKey(str, ref) && "__children" in ref) {
       for (let i2 in fallbackKeys) {
         const key = fallbackKeys[i2];
         if (hasKey(key, ref)) {
@@ -257,8 +257,8 @@ var setFromPath = (path, value, ref, opts = {}) => {
       console.error(message, path);
       throw new Error(message);
     }
-    if (ref.esDOM)
-      ref = ref.esDOM;
+    if (ref.__children)
+      ref = ref.__children;
   }
   ref[last] = value;
 };
@@ -411,8 +411,8 @@ var Inspectable = class {
       opts.pathFormat = "relative";
     if (!opts.keySeparator)
       opts.keySeparator = keySeparator;
-    if (target.__esProxy)
-      this.proxy = target.__esProxy;
+    if (target.__proxy)
+      this.proxy = target.__proxy;
     else if (target[isProxy])
       this.proxy = target;
     else {
@@ -446,7 +446,7 @@ var Inspectable = class {
         type = typeof target === "function" ? "function" : "object";
       const handler2 = handlers_exports[`${type}s`](this);
       this.proxy = new Proxy(target, handler2);
-      Object.defineProperty(target, "__esProxy", { value: this.proxy, enumerable: false });
+      Object.defineProperty(target, "__proxy", { value: this.proxy, enumerable: false });
       Object.defineProperty(target, "__esInspectable", { value: this, enumerable: false });
       for (let key in target) {
         if (!this.parent) {

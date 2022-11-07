@@ -8,18 +8,18 @@ import * as utils from './utils/index.js'
 const escId = 'esc'
 const escxgsId = 'escXgs'
 
-export const esElement = 'div'
+export const __element = 'div'
 
 
-export const esDOM = {
+export const __children = {
     nodeA: {
-        esCompose: nodeA,
+        __compose: nodeA,
     },
     nodeB: {
-        esCompose: nodeB,
-        esDOM: {
+        __compose: nodeB,
+        __children: {
             nodeC: {
-                esCompose: nodeC,
+                __compose: nodeC,
                 default: function(a) { 
                     this.z += a; 
                     const id = this._node ? escxgsId : escId
@@ -33,11 +33,11 @@ export const esDOM = {
     },
 
     nodeD: {
-        esCompose: nodeD,
+        __compose: nodeD,
     },
 
     nodeE: {
-        esAnimate: 1,
+        __animate: 1,
         default:function () {
 
             const id = this._node ? escxgsId : escId
@@ -47,7 +47,7 @@ export const esDOM = {
     }
 }
 
-export const esListeners = {
+export const __listeners = {
     '': {
 
         // Attached to nodeC
@@ -58,7 +58,7 @@ export const esListeners = {
                 if (esmDiv) esmDiv.insertAdjacentHTML('beforeend', `<li>nodeA x prop updated ${newX}</li>`)
             },
 
-            esBind: 'nodeB.nodeC'
+            __bind: 'nodeB.nodeC'
         },
         
         'nodeA.jump': {
@@ -67,7 +67,7 @@ export const esListeners = {
                 if (esmDiv) esmDiv.insertAdjacentHTML('beforeend', `<li>nodeA ${jump}</li>`)
             },
 
-            esBind: 'nodeB.nodeC'
+            __bind: 'nodeB.nodeC'
         },
 
         // Attached to nodeA
@@ -82,7 +82,7 @@ export const esListeners = {
         
             },
 
-            esBind: 'nodeA'
+            __bind: 'nodeA'
         },
 
         'nodeB.nodeC': {
@@ -93,7 +93,7 @@ export const esListeners = {
                 return op_result
             },
 
-            esBind: 'nodeA'
+            __bind: 'nodeA'
 
         },
 
@@ -104,7 +104,7 @@ export const esListeners = {
                 return newZ
             },
 
-            esBind: 'nodeA'
+            __bind: 'nodeA'
         }
     },
 }

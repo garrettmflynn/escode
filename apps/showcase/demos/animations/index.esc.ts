@@ -3,57 +3,57 @@ import * as timestamp from './components/timestamp.js'
 
 const interval = true
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         margin: '25px'
     }
 }
 
-export const esDOM = {
+export const __children = {
 
     counter: {
-        esCompose: counter,
-        esAnimate: interval
+        __compose: counter,
+        __animate: interval
     }, 
 
     timestamp: {
-        esCompose: timestamp,
-        esAnimate: interval
+        __compose: timestamp,
+        __animate: interval
     }, 
 
     count: {
-        esElement: 'p',
-        esDOM: {
+        __element: 'p',
+        __children: {
             header: {
-                esElement: 'b',
-                esAttributes: {
+                __element: 'b',
+                __attributes: {
                     innerText: 'Frames: '
                 }
             },
             span: {
-                esElement: 'span',
+                __element: 'span',
             }
         }
     },
 
     time: {
-        esElement: 'p',
-        esDOM: {
+        __element: 'p',
+        __children: {
             header: {
-                esElement: 'b',
-                esAttributes: {
+                __element: 'b',
+                __attributes: {
                     innerText: 'Time: '
                 }
             },
             span: {
-                esElement: 'span',
+                __element: 'span',
             }
         }
     }
 }
 
 
-export const esListeners = {
+export const __listeners = {
     'count.span': {
         counter: true
     },

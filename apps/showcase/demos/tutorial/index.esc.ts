@@ -12,7 +12,7 @@ import * as filteredSignalDemo from '../signal/versions/filtered/index.esc'
 
 import * as audiofeedbackDemo from '../devices/audiofeedback/index.esc'
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         padding: '50px'
     }
@@ -30,52 +30,52 @@ const demoEl = {
 
 const demos = {
     basic: {
-        esURI: '../basic/index.esc',
-        esReference: basicDemo
+        __src: '../basic/index.esc',
+        __object: basicDemo
     },
     todo: {
-        esURI: '../todo/index.esc',
-        esReference: todoDemo
+        __src: '../todo/index.esc',
+        __object: todoDemo
     },
     animations: {
-        esURI: '../animations/index.esc',
-        esReference: animationsDemo
+        __src: '../animations/index.esc',
+        __object: animationsDemo
     },
     phaser: {
-        esURI: '../phaser/index.esc',
-        esReference: phaserDemo
+        __src: '../phaser/index.esc',
+        __object: phaserDemo
     },
     multiplayerPhaser: {
-        esURI: '../phaser/versions/multiplayer/index.esc',
-        esReference: multiplayerPhaserDemo
+        __src: '../phaser/versions/multiplayer/index.esc',
+        __object: multiplayerPhaserDemo
     },
     speakPhaser: {
-        esURI: '../phaser/versions/speak/index.esc',
-        esReference: speakPhaserDemo
+        __src: '../phaser/versions/speak/index.esc',
+        __object: speakPhaserDemo
     },
 
     signal: {
-        esURI: '../signal/index.esc',
-        esReference: signalDemo
+        __src: '../signal/index.esc',
+        __object: signalDemo
     },
     noisySignal: {
-        esURI: '../signal/versions/noisy/index.esc',
-        esReference: noisySignalDemo
+        __src: '../signal/versions/noisy/index.esc',
+        __object: noisySignalDemo
     },
 
     filteredSignal: {
-        esURI: '../signal/versions/filtered/index.esc',
-        esReference: filteredSignalDemo
+        __src: '../signal/versions/filtered/index.esc',
+        __object: filteredSignalDemo
     },
 
     devicePhaser: {
-        esURI: '../phaser/versions/devices/index.esc',
-        esReference: devicePhaserDemo
+        __src: '../phaser/versions/devices/index.esc',
+        __object: devicePhaserDemo
     },
 
     audiofeedback: {
-        esURI: '../devices/audiofeedback/index.esc',
-        esReference: audiofeedbackDemo
+        __src: '../devices/audiofeedback/index.esc',
+        __object: audiofeedbackDemo
     },
     
 }
@@ -84,9 +84,9 @@ const demoInfo = {} as any
 
 const maxHeight = '300px'
 
-// const esCode = undefined 
+// const __editor = undefined 
 
-const esCode = {
+const __editor = {
     style: {
         height: maxHeight,
         border: '2px solid'
@@ -95,38 +95,38 @@ const esCode = {
 
 for (let key in demos) {
     demoInfo[key] = {
-        esCompose: demos[key],
-        esAttributes: {
+        __compose: demos[key],
+        __attributes: {
             style: Object.assign({}, demoEl.style)
         },
-        esCode
+        __editor
     }
 
-    // if (key.includes('phaser')) demoInfo[key].esAttributes.style.height = maxHeight
+    // if (key.includes('phaser')) demoInfo[key].__attributes.style.height = maxHeight
 }
 
-export const esDOM = {
+export const __children = {
 
     h1: {
-        esElement: 'h1',
-        esAttributes: {
+        __element: 'h1',
+        __attributes: {
             innerHTML: "Welcome to the Brains@Play Framework"
         }
     },
     firstsection: {
-        esDOM: {
+        __children: {
             h2: {
-                esElement: 'h2',
-                esAttributes: {
+                __element: 'h2',
+                __attributes: {
                     innerHTML: "Getting Started"
                 }
             },
 
             block1: {
-                esDOM: {
+                __children: {
                     p1: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "Brains@Play is a rapid application development framework."
                         }
                     },
@@ -136,15 +136,15 @@ export const esDOM = {
 
 
             block2: {
-                esDOM: {
+                __children: {
                     p2: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "It can be used to make simple animations: "
                         },
-                        esDOM: {
+                        __children: {
                             readout: {
-                                esElement: 'span',
+                                __element: 'span',
                             },
                         }
                     },
@@ -154,10 +154,10 @@ export const esDOM = {
 
 
             block3: {
-                esDOM: {
+                __children: {
                     p3: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "Or control the information flow of more complicated applications."
                         }
                     },
@@ -167,10 +167,10 @@ export const esDOM = {
 
 
             block4: {
-                esDOM: {
+                __children: {
                     p4: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "You can even use it to create games!"
                         }
                     },
@@ -180,10 +180,10 @@ export const esDOM = {
 
 
             block5: {
-                esDOM: {
+                __children: {
                     p5: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "Adding another player is as simple as adding another Player component to the Game component."
                         }
                     },
@@ -193,10 +193,10 @@ export const esDOM = {
 
 
             block6: {
-                esDOM: {
+                __children: {
                     p6: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "And adding another control method—such as voice control—is as simple as adding a control source (e.g. the native Speech Recognition API) and a listener that handles the control source's output!"
                         }
                     },
@@ -206,19 +206,19 @@ export const esDOM = {
         }
         },
         secondsection: {
-            esDOM: {
+            __children: {
                 h2: {
-                    esElement: 'h2',
-                    esAttributes: {
+                    __element: 'h2',
+                    __attributes: {
                         innerHTML: "What are Signals?"
                     }
                 },
 
                 block1: {
-                    esDOM: {
+                    __children: {
                         p1: {
-                            esElement: 'p',
-                            esAttributes: {
+                            __element: 'p',
+                            __attributes: {
                                 innerHTML: "Signals are information being carried in a medium like electricity or light that we can use to understand or communicate with each other."
                             }
                         },
@@ -228,10 +228,10 @@ export const esDOM = {
 
 
                 block2: {
-                    esDOM: {
+                    __children: {
                         p2: {
-                            esElement: 'p',
-                            esAttributes: {
+                            __element: 'p',
+                            __attributes: {
                                 innerHTML: "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
                             }
                         },
@@ -241,16 +241,16 @@ export const esDOM = {
 
 
                 block3: {
-                    esDOM: {
+                    __children: {
                         p3: {
-                            esElement: 'p',
-                            esAttributes: {
+                            __element: 'p',
+                            __attributes: {
                                 innerHTML: "This makes it hard to use these signals to do things like control a game!"
                             }
                         },
                         demo3: {
-                            esCompose: demoInfo.devicePhaser,
-                            esDOM: {
+                            __compose: demoInfo.devicePhaser,
+                            __children: {
                                 devices: {
                                     esAttributes: {
                                         style: {
@@ -265,20 +265,20 @@ export const esDOM = {
 
 
                 block4: {
-                    esDOM: {
+                    __children: {
                         p4: {
-                            esElement: 'p',
-                            esAttributes: {
+                            __element: 'p',
+                            __attributes: {
                                 innerHTML: "We can filter some noise, but sometimes there are multiple sources of noise, in this case we still see signals from our power outlet, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
                             }
                         },
                         demo4: {
-                            esCompose: demoInfo.filteredSignal,
+                            __compose: demoInfo.filteredSignal,
 
                             // Apply Demo-Specific Filter Bank
-                            esDOM: {
+                            __children: {
                                 devices: {
-                                    esDOM: {
+                                    __children: {
                                         filter: {
                                             settings: {
                                                 useBandpass: true,
@@ -296,33 +296,33 @@ export const esDOM = {
 
 
                 block5: {
-                    esDOM: {
+                    __children: {
                         p5: {
-                            esElement: 'p',
-                            esAttributes: {
+                            __element: 'p',
+                            __attributes: {
                                 innerHTML: "To solve this we can apply multiple filters to block different ranges or specific frequencies. "
                             }
                         },
                         demo5: {
-                            esCompose: demoInfo.filteredSignal,
+                            __compose: demoInfo.filteredSignal,
                         }
                     }
                 },
 
 
                 block6: {
-                    esDOM: {
+                    __children: {
                         p6: {
-                            esElement: 'p',
-                            esAttributes: {
+                            __element: 'p',
+                            __attributes: {
                                 innerHTML: "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
                             }
                         },
                         demo6: {
-                            esCompose: demoInfo.devicePhaser,
-                            esDOM: {
+                            __compose: demoInfo.devicePhaser,
+                            __children: {
                                 devices: {
-                                    esAttributes: {
+                                    __attributes: {
                                         style: {
                                             display:'none'
                                         }
@@ -371,6 +371,4 @@ phaser.forEach(i => {
 })
 
 // // const set = new Set()
-export const esListeners = listeners
-
-console.log('Got listeners', listeners)
+export const __listeners = listeners

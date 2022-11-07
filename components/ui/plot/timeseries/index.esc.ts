@@ -2,7 +2,7 @@
 import * as plotter from "../utils/index";
 import * as canvasComponent from '../../canvas.js'
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         width: '100%',
         height: '100%',
@@ -10,10 +10,10 @@ export const esAttributes = {
     }
 }
 
-export const esDOM = {
+export const __children = {
     signalCanvas: {
-        esCompose: canvasComponent,
-        esAttributes: {
+        __compose: canvasComponent,
+        __attributes: {
             style: {
                 backgroundColor: 'black'
             }
@@ -21,8 +21,8 @@ export const esDOM = {
     },
     
     overlayCanvas: {
-        esCompose: canvasComponent,
-        esAttributes: {
+        __compose: canvasComponent,
+        __attributes: {
             style: {
                 position: 'absolute',
                 top: '0px',
@@ -42,19 +42,19 @@ export const esDOM = {
             lineWidth: 0.01,
         },
         
-        esCompose: plotter
+        __compose: plotter
     },
 }
 
-export const esListeners = {
+export const __listeners = {
     'plot.canvas': {
         'signalCanvas': {
-            esTrigger: true
+            __trigger: true
         },
     },
     'plot.overlay': {
         'overlayCanvas': {
-            esTrigger: true
+            __trigger: true
         },
     },
 }

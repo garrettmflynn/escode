@@ -5,7 +5,7 @@ function onConnect(result){
     let cap;
     let csvmenu;
 
-    const parentNode = this.esElement.parentNode ?? document.body
+    const parentNode = this.__element.parentNode ?? document.body
 
     // TODO: Ensure that subprocesses come out
     if (typeof result.subprocesses === 'object') {

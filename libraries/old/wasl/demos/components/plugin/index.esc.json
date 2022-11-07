@@ -1,14 +1,14 @@
 {
     "name": "Test Plugin",
-    "esDOM": {
+    "__children": {
         "add": {
-            "esCompose": "../math/add.js",
+            "__compose": "../math/add.js",
             "children": {
                 "multiply": true
             }
         },
         "multiply": {
-            "esCompose": "../math/multiply.js"
+            "__compose": "../math/multiply.js"
         }
     },
 

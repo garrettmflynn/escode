@@ -13,7 +13,7 @@ import createComponent from '../../escompose/src/index'
 
 // Default ES Component Pool for Plugins
 import * as components from '../../../components/index.js'
-import { esSource } from '../../esc/esc';
+import { __source } from '../../esc/esc';
 
 
 export type EditorProps = {
@@ -140,7 +140,7 @@ export class Editor extends LitElement {
 
         if (this.config.esc){         
           let tags = getTags(edge)
-          this.config.esc.__esManager.add(tags[0], tags[1], edge.info)
+          this.config.esc.__manager.add(tags[0], tags[1], edge.info)
         } else {
           console.error('New edge cannot be handled...')
         }
@@ -157,7 +157,7 @@ export class Editor extends LitElement {
           })
           activeGraph.nodes[node.tag] = component
           node.info = component
-          component.esParent = this.config.esc.esElement
+          component.__parent = this.config.esc.__element
         } else {
           console.error('Cannot handle this edit...')
         }
@@ -170,7 +170,7 @@ export class Editor extends LitElement {
         if (edge.input && edge.output){
           if (this.config.esc){
             const tags = getTags(edge)
-            this.config.esc.__esManager.remove(tags[0], tags[1])
+            this.config.esc.__manager.remove(tags[0], tags[1])
           } else {
             console.error('Edge removal cannot be handled...')
           }
@@ -182,7 +182,7 @@ export class Editor extends LitElement {
         const activeGraph = this.config.graph
         if (this.config.esc){
           const activeNode = activeGraph.nodes[node.tag]
-          activeNode.esDisconnected()
+          activeNode.__disconnected()
           delete activeGraph.nodes[node.tag]
         }
       }
@@ -208,7 +208,7 @@ export class Editor extends LitElement {
     }
 
 
-    addFile = (path: string, files: esSource) => {
+    addFile = (path: string, files: __source) => {
       if (path && files) {
 
         const trigger =  Object.keys(this.filesystem).length === 0
@@ -263,24 +263,24 @@ export class Editor extends LitElement {
     // TODO: Assign ES Component types
     setComponent = (esc: any = {}) => {
 
-      const component = (esc.hasOwnProperty('__isESComponent')) ? esc : this.createComponent(esc) 
-      const attachedToThis = esc.__esCode === this
+      const component = (esc.hasOwnProperty('__path')) ? esc : this.createComponent(esc) 
+      const attachedToThis = esc.__editorAttached === this
 
       this.config.esc = component
 
-      this.setUI(component.esElement) // Maintain a reference to the true parent at esc.esParent
+      this.setUI(component.__element) // Maintain a reference to the true parent at esc.__parent
 
-      if (!attachedToThis) Object.defineProperty(component, '__esCode', {value: this}) // Setting esCode to the component
+      if (!attachedToThis) Object.defineProperty(component, '__editorAttached', {value: this}) // Setting __editor to the component
 
       const local = {}
-      for (let key in component.esDOM) {
-        const esc = component.esDOM[key]
-        local[key] = esc.esOriginal
+      for (let key in component.__children) {
+        const esc = component.__children[key]
+        local[key] = esc.__original
       }
       
       this.setPlugins({
         ['Local Components']: {
-          ...component.esComponents,
+          ...component.__define,
           ...local
         },
         ['Component Registry']: {
@@ -289,8 +289,8 @@ export class Editor extends LitElement {
       })
 
       const graph = {
-        nodes: component.esDOM,
-        edges: component.esListeners
+        nodes: component.__children,
+        edges: component.__listeners
       }
 
       this.graph.workspace.edgeMode = 'to'

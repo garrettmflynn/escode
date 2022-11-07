@@ -44,19 +44,19 @@ export const define = (config, esm) => {
         
         // Create a New Class Per Definition
         class ESComponent extends BaseClass {
-            esComponent;
+            __component;
 
             constructor(properties){
                 super(properties)
                 resolve(createComponent(esm), res => {
-                    res.esElement = this
-                    this.esComponent = res
+                    res.__element = this
+                    this.__component = res
                 })
             }
 
             connectedCallback() {
                 console.log('Custom element added to page.');
-                this.esComponent.__esReady();
+                this.__component.____ready();
             }
 
             disconnectedCallback() {

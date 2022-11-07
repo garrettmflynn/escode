@@ -9,7 +9,7 @@
       "type": "object",
       "anyOf": [{
       "properties": {
-        "esCompose": {
+        "__compose": {
           "anyOf": [
             {
               "type": "string",

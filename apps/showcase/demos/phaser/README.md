@@ -5,7 +5,7 @@
 To use local assets, setBaseURL can also be declared as:
 ```json
  {
-    "esCompose": "./assets",
+    "__compose": "./assets",
     "_map": true
 }
 ```

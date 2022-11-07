@@ -32,7 +32,7 @@ async function asyncConnect (keys, onReadyCallback) {
         if (promise && typeof promise.then === 'function' ) component = this[keys.hierarchy][name] = await promise // Wait for the component to be ready
         const init = component[keys.start]
         if (typeof init === 'function') await init()
-        else console.error(`Could not start component ${name} because it does not have an esConnected function`)
+        else console.error(`Could not start component ${name} because it does not have a __connected function`)
     }
 
     if (onReadyCallback) await onReadyCallback()
@@ -44,9 +44,9 @@ function connect (keys, callbacks: Function[] = []) {
 
     const privateEditorKey = `__${keys.editor}`
 
-    // ------------------ Retroactively set esCode editor on children of the focus element -----------------
-    const esCode = this[keys.parent]?.[keys.component]?.[privateEditorKey]
-    if (esCode) define.value(privateEditorKey, esCode, this)
+    // ------------------ Retroactively set __editor editor on children of the focus element -----------------
+    const __editor = this[keys.parent]?.[keys.component]?.[privateEditorKey]
+    if (__editor) define.value(privateEditorKey, __editor, this)
         
     // ------------------ Register Sources (from esmpile) -----------------
     let source = this[standards.esSourceKey]

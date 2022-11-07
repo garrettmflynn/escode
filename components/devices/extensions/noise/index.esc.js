@@ -2,12 +2,12 @@
 import * as noise from "./generator.esc.js"
 
 // Add noise to hierarchy
-export const esDOM = {
+export const __children = {
     noise
 }
 
 // Remove listeners so that noise is the only one triggering output
-export const esListeners = {
+export const __listeners = {
     noise: {
         preprocess: true
     },
@@ -24,14 +24,14 @@ export const esListeners = {
 // const movement = [1]
 
 // const noiseOverride =  {
-//     esDOM: {
+//     __children: {
 //         devices: noise
 //     }
 // }
 
-// export const esDOM =  {
+// export const __children =  {
 //     devices:{
-//         esDOM: {
+//         __children: {
 //             noise: {
 //                 frequencies: [[...movement, ...power]] // setting custom frequencies
 //             }
@@ -39,4 +39,4 @@ export const esListeners = {
 //     }
 // }
 
-// export const esCompose = [noiseOverride, signal]
+// export const __compose = [noiseOverride, signal]

@@ -17,9 +17,6 @@ const noEncoding = `No buffer or text to bundle for`
 const toWait = 10000
 const waitedFor = (toWait/1000).toFixed(1)
 
-// const esSourceString = (bundle) => `\n export const __esSource = globalThis.REMOTEESM_BUNDLES["${bundle.collection}"]["${bundle.name}"]` // Export bundle from module...
-// const esSourceString = (bundle) => `\n export const __esSource = true` // Export bundle from module...
-
 const esSourceString = (bundle) => `
 export const ${esSourceKey} = () => globalThis.REMOTEESM_BUNDLES["${bundle.collection}"]["${bundle.name}"];
 ` // Export bundle from module...

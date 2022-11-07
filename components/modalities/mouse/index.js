@@ -26,7 +26,7 @@ export const prevHovered = null
 export const stylesheets = []
 
 // Styling Information
-export const esAttributes = {
+export const __attributes = {
     style: {
         zIndex: 10000000,
         pointerEvents: 'none',
@@ -34,15 +34,15 @@ export const esAttributes = {
     }
 }
 
-export function esConnected () {
+export function __connected () {
 
     // Replace default element with an image of cursor
-    if (this.esElement instanceof HTMLDivElement && this.esElement.innerHTML === ''){
+    if (this.__element instanceof HTMLDivElement && this.__element.innerHTML === ''){
         const el = document.createElement('img')
         el.src = 'https://media.geeksforgeeks.org/wp-content/uploads/20200319212118/cursor2.png'
         el.width = this.size.width
         el.height = this.size.height
-        this.esElement = el
+        this.__element = el
     }
 
     this.stylesheets.push(transformCSS())
@@ -59,12 +59,12 @@ export function esConnected () {
     window.addEventListener("click", this.click)
     window.addEventListener("mousemove", this.onMove);
 
-    this.esElement.style.left = this.x + 'px'
-    this.esElement.style.top = this.y + 'px'
+    this.__element.style.left = this.x + 'px'
+    this.__element.style.top = this.y + 'px'
 }
 
-export function esDisconnected () {
-    if (this.esElement != null) this.esElement.remove()
+export function __disconnected () {
+    if (this.__element != null) this.__element.remove()
 
     document.body.style.cursor = 'default'
 
@@ -90,8 +90,8 @@ export function move (o){
     if (desiredY < (window.innerHeight - this.size.height) && desiredY > 0) this.y = desiredY
 
     // Trigger Cursor Events
-    this.esElement.style.left = `${this.x}px`
-    this.esElement.style.top = `${this.y}px`
+    this.__element.style.left = `${this.x}px`
+    this.__element.style.top = `${this.y}px`
 
     this.onHover(true)
 }
@@ -108,8 +108,8 @@ export function click(ev, ...args) {
         let event = new MouseEvent('click');
         tmp.dispatchEvent(event);
 
-        this.esElement.style.left = (this.offsetX + this.x) + "px";
-        this.esElement.style.top = (this.offsetY + this.y) + "px";
+        this.__element.style.left = (this.offsetX + this.x) + "px";
+        this.__element.style.top = (this.offsetY + this.y) + "px";
     }
 }
 
@@ -122,8 +122,8 @@ export function onMove (e) {
     this.y = e.clientY;
     
     // sets the image cursor to new relative position
-    this.esElement.style.left = (this.offsetX + this.x) + "px";
-    this.esElement.style.top = (this.offsetY + this.y) + "px";
+    this.__element.style.left = (this.offsetX + this.x) + "px";
+    this.__element.style.top = (this.offsetY + this.y) + "px";
 
     this.onHover(false)
 }

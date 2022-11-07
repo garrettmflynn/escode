@@ -1,11 +1,11 @@
 // Note: Merge at the SAME LEVEL as the preprocessing and connect objects (to avoid enforcing with a specific name)
 import * as filter from "../../../filter/index.esc.js"
 
-export const esDOM = {
+export const __children = {
     filter
 }
 
-export const esListeners = {
+export const __listeners = {
     'filter.settings.sps': 'connect.sps',
 
     filter: {
@@ -23,16 +23,16 @@ export const esListeners = {
 
 // // USAGE WHEN NESTED
 // const filterOverride = {
-//     esDOM: {
+//     __children: {
 //         devices: filter
 //     }
 // }
 
-// export const esCompose = [filterOverride, signal]
+// export const __compose = [filterOverride, signal]
 
-// export const esDOM = {
+// export const __children = {
 //     devices: {
-//         esDOM: {
+//         __children: {
 //             filter: {
 //                 settings: {
 //                     // useBandpass: true,

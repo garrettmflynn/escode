@@ -1,14 +1,14 @@
 {
     "name": "My Application",
-    "esDOM": {
+    "__children": {
             "plugin": {
-                "esCompose": "../../../plugins/plugin/index.esc.json",
+                "__compose": "../../../plugins/plugin/index.esc.json",
                 "add": {
                     "arguments": {
                         "input": 15
                     },
                     "toAdd": {
-                        "esCompose": "./number.js"
+                        "__compose": "./number.js"
                     }
                 },
                 "children": {
@@ -17,22 +17,22 @@
                 }
             },
             "math": {
-                "esCompose": "../../../plugins/math/index.esc.json",
+                "__compose": "../../../plugins/math/index.esc.json",
                 "children": {
                     "external": true,
                     "log": true
                 }
             },
             "external": {
-                "esDOM": {
+                "__children": {
                     "secondaddition": {
-                        "esCompose": "../../../plugins/math/add2.js",
+                        "__compose": "../../../plugins/math/add2.js",
                         "children": {
                             "secondmultiplication": true
                         }
                     },
                     "secondmultiplication": {
-                        "esCompose": "../../../plugins/math/multiply2.js"
+                        "__compose": "../../../plugins/math/multiply2.js"
                     }
                 }, 
                 
@@ -47,7 +47,7 @@
             },
 
             "log": {
-                "esCompose": "../../../plugins/log.js"
+                "__compose": "../../../plugins/log.js"
             }
         }
 }

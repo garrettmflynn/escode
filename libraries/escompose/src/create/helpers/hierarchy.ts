@@ -18,8 +18,8 @@ export default function hierarchy(o, id: string | symbol, toMerge = {}, parent?,
     const parentId = parent?.[specialKeys.path]
     const path = (parentId) ? [parentId, id] : ((typeof id === 'string') ? [id] : [])
 
-    // TODO: Search the entire object for the esCompose key. Then execute this merge script
-    // ------------------ Merge ESM with esCompose Properties ------------------
+    // TODO: Search the entire object for the __compose key. Then execute this merge script
+    // ------------------ Merge ESM with __compose Properties ------------------
     const firstMerge = mergeUtility(toMerge, o, path); // basic merge
     const merged = merge(firstMerge, o[specialKeys.compose], path, opts) // special merge
 

@@ -9,7 +9,7 @@ export const settings = {
     // useDCBlock: true,
 }
 
-export const esListeners = {
+export const __listeners = {
     'update': {
         "settings.sps": true
     }

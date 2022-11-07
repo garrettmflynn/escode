@@ -29,7 +29,7 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
     if (options.clone) config = deepClone(config) // NOTE: If this doesn't happen, the reference will be modified by the create function
 
 
-    // Always fall back to esDOM
+    // Always fall back to __children
     options.monitor.options.fallbacks = [standards.specialKeys.hierarchy]
 
     const fullOptions = options as Options

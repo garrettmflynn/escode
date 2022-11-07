@@ -9,50 +9,52 @@ export const isPrivate = (key) => false //key[0] === '_' // No private keys
 
 export const specialKeys = {
 
-    start: 'esConnected', // asked to start
-    stop: 'esDisconnected',
-    connected: 'esReady', // wait until connected
+    start: '__connected', // asked to start
+    stop: '__disconnected',
+    connected: '__ready', // wait until connected
 
-    hierarchy: 'esDOM',
-    element: 'esElement',
-    webcomponents: 'esComponents',
-    attributes: 'esAttributes',
+    hierarchy: '__children',
+    element: '__element',
+    webcomponents: '__define',
+    attributes: '__attributes',
 
     listeners: {
-        value: 'esListeners',
-        branch: 'esBranch',
-        bind: 'esBind',
-        trigger: 'esTrigger',
-        format: 'esFormat',
+        value: '__listeners',
+        branch: '__branch',
+        bind: '__bind',
+        trigger: '__trigger',
+        format: '__format',
     },
 
-    trigger: 'esTrigger',
-    compose: 'esCompose',
+    trigger: '__trigger',
+    compose: '__compose',
 
-    uri: 'esURI',
-    reference: 'esReference',
+    uri: '__src',
+    reference: '__object',
 
-    childPosition: 'esChildPosition',
+    childPosition: '__childposition',
 
     attribute: 'escomponent',
+    options: '__options',
 
-    parent: 'esParent',
-    component: 'esComponent',
+    parent: '__parent',
+    component: '__component',
 
-    source: 'esSource',
-    path: '__isESComponent',
+    source: '__source',
+    path: '__path',
 
-    animate: 'esAnimate',
-    options: '__esOptions',
-    states: '__esStates',
+    animate: '__animate',
+    states: '__states',
 
-    promise: '__esComponentPromise',
-    proxy: '__esProxy',
-    editor: 'esCode',
+    promise: '__childresolved',
+    editor: '__editor',
 
-    flow: '__esManager',
+    flow: '__manager',
 
-    original: 'esOriginal',
+    original: '__original',
 
-    resize: 'esOnResize',    
+    resize: '__onresize',    
+    
+
+    proxy: '__proxy'
 }

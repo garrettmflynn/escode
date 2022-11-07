@@ -1,4 +1,4 @@
-export const esElement = 'select' // default element
+export const __element = 'select' // default element
 
 
 export const options = {
@@ -9,13 +9,13 @@ export const options = {
 
 export const itemTag = 'option'
 
-export const esConnected = function() {
+export const __connected = function() {
     let target = this
-    let element = target.esElement
+    let element = target.__element
     if (!element) {
         if (target.source){
             target = target.source
-            element = target.esElement
+            element = target.__element
         } 
     }
 
@@ -60,7 +60,7 @@ export function showHide(value, options, element) {
         const el = element.parentNode.querySelector(`#${o.show}`)
         if (value === o.value) {
             el.style.display = ''
-            if (el.hasAttribute('escomponent')) el.esComponent.default(el.value) // run new value when shown
+            if (el.hasAttribute('escomponent')) el.__component.default(el.value) // run new value when shown
         }  else el.style.display = 'none'
     })
 }

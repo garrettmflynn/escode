@@ -1,14 +1,14 @@
 {
-    "esDOM": {
+    "__children": {
             "fft": {
-                "esCompose": "fft/index.js",
+                "__compose": "fft/index.js",
                 "children": {
                     "alpha": true,
                     "beta": true
                 }
             },
             "alpha": {
-                "esCompose": "bandpower/index.js",
+                "__compose": "bandpower/index.js",
                 "arguments": {
                     "band": "alpha"
                 },
@@ -17,7 +17,7 @@
                 }
             },
             "beta": {
-                "esCompose": "bandpower/index.js",
+                "__compose": "bandpower/index.js",
                 "arguments": {
                     "band": "beta"
                 },
@@ -26,7 +26,7 @@
                 }
             },
             "ratio": {
-                "esCompose": "ratio/index.js"
+                "__compose": "ratio/index.js"
             }
         },
 

@@ -1,12 +1,12 @@
 {
-    "esDOM": {
+    "__children": {
             "phaser": {
-                "esCompose": "../index.esc.json",
+                "__compose": "../index.esc.json",
                 "overrides": {
                     "game": {
-                        "esDOM": {
+                        "__children": {
                             "companion": {
-                                "esCompose": "../../../components/phaser/player.js",
+                                "__compose": "../../../components/phaser/player.js",
                                 "position": {
                                     "x": 100,
                                     "y": 200
@@ -19,10 +19,10 @@
                                 "bounce": 0.2,
                                 "collideWorldBounds": false,
                                 "create": {
-                                    "esCompose": "../scripts/player/create/companion.js"
+                                    "__compose": "../scripts/player/create/companion.js"
                                 },
                                 "update": {
-                                    "esCompose": "../scripts/player/update.js"
+                                    "__compose": "../scripts/player/update.js"
                                 }
                             }
                         }

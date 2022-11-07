@@ -9,15 +9,15 @@ const soundDropdown =plugins.escompose.instance(plugins.output.sound.dropdown, {
     soundFilePaths = [
         {
             "label": "Kalimba",
-            "esCompose": "../assets/kalimba.wav"
+            "__compose": "../assets/kalimba.wav"
         },
         {
             "label": "Phonk",
-            "esCompose": "../assets/phonk.wav"
+            "__compose": "../assets/phonk.wav"
         },
         {
             "label": "Synth Flute",
-            "esCompose": "../assets/synthflute.wav"
+            "__compose": "../assets/synthflute.wav"
         }
     ]
 })

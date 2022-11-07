@@ -4,30 +4,30 @@ import * as average from "../../../../../../components/basic/average.js"
 import * as threshold from "../../../../../../components/basic/threshold.js"
 import * as muse from "../../../../../../components/drafts/old/devices/muse/index.js"
 
-export const esDOM = {} as any
-export const esListeners = {} as any
+export const __children = {} as any
+export const __listeners = {} as any
 
-esListeners.threshold = 'average'
-esListeners.average = 'datastreams'
-esListeners.datastreams = "muse"
-esListeners.muse = "button"
+__listeners.threshold = 'average'
+__listeners.average = 'datastreams'
+__listeners.datastreams = "muse"
+__listeners.muse = "button"
 
-esDOM.average = {
-    esCompose: average,
+__children.average = {
+    __compose: average,
 }
 
 
-esDOM.threshold = {
+__children.threshold = {
     value: 300,
-    esCompose: threshold,
+    __compose: threshold,
 }
 
 
-esDOM.muse = {
-    esCompose: muse,
+__children.muse = {
+    __compose: muse,
 }
 
-const buttonElementConfig = button.esElement
+const buttonElementConfig = button.__element
 buttonElementConfig.attributes.innerText = 'Connect Player 1'
 buttonElementConfig.style = {
     'z-index': 100,
@@ -36,12 +36,12 @@ buttonElementConfig.style = {
     left: '0',
 }
 
-esDOM.button = {
-    esElement: buttonElementConfig,
-    esCompose: button,
+__children.button = {
+    __element: buttonElementConfig,
+    __compose: button,
 }
 
 
-esDOM.datastreams = {
-    esCompose: start
+__children.datastreams = {
+    __compose: start
 }

@@ -1,16 +1,16 @@
 
     export const latest = null
 
-    export const esAnimate = true
+    export const __animate = true
 
-    export const esElement = 'table'
+    export const __element = 'table'
 
     export default function(input){
 
         if (input !== undefined) this.latest = input
         else {
             const thisLatest = this.latest ?? {}
-            if((!this.esElement.innerHTML || thisLatest.currentTimestamp !== thisLatest.lastTimestamp)){
+            if((!this.__element.innerHTML || thisLatest.currentTimestamp !== thisLatest.lastTimestamp)){
                 const timestamp = (thisLatest.currentTimestamp) ? new Date(thisLatest.currentTimestamp).toISOString() : 0
 
                 // Calculate RMSE Stats
@@ -29,7 +29,7 @@
                     // }
                 }
 
-                this.esElement.innerHTML = `
+                this.__element.innerHTML = `
                 <tr> <th>Timestamp: </th><td>${timestamp}</td> </tr>
                 <tr> <th>Current: </th><td>${thisLatest.current?.toFixed(2) ?? 0}</td> </tr>
                 <tr> <th>Baseline: </th><td>${thisLatest.baseline?.toFixed(2) ?? 0}</td> </tr>

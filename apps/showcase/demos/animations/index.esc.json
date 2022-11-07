@@ -1,44 +1,44 @@
 {
-    "esDOM": {
+    "__children": {
         "counter": {
-            "esCompose": "./components/counter.js",
-            "esAnimate": true
+            "__compose": "./components/counter.js",
+            "__animate": true
         },
         "timestamp": {
-            "esCompose": "./components/timestamp.js",
-            "esAnimate": true
+            "__compose": "./components/timestamp.js",
+            "__animate": true
         },
         "count": {
-            "esElement": "p",
-            "esDOM": {
+            "__element": "p",
+            "__children": {
                 "header": {
-                    "esElement": "b",
-                    "esAttributes": {
+                    "__element": "b",
+                    "__attributes": {
                         "innerText": "Frames: "
                     }
                 },
                 "span": {
-                    "esElement": "span"
+                    "__element": "span"
                 }
             }
         },
         "time": {
-            "esElement": "p",
-            "esDOM": {
+            "__element": "p",
+            "__children": {
                 "header": {
-                    "esElement": "b",
-                    "esAttributes": {
+                    "__element": "b",
+                    "__attributes": {
                         "innerText": "Time: "
                     }
                 },
                 "span": {
-                    "esElement": "span"
+                    "__element": "span"
                 }
             }
         },
         }
     },
-    "esListeners": {
+    "__listeners": {
         "count.span": {
             "counter": true
         },

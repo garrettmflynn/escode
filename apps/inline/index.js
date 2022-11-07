@@ -46,23 +46,23 @@ for (let i in trees){
 
             const onConnected = (tree) => {
 
-                tree.esDOM.nodeB.x += 1; //should trigger nodeA listener
+                tree.__children.nodeB.x += 1; //should trigger nodeA listener
 
-                tree.esDOM.nodeB.esDOM.nodeC.default(4); //should trigger nodeA listener
+                tree.__children.nodeB.__children.nodeC.default(4); //should trigger nodeA listener
             
-                tree.esDOM.nodeA.jump();
+                tree.__children.nodeA.jump();
                         
-                const popped = tree.esDOM.nodeB.esDisconnected()  
+                const popped = tree.__children.nodeB.__disconnected()  
 
                 divs[o.id].innerHTML += '<li><b>nodeB popped!</b></li>'
 
                 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
             
-                tree.esDOM.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
+                tree.__children.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
 
                 setTimeout(()=>{ 
 
-                    tree.esDOM.nodeE.esDisconnected()  
+                    tree.__children.nodeE.__disconnected()  
                     divs[o.id].innerHTML += '<li><b>nodeE popped!</b></li>'
 
                 }, 5500)
@@ -70,11 +70,11 @@ for (let i in trees){
             }
 
             // NOTE: This is how you declare this to work with the ESCompose object inline
-            escompose.create(tree, { esParent: divs[o.id] }, {listen: true, clone: true, await: true}).then(onConnected)
+            escompose.create(tree, { __parent: divs[o.id] }, {listen: true, clone: true, await: true}).then(onConnected)
 
-            // // NOTE: Works with no esParent originally—but listeners will not be placed before onconnect declarations
+            // // NOTE: Works with no __parent originally—but listeners will not be placed before onconnect declarations
             // const res = transform.graphscript.esc(tree)
-            // res.esParent = divs[o.id]
+            // res.__parent = divs[o.id]
             // onConnected(res)            
 
         continue;

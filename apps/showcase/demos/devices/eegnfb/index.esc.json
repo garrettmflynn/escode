@@ -1,5 +1,5 @@
 {
-    "esDOM": {
+    "__children": {
         "app": {
             "style": {
                 "background-color": "black",
@@ -10,10 +10,10 @@
                 "overflow": "auto"
             },
             "tagName": "div",
-            "esDOM": {
+            "__children": {
                 "devices": {
                     "tagName": "div",
-                    "esCompose": "../../../../components/devices/ui/index.esc.json",
+                    "__compose": "../../../../components/devices/ui/index.esc.json",
                     "connectmode": {
                         "options": [
                             {
@@ -43,69 +43,69 @@
                             "freeeeg128": "FreeEEG128",
                             "nrf5x": "nRF5x board"
                         },
-                        "esCompose": "../../../../components/ui/select.js"
+                        "__compose": "../../../../components/ui/select.js"
                     },
                     "selectBLE": {
                         "options": {
                             "nrf5x": "nRF5x board"
                         },
-                        "esCompose": "../../../../components/ui/select.js"
+                        "__compose": "../../../../components/ui/select.js"
                     },
                     "selectBLEOther": {
                         "options": {
                             "muse": "Muse",
                             "ganglion": "Ganglion"
                         },
-                        "esCompose": "../../../../components/ui/select.js"
+                        "__compose": "../../../../components/ui/select.js"
                     },
                     "selectOther": {
                         "options": {
                             "simulator": "Simulator"
                         },
-                        "esCompose": "../../../../components/ui/select.js"
+                        "__compose": "../../../../components/ui/select.js"
                     },
                     "connect": {
                         "thirdPartyDecoder": {
-                            "esCompose": "device-decoder.third-party"
+                            "__compose": "device-decoder.third-party"
                         },
                         "workerUrl": {
-                            "esCompose": "./scripts/workers/stream.big.worker.js",
+                            "__compose": "./scripts/workers/stream.big.worker.js",
                             "_format": "datauri"
                         },
                         "routes": {
-                            "esCompose": "./scripts/connect/routes.js"
+                            "__compose": "./scripts/connect/routes.js"
                         },
                         "onconnect": {
-                            "esCompose": "./scripts/connect/onConnect.js"
+                            "__compose": "./scripts/connect/onConnect.js"
                         }
                     },
                     "preprocess": {
-                        "esCompose": "../../../../components/devices/eeg/preprocess.js"
+                        "__compose": "../../../../components/devices/eeg/preprocess.js"
                     }
                 },
                 "output": {
                     "tagName": "div",
-                    "esDOM": {
+                    "__children": {
                         "audio": {
-                            "esCompose": "../../../../components/ui/audio/index.esc.json",
+                            "__compose": "../../../../components/ui/audio/index.esc.json",
                             "sounds": {
                                 "options": [
                                     {
                                         "label": "Kalimba",
                                         "value": {
-                                            "esCompose": "../assets/kalimba.wav"
+                                            "__compose": "../assets/kalimba.wav"
                                         }
                                     },
                                     {
                                         "label": "Phonk",
                                         "value": {
-                                            "esCompose": "../assets/phonk.wav"
+                                            "__compose": "../assets/phonk.wav"
                                         }
                                     },
                                     {
                                         "label": "Synth Flute",
                                         "value": {
-                                            "esCompose": "../assets/synthflute.wav"
+                                            "__compose": "../assets/synthflute.wav"
                                         }
                                     }
                                 ]
@@ -113,18 +113,18 @@
                         },
                         "other": {
                             "tagName": "div",
-                            "esDOM": {
+                            "__children": {
                                 "stats": {
-                                    "esCompose": "../../../../components/ui/devices/stats/index.js"
+                                    "__compose": "../../../../components/ui/devices/stats/index.js"
                                 },
                                 "csvmenu": {
-                                    "esCompose": "../../../../components/drafts/output/csv/menu.js"
+                                    "__compose": "../../../../components/drafts/output/csv/menu.js"
                                 }
                             }
                         },
                         "eeg": {
                             "tagName":"div",
-                            "esDOM": {
+                            "__children": {
                                 "ln0":{
                                     "tagName":"hr"
                                 },
@@ -135,7 +135,7 @@
                                 "waveformdiv":{
                                     "tagName":"div",
                                     "style":{"height":"300px"},
-                                    "esDOM":{
+                                    "__children":{
                                         "waveform":{
                                             "tagName":"canvas",
                                             "style":{"width":"100%", "height":"300px", "position":"absolute", "zIndex":"1"}
@@ -150,7 +150,7 @@
                                             "attributes": {
                                                 "className":"chartcontrols",
                                                 "onmouseleave": {
-                                                    "esCompose": "./scripts/waveform/mouseLeave.js"
+                                                    "__compose": "./scripts/waveform/mouseLeave.js"
                                                 }
                                             }
                                         }
@@ -166,7 +166,7 @@
                                 "dftdiv":{
                                     "tagName":"div",
                                     "style":{"height":"300px"},
-                                    "esDOM":{
+                                    "__children":{
                                         "dftwaveform":{
                                             "tagName":"canvas",
                                             "style":{"width":"100%", "height":"300px", "position":"absolute", "zIndex":"1"}
@@ -190,7 +190,7 @@
                                 "rmsediv":{
                                     "tagName":"div",
                                     "innerHTML":"RMSE (mV)",
-                                    "esDOM":{
+                                    "__children":{
                                         "rmse":{
                                             "tagName":"div"
                                         }

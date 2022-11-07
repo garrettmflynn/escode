@@ -14,7 +14,7 @@ send({ name: 'echo', id: echoId }, '*');
 const components = []
 const esmonitor = window.ESMonitorState
 document.body.querySelectorAll('[escomponent]').forEach(o => {
-    if (o.esComponent) components.push(o.esComponent)
+    if (o.__component) components.push(o.__component)
 })
 
 
@@ -133,8 +133,8 @@ const validIds = [id, relayId]
 
 const init = () => {
     try {
-        const esStates = esmonitor.state
-        const states = drill(esStates) // ensure states can be passed
+        const __states = esmonitor.state
+        const states = drill(__states) // ensure states can be passed
         send({ states }, '*');
     } catch (e) {
         console.warn('[ESCode]: Could not initialize states', esmonitor.state, e)
@@ -167,7 +167,7 @@ window.addEventListener('message', function(event) {
     const target = ev.target
     const isESComponent = target.hasAttribute('escomponent')
     if (isESComponent) {
-        send({ focus: target.esComponent.__isESComponent }, '*');
+        send({ focus: target.__component.__path }, '*');
     }
 
     }, false);

@@ -45,7 +45,7 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
 
         const str = path[i]
         // Try Inside ES Components
-        if (!hasKey(str, ref) && 'esDOM' in ref) {
+        if (!hasKey(str, ref) && '__children' in ref) {
             for (let i in fallbackKeys) {
                 const key = fallbackKeys[i]
                 if (hasKey(key, ref)) {
@@ -81,7 +81,7 @@ export const setFromPath = (path: PathFormat, value: any, ref:any, opts: SetValu
     const copy = [...path]
     const last = copy.pop() as string | symbol
 
-    if (ref.esDOM) ref = ref.esDOM 
+    if (ref.__children) ref = ref.__children 
 
     for (let i = 0; i < copy.length; i++) {
         const str = copy[i]  
@@ -104,7 +104,7 @@ export const setFromPath = (path: PathFormat, value: any, ref:any, opts: SetValu
         }
 
         // Transfer to ESComponents automatically (if not second-to-last key...)
-        if (ref.esDOM) ref = ref.esDOM 
+        if (ref.__children) ref = ref.__children 
     }
 
     ref[last] = value

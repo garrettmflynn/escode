@@ -94,8 +94,8 @@ function startFunction () {
         return val
     })
 
-    if (active?.esDisconnected) {
-        active.esDisconnected()
+    if (active?.__disconnected) {
+        active.__disconnected()
         active = undefined
     }
     
@@ -170,7 +170,7 @@ async function start (demo = "basic", mode="direct") {
             //         './apps/showcase/demos/signal/index.esc.ts': signalComponent,
             //     }
             // }
-            const component = escompose.create(reference, {esParent: main}, {
+            const component = escompose.create(reference, {__parent: main}, {
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 
                 await: true, 
@@ -202,7 +202,7 @@ async function start (demo = "basic", mode="direct") {
 
 
             const esc = await component // Promise for self is resolved
-            await esc.esReady // All children promises are resolved (if await is false)
+            await esc.__ready // All children promises are resolved (if await is false)
 
 
             active = esc
@@ -211,24 +211,24 @@ async function start (demo = "basic", mode="direct") {
 
                 const graphDemo = esc
     
-                graphDemo.esDOM.nodeB.x += 1; //should trigger nodeA listener
+                graphDemo.__children.nodeB.x += 1; //should trigger nodeA listener
     
-                graphDemo.esDOM.nodeB.esDOM.nodeC.default(4); //should trigger nodeA listener
+                graphDemo.__children.nodeB.__children.nodeC.default(4); //should trigger nodeA listener
             
-                graphDemo.esDOM.nodeA.jump();
+                graphDemo.__children.nodeA.jump();
                         
-                const popped = graphDemo.esDOM.nodeB.esDisconnected()
+                const popped = graphDemo.__children.nodeB.__disconnected()
     
-                graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
+                graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
     
                 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
             
-                graphDemo.esDOM.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
+                graphDemo.__children.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
     
                 setTimeout(()=>{ 
                     if (graphDemo === active) {
-                        graphDemo.esDOM.nodeE.esDisconnected()  
-                        graphDemo.esElement.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
+                        graphDemo.__children.nodeE.__disconnected()  
+                        graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
                     }
                 }, 5500)
     
@@ -248,8 +248,8 @@ async function start (demo = "basic", mode="direct") {
 init()
 
 // // Ensuring there is a container for the app
-// component.esElement = document.createElement('div')
-// ui.main.appendChild(component.esElement)
+// component.__element = document.createElement('div')
+// ui.main.appendChild(component.__element)
 
 
 // ------------------ ESCode (todo) ------------------

@@ -1,7 +1,7 @@
 
-export const esElement = 'canvas'
+export const __element = 'canvas'
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         width: '100%',
         height: '100%',

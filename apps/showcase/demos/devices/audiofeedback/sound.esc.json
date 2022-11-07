@@ -1,35 +1,35 @@
 {
     "tagName": "div",
-    "esDOM": {
+    "__children": {
         "sounds": {
-            "esCompose": "../../../../components/ui/select.js",
+            "__compose": "../../../../components/ui/select.js",
             "options": [
                 {
                     "label": "Kalimba",
                     "value": {
-                        "esCompose": "../assets/kalimba.wav"
+                        "__compose": "../assets/kalimba.wav"
                     }
                 },
                 {
                     "label": "Phonk",
                     "value": {
-                        "esCompose": "../assets/phonk.wav"
+                        "__compose": "../assets/phonk.wav"
                     }
                 },
                 {
                     "label": "Synth Flute",
                     "value": {
-                        "esCompose": "../assets/synthflute.wav"
+                        "__compose": "../assets/synthflute.wav"
                     }
                 }
             ]
         },
         "button": {
-            "esCompose": "../../../../components/ui/button.js",
+            "__compose": "../../../../components/ui/button.js",
             "innerText": "Play"
         },
         "toggle": {
-            "esCompose": "../../../../components/audio/toggle.js"
+            "__compose": "../../../../components/audio/toggle.js"
         }
     },
     "listeners": {

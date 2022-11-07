@@ -2,23 +2,23 @@ import * as select from '../select.js';
 import * as button from '../button.js';
 import * as toggle from '../../audio/toggle.js';
 
-export const esDOM = {
+export const __children = {
     sounds: {
-        esCompose: select,
+        __compose: select,
         options: []
     },
     button: {
-        esCompose: button,
-        esAttributes: {
+        __compose: button,
+        __attributes: {
             innerText: "Play"
         }
     },
     toggle: {
-        esCompose:toggle
+        __compose:toggle
     }
 }
 
-export const esListeners = {
+export const __listeners = {
     button: {
         sounds: true
     },

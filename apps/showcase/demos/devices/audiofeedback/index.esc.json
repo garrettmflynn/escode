@@ -1,5 +1,5 @@
 {
-    "esDOM": {
+    "__children": {
         "app": {
             "style": {
                 "background-color": "black",
@@ -10,10 +10,10 @@
                 "overflow": "auto"
             },
             "tagName": "div",
-            "esDOM": {
+            "__children": {
                 "devices": {
                     "tagName": "div",
-                            "esCompose": "../../../../components/devices/ui/index.esc.json",
+                            "__compose": "../../../../components/devices/ui/index.esc.json",
                             "connectmode": {
                                 "options": [
                                     {
@@ -43,39 +43,39 @@
                             },
                             "connect": {
                                 "subprocesses": {
-                                    "esCompose": "./scripts/connect/subprocesses.js"
+                                    "__compose": "./scripts/connect/subprocesses.js"
                                 },
                                 "onconnect": {
-                                    "esCompose": "./scripts/connect/onConnect.js"
+                                    "__compose": "./scripts/connect/onConnect.js"
                                 }
                             },
                             "preprocessData": {
-                                "esCompose": "../../../../components/devices/heg/preprocess.js"
+                                "__compose": "../../../../components/devices/heg/preprocess.js"
                             }
                 },
                 "output": {
                     "tagName": "div",
-                    "esDOM": {
+                    "__children": {
                         "audio": {
-                            "esCompose": "../../../../components/ui/audio/index.esc.json",
+                            "__compose": "../../../../components/ui/audio/index.esc.json",
                             "sounds": {
                                 "options": [
                                     {
                                         "label": "Kalimba",
                                         "value": {
-                                            "esCompose": "../assets/kalimba.wav"
+                                            "__compose": "../assets/kalimba.wav"
                                         }
                                     },
                                     {
                                         "label": "Phonk",
                                         "value": {
-                                            "esCompose": "../assets/phonk.wav"
+                                            "__compose": "../assets/phonk.wav"
                                         }
                                     },
                                     {
                                         "label": "Synth Flute",
                                         "value": {
-                                            "esCompose": "../assets/synthflute.wav"
+                                            "__compose": "../assets/synthflute.wav"
                                         }
                                     }
                                 ]
@@ -83,21 +83,21 @@
                         },
                         "other": {
                             "tagName": "div",
-                            "esDOM": {
+                            "__children": {
                                 "stats": {
-                                    "esCompose": "../../../../components/ui/devices/stats/index.js"
+                                    "__compose": "../../../../components/ui/devices/stats/index.js"
                                 },
                                 "reset": {
-                                    "esCompose": "../../../../components/ui/button.js",
+                                    "__compose": "../../../../components/ui/button.js",
                                     "attributes": {
                                         "innerHTML": "Reset Stats"
                                     }
                                 },
                                 "waveform": {
-                                    "esCompose": "../../../../components/ui/devices/heg/waveform.js"
+                                    "__compose": "../../../../components/ui/devices/heg/waveform.js"
                                 },
                                 "csvmenu": {
-                                    "esCompose": "../../../../components/drafts/output/csv/menu.js"
+                                    "__compose": "../../../../components/drafts/output/csv/menu.js"
                                 }
                             }
                         }

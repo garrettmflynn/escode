@@ -19,10 +19,10 @@ export const from = (gs) => {
             acc.default = target
         } else if (nodeInfo) {
             if (nodeInfo.children) {
-                acc.esDOM = {} // intantiate the esDOM object
+                acc.__children = {} // intantiate the __children object
                 for (let key in nodeInfo.children) {
                     const child = nodeInfo.children[key]
-                    acc.esDOM[key] = drill(child, {}, [...path, key])
+                    acc.__children[key] = drill(child, {}, [...path, key])
                 }
             }
 
@@ -32,7 +32,7 @@ export const from = (gs) => {
                     // TODO: Handle other listener cases
                     globalListeners[''][key] = {
                         value: nodeInfo.listeners[key],
-                        esBind: path.join('.') // TODO: Make this responsive to other separators
+                        __bind: path.join('.') // TODO: Make this responsive to other separators
                     }
                 }
             }
@@ -41,7 +41,7 @@ export const from = (gs) => {
             if (nodeInfo.operator && !acc.default) acc.default = nodeInfo.operator
 
             // Convert loop to interval
-            if(nodeInfo.loop) acc.esAnimate = nodeInfo.loop / 1000
+            if(nodeInfo.loop) acc.__animate = nodeInfo.loop / 1000
         }
 
         return acc
@@ -54,7 +54,7 @@ export const from = (gs) => {
     }
 
     const esc = drill(gs)
-    esc.esListeners = globalListeners
+    esc.__listeners = globalListeners
     return esc
 }
 
@@ -65,11 +65,11 @@ export const to = (esc) => {
     const drill = (target, acc: any = {}, prevKey = '') => {
 
         // Track Listeners
-        if (target.esListeners) {
-            Object.keys(target.esListeners).forEach(str => {
-                Object.keys(target.esListeners[str]).forEach((key) => {
-                    const listener = target.esListeners[str][key]
-                    const targetStr  = listener.esBind.split('.').slice(-1)[0] ?? key
+        if (target.__listeners) {
+            Object.keys(target.__listeners).forEach(str => {
+                Object.keys(target.__listeners[str]).forEach((key) => {
+                    const listener = target.__listeners[str][key]
+                    const targetStr  = listener.__bind.split('.').slice(-1)[0] ?? key
                     if(!listeners[targetStr]) listeners[targetStr] = {}
                     listeners[targetStr][key] = listener.value ?? listener
                 })
@@ -77,17 +77,17 @@ export const to = (esc) => {
         }
 
         // Drill First
-        if (target.esDOM) {
+        if (target.__children) {
             if (!acc._node) acc._node = {}
             if (!acc._node.children) acc._node.children = {}
-            drill(target.esDOM, acc._node.children, 'esDOM')
+            drill(target.__children, acc._node.children, '__children')
         }
 
 
         // Set on Accumulator
         Object.keys(target).forEach((key) => {
 
-            if (prevKey === 'esDOM') {
+            if (prevKey === '__children') {
 
                     // Create Node
                     if (!acc[key]) acc[key] = target[key]
@@ -109,7 +109,7 @@ export const to = (esc) => {
                     acc._node.operator = target[key]
                     delete target[key]
                 }
-                if (key === 'esAnimate') acc._node.loop = target[key] * 1000
+                if (key === '__animate') acc._node.loop = target[key] * 1000
 
         })
 
@@ -118,7 +118,7 @@ export const to = (esc) => {
 
 
     const component = escompose.create(esc, undefined, {listen: false, await: false}) // synchronous response
-    const tree = drill({ esDOM: {component} })._node.children.component._node.children
+    const tree = drill({ __children: {component} })._node.children.component._node.children
     tree._node = { listeners: listeners[''] }
 
     return tree

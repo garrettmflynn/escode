@@ -1,15 +1,15 @@
 {
     "name": "Math Plugin",
 
-    "esDOM": {
+    "__children": {
         "addition": {
-            "esCompose": "./add2.js",
+            "__compose": "./add2.js",
             "children": {
                 "multiplication": true
             }
         },
         "multiplication": {
-            "esCompose": "./multiply2.js"
+            "__compose": "./multiply2.js"
         }
     }, 
 

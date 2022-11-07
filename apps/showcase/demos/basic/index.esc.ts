@@ -18,17 +18,17 @@ const buttonInfo = {
 const id = 'test'
 const buttonComponentId = 'button'
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         margin: '25px'
     }
 }
 
-export const esDOM = {
+export const __children = {
 
     [id]: {
-        esCompose: testInfo.reference, // test
-        esListeners: {
+        __compose: testInfo.reference, // test
+        __listeners: {
             'imports.passedWithListener': `imports.nExecution`,
             ['ARBITRARY']: {
                 'imports.passedWithListener': (...args) =>  console.log('Passed with Listener!', args),
@@ -38,34 +38,34 @@ export const esDOM = {
     }, 
     container: {
         componentToMove: buttonComponentId,
-        esCompose: {
-            esElement: 'div'
+        __compose: {
+            __element: 'div'
         },
-        esDOM: {
+        __children: {
             p: {
-                esElement: 'p',
-                esDOM: {
+                __element: 'p',
+                __children: {
                     b: {
-                        esElement: 'b',
-                        esAttributes: {
+                        __element: 'b',
+                        __attributes: {
                             innerText: 'Clicks: '
                         }
                     },
                     span: {
-                        esElement: 'span',
-                        esAttributes: {
+                        __element: 'span',
+                        __attributes: {
                             innerText: '0'
                         }
                     },
                 }
             },
             [buttonComponentId]: {
-                esElement: 'button',
-                esCompose: [
+                __element: 'button',
+                __compose: [
 
                     // Additional onmousedown Function
                     {
-                        esAttributes: {
+                        __attributes: {
                             onmousedown: () => {
                                 console.log('Calling me too!')
                             }
@@ -75,7 +75,7 @@ export const esDOM = {
                     // Primary Button Component
                     buttonInfo.reference // button
                 ],
-                esTrigger: {value: true, __internal: true}
+                __trigger: {value: true, __internal: true}
             },
         },
     }
@@ -83,12 +83,12 @@ export const esDOM = {
 
 
 const branchConfig = {
-    esBranch: [
+    __branch: [
         {equals: false, value: true}
     ]
 }
 
-export const esListeners = {
+export const __listeners = {
     [`${id}.imports`]: {
         [`container.${buttonComponentId}`]: branchConfig
     },

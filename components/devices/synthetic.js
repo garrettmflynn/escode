@@ -4,7 +4,7 @@ export const nChannels = 0
 export const amplitudes = []
 export const frequencies = []
 
-export function esConnected () {
+export function __connected () {
 
     // Just a useful variable to know how many channels we will have
     if (!this.nChannels) {

@@ -30,7 +30,7 @@ const style = `
 export const elements = {}
 
 
-export function esConnected() {
+export function __connected() {
 
     onElementUtils.start.call(this, {
         stylesheet: style,
@@ -40,7 +40,7 @@ export function esConnected() {
 
 }
 
-export function esDisconnected () {
+export function __disconnected () {
     onElementUtils.stop.call(this)
 
     // Remove framing elements

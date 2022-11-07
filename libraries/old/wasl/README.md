@@ -18,9 +18,9 @@ The specification is written in [JSON Schema](https://json-schema.org/) and vali
 ###  Example .esc File
 ```json
 {
-    "esDOM": {
+    "__children": {
         "first": {
-            "esCompose": "first.esc.json",
+            "__compose": "first.esc.json",
             "extensions": {
                 "arbitrary": {
                     "x": 1080,
@@ -35,7 +35,7 @@ The specification is written in [JSON Schema](https://json-schema.org/) and vali
             }
         },
          "third": {
-            "esCompose": "./test.js"
+            "__compose": "./test.js"
         } 
     },
 

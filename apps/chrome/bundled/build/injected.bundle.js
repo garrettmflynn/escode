@@ -15,7 +15,7 @@ window.postMessage({ name: 'echo', source: id, id: echoId }, '*');
 const components = []
 const state = window.ESMonitorState
 document.body.querySelectorAll('[escomponent]').forEach(o => {
-    if (o.esComponent) components.push(o.esComponent)
+    if (o.__component) components.push(o.__component)
 })
 
 // --------------------------- Clear DevTools Panel ---------------------------

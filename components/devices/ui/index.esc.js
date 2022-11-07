@@ -2,9 +2,9 @@ import * as base from './base.esc.js'
 import * as thirdPartyDecoder from "device-decoder.third-party"
 import * as preprocess from '../extensions/preprocess.esc.js'
 
-export const esCompose = base
+export const __compose = base
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         zIndex: 100,
         position: 'absolute',
@@ -14,7 +14,7 @@ export const esAttributes = {
     }
 }
 
-export const esDOM = {
+export const __children = {
        connectmode: {
         options: [
             {
@@ -66,7 +66,7 @@ export const esDOM = {
     connect: {
         thirdPartyDecoder,
         // workerUrl: {
-        //     esCompose: "./scripts/workers/stream.big.worker.js",
+        //     __compose: "./scripts/workers/stream.big.worker.js",
         // },
     },
 
@@ -74,7 +74,7 @@ export const esDOM = {
     preprocess: preprocess
 }
 
-export const esListeners = {
+export const __listeners = {
 
     // Redirect through Preprocessing
     preprocess: {

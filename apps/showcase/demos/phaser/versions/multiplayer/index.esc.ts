@@ -4,9 +4,9 @@ import createCompanion from "../../scripts/player/create/companion.js"
 
 import * as phaser from '../../index.esc'
 
-export const esCompose = phaser
+export const __compose = phaser
 
-export const esListeners = {
+export const __listeners = {
 
     // Companion Controls
     ['game.companion.jump']: {
@@ -15,13 +15,13 @@ export const esListeners = {
 
     ['game.companion.velocity']: {
         ['keys.a']: {
-            esBranch: [
+            __branch: [
                 { equals: true, value: -200 },
                 { equals: false, value: 0 },
             ]
         },
         ['keys.d']: {
-            esBranch: [
+            __branch: [
                 { equals: true, value: 200 },
                 { equals: false, value: 0 },
             ]
@@ -29,11 +29,11 @@ export const esListeners = {
     }
 }
 
-export const esDOM = {
+export const __children = {
     game: {
-        esDOM: {
+        __children: {
             companion: {
-                esCompose: player,
+                __compose: player,
                 position: {
                     x: 100,
                     y: 200

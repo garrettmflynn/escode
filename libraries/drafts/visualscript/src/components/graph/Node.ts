@@ -88,15 +88,15 @@ export class GraphNode extends LitElement {
       super();
 
       this.workspace = props.workspace
-      this.info = props.info ?? {tag: 'node', esExtensions: {visualscript: {x: 0, y:0}}}
+      this.info = props.info ?? {tag: 'node', __extensions: {visualscript: {x: 0, y:0}}}
 
       this.tag = props.tag
       this.id = `${this.tag}_${Math.round(10000*Math.random())}`
 
-      if (!this.info.esExtensions) this.info.esExtensions = {}
-      if (!this.info.esExtensions.visualscript) this.info.esExtensions.visualscript = {x: 0, y:0}
-      this.info.esExtensions.visualscript.x = this.x = props.x ?? this.info.esExtensions.visualscript.x ?? 0
-      this.info.esExtensions.visualscript.y = this.y = props.y ?? this.info.esExtensions.visualscript.y ?? 0
+      if (!this.info.__extensions) this.info.__extensions = {}
+      if (!this.info.__extensions.visualscript) this.info.__extensions.visualscript = {x: 0, y:0}
+      this.info.__extensions.visualscript.x = this.x = props.x ?? this.info.__extensions.visualscript.x ?? 0
+      this.info.__extensions.visualscript.y = this.y = props.y ?? this.info.__extensions.visualscript.y ?? 0
 
       if (this.info) this.updatePorts()
     }
@@ -109,7 +109,7 @@ export class GraphNode extends LitElement {
     updatePorts = (info=this.info) => {
 
       Object.keys(info).forEach(tag => {
-        if (tag.slice(0,2) === 'es') return // no esX properties
+        if (tag.slice(0,2) === '__') return // no __ (esCode special) properties
         if (isPrivate(tag)) return // no underscore (pseudo-private) properties
 
         if (this.ports.has(tag)) return
@@ -117,7 +117,7 @@ export class GraphNode extends LitElement {
       })
 
       // Add Port for Each Active ES Component instance (i.e. the internal graph)
-      if (info.esDOM) Object.keys(info.esDOM).forEach(tag => {
+      if (info.__children) Object.keys(info.__children).forEach(tag => {
         if (this.ports.has(tag)) {
           console.error('Port conflict: ', `${this.tag}.${tag}`)
           return
@@ -129,9 +129,9 @@ export class GraphNode extends LitElement {
 
     willUpdate = (updatedProps) => {
 
-      if ((updatedProps.has('x') || updatedProps.has('y')) && this.info.esExtensions?.visualscript){
-        this.info.esExtensions.visualscript.x = this.x        // brainsatplay extension
-        this.info.esExtensions.visualscript.y = this.y       // brainsatplay extension
+      if ((updatedProps.has('x') || updatedProps.has('y')) && this.info.__extensions?.visualscript){
+        this.info.__extensions.visualscript.x = this.x        // brainsatplay extension
+        this.info.__extensions.visualscript.y = this.y       // brainsatplay extension
       }
 
       if (updatedProps.has('info')) this.updatePorts()

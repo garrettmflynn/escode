@@ -11,30 +11,30 @@ export type ESComponentStates = {
     connected: boolean,
 
     // Element
-    element: ESComponent['esElement']
-    attributes: ESComponent['esAttributes']
-    parentNode: ESComponent['esParent']
-    onresize: ESComponent['esOnResize']
+    element: ESComponent['__element']
+    attributes: ESComponent['__attributes']
+    parentNode: ESComponent['__parent']
+    onresize: ESComponent['__onresize']
     onresizeEventCallback: Function,
 
     initial: {
-        start: ESComponent['esConnected'],
-        stop: ESComponent['esDisconnected']
+        start: ESComponent['__connected'],
+        stop: ESComponent['__disconnected']
     }
 
-    esSource?: ESComponent['esSource']
+    __source?: ESComponent['__source']
 }
 
 
-function checkESCompose (esCompose) {
-    if (!esCompose) return false
-    const isArr = Array.isArray(esCompose)
-    return (isArr) ? !esCompose.reduce((a,b) => a * (checkForInternalElements(b) ? 0 : 1), true) : checkForInternalElements(esCompose)
+function checkESCompose (__compose) {
+    if (!__compose) return false
+    const isArr = Array.isArray(__compose)
+    return (isArr) ? !__compose.reduce((a,b) => a * (checkForInternalElements(b) ? 0 : 1), true) : checkForInternalElements(__compose)
 }
 
 function checkForInternalElements(node){
-    if (node.esElement || checkESCompose(node.esCompose)) return true
-    else if (node.esDOM) return check(node.esDOM)
+    if (node.__element || checkESCompose(node.__compose)) return true
+    else if (node.__children) return check(node.__children)
 }
 
 function check (target) {
@@ -48,7 +48,7 @@ function check (target) {
 export function create(id, esm: ESComponent, parent, states?, utilities: Options['utilities'] = {}) {
 
     // --------------------------- Get Element ---------------------------
-    let element = esm[specialKeys.element] as ESComponent['esElement'] | null; // Always create div at the least
+    let element = esm[specialKeys.element] as ESComponent['__element'] | null; // Always create div at the least
     const attributes = esm[specialKeys.attributes]
 
     let info: undefined | ESElementInfo;
@@ -104,7 +104,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     //         for(var i = 0; i < mutation.addedNodes.length; i++) {
     //             const node = mutation.addedNodes[i] as any
     //             if (node.hasAttribute instanceof Function){
-    //                 if (node.hasAttribute('escomponent')) node.esComponent.__esReady()
+    //                 if (node.hasAttribute('escomponent')) node.__component.__esReady()
     //             }
     //         }
     //     })
@@ -188,7 +188,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
                 states.element = v
 
-                // Trigger esParent Setter on Nested Components
+                // Trigger __parent Setter on Nested Components
                 if (esm[specialKeys.path] !== undefined) {
                     for (let name in esm[specialKeys.hierarchy]) {
                         const component = esm[specialKeys.hierarchy][name] as ESComponent | Promise<ESComponent>; // TODO: Ensure that this is resolved first...
@@ -234,9 +234,9 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                     const nextPosition = v.children.length
 
                     let ref = esm[specialKeys.element]
-                    const esCode = esm[`__${specialKeys.editor}`]
-                    if (esCode) {
-                        ref = esCode // Set inside parent. Set focused component in esConnected
+                    const __editor = esm[`__${specialKeys.editor}`]
+                    if (__editor) {
+                        ref = __editor // Set inside parent. Set focused component in __connected
                     }
 
 
@@ -247,7 +247,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                     else v.appendChild(ref);
 
                     // ------------------ Visualize with ESCode -----------------
-                    if (esCode) esCode.setComponent(esm); // Set the target component
+                    if (__editor) __editor.setComponent(esm); // Set the target component
                     
                 }
             } 
@@ -255,9 +255,9 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
             // Set Child Parent Nodes to This
             else {
                 console.error('No element was created for this Component...', esm)
-                // for (let name in esm.esDOM) {
-                //     const component = esm.esDOM[name]
-                //     component.esParent = v
+                // for (let name in esm.__children) {
+                //     const component = esm.__children[name]
+                //     component.__parent = v
                 // }
             }
 
@@ -307,15 +307,15 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
         if (cls) {
             let options = utilities.code?.options ?? {}
             options = ((typeof config === 'boolean') ? options : {...options, ...config}) as EditorProps
-            const esCode = new cls(options)
-            esCode.start() // start the editor
-            Object.defineProperty(esm, `__${specialKeys.editor}`, { value: esCode })
+            const __editor = new cls(options)
+            __editor.start() // start the editor
+            Object.defineProperty(esm, `__${specialKeys.editor}`, { value: __editor })
         }
     }
     
 
     // NOTE: If you're drilling elements, this WILL cause for infinite loop when drilling an object with getters
-    if (esm.esElement instanceof Element) {
+    if (esm.__element instanceof Element) {
         esm[specialKeys.element][specialKeys.component] = esm
         esm[specialKeys.element].setAttribute(specialKeys.component, '')
     }
@@ -324,7 +324,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     if (!states) {
         esm[specialKeys.resize] = finalStates.onresize
         // console.error('Produced component', esm)
-        if (finalStates.parentNode) esm.esParent = finalStates.parentNode
+        if (finalStates.parentNode) esm.__parent = finalStates.parentNode
     }
 
     return element;

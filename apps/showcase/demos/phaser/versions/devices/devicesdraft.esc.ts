@@ -5,24 +5,24 @@ import * as multiplayer from './multiplayer.esc'
 // import { mode } from '../../../../../components/basic/keyboard'
 import * as player1 from './playerconnect.esc'
 
-// player2.esDOM.button.esElement = button2ElementConfig
+// player2.__children.button.__element = button2ElementConfig
 
 const model = multiplayer as any
 
-model.esDOM.player1 = player1
-// model.esDOM.player2 = player2
+model.__children.player1 = player1
+// model.__children.player2 = player2
 
-model.esListeners["game.player.jump"] = 'player1.threshold'
-// model.esListeners['player2.threshold'] = "game.companion.jump"
+model.__listeners["game.player.jump"] = 'player1.threshold'
+// model.__listeners['player2.threshold'] = "game.companion.jump"
 
 
 
-// model.esDOM.button2 = {
-//     esElement: buttonElementConfig,
-//     esCompose: button,
+// model.__children.button2 = {
+//     __element: buttonElementConfig,
+//     __compose: button,
 // }
 
-// const timeseriesElementConfig = timeseries.esElement
+// const timeseriesElementConfig = timeseries.__element
 // timeseriesElementConfig.style = {
 //     position: "absolute",
 //     bottom: "15px",
@@ -32,11 +32,11 @@ model.esListeners["game.player.jump"] = 'player1.threshold'
 //     "z-index": 100,
 // }
 
-// model.esDOM.timeseries = {
-//    esElement: timeseriesElementConfig,
-//    esCompose: timeseries
+// model.__children.timeseries = {
+//    __element: timeseriesElementConfig,
+//    __compose: timeseries
 // }
 
 
-export const esListeners = model.esListeners
-export const esDOM = model.esDOM
+export const __listeners = model.__listeners
+export const __children = model.__children

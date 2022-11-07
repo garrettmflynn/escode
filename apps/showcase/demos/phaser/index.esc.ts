@@ -5,20 +5,20 @@ import update from "./scripts/player/update.js"
 import create from "./scripts/create.js"
 import * as keys from "../../../../components/basic/keyboard.js"
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         width: '100%',
         height: '100%',
     }
 }
 
-export const esDOM = {
+export const __children = {
     keys: {
-        esCompose: keys,
+        __compose: keys,
     },
     game: {
         
-        esAttributes: {
+        __attributes: {
             style: {
                 width: '100%',
                 height: '100%',
@@ -26,7 +26,7 @@ export const esDOM = {
             }
         },
 
-        esCompose: game,
+        __compose: game,
         preload: {
             setBaseURL: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/assets",
             tilemapTiledJSON: [
@@ -72,13 +72,13 @@ export const esDOM = {
                 key: "main",
                 create: create
                 // {
-                //     esCompose: create
+                //     __compose: create
                 // }
             }
         },
-        esDOM: {
+        __children: {
             player: {
-                esCompose: player,
+                __compose: player,
                 position: {
                     x: 200,
                     y: 200
@@ -92,11 +92,11 @@ export const esDOM = {
                 collideWorldBounds: false,
                 create: createMain,
                 // {
-                //     esCompose: createMain
+                //     __compose: createMain
                 // },
                 update: update 
                 // {
-                //     esCompose: update
+                //     __compose: update
                 // }
             }
         }
@@ -104,7 +104,7 @@ export const esDOM = {
 }
 
 
-export const esListeners = {
+export const __listeners = {
 
         // Main Player Controls
         ['game.player.jump']: {
@@ -114,14 +114,14 @@ export const esListeners = {
         ['game.player.velocity']: {
 
             ['keys.ArrowLeft']: {
-                esBranch: [
+                __branch: [
                     {equals: true, value: -150},
                     {equals: false, value: 0},
                 ]
             },
 
             ['keys.ArrowRight']: {
-                esBranch: [
+                __branch: [
                     {equals: true, value: 150},
                     {equals: false, value: 0},
                 ]

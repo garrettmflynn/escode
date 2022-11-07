@@ -18,7 +18,7 @@ import * as waveform from "../../../../../components/ui/devices/heg/waveform.js"
 // Local Components
 import * as csvMenu from "../components/csvMenu.js"
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         position: 'relative',
         backgroundColor: "black",
@@ -30,9 +30,9 @@ export const esAttributes = {
     },
 }
 
-export const esDOM = {
+export const __children = {
     overlay: {
-        esAttributes: {
+        __attributes: {
             style: {
                 position: 'absolute',
                 top: '0',
@@ -42,10 +42,10 @@ export const esDOM = {
                 zIndex: 1
             }
         },
-        esDOM: {
+        __children: {
             devices: {
-                esCompose: devices,
-                esDOM: {
+                __compose: devices,
+                __children: {
                     connectmode: {
                         options: [
                             {
@@ -83,8 +83,8 @@ export const esDOM = {
                 }
             },
             audio: {
-                esCompose: audio,
-                esDOM: {
+                __compose: audio,
+                __children: {
                     sounds: {
                         options: [
                             {
@@ -104,18 +104,18 @@ export const esDOM = {
                 }
             },
             stats: {
-                esDOM: {
+                __children: {
                     readout: {
-                        esCompose: stats
+                        __compose: stats
                     },
                     reset: {
-                        esCompose: button,
-                        esAttributes: {
+                        __compose: button,
+                        __attributes: {
                             innerHTML: "Reset Stats"
                         }
                     },
                     csvmenu: {
-                        esCompose: csvMenu
+                        __compose: csvMenu
                     }
                 }
             },
@@ -124,8 +124,8 @@ export const esDOM = {
 
     // Main UI
     waveform: {
-        esCompose: waveform,
-        esAttributes: {
+        __compose: waveform,
+        __attributes: {
             style: {
                 width:'100%',
                 height: '100%',
@@ -134,7 +134,7 @@ export const esDOM = {
     },
 }
 
-export const esListeners = {
+export const __listeners = {
 
     "waveform.webaudio": {
         "overlay.audio.toggle": true

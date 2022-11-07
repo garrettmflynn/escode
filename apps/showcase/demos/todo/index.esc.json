@@ -1,35 +1,35 @@
 {
-    "esDOM": {
+    "__children": {
         "list": {
-            "esCompose": "../../../components/ui/ul.js"
+            "__compose": "../../../components/ui/ul.js"
         },
         "form": {
             "tagName": "form",
             "attributes": {
                 "onsubmit": {
-                    "esCompose": "./scripts/onSubmit.js"
+                    "__compose": "./scripts/onSubmit.js"
                 }
             },
-            "esDOM": {}
+            "__children": {}
         },
         "input": {
-            "esCompose": "../../../components/ui/input.js"
+            "__compose": "../../../components/ui/input.js"
         },
         "button": {
             "attributes": {
                 "innerHTML": "Add Todo",
                 "type": "submit"
             },
-            "esCompose": "../../../components/ui/button.js"
+            "__compose": "../../../components/ui/button.js"
         },
         "store": {
-            "esCompose": "../../../components/storage/local/set.js"
+            "__compose": "../../../components/storage/local/set.js"
         },
         "load": {
             "arguments": {
                 "key": "todos"
             },
-            "esCompose": "../../../components/storage/local/get.js"
+            "__compose": "../../../components/storage/local/get.js"
         }
     },
     "listeners": {

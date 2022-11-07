@@ -446,7 +446,7 @@ pass = (from, target, update) => {
                         original: config[bindKey]
                     }
                 }
-            } else if (!config[bindKey].value.esParent) {
+            } else if (!config[bindKey].value.__parent) {
                 target = `because ${config[bindKey].original ?? id.toString()} has become unparented.`
             }
 

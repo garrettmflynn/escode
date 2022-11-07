@@ -1,10 +1,10 @@
 export const getTopNode = (target) => {
 
-    while (target.esParent && target.esParent.hasAttribute('escomponent')) {
-        const component = target.esParent.esComponent
-        if (component.esParent) target = component
+    while (target.__parent && target.__parent.hasAttribute('escomponent')) {
+        const component = target.__parent.__component
+        if (component.__parent) target = component
         else break
     }
 
-    return target.esElement
+    return target.__element
 }

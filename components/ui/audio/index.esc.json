@@ -1,16 +1,16 @@
 {
     "tagName": "div",
-    "esDOM": {
+    "__children": {
         "sounds": {
-            "esCompose": "../select.js",
+            "__compose": "../select.js",
             "options": []
         },
         "button": {
-            "esCompose": "../button.js",
+            "__compose": "../button.js",
             "innerText": "Play"
         },
         "toggle": {
-            "esCompose": "../../audio/toggle.js"
+            "__compose": "../../audio/toggle.js"
         }
     },
     "listeners": {

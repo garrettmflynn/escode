@@ -4,16 +4,16 @@ import * as filter from '../../../../../../components/devices/extensions/filter/
 
 
 const filterOverride = {
-    esDOM: {
+    __children: {
         devices: filter
     }
 }
 
-export const esCompose = [filterOverride, signal]
+export const __compose = [filterOverride, signal]
 
-export const esDOM = {
+export const __children = {
     devices: {
-        esDOM: {
+        __children: {
             filter: {
                 settings: {
                     useBandpass: true,

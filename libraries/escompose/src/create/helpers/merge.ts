@@ -11,13 +11,13 @@ import { resolve, merge as mergeUtility } from "../../utils"
 // Helpers
 import compile from './compile'
 
-export default function merge (base, esCompose: esComposeType = {}, path: any[] = [], opts: any = {}) {
+export default function merge (base, __compose: esComposeType = {}, path: any[] = [], opts: any = {}) {
 
-    // Ensure esCompose is an array
-    if (!Array.isArray(esCompose)) esCompose = [esCompose]
+    // Ensure __compose is an array
+    if (!Array.isArray(__compose)) __compose = [__compose]
 
-    // Merge nested esCompose objects
-    let promise = resolve(esCompose.map(o => {
+    // Merge nested __compose objects
+    let promise = resolve(__compose.map(o => {
        const compiled = compile(o, opts) // Resolve from text if required
 
        const checkAndPushTo = (target, acc: any[] = [], forcePush = true) => {

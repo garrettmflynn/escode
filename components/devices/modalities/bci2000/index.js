@@ -26,7 +26,7 @@ export const ports  = {
     device: '20100'
 }
 
-export function esConnected () {
+export function __connected () {
     this.operator = new bci2k.BCI2K_OperatorConnection();
     this.device = new bci2k.BCI2K_DataConnection();
 

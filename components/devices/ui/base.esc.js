@@ -7,34 +7,34 @@ import { deep } from '../../../libraries/common/clone.js'
 export const output = false
 export const ondata = (o) => deep(o) // Avoid mutation later
 
-export const esDOM = {
+export const __children = {
     connectmode: {
-        esCompose: select
+        __compose: select
     },
     selectUSB: {
-        esCompose: select
+        __compose: select
     },
     selectBLE: {
-        esCompose: select
+        __compose: select
     },
     selectBLEOther: {
-        esCompose:select
+        __compose:select
     },
     selectOther: {
-        esCompose: select
+        __compose: select
     },
     connect: {
-        esCompose: connect
+        __compose: connect
     },
     toConnect: {
-        esAttributes: {
+        __attributes: {
             innerHTML: "Connect"
         },
-        esCompose: button
+        __compose: button
     }
 }
 
-export const esListeners = {
+export const __listeners = {
     toConnect: {
         selectBLE: true,
         selectUSB: true,

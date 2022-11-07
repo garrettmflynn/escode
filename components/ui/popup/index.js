@@ -12,7 +12,7 @@ export function onBeforeUnload () {
     this.popup.close()
 }
 
-export function esConnected() {
+export function __connected() {
 
     if (!this.popup?.closed && this.name && this.url) {
 
@@ -22,7 +22,7 @@ export function esConnected() {
             
             if (this.popup && this.popup.closed !== false) { // !== is required for compatibility with Opera
                 globalThis.clearInterval(timer);
-                this.esDisconnected()
+                this.__disconnected()
             }
         }, 200);
     
@@ -31,7 +31,7 @@ export function esConnected() {
     }
 }
 
-export function esDisconnected() {
+export function __disconnected() {
     if (this.popup) this.popup.close()
     globalThis.removeEventListener('message', this.onMessage)
     globalThis.removeEventListener('onbeforeunload', this.onBeforeUnload)

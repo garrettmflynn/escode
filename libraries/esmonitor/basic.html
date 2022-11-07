@@ -44,12 +44,12 @@ const funcSubs = monitor.on([id, ...functionPath], (path, info, output) => {
 // // ---------------- Proposed Configuration ----------------
 // const storeSubs = monitor.on(storeId, {
 //     func1: (path, info, output) => console.log(`Updated Store (${path}) - ${output}`, info),
-//     esBranch: [
+//     __branch: [
 //         {equals: 1, value: () => console.log(`Is One!`)},
 //         {equals: 2, value: () => console.log(`Is Two!`)},
 //         {equals: true, value: () => console.log(`Is True!`)},
 //     ],
-//     esFormat: (...args) => {
+//     __format: (...args) => {
 //         console.log('Formatting!', args)
 //         return args
 //     }

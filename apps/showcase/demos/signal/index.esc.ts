@@ -8,13 +8,13 @@ import * as devices from "../../../../components/devices/ui/index.esc.js"
 // const animationRate = 256
 // const nSec = (numSeconds * animationRate) * sampleCt
 
-export const esCompose = timeseries
+export const __compose = timeseries
 
-export const esDOM = {
+export const __children = {
     // data: {
     //     sampleCt,
     //     frequencies: [10],
-    //     esCompose: data,
+    //     __compose: data,
     //     esAnimate: animationRate
     // },
     devices,
@@ -25,7 +25,7 @@ export const esDOM = {
     // },
 }
 
-export const esListeners = {
+export const __listeners = {
     // 'plot': 'data'
     'plot': 'devices.output'
 }

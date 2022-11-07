@@ -20,51 +20,45 @@ export type ESDefineInfo = {
 
 export type ESElementArray = [ESDefineInfo['name'], {extends: ESDefineInfo['extends']}]
 
-export type esSource = string | (string | Bundle)[]
+export type __source = string | (string | Bundle)[]
 
 type GeneralElementType = baseESElement | ESElementInfo
 export type ESComponent<ElementType = GeneralElementType>  = {
     
     default: Function,
-    esCompose: ESComponent // Is Merged into this component
+    __compose: ESComponent // Is Merged into this component
 
-    esComponents?: {
+    __define?: {
         [x:string]: ESComponent<ESDefineInfo> // Component Definitions
     }
 
-    esDOM: {
+    __children: {
         [x:string]: ESComponent // General Components
     }
 
-    esChildPosition?: number // Will be resolved automatically if not set
+    __childposition?: number // Will be resolved automatically if not set
 
-    esConnected: Function
-    esReady: Promise<void>
-    __esReady: Function // Trigger for ready
-    __esReadyPromises: Promise<void>[]
-    esDisconnected: Function
+    __connected: Function
+    __disconnected: Function
 
     // HTML-Specific
-    id: string;
-    esElement?: ElementType,
-    esParent?: ComponentElement,
-    esAttributes:{ [x in attributeKeys] : any }
-    esOnResize: Function,
-    esOnRender: Function
-    esOnRemove: Function
+    __element?: ElementType,
+    __parent?: ComponentElement,
+    __attributes:{ [x in attributeKeys] : any }
+    __onresize: Function,
+    __extensions?: {[x:string]: any}
+    __source: __source // Grabbed from esmpile
+    __path: string, // Path of the Component (ALL HAVE IT)
+    __editor?: boolean | EditorProps | typeof Editor // Shorthand for creating the editor
+    __ready: Promise<void>  // To resolve when fully loaded
 
-    esExtensions?: {[x:string]: any}
-
-    // Shorthand for creating the editor
-    esCode?: boolean | EditorProps | typeof Editor
-    __esCode: Editor
-
-
-    esSource: esSource // Grabbed from esmpile
+    // Keys to Manage Internal Things
+    ____editor: Editor
+    __proxy: ProxyConstructor,
+    ____ready: Function // Trigger for ready
+    // __readyPromises: Promise<void>[]
 
 
-    __isESComponent: string, // Path of the Component
-    __esProxy: ProxyConstructor,
     
 
 }

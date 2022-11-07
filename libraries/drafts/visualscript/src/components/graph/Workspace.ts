@@ -111,7 +111,7 @@ export class GraphWorkspace extends LitElement {
     edgeMode: GraphWorkspaceProps['edgeMode'] = 'to'
 
 
-    onEdgesReady = () => {}
+    onEdg__ready = () => {}
 
     constructor(props?: GraphWorkspaceProps) {
       super();
@@ -138,10 +138,10 @@ export class GraphWorkspace extends LitElement {
 
       // Rerender when All Edges have been Readied
       if (this.firstRender) {
-        this.onEdgesReady = () => {
+        this.onEdg__ready = () => {
           this.firstRender = false
           this.triggerUpdate()
-          this.onEdgesReady = () => {}
+          this.onEdg__ready = () => {}
         }
       } 
       
@@ -166,8 +166,8 @@ export class GraphWorkspace extends LitElement {
         // autolayout nodes added through the graph interface
       let notMoved = []
       this.nodes.forEach((node) => {
-        if (node.info.esExtensions?.visualscript) {
-          const info = node.info.esExtensions.visualscript;
+        if (node.info.__extensions?.visualscript) {
+          const info = node.info.__extensions.visualscript;
           if (info.x === 0 && info.y === 0)
             notMoved.push(node);
         } else
@@ -325,8 +325,8 @@ export class GraphWorkspace extends LitElement {
       if (!props.workspace) props.workspace = this
  
       // shift position to the middle
-      if (props.info?.esExtensions?.visualscript?.x) props.x = props.info.esExtensions.visualscript.x
-      if (props.info?.esExtensions?.visualscript?.y) props.y = props.info.esExtensions.visualscript.y
+      if (props.info?.__extensions?.visualscript?.x) props.x = props.info.__extensions.visualscript.x
+      if (props.info?.__extensions?.visualscript?.y) props.y = props.info.__extensions.visualscript.y
 
       // update ui
      const gN = new GraphNode(props)
@@ -403,7 +403,7 @@ export class GraphWorkspace extends LitElement {
         }
       }
       
-        this.onEdgesReady()
+        this.onEdg__ready()
       }
 
       return nodes

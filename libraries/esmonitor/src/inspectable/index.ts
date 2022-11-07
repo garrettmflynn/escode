@@ -6,7 +6,7 @@ import { setFromPath } from '../../../common/pathHelpers';
 import { isProxy, fromInspectable } from '../globals';
 
 export type InspectableProxy = ProxyConstructor & {
-    __esProxy: ProxyConstructor,
+    __proxy: ProxyConstructor,
     __esInspectable: Inspectable
 }
 
@@ -71,7 +71,7 @@ export default class Inspectable {
 
         // -------------- Only Listen to ES Components --------------
 
-        if (target.__esProxy) this.proxy = target.__esProxy
+        if (target.__proxy) this.proxy = target.__proxy
         else if (target[isProxy]) this.proxy = target
         else {
 
@@ -107,7 +107,7 @@ export default class Inspectable {
             this.proxy = new Proxy(target, handler)
 
             // Set status on original
-            Object.defineProperty(target, '__esProxy', { value: this.proxy, enumerable: false })
+            Object.defineProperty(target, '__proxy', { value: this.proxy, enumerable: false })
             Object.defineProperty(target, '__esInspectable', { value: this, enumerable: false })
 
 

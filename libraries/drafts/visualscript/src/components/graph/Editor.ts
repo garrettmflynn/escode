@@ -143,7 +143,7 @@ export class GraphEditor extends LitElement {
                           target: this.plugins,
                           conditions: {
                             value: (o) => {
-                              return o.hasOwnProperty('default') || o.hasOwnProperty('esDOM') || o.hasOwnProperty('esComponents') || o.hasOwnProperty('esElement') || o.hasOwnProperty('esParent')
+                              return o.hasOwnProperty('default') || o.hasOwnProperty('__children') || o.hasOwnProperty('__define') || o.hasOwnProperty('__element') || o.hasOwnProperty('__parent')
                              } // esc always has default
                           },
                           onClick: (tag, thing:any) => {

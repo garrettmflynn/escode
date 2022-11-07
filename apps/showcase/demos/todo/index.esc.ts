@@ -10,78 +10,78 @@ import * as remove from  "../../../../components/storage/local/remove.js"
 import onSubmit from  "./scripts/onSubmit.js"
 
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         margin: '25px'
     }
 }
 
-export const esComponents = {
+export const __define = {
     listItem: {
-        esElement: {
+        __element: {
             name: 'es-removable-list-item',
             extends: 'li',
         },
-        esCompose: removable
+        __compose: removable
     }
 }
 
-export const esDOM = {
+export const __children = {
 
         list: {
             itemType: 'es-removable-list-item',
-            esElement: 'ul',
-            esCompose: list
+            __element: 'ul',
+            __compose: list
         },
         form: {
-            esElement: 'form',
-            esAttributes: {
+            __element: 'form',
+            __attributes: {
                 onsubmit: onSubmit 
             },
-            esDOM: {
+            __children: {
                 input: {
-                    esElement: 'input',
-                    esAttributes: {
+                    __element: 'input',
+                    __attributes: {
                         placeholder: 'Write your todo here'
                     },
-                    esCompose: input
+                    __compose: input
                 },
                 button: {
-                    esElement: 'button',
-                    esAttributes: {
+                    __element: 'button',
+                    __attributes: {
                         type: 'submit',
                         innerHTML: 'Add Todo'
                     },
-                    esCompose: button
+                    __compose: button
                 }
             }
         },
 
         clearButton: {
-            esElement: 'button',
-            esAttributes: {
+            __element: 'button',
+            __attributes: {
                 innerHTML: 'Clear List'
             },
-            esCompose: button
+            __compose: button
         },
 
         store: {
-            esCompose: store
+            __compose: store
         },
         remove: {
-            esCompose: remove
+            __compose: remove
         },
         load: {
-            esTrigger: ["todos"],
-            esCompose: load
+            __trigger: ["todos"],
+            __compose: load
         }
     }
-export const esListeners = {
+export const __listeners = {
 
     list: {
         load: true,
         ['form.button']: {
-            esBranch: [
+            __branch: [
                 {condition: (input) => typeof input === 'string'},
             ]
         },
@@ -94,7 +94,7 @@ export const esListeners = {
 
     ['form.input']: {
         ['form.button']: {
-            esBranch: [
+            __branch: [
                 {condition: (input) => typeof input === 'string', value: ''},
             ]
         }
@@ -102,13 +102,13 @@ export const esListeners = {
 
     ['remove']: {
         ['clearButton']: {
-            esFormat: () => 'todos'
+            __format: () => 'todos'
         }
     },
 
     store: {
         list: {
-            esFormat: (value) => [value, 'todos']
+            __format: (value) => [value, 'todos']
         }
     }
     

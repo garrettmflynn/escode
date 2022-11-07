@@ -6,8 +6,8 @@ import * as keys from "../../../../components/basic/keyboard.js"
 import * as switchComponent from "../../../../components/modalities/switch/index.js"
 
 const otherButton = {
-    esElement: 'button',
-    esCompose: button,
+    __element: 'button',
+    _compose: button,
     default: function (...args) {
 
         const res = button.default.call(this, ...args)
@@ -18,7 +18,7 @@ const otherButton = {
             const r = floor + mult*Math.random()
             const g = floor + mult*Math.random()
             const b = floor + mult*Math.random()
-            this.esElement.style.backgroundColor = `rgb(${r}, ${g}, ${b})`
+            this._element.style.backgroundColor = `rgb(${r}, ${g}, ${b})`
         }
     }
 }
@@ -27,34 +27,34 @@ const otherButton = {
 // const numbers = [ '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 // const grammar = `#JSGF V1.0; grammar numbers; public <number> = ${numbers.join(' | ')};`
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         padding: '50px'
     }
 }
 
-export const esDOM = {
+export const __children = {
 
     header: {
-        esElement: 'h1',
-        esAttributes: {
+        __element: 'h1',
+        __attributes: {
             innerText: 'Accessify'
         }
     },
 
     description: {
-        esDOM: {
+        __children: {
 
             p1: {
-                esElement: 'p',
-                esAttributes: {
+                __element: 'p',
+                __attributes: {
                     innerHTML: 'This demonstration features <b>speech recognition</b>, <b>a virtual mouse using the keyboard</b>, and a <b>popup with a selectable grid</b> for selecting an item by its ID.'
                 }
             },
 
             p2: {
-                esElement: 'p',
-                esAttributes: {
+                __element: 'p',
+                __attributes: {
                     innerHTML: 'You will need to <b>enable the popup and microphone access</b> to use this demonstration.'
                 }
             }
@@ -63,52 +63,52 @@ export const esDOM = {
 
     // Voice Control
     enableVoice: {
-        esElement: 'button',
-        esAttributes: {
+        __element: 'button',
+        __attributes: {
             innerText: 'Enable Voice Commands'
         },
-        esCompose: button
+        __compose: button
     },
 
     speak: {
         // grammar,
-        esCompose: speak,
+        __compose: speak,
     }, 
 
     // Mouse Control
     keys: {
-        esCompose: keys,
+        __compose: keys,
     },
 
     mouse: {
-        esCompose: mouse,
+        __compose: mouse,
     }, 
 
     // Switch Control
     switch: {
-        esCompose: switchComponent,
+        __compose: switchComponent,
     },
 
     popup: {
         url: 'apps/showcase/demos/accessify/popups/test.html',
         name: 'thispopup',
-        esCompose: popup,
+        __compose: popup,
     },
 }
 
 let nButtons = 24
 for (let i = 0; i < nButtons; i++) {
-    esDOM[`otherButton${i}`] = otherButton
+    __children[`otherButton${i}`] = otherButton
 }
 
 
 
-export const esListeners = {
+export const __listeners = {
 
     // Voice Controls
     'speak.start': {
         enableVoice: {
-            esBranch: [
+            __branch: [
                 {equals: true, value: true}
             ]
         }
@@ -117,13 +117,13 @@ export const esListeners = {
     // Switch Controls
     switch: {
         speak: {
-            esFormat: (phrase) => [phrase, 'click'] // skip focus stage
+            __format: (phrase) => [phrase, 'click'] // skip focus stage
         },
         ["keys.held"]: {
-            esFormat: (state) => state.join('')
+            __format: (state) => state.join('')
         },
         ['popup.onmessage']: {
-            esFormat: (data) => {
+            __format: (data) => {
                 if (data?.message === 'clicked') return [data.clicked, 'click']
             }
         }
@@ -132,7 +132,7 @@ export const esListeners = {
     // Mouse Controls
     ['mouse.click']: {
         ['keys. ']: {
-            esBranch: [
+            __branch: [
                 {equals: true, value: true}
             ]
         }
@@ -140,16 +140,16 @@ export const esListeners = {
 
     ['mouse.move']: {
         ['keys.ArrowDown']: {
-            esFormat: () => [{y: 10}]
+            __format: () => [{y: 10}]
         },
         ['mouse.ArrowUp']: {
-            esFormat: () => [{y: -10}]
+            __format: () => [{y: -10}]
         },
         ['mouse.ArrowLeft']: {
-            esFormat: () => [{x: -10}]
+            __format: () => [{x: -10}]
         },
         ['mouse.ArrowRight']: {
-            esFormat: () => [{x: 10}]
+            __format: () => [{x: 10}]
         },
     },
 
@@ -160,26 +160,26 @@ export const esListeners = {
 }
 
 
-// export const esListeners = {
+// export const __listeners = {
 
 //     // Voice Controls
 //     enableVoice: {
 //         'speak.start': {
-//             esBranch: [
+//             __branch: [
 //                 {equals: true, value: true}
 //             ]
 //         }
 //     },
 //     speak: {
 //         switch: {
-//             esFormat: (phrase) => [phrase, 'click'] // skip focus stage
+//             __format: (phrase) => [phrase, 'click'] // skip focus stage
 //         }
 //     },
 
 //     // Keyboard Controls
 //     ['keys. ']: {
 //         ['mouse.click']: {
-//             esBranch: [
+//             __branch: [
 //                 {equals: true, value: true}
 //             ]
 //         }
@@ -187,31 +187,31 @@ export const esListeners = {
 
 //     ['keys.ArrowDown']: {
 //         ['mouse.move']: {
-//             esFormat: () => [{y: 10}]
+//             __format: () => [{y: 10}]
 //         },
 //     },
 
 //     ['keys.ArrowUp']: {
 //         ['mouse.move']: {
-//             esFormat: () => [{y: -10}]
+//             __format: () => [{y: -10}]
 //         },
 //     },
 
 //     ['keys.ArrowLeft']: {
 //         ['mouse.move']: {
-//             esFormat: () => [{x: -10}]
+//             __format: () => [{x: -10}]
 //         },
 //     },
 
 //     ['keys.ArrowRight']: {
 //         ['mouse.move']: {
-//             esFormat: () => [{x: 10}]
+//             __format: () => [{x: 10}]
 //         },
 //     },
 
 //     ["keys.held"]: {
 //         switch: {
-//             esFormat: (state) => state.join('')
+//             __format: (state) => state.join('')
 //         }
 //     },
 
@@ -222,7 +222,7 @@ export const esListeners = {
 
 //     ['popup.onmessage']: {
 //         switch: {
-//             esFormat: (data) => {
+//             __format: (data) => {
 //                 if (data?.message === 'clicked') return [data.clicked, 'click']
 //             }
 //         }

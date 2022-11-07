@@ -5,16 +5,16 @@ import * as speak from "../../../../../../components/modalities/voice/speak.js"
 
 
 // ----------------------------- Base Component -----------------------------
-export const esCompose = multiplayer
+export const __compose = multiplayer
 
 // ----------------------------- Will Merge In -----------------------------
-export const esAttributes = { style: { position: 'relative' } }
+export const __attributes = { style: { position: 'relative' } }
 
-export const esListeners = {
+export const __listeners = {
     // Voice Controls
     'speak.start': {
         enableVoice: {
-            esBranch: [
+            __branch: [
                 {equals: true, value: true}
             ]
         }
@@ -23,7 +23,7 @@ export const esListeners = {
     // New Controls
     ['game.companion.jump']: {
         speak: {
-            esBranch: [
+            __branch: [
                 {equals: 'jump small alien', value: true},
             ]
         },
@@ -31,7 +31,7 @@ export const esListeners = {
 
     ['game.player.jump']: {
         speak: {
-            esBranch: [
+            __branch: [
                 {equals: 'jump big alien', value: true},
                 {equals: 'jump', value: true},
             ]
@@ -40,12 +40,12 @@ export const esListeners = {
     
 }
 
-export const esDOM = {
+export const __children = {
 
     // Voice Control
     enableVoice: {
-        esElement: 'button',
-        esAttributes: {
+        __element: 'button',
+        __attributes: {
             innerText: 'Enable Voice Commands',
             style: {
                 position: 'absolute',
@@ -53,11 +53,11 @@ export const esDOM = {
                 left: '0px',
             },
         },
-        esCompose: button
+        __compose: button
     },
 
     speak: {
         // grammar,
-        esCompose: speak,
+        __compose: speak,
     },
 }

@@ -20,7 +20,7 @@ export const setFromOptions = (path, value, baseOptions: MonitorOptions, opts: S
                 keySeparator: baseOptions.keySeparator,
                 listeners: opts.listeners,
                 path: (path) => path.filter((str) => !baseOptions.fallbacks || !baseOptions.fallbacks.includes(str)),
-                // listenDeeper: ['__isESComponent'],
+                // listenDeeper: ['__path'],
                 // listenDeeper: ['test']
             }, id)
         }

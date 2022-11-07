@@ -1,7 +1,7 @@
 {
-    "esDOM": {
+    "__children": {
         "start" : {
-            "esCompose": "./components/start.js"
+            "__compose": "./components/start.js"
         }
     },
 

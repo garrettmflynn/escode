@@ -3,7 +3,7 @@ import * as button from "../../../../components/ui/button.js"
 import * as select from "../../../../components/ui/select.js"
 import * as signal from "../signal/index.esc"
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         position: 'relative',
         overflow: 'scroll',
@@ -12,50 +12,50 @@ export const esAttributes = {
     }
 }
 
-export const esDOM = {
+export const __children = {
 
     // BCI2000 Controller
     bci2000: {
-        esCompose: bci2000
+        __compose: bci2000
     },
 
     // Controls Overlay
     overlay: {
-        esAttributes: {
+        __attributes: {
             style: {
                 position: 'fixed',
                 zIndex: 1,
                 color: 'white'
             }
         },
-        esDOM: {
+        __children: {
             p: {
-                esElement: 'p',
-                esDOM: {
+                __element: 'p',
+                __children: {
                     header: {
-                        esElement: 'b',
-                        esAttributes: {
+                        __element: 'b',
+                        __attributes: {
                             innerText: 'Connection Status: '
                         }
                     },
                     span: {
-                        esElement: 'span',
-                        esAttributes: {
+                        __element: 'span',
+                        __attributes: {
                             innerText: 'No Connection'
                         }
                     }
                 }
             },
             select: {
-                esCompose: select,
+                __compose: select,
                 options: {
                     '127.0.0.1': "This Computer",
                     '192.168.0.11': "Garrett's PC"
                 }
             },
             button: {
-                esCompose: button,
-                esAttributes: {
+                __compose: button,
+                __attributes: {
                     innerText: "Connect"
                 }
             },
@@ -64,8 +64,8 @@ export const esDOM = {
 
     // Main UI
     signal: {
-        esCompose: signal,
-        esDOM: {
+        __compose: signal,
+        __children: {
             plot: {        
                 options: {
                     lineWidth: undefined,
@@ -73,7 +73,7 @@ export const esDOM = {
             },
             data: undefined // remove data generator
         },
-        esListeners: {
+        __listeners: {
             'plot': undefined
         }
     }
@@ -83,13 +83,13 @@ export const esDOM = {
 
 export const paragraphs = {}
 
-export const esListeners = {
+export const __listeners = {
     'bci2000.ip': {
         'overlay.select': true
     },
     'bci2000.connect':{
         'overlay.button': {
-            esBranch: [{equals: false, value: true}]
+            __branch: [{equals: false, value: true}]
         }
     },
     "signal.plot": {
@@ -106,7 +106,7 @@ export const esListeners = {
         //     for (let key in raw) {
         //         if (!this.paragraphs[key]) {
         //             this.paragraphs[key] = document.createElement('p')
-        //             this.esElement.appendChild(this.paragraphs[key])
+        //             this.__element.appendChild(this.paragraphs[key])
         //         }
         //         this.paragraphs[key].innerHTML = `<b>${key}:</b> ${raw[key]}`
         //     }
