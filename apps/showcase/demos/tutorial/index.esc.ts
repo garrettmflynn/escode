@@ -252,7 +252,7 @@ export const __children = {
                             __compose: demoInfo.devicePhaser,
                             __children: {
                                 devices: {
-                                    esAttributes: {
+                                    __attributes: {
                                         style: {
                                             display:'none'
                                         }
@@ -281,8 +281,6 @@ export const __children = {
                                     __children: {
                                         filter: {
                                             settings: {
-                                                useBandpass: true,
-                                                useDCBlock: true,
                                                 useNotch50: false,
                                                 useNotch60: false,
                                             },

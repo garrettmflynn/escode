@@ -3,7 +3,7 @@ const config = {
         entryPoints: [  "./index.esc" ],
         outfile: "dist/index", 
         bundleESM: true, 
-        minify: true,
+        minify: false,
         sourcemap: true,
      },
     server: false

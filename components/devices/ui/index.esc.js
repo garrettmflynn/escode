@@ -2,6 +2,9 @@ import * as base from './base.esc.js'
 import * as thirdPartyDecoder from "device-decoder.third-party"
 import * as preprocess from '../extensions/preprocess.esc.js'
 
+import * as devices from "./dist/index.esm.js"
+
+console.log('thirdPartyDecoder', thirdPartyDecoder, devices)
 export const __compose = base
 
 export const __attributes = {

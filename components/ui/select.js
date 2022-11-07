@@ -60,6 +60,7 @@ export function showHide(value, options, element) {
         const el = element.parentNode.querySelector(`#${o.show}`)
         if (value === o.value) {
             el.style.display = ''
+            console.log('compoen', el, el.hasAttribute('escomponent') )
             if (el.hasAttribute('escomponent')) el.__component.default(el.value) // run new value when shown
         }  else el.style.display = 'none'
     })

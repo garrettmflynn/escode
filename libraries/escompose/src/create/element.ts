@@ -317,7 +317,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     // NOTE: If you're drilling elements, this WILL cause for infinite loop when drilling an object with getters
     if (esm.__element instanceof Element) {
         esm[specialKeys.element][specialKeys.component] = esm
-        esm[specialKeys.element].setAttribute(specialKeys.component, '')
+        esm[specialKeys.element].setAttribute(specialKeys.attribute, '')
     }
 
     // Trigger state changes at the end (if not going to be done elsewhere)

@@ -1,5 +1,5 @@
-import {WebglLinePlotUtil, WebglLinePlotProps} from 'webgl-plot-utils';//'../../../webgl-plot-utils/webgl-plot-utils'//
-let plotter = new WebglLinePlotUtil();
+import * as webgl from 'webgl-plot-utils';//'../../../webgl-plot-utils/webgl-plot-utils'//
+let plotter = new webgl.WebglLinePlotUtil();
 
 import canvasworker from './canvas.worker' // NOTE: This breaks on text compilation...
 
@@ -36,10 +36,10 @@ export let options: CanvasProps & {
         overlay?:HTMLCanvasElement, 
         worker?:boolean|Worker|string|Blob|MessagePort, 
         route?:string
-    } & WebglLinePlotProps
+    } & webgl.WebglLinePlotProps
 
-export let canvas: WebglLinePlotProps['canvas']
-export let overlay: WebglLinePlotProps['overlay']
+export let canvas: webgl.WebglLinePlotProps['canvas']
+export let overlay: webgl.WebglLinePlotProps['overlay']
 
 export const failed = false
 
