@@ -110,7 +110,7 @@ export const __children = {
     h1: {
         __element: 'h1',
         __attributes: {
-            innerHTML: "Welcome to the Brains@Play Framework"
+            innerHTML: "Welcome to ESCode"
         }
     },
     firstsection: {
@@ -127,7 +127,7 @@ export const __children = {
                     p1: {
                         __element: 'p',
                         __attributes: {
-                            innerHTML: "Brains@Play is a rapid application development framework."
+                            innerHTML: "ESCode is a rapid application development framework."
                         }
                     },
                     demo1: demoInfo.basic,
