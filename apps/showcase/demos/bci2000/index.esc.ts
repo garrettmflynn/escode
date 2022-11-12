@@ -89,7 +89,7 @@ export const __listeners = {
     },
     'bci2000.connect':{
         'overlay.button': {
-            __branch: [{equals: false, value: true}]
+            __branch: [{is: false, value: true}]
         }
     },
     "signal.plot": {

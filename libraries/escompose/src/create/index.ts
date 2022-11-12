@@ -8,6 +8,7 @@ import * as helpers from './helpers/index'
 
 export default (id, esm, parent?, opts: Partial<Options> = {}) => {
     
+        // Save states that are initially applied to the Component
         const states = {
             connected: false,
             initial: {

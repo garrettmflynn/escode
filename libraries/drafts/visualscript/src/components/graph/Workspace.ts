@@ -111,7 +111,7 @@ export class GraphWorkspace extends LitElement {
     edgeMode: GraphWorkspaceProps['edgeMode'] = 'to'
 
 
-    onEdg__ready = () => {}
+    onEdgeReady = () => {}
 
     constructor(props?: GraphWorkspaceProps) {
       super();
@@ -138,11 +138,13 @@ export class GraphWorkspace extends LitElement {
 
       // Rerender when All Edges have been Readied
       if (this.firstRender) {
-        this.onEdg__ready = () => {
+        this.onEdgeReady = () => {
           this.firstRender = false
           this.triggerUpdate()
-          this.onEdg__ready = () => {}
+          this.onEdgeReady = () => {}
         }
+
+        if (!this.edges.size) this.onEdgeReady() // No edges...
       } 
       
       // Apply Final Methods
@@ -163,6 +165,7 @@ export class GraphWorkspace extends LitElement {
           y: rect.height / 2
         }
 
+
         // autolayout nodes added through the graph interface
       let notMoved = []
       this.nodes.forEach((node) => {
@@ -174,6 +177,7 @@ export class GraphWorkspace extends LitElement {
           notMoved.push(node);
       });
 
+      
       this.autolayout(notMoved)
       this._transform() // Move to center
 
@@ -322,6 +326,7 @@ export class GraphWorkspace extends LitElement {
     }
 
     addNode = (props: GraphNodeProps) => {
+
       if (!props.workspace) props.workspace = this
  
       // shift position to the middle
@@ -359,9 +364,9 @@ export class GraphWorkspace extends LitElement {
       let nodes:any = ''
 
       if (this.graph){
+        const nodes = (this.graph.nodes instanceof Map) ? this.graph.nodes : new Map(Object.entries(this.graph.nodes))
 
-        for (let key in this.graph.nodes) {
-          const n = this.graph.nodes[key]
+        nodes.forEach((n,key) => {
             let gN = this.nodes.get(n.tag);
             if (!gN){
               gN = this.addNode({
@@ -370,7 +375,7 @@ export class GraphWorkspace extends LitElement {
                 workspace: this
               })
             }
-        }
+        })
 
         for (let key in this.graph.edges) {
           
@@ -403,7 +408,7 @@ export class GraphWorkspace extends LitElement {
         }
       }
       
-        this.onEdg__ready()
+        this.onEdgeReady()
       }
 
       return nodes
@@ -413,7 +418,7 @@ export class GraphWorkspace extends LitElement {
 
       let tags = route.split('.')
       const portName = (tags.length === 1) ? 'default' : tags.slice(1).join('.'); // fallback to default port
-      let match = this.nodes.get(route);
+      let match = this.nodes.get(tags[0]);
 
       tags.forEach(t => {
         const temp = this.nodes.get(t)

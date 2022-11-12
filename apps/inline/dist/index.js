@@ -1,8 +1,8 @@
 (() => {
   var __defProp = Object.defineProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name2 in all)
+      __defProp(target, name2, { get: all[name2], enumerable: true });
   };
 
   // ../../libraries/external/graphscript/services/EventHandler.ts
@@ -71,85 +71,90 @@
   var state = new EventHandler();
   var GraphNode = class {
     constructor(properties, parent, graph) {
-      this._node = {
+      this.__node = {
         tag: `node${Math.floor(Math.random() * 1e15)}`,
         unique: `${Math.random()}`,
         state
       };
-      this._subscribe = (callback, key) => {
+      this.__subscribe = (callback, key, subInput) => {
         if (key) {
-          if (!this._node.localState) {
-            this._addLocalState(this);
+          if (!this.__node.localState) {
+            this.__addLocalState(this);
           }
           if (typeof callback === "string") {
-            if (this._node.graph)
-              callback = this._node.graph.get(callback);
+            if (this.__node.graph)
+              callback = this.__node.graph.get(callback);
             else
-              callback = this._node.graph.nodes.get(callback);
+              callback = this.__node.graph.nodes.get(callback);
           }
           if (typeof callback === "function") {
-            return this._node.events.subscribeTrigger(key, callback);
-          } else if (callback?._node)
-            return this._node.events.subscribeTrigger(key, (state2) => {
-              if (callback._node.operator)
-                callback._node.operator(state2);
+            return this.__node.state.subscribeTrigger(subInput ? this.__node.__node.unique + "." + key + "input" : this.__node.unique + "." + key, callback);
+          } else if (callback?.__node)
+            return this.__node.state.subscribeTrigger(subInput ? this.__node.unique + "." + key + "input" : this.__node.unique + "." + key, (state2) => {
+              if (callback.__operator)
+                callback.__operator(state2);
             });
         } else {
           if (typeof callback === "string") {
-            if (this._node.graph)
-              callback = this._node.graph.get(callback);
+            if (this.__node.graph)
+              callback = this.__node.graph.get(callback);
             else
-              callback = this._node.graph.nodes.get(callback);
+              callback = this.__node.graph.nodes.get(callback);
           }
           if (typeof callback === "function") {
-            return this._node.state.subscribeTrigger(this._node.tag, callback);
-          } else if (callback?._node)
-            return this._node.state.subscribeTrigger(this._node.tag, (res) => {
-              if (callback._node.operator)
-                callback._node.operator(res);
+            return this.__node.state.subscribeTrigger(subInput ? this.__node.unique + "input" : this.__node.unique, callback);
+          } else if (callback?.__node)
+            return this.__node.state.subscribeTrigger(subInput ? this.__node.unique + "input" : this.__node.unique, (res) => {
+              if (callback.__operator)
+                callback.__operator(res);
             });
         }
       };
-      this._subscribeState = (callback) => {
+      this.__subscribeState = (callback) => {
         if (typeof callback === "string") {
-          if (this._node.graph)
-            callback = this._node.graph.get(callback);
+          if (this.__node.graph)
+            callback = this.__node.graph.get(callback);
           else
-            callback = this._node.graph.nodes.get(callback);
+            callback = this.__node.graph.nodes.get(callback);
         }
         if (typeof callback === "function") {
-          return this._node.state.subscribeTrigger(this._node.unique, callback);
-        } else if (callback?._node)
-          return this._node.state.subscribeTrigger(this._node.unique, (state2) => {
-            if (callback?._node.operator)
-              callback._node.operator(state2);
+          return this.__node.state.subscribeTrigger(this.__node.unique, callback);
+        } else if (callback?.__node)
+          return this.__node.state.subscribeTrigger(this.__node.unique, (state2) => {
+            if (callback?.__operator)
+              callback.__operator(state2);
           });
       };
-      this._unsubscribe = (sub, key) => {
-        if (key && this._node.events)
-          return this._node.events.unsubscribeTrigger(key, sub);
+      this.__unsubscribe = (sub, key, subInput) => {
+        if (key)
+          return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique + "." + key + "input" : this.__node.unique + "." + key, sub);
         else
-          return this._node.state.unsubscribeTrigger(this._node.tag, sub);
+          return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique + "input" : this.__node.unique, sub);
       };
-      this._setOperator = (fn) => {
+      this.__setOperator = (fn) => {
         fn = fn.bind(this);
-        this._node.operator = (...args) => {
+        this.__operator = (...args) => {
+          if (this.__node.inputState)
+            this.__node.state.setValue(this.__node.unique + "input", args);
           let result = fn(...args);
           if (typeof result?.then === "function") {
             result.then((res) => {
               if (res !== void 0)
-                this._node.state.setValue(this._node.tag, res);
+                this.__node.state.setValue(this.__node.unique, res);
             }).catch(console.error);
           } else if (result !== void 0)
-            this._node.state.setValue(this._node.tag, result);
+            this.__node.state.setValue(this.__node.unique, result);
           return result;
         };
-        return this._node.operator;
+        this.default = this.__operator;
+        if (typeof this.__node.initial === "object")
+          this.__node.initial.default = this.__operator;
+        return this.__operator;
       };
       if (typeof properties === "function") {
         properties = {
-          _node: {
-            operator: properties,
+          __operator: properties,
+          __node: {
             tag: properties.name
           }
         };
@@ -159,112 +164,88 @@
         }
       }
       if (typeof properties === "object") {
-        if (typeof properties._node === "string") {
-          if (graph?.get(properties._node)) {
-            properties = graph.get(properties._node);
+        if (typeof properties.__node === "string") {
+          if (graph?.get(properties.__node.tag)) {
+            properties = graph.get(properties.__node.tag);
           } else
-            properties._node = {};
-        } else if (!properties._node)
-          properties._node = {};
-        if (parent)
-          properties._node.parent = parent;
+            properties.__node = {};
+        } else if (!properties.__node)
+          properties.__node = {};
+        if (!properties.__parent && parent)
+          properties.__parent = parent;
         if (graph)
-          properties._node.graph = graph;
-        for (const key in properties) {
-          if (typeof properties[key] === "function")
-            properties[key] = properties[key].bind(this);
-        }
-        if (typeof properties.default === "function")
-          properties.default = this._setOperator(properties.default);
-        else if (properties._node.operator) {
-          if (typeof properties._node.operator === "string") {
+          properties.__node.graph = graph;
+        if (properties.__operator) {
+          if (typeof properties.__operator === "string") {
             if (graph) {
-              let n = graph.get(properties._node.operator);
+              let n = graph.get(properties.__operator);
               if (n)
-                properties._node.operator = n._node.operator;
-              if (!properties._node.tag && properties._node.operator.name)
-                properties._node.tag = properties._node.operator.name;
+                properties.__operator = n.__operator;
+              if (!properties.__node.tag && properties.__operator.name)
+                properties.__node.tag = properties.__operator.name;
             }
           }
-          if (typeof properties._node.operator === "function")
-            properties._node.operator = this._setOperator(properties._node.operator);
+          if (typeof properties.__operator === "function")
+            properties.__operator = this.__setOperator(properties.__operator);
         }
-        if (!properties._node.tag) {
-          if (properties._node.operator?.name)
-            properties._node.tag = properties._node.operator.name;
+        if (!properties.__node.tag) {
+          if (properties.__operator?.name)
+            properties.__node.tag = properties.__operator.name;
           else
-            properties._node.tag = `node${Math.floor(Math.random() * 1e15)}`;
+            properties.__node.tag = `node${Math.floor(Math.random() * 1e15)}`;
         }
-        if (parent?._node && (!(parent instanceof Graph) || properties instanceof Graph))
-          properties._node.tag = parent._node.tag + "." + properties._node.tag;
+        if (parent?.__node && !(parent instanceof Graph || properties instanceof Graph))
+          properties.__node.tag = parent.__node.tag + "." + properties.__node.tag;
         if (parent instanceof Graph && properties instanceof Graph) {
-          if (properties._node.loaders)
-            Object.assign(parent._node.loaders ? parent._node.loaders : {}, properties._node.loaders);
-          if (parent._node.mapGraphs) {
-            properties._node.nodes.forEach((n) => {
-              parent._node.nodes.set(properties._node.tag + "." + n._node.tag, n);
+          if (properties.__node.loaders)
+            Object.assign(parent.__node.loaders ? parent.__node.loaders : {}, properties.__node.loaders);
+          if (parent.__node.mapGraphs) {
+            properties.__node.nodes.forEach((n) => {
+              parent.__node.nodes.set(properties.__node.tag + "." + n.__node.tag, n);
             });
             let ondelete = () => {
-              properties._node.nodes.forEach((n) => {
-                parent._node.nodes.delete(properties._node.tag + "." + n._node.tag);
+              properties.__node.nodes.forEach((n) => {
+                parent.__node.nodes.delete(properties.__node.tag + "." + n.__node.tag);
               });
             };
-            if (Array.isArray(this._node.ondelete)) {
-              this._node.ondelete.push(ondelete);
-            } else if (this._node.ondelete) {
-              this._node.ondelete = [ondelete, this._node.ondelete];
-            } else
-              this._node.ondelete = [ondelete];
+            this.__addDisconnected(ondelete);
           }
         }
-        properties._node.initial = properties;
-        properties._node = Object.assign(this._node, properties._node);
+        properties.__node.initial = properties;
+        properties.__node = Object.assign(this.__node, properties.__node);
         Object.assign(this, properties);
-        if (properties._node.operator && parent instanceof GraphNode && parent._node.operator) {
-          let sub = parent._subscribe(this);
+        if (properties.__operator && parent instanceof GraphNode && parent.__operator) {
+          let sub = parent.__subscribe(this);
           let ondelete = () => {
-            parent?._unsubscribe(sub);
+            parent?.__unsubscribe(sub);
           };
-          if (Array.isArray(this._node.ondelete)) {
-            this._node.ondelete.push(ondelete);
-          } else if (this._node.ondelete) {
-            this._node.ondelete = [ondelete, this._node.ondelete];
-          } else
-            this._node.ondelete = [ondelete];
+          this.__addDisconnected(ondelete);
         }
         if (properties instanceof Graph)
-          this._node.source = properties;
-        if (typeof this._node.oncreate === "function") {
-          this._node.oncreate(this);
-        } else if (Array.isArray(this._node.oncreate)) {
-          this._node.oncreate.forEach((o) => {
-            o(this);
-          });
-        }
+          this.__node.source = properties;
       }
     }
-    _addLocalState(props) {
+    __addLocalState(props) {
       if (!props)
         return;
-      if (!this._node.localState) {
-        this._node.localState = {};
+      if (!this.__node.localState) {
+        this.__node.localState = {};
       }
-      if (!this._node.events) {
-        this._node.events = new EventHandler(this._node.localState);
-      }
-      let localState = this._node.localState;
+      let localState = this.__node.localState;
       for (let k in props) {
         if (typeof props[k] === "function") {
           if (!k.startsWith("_")) {
             let fn = props[k].bind(this);
             props[k] = (...args) => {
+              if (this.__node.inputState)
+                this.__node.state.setValue(this.__node.unique + "." + k + "input", args);
               let result = fn(...args);
               if (typeof result?.then === "function") {
                 result.then((res) => {
-                  this._node.events.setValue(k, res);
+                  this.__node.state.setValue(this.__node.unique + "." + k, res);
                 }).catch(console.error);
               } else
-                this._node.events.setValue(k, result);
+                this.__node.state.setValue(this.__node.unique + "." + k, result);
               return result;
             };
             this[k] = props[k];
@@ -276,68 +257,269 @@
               return localState[k];
             },
             set: (v) => {
-              if (this._node.state.triggers[this._node.unique]) {
-                this._node.state.setValue(this._node.unique, this);
+              if (this.__node.state.triggers[this.__node.unique]) {
+                this.__node.state.setValue(this.__node.unique, this);
               }
-              this._node.events.setValue(k, v);
+              this.__node.state.setValue(this.__node.unique + "." + k, v);
             },
             enumerable: true,
             configurable: true
           };
           Object.defineProperty(this, k, definition);
-          const ogProps = this._node.initial;
+          const ogProps = this.__node.initial;
           let dec = Object.getOwnPropertyDescriptor(ogProps, k);
           if (dec === void 0 || dec?.configurable)
             Object.defineProperty(ogProps, k, definition);
         }
       }
     }
+    __addOnconnected(callback) {
+      if (Array.isArray(this.__ondisconnected)) {
+        this.__onconnected.push(callback);
+      } else if (typeof this.__onconnected === "function") {
+        this.__onconnected = [callback, this.__onconnected];
+      } else
+        this.__onconnected = callback;
+    }
+    __addDisconnected(callback) {
+      if (Array.isArray(this.__ondisconnected)) {
+        this.__ondisconnected.push(callback);
+      } else if (typeof this.__ondisconnected === "function") {
+        this.__ondisconnected = [callback, this.__ondisconnected];
+      } else
+        this.__ondisconnected = callback;
+    }
+    __callConnected(node = this) {
+      if (typeof this.__onconnected === "function") {
+        this.__onconnected(this);
+      } else if (Array.isArray(this.__onconnected)) {
+        this.__onconnected.forEach((o) => {
+          o(this);
+        });
+      }
+    }
+    __callDisconnected(node = this) {
+      if (typeof this.__ondisconnected === "function")
+        this.__ondisconnected(this);
+      else if (Array.isArray(this.__ondisconnected)) {
+        this.__ondisconnected.forEach((o) => {
+          o(this);
+        });
+      }
+    }
   };
   var Graph = class {
     constructor(options) {
-      this._node = {
+      this.__node = {
         tag: `graph${Math.floor(Math.random() * 1e15)}`,
         nodes: /* @__PURE__ */ new Map(),
         state
       };
+      this.init = (options) => {
+        if (options) {
+          recursivelyAssign(this.__node, options);
+          if (options.tree)
+            this.setTree(options.tree);
+        }
+      };
+      this.setTree = (tree2) => {
+        this.__node.tree = Object.assign(this.__node.tree ? this.__node.tree : {}, tree2);
+        let cpy = Object.assign({}, tree2);
+        delete cpy.__node;
+        let listeners2 = this.recursiveSet(cpy, this);
+        if (tree2.__node) {
+          if (!tree2.__node.tag)
+            tree2.__node._tag = `tree${Math.floor(Math.random() * 1e15)}`;
+          else if (!this.get(tree2.__node.tag)) {
+            let node = new GraphNode(tree2, this, this);
+            for (const l in this.__node.loaders) {
+              this.__node.loaders[l](node, this, this, tree2, tree2);
+            }
+            this.__node.nodes.set(node.__node.tag, node);
+            if (node.__listeners) {
+              listeners2[node.__node.tag] = node.__listeners;
+            }
+          }
+        }
+        this.setListeners(listeners2);
+      };
+      this.setLoaders = (loaders, replace) => {
+        if (replace)
+          this.__node.loaders = loaders;
+        else
+          Object.assign(this.__node.loaders, loaders);
+        return this.__node.loaders;
+      };
+      this.add = (properties, parent) => {
+        let listeners2 = {};
+        if (typeof parent === "string")
+          parent = this.get(parent);
+        let props = Object.assign({}, properties);
+        if (properties.__node)
+          props.__node = Object.assign({}, properties.__node);
+        if (!props.__node?.tag || !this.get(props.__node.tag)) {
+          let node = new GraphNode(props, parent, this);
+          for (const l in this.__node.loaders) {
+            this.__node.loaders[l](node, parent, this, this.__node.tree, properties);
+          }
+          this.__node.nodes.set(node.__node.tag, node);
+          this.__node.tree[node.__node.tag] = properties;
+          if (node.__listeners) {
+            listeners2[node.__node.tag] = node.__listeners;
+          }
+          if (node.__children) {
+            node.__children = Object.assign({}, node.__children);
+            this.recursiveSet(node.__children, node, listeners2);
+          }
+          this.setListeners(listeners2);
+          node.__callConnected();
+          return node;
+        }
+        return;
+      };
       this.recursiveSet = (t, parent, listeners2 = {}) => {
         for (const key in t) {
           let p = t[key];
+          if (Array.isArray(p))
+            continue;
           if (typeof p === "function")
-            p = { _node: { operator: p } };
+            p = { __operator: p };
           else if (typeof p === "string")
-            p = this._node.tree[p];
+            p = this.__node.tree[p];
           else if (typeof p === "boolean")
-            p = this._node.tree[key];
+            p = this.__node.tree[key];
           if (typeof p === "object") {
-            if (!p._node)
-              p._node = {};
-            if (!p._node.tag)
-              p._node.tag = key;
-            if (this.get(p._node.tag))
+            p = Object.assign({}, p);
+            if (!p.__node)
+              p.__node = {};
+            if (!p.__node.tag)
+              p.__node.tag = key;
+            if (this.get(p.__node.tag) || parent?.__node && this.get(parent.__node.tag + "." + p.__node.tag))
               continue;
-            for (const l in this._node.loaders) {
-              this._node.loaders[l](p, parent, this);
+            let props = Object.assign({}, p);
+            props.__node = Object.assign({}, p.__node);
+            let node = new GraphNode(props, parent, this);
+            for (const l in this.__node.loaders) {
+              this.__node.loaders[l](node, parent, this, t, p);
             }
-            let nd = new GraphNode(p, parent, this);
-            t[key] = nd;
-            this._node.tree[nd._node.tag] = p;
-            this.set(nd._node.tag, nd);
-            if (nd._node.listeners) {
-              listeners2[nd._node.tag] = nd._node.listeners;
-            } else if (nd._node.children) {
-              nd._node.children = Object.assign({}, nd._node.children);
-              this.recursiveSet(nd._node.children, nd, listeners2);
+            t[key] = node;
+            this.__node.tree[node.__node.tag] = p;
+            this.set(node.__node.tag, node);
+            if (node.__listeners) {
+              listeners2[node.__node.tag] = node.__listeners;
+            } else if (node.__children) {
+              node.__children = Object.assign({}, node.__children);
+              this.recursiveSet(node.__children, node, listeners2);
             }
+            node.__callConnected();
           }
         }
         return listeners2;
       };
+      this.remove = (node, clearListeners = true) => {
+        this.unsubscribe(node);
+        if (typeof node === "string")
+          node = this.get(node);
+        if (node instanceof GraphNode) {
+          this.__node.nodes.delete(node.__node.tag);
+          delete this.__node.tree[node.__node.tag];
+          if (clearListeners) {
+            this.clearListeners(node);
+          }
+          node.__callDisconnected();
+          const recursiveRemove = (t) => {
+            for (const key in t) {
+              this.unsubscribe(t[key]);
+              this.__node.nodes.delete(t[key].__node.tag);
+              delete this.__node.tree[t[key].__node.tag];
+              this.__node.nodes.delete(key);
+              delete this.__node.tree[key];
+              t[key].__node.tag = t[key].__node.tag.substring(t[key].__node.tag.lastIndexOf(".") + 1);
+              if (clearListeners) {
+                this.clearListeners(t[key]);
+              }
+              t[key].__callDisconnected();
+              if (t[key].__children) {
+                recursiveRemove(t[key].__children);
+              }
+            }
+          };
+          if (node.__children) {
+            recursiveRemove(node.__children);
+          }
+        }
+        if (node?.__node.tag && node?.__parent) {
+          delete node?.__parent;
+          node.__node.tag = node.__node.tag.substring(node.__node.tag.indexOf(".") + 1);
+        }
+        return node;
+      };
+      this.removeTree = (tree2) => {
+      };
+      this.run = (node, ...args) => {
+        if (typeof node === "string")
+          node = this.get(node);
+        if (node?.__operator) {
+          return node?.__operator(...args);
+        }
+      };
+      this.setListeners = (listeners2) => {
+        for (const key in listeners2) {
+          let node = this.get(key);
+          if (typeof listeners2[key] === "object") {
+            for (const k in listeners2[key]) {
+              let n = this.get(k);
+              let sub;
+              if (typeof listeners2[key][k] === "function")
+                listeners2[key][k] = { callback: listeners2[key][k] };
+              listeners2[key][k].callback = listeners2[key][k].callback.bind(node);
+              if (typeof node.__listeners !== "object")
+                node.__listeners = {};
+              if (!n) {
+                let tag = k.substring(0, k.lastIndexOf("."));
+                n = this.get(tag);
+                if (n) {
+                  sub = this.subscribe(n, listeners2[key][k].callback, k.substring(k.lastIndexOf(".") + 1), listeners2[key][k].inputState);
+                  if (typeof node.__listeners[k] !== "object")
+                    node.__listeners[k] = { callback: listeners2[key][k].callback, inputState: listeners2[key][k]?.inputState };
+                  node.__listeners[k].sub = sub;
+                }
+              } else {
+                sub = this.subscribe(n, listeners2[key][k].callback, void 0, listeners2[key][k].inputState);
+                if (typeof node.__listeners[k] !== "object")
+                  node.__listeners[k] = { callback: listeners2[key][k].callback, inputState: listeners2[key][k]?.inputState };
+                node.__listeners[k].sub = sub;
+              }
+            }
+          }
+        }
+      };
+      this.clearListeners = (node, listener) => {
+        if (typeof node === "string")
+          node = this.get(node);
+        if (node?.__listeners) {
+          for (const key in node.__listeners) {
+            if (listener && key !== listener)
+              continue;
+            if (typeof node.__listeners[key].sub !== "number")
+              continue;
+            let n = this.get(key);
+            if (!n) {
+              n = this.get(key.substring(0, key.lastIndexOf(".")));
+              if (n)
+                this.unsubscribe(n, node.__listeners[key].sub, key.substring(key.lastIndexOf(".") + 1), node.__listeners[key].inputState);
+            } else {
+              this.unsubscribe(n, node.__listeners[key].sub, void 0, node.__listeners[key].inputState);
+            }
+            delete node.__listeners[key];
+          }
+        }
+      };
       this.get = (tag) => {
-        return this._node.nodes.get(tag);
+        return this.__node.nodes.get(tag);
       };
       this.set = (tag, node) => {
-        this._node.nodes.set(tag, node);
+        return this.__node.nodes.set(tag, node);
       };
       this.getProps = (node, getInitial) => {
         if (typeof node === "string")
@@ -345,199 +527,52 @@
         if (node instanceof GraphNode) {
           let cpy;
           if (getInitial)
-            cpy = Object.assign({}, this._node.tree[node._node.tag]);
+            cpy = Object.assign({}, this.__node.tree[node.__node.tag]);
           else {
             cpy = Object.assign({}, node);
-            delete cpy._unsubscribe;
-            delete cpy._setOperator;
-            delete cpy._node;
-            delete cpy._subscribeState;
-            delete cpy._subscribe;
+            delete cpy.__unsubscribe;
+            delete cpy.__setOperator;
+            delete cpy.__node;
+            delete cpy.__subscribeState;
+            delete cpy.__subscribe;
           }
         }
       };
-      this.subscribe = (node, key, callback) => {
+      this.subscribe = (node, callback, key, subInput) => {
+        let nd = node;
         if (!(node instanceof GraphNode))
-          node = this.get(node);
+          nd = this.get(node);
         let sub;
-        if (node instanceof GraphNode) {
-          sub = node._subscribe(callback, key);
+        if (nd instanceof GraphNode) {
+          sub = nd.__subscribe(callback, key, subInput);
           let ondelete = () => {
-            node._unsubscribe(sub, key);
+            nd.__unsubscribe(sub, key, subInput);
           };
-          if (node._node.ondelete) {
-            if (Array.isArray(node._node.ondelete)) {
-              node._node.ondelete.push(ondelete);
-            } else
-              node._node.ondelete = [ondelete, node._node.ondelete];
-          } else
-            node._node.ondelete = [ondelete];
+          nd.__addDisconnected(ondelete);
+        } else if (typeof node === "string") {
+          if (typeof callback === "string")
+            callback = this.get(callback);
+          if (callback instanceof GraphNode && callback.__operator) {
+            sub = this.__node.state.subscribeTrigger(this.get(node).__node.unique, callback.__operator);
+            let ondelete = () => {
+              this.__node.state.unsubscribeTrigger(this.get(node).__node.unique, sub);
+            };
+            callback.__addDisconnected(ondelete);
+          } else if (typeof callback === "function")
+            sub = this.__node.state.subscribeTrigger(this.get(node).__node.unique, callback);
         }
         return sub;
       };
-      this.unsubscribe = (node, key, sub) => {
+      this.unsubscribe = (node, sub, key, subInput) => {
         if (node instanceof GraphNode) {
-          return node._unsubscribe(sub, key);
+          return node.__unsubscribe(sub, key, subInput);
         } else
-          return this.get(node)?._unsubscribe(sub, key);
+          return this.get(node)?.__unsubscribe(sub, key, subInput);
       };
       this.setState = (update) => {
-        this._node.state.setState(update);
+        this.__node.state.setState(update);
       };
-      if (options) {
-        recursivelyAssign.call(this, this._node, options);
-        if (options.tree)
-          this.setTree(options.tree);
-      }
-    }
-    setTree(tree2) {
-      this._node.tree = Object.assign(this._node.tree ? this._node.tree : {}, tree2);
-      let cpy = Object.assign({}, tree2);
-      delete cpy._node;
-      let listeners2 = this.recursiveSet(cpy, this);
-      if (tree2._node) {
-        if (!tree2._node.tag)
-          tree2._node._tag = `tree${Math.floor(Math.random() * 1e15)}`;
-        for (const l in this._node.loaders) {
-          this._node.loaders[l](tree2, this, this);
-        }
-        let node = new GraphNode(tree2, this, this);
-        this._node.nodes.set(node._node.tag, node);
-        if (node._node.listeners) {
-          listeners2[node._node.tag] = node._node.listeners;
-        }
-      }
-      this.setListeners(listeners2);
-    }
-    setLoaders(loaders, replace) {
-      if (replace)
-        this._node.loaders = loaders;
-      else
-        Object.assign(this._node.loaders, loaders);
-      return this._node.loaders;
-    }
-    add(properties, parent) {
-      let listeners2 = {};
-      if (typeof parent === "string")
-        parent = this.get(parent);
-      let node = new GraphNode(properties, parent, this);
-      this._node.nodes.set(node._node.tag, node);
-      if (node._node.listeners) {
-        listeners2[node._node.tag] = node._node.listeners;
-      }
-      if (node._node.children) {
-        node._node.children = Object.assign({}, node._node.children);
-        this.recursiveSet(node._node.children, node, listeners2);
-      }
-      this.setListeners(listeners2);
-      return node;
-    }
-    remove(node, clearListeners = true) {
-      this.unsubscribe(node);
-      if (typeof node === "string")
-        node = this.get(node);
-      if (node instanceof GraphNode) {
-        this._node.nodes.delete(node._node.tag);
-        delete this._node.tree[node._node.tag];
-        if (clearListeners) {
-          this.clearListeners(node);
-        }
-        if (typeof node._node.ondelete === "function")
-          node._node.ondelete(node);
-        else if (Array.isArray(node._node.ondelete)) {
-          node._node.ondelete.forEach((o) => {
-            o(node);
-          });
-        }
-        const recursiveRemove = (t) => {
-          for (const key in t) {
-            this.unsubscribe(t[key]);
-            this._node.nodes.delete(t[key]._node.tag);
-            delete this._node.tree[t[key]._node.tag];
-            this._node.nodes.delete(key);
-            delete this._node.tree[key];
-            t[key]._node.tag = t[key]._node.tag.substring(t[key]._node.tag.lastIndexOf(".") + 1);
-            if (clearListeners) {
-              this.clearListeners(t[key]);
-            }
-            if (typeof t[key]?._node?.ondelete === "function")
-              t[key]._node.ondelete(t[key]);
-            else if (Array.isArray(t[key]?._node.ondelete)) {
-              t[key]?._node.ondelete.forEach((o) => {
-                o(node);
-              });
-            }
-            if (t[key]._node.children) {
-              recursiveRemove(t[key]._node.children);
-            }
-          }
-        };
-        if (node._node.children) {
-          recursiveRemove(node._node.children);
-        }
-      }
-      if (node?._node.tag && node?._node.parent) {
-        delete node?._node.parent;
-        node._node.tag = node._node.tag.substring(node._node.tag.indexOf(".") + 1);
-      }
-      return node;
-    }
-    run(node, ...args) {
-      if (typeof node === "string")
-        node = this.get(node);
-      if (node?._node?.operator) {
-        return node?._node?.operator(...args);
-      }
-    }
-    setListeners(listeners2) {
-      for (const key in listeners2) {
-        let node = this.get(key);
-        if (typeof listeners2[key] === "object") {
-          for (const k in listeners2[key]) {
-            let n = this.get(k);
-            let sub;
-            let fn = listeners2[key][k].bind(node);
-            listeners2[key][k] = fn;
-            if (!n) {
-              let tag = k.substring(0, k.lastIndexOf("."));
-              n = this.get(tag);
-              if (n) {
-                sub = this.subscribe(n, k.substring(k.lastIndexOf(".") + 1), listeners2[key][k]);
-                if (!node._node.listenerSubs)
-                  node._node.listenerSubs = {};
-                node._node.listenerSubs[k] = sub;
-              }
-            } else {
-              sub = this.subscribe(n, void 0, listeners2[key][k]);
-              if (!node._node.listenerSubs)
-                node._node.listenerSubs = {};
-              node._node.listenerSubs[k] = sub;
-            }
-          }
-        }
-      }
-    }
-    clearListeners(node, listener) {
-      if (typeof node === "string")
-        node = this.get(node);
-      if (node?._node.listenerSubs) {
-        for (const key in node._node.listenerSubs) {
-          if (listener && key !== listener)
-            continue;
-          if (typeof node._node.listenerSubs[key] !== "number")
-            continue;
-          let n = this.get(key);
-          if (!n) {
-            n = this.get(key.substring(0, key.lastIndexOf(".")));
-            if (n)
-              this.unsubscribe(n, key.substring(key.lastIndexOf(".") + 1), node._node.listenerSubs[key]);
-          } else {
-            this.unsubscribe(n, void 0, node._node.listenerSubs[key]);
-          }
-          delete node._node.listeners[key];
-          delete node._node.listenerSubs[key];
-        }
-      }
+      this.init(options);
     }
   };
   function recursivelyAssign(target, obj) {
@@ -549,8 +584,6 @@
           target[key] = recursivelyAssign({}, obj[key]);
       } else {
         target[key] = obj[key];
-        if (typeof target[key] === "function")
-          target[key] = target[key].bind(this);
       }
     }
     return target;
@@ -559,9 +592,9 @@
   // ../showcase/demos/graph/index.esc.js
   var index_esc_exports = {};
   __export(index_esc_exports, {
-    esDOM: () => esDOM,
-    esElement: () => esElement,
-    esListeners: () => esListeners
+    __children: () => __children,
+    __element: () => __element,
+    __listeners: () => __listeners
   });
 
   // ../showcase/demos/graph/components/nodeA.esc.js
@@ -574,14 +607,14 @@
 
   // ../showcase/demos/graph/utils/index.js
   var getTopNode = (target) => {
-    while (target.esParent && target.esParent.hasAttribute("escomponent")) {
-      const component = target.esParent.esComponent;
-      if (component.esParent)
+    while (target.__parent && target.__parent.hasAttribute("escomponent")) {
+      const component = target.__parent.__component;
+      if (component.__parent)
         target = component;
       else
         break;
     }
-    return target.esElement;
+    return target.__element;
   };
 
   // ../showcase/demos/graph/components/nodeA.esc.js
@@ -622,16 +655,16 @@
   // ../showcase/demos/graph/index.esc.js
   var escId = "esc";
   var escxgsId = "escXgs";
-  var esElement = "div";
-  var esDOM = {
+  var __element = "div";
+  var __children = {
     nodeA: {
-      esCompose: nodeA_esc_exports
+      __compose: nodeA_esc_exports
     },
     nodeB: {
-      esCompose: nodeB_esc_exports,
-      esDOM: {
+      __compose: nodeB_esc_exports,
+      __children: {
         nodeC: {
-          esCompose: nodeC_esc_exports,
+          __compose: nodeC_esc_exports,
           default: function(a) {
             this.z += a;
             const id = this._node ? escxgsId : escId;
@@ -644,10 +677,10 @@
       }
     },
     nodeD: {
-      esCompose: nodeD_esc_exports
+      __compose: nodeD_esc_exports
     },
     nodeE: {
-      esAnimate: 1,
+      __animate: 1,
       default: function() {
         const id = this._node ? escxgsId : escId;
         const esmDiv = document.getElementById(id) ?? getTopNode(this);
@@ -656,7 +689,7 @@
       }
     }
   };
-  var esListeners = {
+  var __listeners = {
     "": {
       "nodeA.x": {
         value: function(newX) {
@@ -665,7 +698,7 @@
           if (esmDiv)
             esmDiv.insertAdjacentHTML("beforeend", `<li>nodeA x prop updated ${newX}</li>`);
         },
-        esBind: "nodeB.nodeC"
+        __bind: "nodeB.nodeC"
       },
       "nodeA.jump": {
         value: function(jump3) {
@@ -673,7 +706,7 @@
           if (esmDiv)
             esmDiv.insertAdjacentHTML("beforeend", `<li>nodeA ${jump3}</li>`);
         },
-        esBind: "nodeB.nodeC"
+        __bind: "nodeB.nodeC"
       },
       "nodeB.x": {
         value: function(newX) {
@@ -683,7 +716,7 @@
             esmDiv.insertAdjacentHTML("beforeend", `<li>nodeB x prop changed: ${newX}</li>`);
           return newX;
         },
-        esBind: "nodeA"
+        __bind: "nodeA"
       },
       "nodeB.nodeC": {
         value: function(op_result) {
@@ -692,7 +725,7 @@
             esmDiv.insertAdjacentHTML("beforeend", `<li>nodeC operator returned: ${op_result}</li>`);
           return op_result;
         },
-        esBind: "nodeA"
+        __bind: "nodeA"
       },
       "nodeB.nodeC.z": {
         value: function(newZ) {
@@ -701,7 +734,7 @@
             esmDiv.insertAdjacentHTML("beforeend", `<li>nodeC z prop changed: ${newZ}</li>`);
           return newZ;
         },
-        esBind: "nodeA"
+        __bind: "nodeA"
       }
     }
   };
@@ -987,16 +1020,70 @@
   var isProxy = Symbol("isProxy");
   var fromInspectable = Symbol("fromInspectable");
 
-  // ../../libraries/common/standards.js
+  // ../../libraries/esc/standards.js
   var keySeparator = ".";
   var defaultPath = "default";
   var esSourceKey = "__esmpileSourceBundle";
+  var isPrivate = (key) => false;
+  var specialKeys = {
+    default: defaultPath,
+    start: "__connected",
+    stop: "__disconnected",
+    connected: "__ready",
+    hierarchy: "__children",
+    element: "__element",
+    webcomponents: "__define",
+    attributes: "__attributes",
+    listeners: {
+      value: "__listeners",
+      branch: "__branch",
+      bind: "__bind",
+      trigger: "__trigger",
+      format: "__format"
+    },
+    trigger: "__trigger",
+    compose: "__compose",
+    uri: "__src",
+    reference: "__object",
+    childPosition: "__childposition",
+    attribute: "escomponent",
+    options: "__options",
+    parent: "__parent",
+    component: "__component",
+    source: "__source",
+    path: "__path",
+    animate: "__animate",
+    states: "__states",
+    promise: "__childresolved",
+    editor: "__editor",
+    flow: "__manager",
+    original: "__original",
+    resize: "__onresize",
+    proxy: "__proxy"
+  };
 
   // ../../libraries/common/pathHelpers.ts
   var hasKey = (key, obj) => key in obj;
+  var getShortcut = (path, shortcuts, keySeparator2) => {
+    const sc = shortcuts[path[0]];
+    if (sc) {
+      const value2 = sc[path.slice(1).join(keySeparator2)];
+      if (value2)
+        return value2;
+    }
+  };
   var getFromPath = (baseObject, path, opts = {}) => {
     const fallbackKeys = opts.fallbacks ?? [];
     const keySeparator2 = opts.keySeparator ?? keySeparator;
+    if (opts.shortcuts) {
+      const shortcut = getShortcut(path, opts.shortcuts, keySeparator2);
+      if (shortcut) {
+        if (opts.output === "info")
+          return { value: shortcut, exists: true, shortcut: true };
+        else
+          return shortcut;
+      }
+    }
     if (typeof path === "string")
       path = path.split(keySeparator2);
     else if (typeof path == "symbol")
@@ -1011,7 +1098,7 @@
         throw new Error(message);
       }
       const str = path[i];
-      if (!hasKey(str, ref) && "esDOM" in ref) {
+      if (!hasKey(str, ref) && "__children" in ref) {
         for (let i2 in fallbackKeys) {
           const key = fallbackKeys[i2];
           if (hasKey(key, ref)) {
@@ -1043,6 +1130,8 @@
     path = [...path];
     const copy = [...path];
     const last = copy.pop();
+    if (ref.__children)
+      ref = ref.__children;
     for (let i = 0; i < copy.length; i++) {
       const str = copy[i];
       let has = hasKey(str, ref);
@@ -1057,8 +1146,8 @@
         console.error(message, path);
         throw new Error(message);
       }
-      if (ref.esDOM)
-        ref = ref.esDOM;
+      if (ref.__children)
+        ref = ref.__children;
     }
     ref[last] = value2;
   };
@@ -1176,7 +1265,7 @@
     return false;
   };
   var Inspectable = class {
-    constructor(target = {}, opts = {}, name, parent) {
+    constructor(target = {}, opts = {}, name2, parent) {
       this.path = [];
       this.listeners = {};
       this.state = {};
@@ -1211,8 +1300,8 @@
         opts.pathFormat = "relative";
       if (!opts.keySeparator)
         opts.keySeparator = keySeparator;
-      if (target.__esProxy)
-        this.proxy = target.__esProxy;
+      if (target.__proxy)
+        this.proxy = target.__proxy;
       else if (target[isProxy])
         this.proxy = target;
       else {
@@ -1225,8 +1314,8 @@
           this.state = this.parent.state ?? {};
         } else
           this.root = target;
-        if (name)
-          this.path.push(name);
+        if (name2)
+          this.path.push(name2);
         if (this.options.listeners)
           this.listeners = this.options.listeners;
         if (this.options.path) {
@@ -1246,7 +1335,7 @@
           type = typeof target === "function" ? "function" : "object";
         const handler2 = handlers_exports[`${type}s`](this);
         this.proxy = new Proxy(target, handler2);
-        Object.defineProperty(target, "__esProxy", { value: this.proxy, enumerable: false });
+        Object.defineProperty(target, "__proxy", { value: this.proxy, enumerable: false });
         Object.defineProperty(target, "__esInspectable", { value: this, enumerable: false });
         for (let key in target) {
           if (!this.parent) {
@@ -1299,21 +1388,28 @@
   };
 
   // ../../libraries/esmonitor/src/listeners.ts
-  var info = (id, callback, path, originalValue, base, listeners2, options) => {
+  var info = (id, callback, path, originalValue, base, listeners2, options, refShortcut = {}) => {
     if (typeof path === "string")
       path = path.split(options.keySeparator);
     const relativePath = path.join(options.keySeparator);
     const refs = base;
+    const shortcutRef = refShortcut.ref;
+    const shortcutPath = refShortcut.path;
     const get3 = (path2) => {
-      return getFromPath(base, path2, {
+      const thisBase = shortcutRef ?? base;
+      const res = getFromPath(thisBase, path2, {
         keySeparator: options.keySeparator,
         fallbacks: options.fallbacks
       });
+      return res;
     };
-    const set2 = (path2, value2) => setFromOptions(path2, value2, options, {
-      reference: base,
-      listeners: listeners2
-    });
+    const set2 = (path2, value2) => {
+      const thisBase = shortcutRef ?? base;
+      setFromOptions(path2, value2, options, {
+        reference: thisBase,
+        listeners: listeners2
+      });
+    };
     let onUpdate = options.onUpdate;
     let infoToOutput = {};
     if (onUpdate && typeof onUpdate === "object" && onUpdate.callback instanceof Function) {
@@ -1340,13 +1436,13 @@
         return output;
       },
       get current() {
-        return get3(info2.path.absolute);
+        return get3(shortcutPath ?? info2.path.absolute);
       },
       set current(val) {
-        set2(info2.path.absolute, val);
+        set2(shortcutPath ?? info2.path.absolute, val);
       },
       get parent() {
-        return get3(info2.path.parent);
+        return get3(shortcutPath ? shortcutPath?.slice(0, -1) : info2.path.parent);
       },
       get reference() {
         return refs[id];
@@ -1361,16 +1457,16 @@
     };
     return info2;
   };
-  var registerInLookup = (name, sub, lookups) => {
+  var registerInLookup = (name2, sub, lookups) => {
     if (lookups) {
       const id = Math.random();
       lookups.symbol[sub] = {
-        name,
+        name: name2,
         id
       };
-      if (!lookups.name[name])
-        lookups.name[name] = {};
-      lookups.name[name][id] = sub;
+      if (!lookups.name[name2])
+        lookups.name[name2] = {};
+      lookups.name[name2][id] = sub;
     }
   };
   var register = (info2, collection, lookups) => {
@@ -1457,7 +1553,8 @@
       if (!parent[isProxy]) {
         parent[info2.last] = function(...args) {
           const listeners2 = collection[getPath("absolute", info2)];
-          return functionExecution(this, listeners2, info2.original, args);
+          const got = functionExecution(this, listeners2, info2.original, args);
+          return got;
         };
       }
     }, lookups);
@@ -1487,19 +1584,19 @@
           path: newPath
         };
         if (info2.object) {
-          const name = info2.name;
+          const name2 = info2.name;
           const isESM = esm(val);
-          if (isESM || name === "Object" || name === "Array") {
+          if (isESM || name2 === "Object" || name2 === "Array") {
             info2.simple = true;
             const idx = seen.indexOf(val);
             if (idx !== -1)
               acc[key] = fromSeen[idx];
             else {
               seen.push(val);
-              const pass2 = condition instanceof Function ? condition(key, val, info2) : condition;
-              info2.pass = pass2;
+              const pass = condition instanceof Function ? condition(key, val, info2) : condition;
+              info2.pass = pass;
               acc[key] = callback(key, val, info2);
-              if (pass2) {
+              if (pass) {
                 fromSeen.push(acc[key]);
                 acc[key] = drill(val, acc[key], { ...globalInfo, path: newPath });
               }
@@ -1534,8 +1631,8 @@
         lookup: createLookup()
       };
       this.references = {};
-      this.get = (path, output) => {
-        return getFromPath(this.references, path, {
+      this.get = (path, output, reference = this.references) => {
+        return getFromPath(reference, path, {
           keySeparator: this.options.keySeparator,
           fallbacks: this.options.fallbacks,
           output
@@ -1557,14 +1654,14 @@
         const info2 = info(label, callback, path, original, this.references, this.listeners, this.options);
         const id = Math.random();
         const lookups = this.listeners.lookup;
-        const name = getPath("absolute", info2);
+        const name2 = getPath("absolute", info2);
         lookups.symbol[info2.sub] = {
-          name,
+          name: name2,
           id
         };
-        if (!lookups.name[name])
-          lookups.name[name] = {};
-        lookups.name[name][id] = info2.sub;
+        if (!lookups.name[name2])
+          lookups.name[name2] = {};
+        lookups.name[name2][id] = info2.sub;
         return info2;
       };
       this.listen = (id, callback, path = [], __internal = {}) => {
@@ -1575,7 +1672,7 @@
         const arrayPath = path;
         let baseRef = this.references[id];
         if (!baseRef) {
-          console.error(`Reference ${id} does not exist.`);
+          console.error(`Reference does not exist.`, id);
           return;
         }
         if (!__internal.poll)
@@ -1585,7 +1682,7 @@
         const __internalComplete = __internal;
         if (!this.references[id])
           this.references[id] = baseRef;
-        let ref = this.get([id, ...arrayPath]);
+        const ref = this.get([id, ...arrayPath]);
         const toMonitorInternally = (val, allowArrays = false) => {
           const first = val && typeof val === "object";
           if (!first)
@@ -1616,19 +1713,17 @@
         }
         let info2;
         try {
+          info2 = this.getInfo(id, callback, arrayPath, ref);
           if (__internalComplete.poll) {
-            info2 = this.getInfo(id, callback, arrayPath, ref);
             this.poller.add(info2);
           } else {
             let type = "setters";
             if (typeof ref === "function")
               type = "functions";
-            info2 = this.getInfo(id, callback, arrayPath, ref);
             this.add(type, info2);
           }
         } catch (e) {
           console.error("Fallback to polling:", path, e);
-          info2 = this.getInfo(id, callback, arrayPath, ref);
           this.poller.add(info2);
         }
         subs[getPath("absolute", info2)] = info2.sub;
@@ -1716,6 +1811,27 @@
   // ../../libraries/esmonitor/src/index.ts
   var src_default = Monitor;
 
+  // ../../libraries/common/clone.js
+  var deep = (obj, opts = {}) => {
+    if (typeof obj === "object") {
+      if (Array.isArray(obj)) {
+        obj = [...obj];
+        opts.accumulator = [];
+      } else {
+        obj = { ...obj };
+        opts.accumulator = {};
+      }
+    } else
+      return obj;
+    drillSimple(obj, (key, val, info2) => {
+      if (info2.simple && info2.object)
+        return Array.isArray(val) ? [] : {};
+      else
+        return val;
+    }, opts);
+    return opts.accumulator;
+  };
+
   // ../../libraries/escompose/src/utils.ts
   var isPromise = (o) => typeof o === "object" && typeof o.then === "function";
   var resolve = (object, callback) => {
@@ -1751,11 +1867,12 @@
           if (isFunc && !original.functionList)
             original.functionList = [original];
           const newFunc = override[k];
-          if (!isFunc || !original.functionList.includes(newFunc)) {
+          if (!isFunc)
+            copy[k] = newFunc;
+          else if (!original.functionList.includes(newFunc)) {
             const func = copy[k] = function(...args) {
-              if (isFunc)
-                original.call(this, ...args);
-              newFunc.call(this, ...args);
+              original.call(this, ...args);
+              return newFunc.call(this, ...args);
             };
             if (!func.functionList)
               func.functionList = [original];
@@ -1770,18 +1887,511 @@
     return copy;
   };
 
+  // ../../libraries/drafts/edgelord/index.ts
+  var listenerObject = Symbol("listenerObject");
+  var toSet = Symbol("toSet");
+  var isConfigObject = (o) => specialKeys.listeners.format in o || specialKeys.listeners.branch in o || specialKeys.listeners.trigger in o || specialKeys.listeners.bind in o;
+  var initializedStatus = "INITIALIZED";
+  var registeredStatus = "REGISTERED";
+  var globalFrom = {};
+  var globalTo = {};
+  var globalActive = {};
+  var subscriptionKey = Symbol("subscriptionKey");
+  var configKey = Symbol("configKey");
+  var toResolveWithKey = Symbol("toResolveWithKey");
+  var Edgelord = class {
+    constructor(listeners2 = {}, root, context) {
+      this.original = {};
+      this.active = {};
+      this.globals = {};
+      this.context = {};
+      this.rootPath = "";
+      this.status = "";
+      this.#triggers = [];
+      this.#queue = [];
+      this.getManager = (mode = "from") => {
+        let target = mode === "to" ? this.globals.to : this.globals.from;
+        this.rootPath.split(this.context.options.keySeparator).forEach((key) => {
+          if (!target[key])
+            target[key] = {};
+          target = target[key];
+        });
+        return target[toResolveWithKey] ?? this;
+      };
+      this.onStart = (f) => {
+        const res = this.#toResolveWith;
+        const isSame2 = res === this;
+        if (isSame2) {
+          if (this.status === initializedStatus)
+            f();
+          else
+            this.#queue.push(f);
+        } else
+          res.onStart(f);
+      };
+      this.runEachListener = (listeners2, callback) => {
+        if (!callback)
+          return;
+        for (let toPath in listeners2) {
+          const from2 = listeners2[toPath];
+          if (!from2) {
+            console.warn("Skipping empty listener:", toPath);
+            continue;
+          }
+          if (from2 && typeof from2 === "object") {
+            for (let fromPath in from2)
+              callback(fromPath, toPath, from2[fromPath]);
+          } else {
+            if (typeof toPath === "string")
+              callback(from2, toPath, toPath);
+            else
+              console.error("Improperly Formatted Listener", toPath);
+          }
+        }
+      };
+      this.register = (listeners2 = this.original) => {
+        this.runEachListener(listeners2, this.add);
+        this.status = registeredStatus;
+      };
+      this.#initialize = (o) => {
+        const res = this.context.monitor.get(o.path, "info");
+        if (typeof res.value === "function") {
+          const args = Array.isArray(o.args) ? o.args : [o.args];
+          res.value(...args);
+        } else
+          console.error("Cannot yet trigger values...", o);
+      };
+      this.initialize = (o) => {
+        if (!this.status)
+          this.#triggers.push(o);
+        else if (this.status === registeredStatus) {
+          this.status = initializedStatus;
+          this.#triggers.forEach(this.#initialize);
+          this.#queue.forEach((f) => f());
+          this.#queue = [];
+          this.#triggers = [];
+        } else
+          this.#initialize(o);
+      };
+      this.start = () => {
+        this.register();
+        this.initialize();
+      };
+      this.#getAbsolutePath = (name2) => {
+        const sep = this.context.monitor.options.keySeparator;
+        return !name2 || !this.rootPath || this.rootPath === name2.slice(0, this.rootPath.length) && name2[this.rootPath.length] === sep ? name2 : [this.rootPath, name2].join(sep);
+      };
+      this.#getPathInfo = (path) => {
+        const output = {
+          absolute: {},
+          relative: {}
+        };
+        path = this.#getAbsolutePath(path);
+        let rel = this.rootPath ? path.replace(`${this.rootPath}.`, "") : path;
+        const baseArr = path.split(this.context.options.keySeparator);
+        output.absolute.array = [this.context.id, ...baseArr];
+        output.relative.array = rel.split(this.context.options.keySeparator);
+        const obj = this.context.monitor.get(output.relative.array, void 0, this.context.instance);
+        const isComponent = obj?.hasOwnProperty(specialKeys.path);
+        if (isComponent) {
+          output.absolute.array.push(defaultPath);
+          output.relative.array.push(defaultPath);
+        }
+        output.absolute.value = output.absolute.array.slice(1).join(this.context.options.keySeparator);
+        output.relative.value = output.relative.array.join(this.context.options.keySeparator);
+        return output;
+      };
+      this.add = (from2, to2, value2 = true, subscription) => {
+        if (!value2)
+          return;
+        const fromInfo = this.#getPathInfo(from2);
+        const toInfo = this.#getPathInfo(to2);
+        const absPath = fromInfo.absolute.value;
+        if (!subscription)
+          subscription = this.globals.active[absPath]?.[subscriptionKey];
+        if (!subscription) {
+          subscription = this.context.monitor.on(fromInfo.absolute.array, (path, _, update) => this.activate(path, update), {
+            ref: this.context.instance,
+            path: fromInfo.relative.array
+          });
+        }
+        const info2 = {
+          value: value2,
+          [listenerObject]: true
+        };
+        const refs = [this.active, this.globals.active];
+        refs.forEach((ref) => {
+          if (!ref[absPath])
+            ref[absPath] = {};
+          const base = ref[absPath];
+          if (!base[subscriptionKey]) {
+            Object.defineProperty(base, subscriptionKey, {
+              value: subscription,
+              configurable: true
+            });
+          }
+          base[toInfo.absolute.value] = info2;
+        });
+        const args = value2[specialKeys.listeners.trigger];
+        if (args)
+          this.#toResolveWith.initialize({
+            path: fromInfo.absolute.array,
+            args
+          });
+        this.addToGlobalLog(absPath);
+        return info2;
+      };
+      this.addToGlobalLog = (path, mode = "from") => {
+        const absolutePath = this.#getAbsolutePath(path);
+        let target = mode === "to" ? this.globals.to : this.globals.from;
+        const globalPath = absolutePath.split(this.context.options.keySeparator);
+        globalPath.forEach((key) => {
+          if (!target[key])
+            target[key] = {};
+          target = target[key];
+          if (!target[toResolveWithKey])
+            target[toResolveWithKey] = this;
+        });
+      };
+      this.remove = (from2, to2) => {
+        const fromInfo = this.#getPathInfo(from2);
+        const toInfo = this.#getPathInfo(to2);
+        const path = [fromInfo.absolute.value, toInfo.absolute.value];
+        const toRemove = [
+          { ref: this.active, path },
+          { ref: this.globals.active, path, unlisten: true }
+        ];
+        toRemove.forEach((o) => {
+          const { ref, path: path2, unlisten } = o;
+          let base = ref[path2[0]];
+          if (typeof base === "object") {
+            delete base[path2[1]];
+            if (Object.keys(base).length === 0) {
+              delete ref[path2[0]];
+              const sub = base[subscriptionKey];
+              if (unlisten && sub) {
+                this.context.monitor.remove(sub);
+              }
+              delete base[subscriptionKey];
+            }
+          } else
+            delete ref[path2[0]];
+        });
+      };
+      this.clear = (name2) => {
+        const value2 = this.#getAbsolutePath(name2);
+        Object.keys(this.active).forEach((from2) => {
+          Object.keys(this.active[from2]).forEach((to2) => {
+            if (!value2 || from2.slice(0, value2.length) === value2 || to2.slice(0, value2.length) === value2)
+              this.remove(from2, to2);
+          });
+        });
+      };
+      this.has = (from2, ref = this.active) => !!ref[from2];
+      this.get = (from2, ref = this.active) => ref[from2];
+      this.activate = (from2, update) => {
+        const listenerGroups = [{
+          info: this.get(from2, this.globals.active),
+          name
+        }];
+        listenerGroups.forEach((group) => {
+          const info2 = group.info;
+          if (info2) {
+            if (info2[listenerObject]) {
+              this.pass(from2, {
+                value: info2.value,
+                parent: this.active,
+                key: group.name,
+                subscription: info2.subscription,
+                __value: true
+              }, update);
+            } else if (typeof info2 === "object") {
+              for (let key in info2) {
+                this.pass(from2, {
+                  parent: info2,
+                  key,
+                  subscription: info2[key].subscription,
+                  value: info2[key].value
+                }, update);
+              }
+            } else
+              console.error("Improperly Formatted Listener", info2);
+          }
+        });
+      };
+      this.pass = (from2, target, update) => {
+        const id = this.context.id;
+        const isValue = target?.__value;
+        let parent = target.parent;
+        let to2 = target.key;
+        const info2 = target.parent[to2];
+        target = info2.value;
+        let config = info2?.[configKey];
+        let ogValue = target;
+        const type = typeof target;
+        const checkIfSetter = (path, willSet) => {
+          const info3 = this.context.monitor.get(path, "info");
+          if (info3.exists) {
+            const val = info3.value;
+            const noDefault = typeof val !== "function" && !val?.default;
+            const value2 = noDefault ? toSet : val;
+            const res = { value: value2 };
+            if (willSet) {
+              target = res.value;
+              parent[to2] = res;
+            }
+            return res;
+          } else
+            return { value: void 0 };
+        };
+        const transform = (willSet) => {
+          const fullPath = [id];
+          fullPath.push(...to2.split(this.context.options.keySeparator));
+          return checkIfSetter(fullPath, willSet);
+        };
+        const getPathArray = (latest) => {
+          const path = [id];
+          const topPath = [];
+          if (this.rootPath)
+            topPath.push(...this.rootPath.split(this.context.options.keySeparator));
+          topPath.push(...latest.split(this.context.options.keySeparator));
+          path.push(...topPath);
+          return path;
+        };
+        if (typeof target === "boolean") {
+          if (!isValue)
+            transform(true);
+          else
+            console.error(`Cannot use a boolean for ${specialKeys.listeners.value}...`);
+        } else if (type === "string") {
+          const path = getPathArray(ogValue);
+          checkIfSetter(path, true);
+          if (isValue) {
+            parent[to2] = { [ogValue]: parent[to2] };
+            to2 = ogValue;
+          }
+        } else if (target && type === "object") {
+          const isConfig = isConfigObject(ogValue);
+          if (isConfig) {
+            if ("value" in ogValue) {
+              if (isValue) {
+                target = parent[to2] = ogValue.value;
+              } else {
+                target = parent[to2].value = ogValue.value;
+              }
+            } else
+              transform(true);
+            if (ogValue) {
+              if (ogValue)
+                config = ogValue;
+            }
+            Object.defineProperty(parent[to2], configKey, { value: config });
+          }
+        }
+        let isValidInput = true;
+        if (config) {
+          const bindKey = specialKeys.listeners.value;
+          if (bindKey in config) {
+            const path = getPathArray(config[bindKey].original ?? config[bindKey]);
+            if (typeof config[bindKey] === "string") {
+              const res = this.context.monitor.get(path);
+              if (!res)
+                target = `because ${path.slice(1).join(this.context.options.keySeparator)} does not point correctly to an existing component.`;
+              else {
+                config[bindKey] = {
+                  value: res,
+                  original: config[bindKey]
+                };
+              }
+            } else if (!config[bindKey].value.__parent) {
+              target = `because ${config[bindKey].original ?? id.toString()} has become unparented.`;
+            }
+          } else {
+            const branchKey = specialKeys.listeners.branch;
+            const formatKey = specialKeys.listeners.format;
+            if (branchKey in config) {
+              const isValid = config[branchKey].find((o) => {
+                let localValid = [];
+                if ("if" in o)
+                  localValid.push(o.if(update));
+                if ("is" in o)
+                  localValid.push(o.is === update);
+                const isValidLocal = localValid.length > 0 && localValid.reduce((a, b) => a && b, true);
+                if (isValidLocal) {
+                  if ("value" in o)
+                    update = o.value;
+                }
+                return isValidLocal;
+              });
+              if (!isValid)
+                isValidInput = false;
+            }
+            if (formatKey in config) {
+              try {
+                update = config[formatKey](update);
+                if (update === void 0)
+                  isValidInput = false;
+              } catch (e) {
+                console.error("Failed to format arguments", e);
+              }
+            }
+          }
+        }
+        if (isValidInput && update !== void 0) {
+          const arrayUpdate = Array.isArray(update) ? update : [update];
+          if (target === toSet) {
+            const parentPath = [id];
+            parentPath.push(...to2.split(this.context.options.keySeparator));
+            const idx = parentPath.pop();
+            const info3 = this.context.monitor.get(parentPath, "info");
+            info3.value[idx] = update;
+          } else if (target?.default)
+            target.default.call(target, ...arrayUpdate);
+          else if (typeof target === "function") {
+            const noContext = parent[to2][listenerObject];
+            if (noContext)
+              target.call(config?.[specialKeys.listeners.bind]?.value ?? this.context.instance, ...arrayUpdate);
+            else
+              target(...arrayUpdate);
+          } else {
+            let baseMessage = to2 ? `listener: ${from2} \u2014> ${to2}` : `listener from ${from2}`;
+            if (parent) {
+              console.warn(`Deleting ${baseMessage}`, target);
+              delete parent[to2];
+            } else
+              console.error(`Failed to add ${baseMessage}`, target);
+          }
+        }
+      };
+      this.context = context;
+      this.rootPath = root;
+      this.original = listeners2;
+      const globals = [{ name: "active", ref: globalActive }, { name: "from", ref: globalFrom }, { name: "to", ref: globalTo }];
+      globals.forEach((o) => {
+        if (!o.ref[this.context.id])
+          o.ref[this.context.id] = {};
+        this.globals[o.name] = o.ref[this.context.id];
+      });
+      this.#toResolveWith = this.getManager();
+      this.runEachListener(listeners2, this.addToGlobalLog);
+    }
+    #triggers;
+    #queue;
+    #toResolveWith;
+    #initialize;
+    #getAbsolutePath;
+    #getPathInfo;
+  };
+  var edgelord_default = Edgelord;
+
+  // ../../libraries/escompose/src/create/helpers/compile.ts
+  var catchError = (o, e) => {
+    if (o[specialKeys.reference]) {
+      console.warn("[escompose]: Falling back to ES Component reference...", e);
+      return o[specialKeys.reference];
+    } else
+      return createErrorComponent(e.message);
+  };
+  var genericErrorMessage = `Cannot transform ${specialKeys.compose} string without a compose utility function`;
+  function compile(o, opts) {
+    let uri = typeof o === "string" ? o : o[specialKeys.uri];
+    if (uri && opts.utilities) {
+      const bundleOpts = opts.utilities.bundle;
+      const gotBundleOpts = bundleOpts && typeof bundleOpts.function === "function";
+      const compileOpts = opts.utilities.compile;
+      const gotCompileOpts = compileOpts && typeof compileOpts.function === "function";
+      if (!gotBundleOpts && !gotCompileOpts)
+        o = catchError(o, new Error(genericErrorMessage));
+      else {
+        return new Promise(async (resolve3) => {
+          try {
+            if (gotBundleOpts) {
+              const options = bundleOpts.options ?? {};
+              if (!options.bundler)
+                options.bundler = "datauri";
+              if (!options.bundle)
+                options.collection = "global";
+              const bundle = bundleOpts.function(uri, options);
+              await bundle.compile();
+              o = Object.assign({}, bundle.result);
+            } else if (gotCompileOpts) {
+              const resolved = await compileOpts.function(o, compileOpts.options);
+              o = resolved;
+            } else {
+              throw new Error(genericErrorMessage);
+            }
+          } catch (e) {
+            o = catchError(o, e);
+          }
+          resolve3(deep(o));
+        });
+      }
+    }
+    return deep(o);
+  }
+  function createErrorComponent(message) {
+    return {
+      [specialKeys.element]: "p",
+      [specialKeys.hierarchy]: {
+        b: {
+          [specialKeys.element]: "b",
+          [specialKeys.attributes]: {
+            innerText: "Error: "
+          }
+        },
+        span: {
+          [specialKeys.element]: "span",
+          [specialKeys.attributes]: {
+            innerText: message
+          }
+        }
+      }
+    };
+  }
+
+  // ../../libraries/escompose/src/create/helpers/merge.ts
+  function merge2(base, __compose = {}, path = [], opts = {}) {
+    if (!Array.isArray(__compose))
+      __compose = [__compose];
+    let promise = resolve(__compose.map((o) => {
+      const compiled = compile(o, opts);
+      const checkAndPushTo = (target, acc = [], forcePush = true) => {
+        if (Array.isArray(target))
+          target.forEach((o2) => checkAndPushTo(o2, acc), true);
+        else if (target[specialKeys.compose]) {
+          acc.push(target);
+          const val = target[specialKeys.compose];
+          delete target[specialKeys.compose];
+          const newTarget = resolve(compile(val, opts));
+          checkAndPushTo(newTarget, acc);
+        } else if (forcePush)
+          acc.push(target);
+        return acc;
+      };
+      return resolve(compiled, (compiled2) => checkAndPushTo(compiled2));
+    }));
+    return resolve(promise, (clonedEsCompose) => {
+      const flat = clonedEsCompose.flat();
+      let merged = Object.assign({}, base);
+      flat.forEach((toCompose) => {
+        merged = merge(toCompose, merged, path);
+      });
+      return merged;
+    });
+  }
+
   // ../../libraries/escompose/src/create/element.ts
-  function checkESCompose(esCompose) {
-    if (!esCompose)
+  function checkESCompose(__compose) {
+    if (!__compose)
       return false;
-    const isArr = Array.isArray(esCompose);
-    return isArr ? !esCompose.reduce((a, b) => a * (checkForInternalElements(b) ? 0 : 1), true) : checkForInternalElements(esCompose);
+    const isArr = Array.isArray(__compose);
+    return isArr ? !__compose.reduce((a, b) => a * (checkForInternalElements(b) ? 0 : 1), true) : checkForInternalElements(__compose);
   }
   function checkForInternalElements(node) {
-    if (node.esElement || checkESCompose(node.esCompose))
+    if (node.__element || checkESCompose(node.__compose))
       return true;
-    else if (node.esDOM)
-      return check(node.esDOM);
+    else if (node.__children)
+      return check(node.__children);
   }
   function check(target) {
     for (let key in target) {
@@ -1792,10 +2402,11 @@
     }
   }
   function create(id, esm2, parent, states, utilities = {}) {
-    let element = esm2.esElement;
+    let element = esm2[specialKeys.element];
+    const attributes = esm2[specialKeys.attributes];
     let info2;
     if (!(element instanceof Element)) {
-      const mustShow = checkForInternalElements(esm2);
+      const mustShow = attributes && Object.keys(attributes).length || checkForInternalElements(esm2);
       const defaultTagName = mustShow ? "div" : "link";
       if (element === void 0)
         element = defaultTagName;
@@ -1816,15 +2427,15 @@
       if (!esm2.hasOwnProperty("default")) {
         esm2.default = function(input = noInput) {
           if (input !== noInput)
-            this.esElement.innerText = input;
-          return this.esElement;
+            this[specialKeys.element].innerText = input;
+          return this[specialKeys.element];
         };
       }
     }
     if (!(element instanceof Element))
       console.warn("Element not found for", id);
     let intermediateStates = states || {};
-    intermediateStates.element = element, intermediateStates.attributes = esm2.esAttributes, intermediateStates.parentNode = esm2.esParent ?? (parent?.esElement instanceof Element ? parent.esElement : void 0), intermediateStates.onresize = esm2.esOnResize, intermediateStates.onresizeEventCallback = void 0;
+    intermediateStates.element = element, intermediateStates.attributes = attributes, intermediateStates.parentNode = esm2[specialKeys.parent] ?? (parent?.[specialKeys.element] instanceof Element ? parent[specialKeys.element] : void 0), intermediateStates.onresize = esm2[specialKeys.resize], intermediateStates.onresizeEventCallback = void 0;
     const finalStates = intermediateStates;
     if (element instanceof Element) {
       if (typeof id !== "string")
@@ -1833,14 +2444,14 @@
         element.id = id;
     }
     let isReady;
-    Object.defineProperty(esm2, "esReady", {
+    Object.defineProperty(esm2, `${specialKeys.connected}`, {
       value: new Promise((resolve3) => isReady = async () => {
         resolve3(true);
       }),
       writable: false,
       enumerable: false
     });
-    Object.defineProperty(esm2, "__esReady", { value: isReady, writable: false, enumerable: false });
+    Object.defineProperty(esm2, `__${specialKeys.connected}`, { value: isReady, writable: false, enumerable: false });
     const isEventListener = (key, value2) => key.slice(0, 2) === "on" && typeof value2 === "function";
     const handleAttribute = (key, value2, context) => {
       if (!isEventListener(key, value2) && typeof value2 === "function")
@@ -1848,27 +2459,27 @@
       else
         return value2;
     };
-    const setAttributes = (attributes) => {
-      if (esm2.esElement instanceof Element) {
-        for (let key in attributes) {
+    const setAttributes = (attributes2) => {
+      if (esm2[specialKeys.element] instanceof Element) {
+        for (let key in attributes2) {
           if (key === "style") {
-            for (let styleKey in attributes.style)
-              esm2.esElement.style[styleKey] = handleAttribute(key, attributes.style[styleKey], esm2);
+            for (let styleKey in attributes2.style)
+              esm2[specialKeys.element].style[styleKey] = handleAttribute(key, attributes2.style[styleKey], esm2);
           } else {
-            const value2 = attributes[key];
+            const value2 = attributes2[key];
             if (isEventListener(key, value2)) {
               const func = value2;
-              esm2.esElement[key] = (...args) => {
-                const context = esm2.__esProxy ?? esm2;
+              esm2[specialKeys.element][key] = (...args) => {
+                const context = esm2[specialKeys.proxy] ?? esm2;
                 return func.call(context ?? esm2, ...args);
               };
             } else
-              esm2.esElement[key] = handleAttribute(key, value2, esm2);
+              esm2[specialKeys.element][key] = handleAttribute(key, value2, esm2);
           }
         }
       }
     };
-    Object.defineProperty(esm2, "esAttributes", {
+    Object.defineProperty(esm2, specialKeys.attributes, {
       get: () => states.attributes,
       set: (value2) => {
         states.attributes = value2;
@@ -1876,7 +2487,7 @@
           setAttributes(states.attributes);
       }
     });
-    Object.defineProperty(esm2, "esElement", {
+    Object.defineProperty(esm2, specialKeys.element, {
       get: function() {
         if (states.element instanceof Element)
           return states.element;
@@ -1888,11 +2499,11 @@
             states.element.remove();
           }
           states.element = v;
-          if (esm2.__isESComponent !== void 0) {
-            for (let name in esm2.esDOM) {
-              const component = esm2.esDOM[name];
+          if (esm2[specialKeys.path] !== void 0) {
+            for (let name2 in esm2[specialKeys.hierarchy]) {
+              const component = esm2[specialKeys.hierarchy][name2];
               resolve(component, (res) => {
-                res.esParent = v;
+                res[specialKeys.parent] = v;
               });
             }
           }
@@ -1902,10 +2513,10 @@
       enumerable: true,
       configurable: false
     });
-    Object.defineProperty(esm2, "esParent", {
+    Object.defineProperty(esm2, specialKeys.parent, {
       get: function() {
-        if (esm2.esElement instanceof Element)
-          return esm2.esElement.parentNode;
+        if (esm2[specialKeys.element] instanceof Element)
+          return esm2[specialKeys.element].parentNode;
       },
       set: (v) => {
         if (typeof v === "string") {
@@ -1915,37 +2526,37 @@
           else
             v = document.getElementById(v);
         }
-        if (v?.esElement instanceof Element)
-          v = v.esElement;
-        if (esm2.esElement instanceof Element) {
-          if (esm2.esElement.parentNode)
-            esm2.esElement.remove();
+        if (v?.[specialKeys.element] instanceof Element)
+          v = v[specialKeys.element];
+        if (esm2[specialKeys.element] instanceof Element) {
+          if (esm2[specialKeys.element].parentNode)
+            esm2[specialKeys.element].remove();
           if (v instanceof Element) {
-            const desiredPosition = esm2.esChildPosition;
+            const desiredPosition = esm2[specialKeys.childPosition];
             const nextPosition = v.children.length;
-            let ref = esm2.esElement;
-            const esCode = esm2.__esCode;
-            if (esCode) {
-              ref = esCode;
+            let ref = esm2[specialKeys.element];
+            const __editor = esm2[`__${specialKeys.editor}`];
+            if (__editor) {
+              ref = __editor;
             }
             if (desiredPosition !== void 0 && desiredPosition < nextPosition)
               v.children[desiredPosition].insertAdjacentElement("beforebegin", ref);
             else
               v.appendChild(ref);
-            if (esCode)
-              esCode.setComponent(esm2);
+            if (__editor)
+              __editor.setComponent(esm2);
           }
         } else {
           console.error("No element was created for this Component...", esm2);
         }
         if (v instanceof HTMLElement) {
-          esm2.__esReady();
+          esm2[`__${specialKeys.connected}`]();
         }
       },
       enumerable: true
     });
-    let onresize = esm2.esOnResize;
-    Object.defineProperty(esm2, "esOnResize", {
+    let onresize = esm2[specialKeys.resize];
+    Object.defineProperty(esm2, specialKeys.resize, {
       get: function() {
         return onresize;
       },
@@ -1955,8 +2566,8 @@
           window.removeEventListener("resize", states.onresizeEventCallback);
         if (states.onresize) {
           states.onresizeEventCallback = (ev) => {
-            if (states.onresize && esm2.esElement instanceof Element) {
-              const context = esm2.__esProxy ?? esm2;
+            if (states.onresize && esm2[specialKeys.element] instanceof Element) {
+              const context = esm2[specialKeys.proxy] ?? esm2;
               return foo.call(context, ev);
             }
           };
@@ -1965,31 +2576,31 @@
       },
       enumerable: true
     });
-    if (esm2.esCode) {
-      let config = esm2.esCode;
+    if (esm2[specialKeys.editor]) {
+      let config = esm2[specialKeys.editor];
       let cls = utilities.code?.class;
       if (!cls) {
-        if (typeof esm2.esCode === "function")
-          cls = esm2.esCode;
+        if (typeof config === "function")
+          cls = config;
         else
           console.error("Editor class not provided in options.utilities.code");
       }
       if (cls) {
         let options = utilities.code?.options ?? {};
         options = typeof config === "boolean" ? options : { ...options, ...config };
-        const esCode = new cls(options);
-        esCode.start();
-        Object.defineProperty(esm2, "__esCode", { value: esCode });
+        const __editor = new cls(options);
+        __editor.start();
+        Object.defineProperty(esm2, `__${specialKeys.editor}`, { value: __editor });
       }
     }
-    if (esm2.esElement instanceof Element) {
-      esm2.esElement.esComponent = esm2;
-      esm2.esElement.setAttribute("escomponent", "");
+    if (esm2.__element instanceof Element) {
+      esm2[specialKeys.element][specialKeys.component] = esm2;
+      esm2[specialKeys.element].setAttribute(specialKeys.attribute, "");
     }
     if (!states) {
-      esm2.esOnResize = finalStates.onresize;
+      esm2[specialKeys.resize] = finalStates.onresize;
       if (finalStates.parentNode)
-        esm2.esParent = finalStates.parentNode;
+        esm2.__parent = finalStates.parentNode;
     }
     return element;
   }
@@ -1997,9 +2608,9 @@
   // ../../libraries/escompose/src/create/component.ts
   var registry = {};
   var ogCreateElement = document.createElement;
-  document.createElement = function(name, options) {
-    const info2 = registry[name];
-    const created = info2 && !info2.autonomous ? ogCreateElement.call(this, info2.tag, { is: name }) : ogCreateElement.call(this, name, options);
+  document.createElement = function(name2, options) {
+    const info2 = registry[name2];
+    const created = info2 && !info2.autonomous ? ogCreateElement.call(this, info2.tag, { is: name2 }) : ogCreateElement.call(this, name2, options);
     return created;
   };
   var tagToClassMap = {
@@ -2026,13 +2637,13 @@
         constructor(properties) {
           super(properties);
           resolve(src_default2(esm2), (res) => {
-            res.esElement = this;
-            this.esComponent = res;
+            res.__element = this;
+            this.__component = res;
           });
         }
         connectedCallback() {
           console.log("Custom element added to page.");
-          this.esComponent.__esReady();
+          this.__component.____ready();
         }
         disconnectedCallback() {
           console.log("Custom element removed from page.");
@@ -2040,8 +2651,8 @@
         adoptedCallback() {
           console.log("Custom element moved to new page.");
         }
-        attributeChangedCallback(name, oldValue, newValue) {
-          console.log("Custom element attributes changed.", name, oldValue, newValue);
+        attributeChangedCallback(name2, oldValue, newValue) {
+          console.log("Custom element attributes changed.", name2, oldValue, newValue);
         }
       }
       registry[config.name] = {
@@ -2059,30 +2670,9 @@
     }
   };
 
-  // ../../libraries/common/clone.js
-  var deep = (obj, opts = {}) => {
-    if (typeof obj === "object") {
-      if (Array.isArray(obj)) {
-        obj = [...obj];
-        opts.accumulator = [];
-      } else {
-        obj = { ...obj };
-        opts.accumulator = {};
-      }
-    } else
-      return obj;
-    drillSimple(obj, (key, val, info2) => {
-      if (info2.simple && info2.object)
-        return Array.isArray(val) ? [] : {};
-      else
-        return val;
-    }, opts);
-    return opts.accumulator;
-  };
-
   // ../../libraries/escompose/src/create/define.ts
-  var value = (name, value2, object) => {
-    Object.defineProperty(object, name, {
+  var value = (name2, value2, object) => {
+    Object.defineProperty(object, name2, {
       value: value2,
       writable: false,
       configurable: false,
@@ -2090,195 +2680,221 @@
     });
   };
 
-  // ../../libraries/escompose/src/create/index.ts
+  // ../../libraries/escompose/src/create/helpers/start.ts
+  function start_default(keys, callbacks, asyncCallback) {
+    if (this[keys.options].await) {
+      return asyncConnect.call(this, keys, async () => {
+        if (asyncCallback)
+          await asyncCallback();
+        connect.call(this, keys, callbacks);
+      });
+    } else {
+      asyncConnect.call(this, keys, asyncCallback);
+      return connect.call(this, keys);
+    }
+  }
+  async function asyncConnect(keys, onReadyCallback) {
+    await this[keys.connected];
+    this[keys.states].connected = true;
+    for (let name2 in this[keys.hierarchy]) {
+      let component = this[keys.hierarchy][name2];
+      const promise = component[keys.promise];
+      if (promise && typeof promise.then === "function")
+        component = this[keys.hierarchy][name2] = await promise;
+      const init = component[keys.start];
+      if (typeof init === "function")
+        await init();
+      else
+        console.error(`Could not start component ${name2} because it does not have a __connected function`);
+    }
+    if (onReadyCallback)
+      await onReadyCallback();
+    return this;
+  }
+  function connect(keys, callbacks = []) {
+    const privateEditorKey = `__${keys.editor}`;
+    const __editor = this[keys.parent]?.[keys.component]?.[privateEditorKey];
+    if (__editor)
+      value(privateEditorKey, __editor, this);
+    let source = this[esSourceKey];
+    if (source) {
+      if (typeof source === "function")
+        source = this[keys.source] = source();
+      delete this[esSourceKey];
+      const path = this[keys.path];
+      if (this[privateEditorKey])
+        this[privateEditorKey].addFile(path, source);
+    }
+    const context = this[keys.proxy] ?? this;
+    if (this[keys.states].initial.start)
+      this[keys.states].initial.start.call(context);
+    callbacks.forEach((f) => f.call(this));
+    return this;
+  }
+
+  // ../../libraries/escompose/src/create/helpers/stop.ts
+  function stop_default(keys) {
+    if (this[keys.animate] && typeof this[keys.animate].stop === "function")
+      this[keys.animate].stop();
+    this[keys.flow].clear();
+    let target = this;
+    while (target[keys.parent].hasAttribute(keys.attribute)) {
+      const res = target[keys.element][keys.parent]?.[keys.component];
+      if (res) {
+        target = res;
+        if (target && target[keys.flow])
+          target[keys.flow].clear(this[keys.path]);
+      } else
+        break;
+    }
+    if (this[keys.hierarchy]) {
+      for (let name2 in this[keys.hierarchy]) {
+        const component = this[keys.hierarchy][name2];
+        if (typeof component[keys.stop] === "function")
+          component[keys.stop]();
+        else
+          console.warn("Could not disconnect component because it does not have an __disconnected function", name2, this.__children);
+      }
+    }
+    if (this[keys.element] instanceof Element) {
+      this[keys.element].remove();
+      if (this[keys.remove]) {
+        const context2 = this[keys.proxy] ?? this;
+        this[keys.remove].call(context2);
+      }
+    }
+    const privateEditorKey = `__${keys.editor}`;
+    if (this[privateEditorKey])
+      this[privateEditorKey].remove();
+    const context = this[keys.proxy] ?? this;
+    const ogStop = this[keys.states].initial.stop;
+    if (ogStop)
+      ogStop.call(context);
+    this[keys.start] = this[keys.states].initial.start;
+    this[keys.stop] = ogStop;
+    return this;
+  }
+
+  // ../../libraries/escompose/src/create/helpers/animate.ts
   var animations = {};
+  function animate(keys) {
+    const key = keys.animate ?? "animate";
+    if (this[key]) {
+      let original = this[key];
+      const id = Math.random();
+      const interval = typeof original === "number" ? original : "global";
+      if (!animations[interval]) {
+        const info2 = animations[interval] = { objects: { [id]: this } };
+        const objects2 = info2.objects;
+        const runFuncs = () => {
+          for (let key2 in objects2)
+            objects2[key2].default();
+        };
+        if (interval === "global") {
+          const callback = () => {
+            runFuncs();
+            info2.id = window.requestAnimationFrame(callback);
+          };
+          callback();
+          animations[interval].stop = () => {
+            window.cancelAnimationFrame(info2.id);
+            info2.cancel = true;
+          };
+        } else {
+          runFuncs();
+          info2.id = setInterval(() => runFuncs(), 1e3 / interval);
+          animations[interval].stop = () => clearInterval(info2.id);
+        }
+      } else {
+        this.default();
+        animations[interval].objects[id] = this;
+      }
+      this[key] = {
+        id,
+        original,
+        stop: () => {
+          delete animations[interval].objects[id];
+          this[key] = original;
+          if (Object.keys(animations[interval].objects).length === 0) {
+            animations[interval].stop();
+            delete animations[interval];
+          }
+        }
+      };
+    }
+  }
+
+  // ../../libraries/escompose/src/create/helpers/index.ts
+  function start(keys) {
+    return start_default.call(this, keys, [
+      function() {
+        animate.call(this, keys);
+      }
+    ]);
+  }
+
+  // ../../libraries/escompose/src/create/index.ts
   var create_default = (id, esm2, parent, opts = {}) => {
     const states = {
-      connected: false
+      connected: false,
+      initial: {
+        start: esm2[specialKeys.start],
+        stop: esm2[specialKeys.stop]
+      }
     };
+    value(specialKeys.states, states, esm2);
+    value(specialKeys.options, opts, esm2);
     const copy = deep(esm2);
     try {
-      for (let name in esm2.esDOM) {
-        const value2 = esm2.esDOM[name];
+      const hierarchyKey = specialKeys.hierarchy;
+      for (let name2 in esm2[hierarchyKey]) {
+        const value2 = esm2[hierarchyKey][name2];
         const isUndefined = value2 == void 0;
         const type = isUndefined ? JSON.stringify(value2) : typeof value2;
         if (type != "object") {
-          console.error(`Removing ${name} esDOM field that which is not an ES Component object. Got ${isUndefined ? type : `a ${type}`} instead.`);
-          delete esm2.esDOM[name];
+          console.error(`Removing ${name2} ${hierarchyKey} field that which is not an ES Component object. Got ${isUndefined ? type : `a ${type}`} instead.`);
+          delete esm2[hierarchyKey][name2];
         }
       }
-      let registry2 = esm2.esComponents ?? {};
+      let registry2 = esm2[specialKeys.webcomponents] ?? {};
       for (let key in registry2) {
         const esm3 = registry2[key];
-        const info2 = esm3.esElement;
+        const info2 = esm3[specialKeys.element];
         if (info2.name && info2.extends)
           define(info2, esm3);
       }
       let el = create(id, esm2, parent, states, opts.utilities);
       const finalStates = states;
-      esm2.esElement = el;
-      const esConnectedAsync = async (onReadyCallback) => {
-        let toRun = [];
-        await esm2.esReady;
-        states.connected = true;
-        for (let name in esm2.esDOM) {
-          let component = esm2.esDOM[name];
-          if (typeof component === "object" && typeof component.then === "function")
-            component = esm2.esDOM[name] = await component;
-          const init = component.esConnected;
-          if (typeof init === "function")
-            toRun.push(...await init());
-          else
-            console.error(`Could not start component ${name} because it does not have an esConnected function`);
-        }
-        if (onReadyCallback)
-          await onReadyCallback();
-        if ("esTrigger" in esm2) {
-          if (!Array.isArray(esm2.esTrigger))
-            esm2.esTrigger = [];
-          toRun.push({
-            ref: esm2,
-            args: esm2.esTrigger
-          });
-          delete esm2.esTrigger;
-        }
-        return toRun;
-      };
-      const esConnectedMain = () => {
-        let source = esm2[esSourceKey];
-        if (source) {
-          if (typeof source === "function")
-            source = esm2.esSource = source();
-          delete esm2[esSourceKey];
-          const path = esm2.__isESComponent;
-          if (esm2.__esCode)
-            esm2.__esCode.addFile(path, source);
-        }
-        const esCode = esm2.esParent?.esComponent?.__esCode;
-        if (esCode)
-          value("__esCode", esCode, esm2);
-        const context = esm2.__esProxy ?? esm2;
-        if (ogInit)
-          ogInit.call(context);
-        if (esm2.esAnimate) {
-          let original = esm2.esAnimate;
-          const id2 = Math.random();
-          const interval = typeof original === "number" ? original : "global";
-          if (!animations[interval]) {
-            const info2 = animations[interval] = { objects: { [id2]: esm2 } };
-            const objects2 = info2.objects;
-            const runFuncs = () => {
-              for (let key in objects2)
-                objects2[key].default();
-            };
-            if (interval === "global") {
-              const callback = () => {
-                runFuncs();
-                info2.id = window.requestAnimationFrame(callback);
-              };
-              callback();
-              animations[interval].stop = () => {
-                window.cancelAnimationFrame(info2.id);
-                info2.cancel = true;
-              };
-            } else {
-              runFuncs();
-              info2.id = setInterval(() => runFuncs(), 1e3 / interval);
-              animations[interval].stop = () => clearInterval(info2.id);
-            }
-          } else {
-            esm2.default();
-            animations[interval].objects[id2] = esm2;
-          }
-          esm2.esAnimate = {
-            id: id2,
-            original,
-            stop: () => {
-              delete animations[interval].objects[id2];
-              esm2.esAnimate = original;
-              if (Object.keys(animations[interval].objects).length === 0) {
-                animations[interval].stop();
-                delete animations[interval];
-              }
-            }
-          };
-        }
-      };
-      const ogInit = esm2.esConnected;
-      esm2.esConnected = (onReadyCallback) => {
-        if (opts.await) {
-          return esConnectedAsync(async () => {
-            if (onReadyCallback)
-              await onReadyCallback();
-            esConnectedMain();
-          });
-        } else {
-          const toRun = esConnectedAsync(onReadyCallback);
-          esConnectedMain();
-          return toRun;
-        }
-      };
-      const ogDelete = esm2.esDisconnected;
-      esm2.esDisconnected = function() {
-        if (this.esAnimate && typeof this.esAnimate.stop === "function")
-          this.esAnimate.stop();
-        if (this.esListeners)
-          this.esListeners.__manager.clear();
-        let target = this;
-        while (target.esParent?.hasAttribute("escomponent")) {
-          target = target.esElement.parentNode.esComponent;
-          if (target.esListeners?.__manager)
-            target.esListeners.__manager.clear(this.__isESComponent);
-        }
-        if (this.esDOM) {
-          for (let name in this.esDOM) {
-            const component = this.esDOM[name];
-            if (typeof component.esDisconnected === "function")
-              component.esDisconnected();
-            else
-              console.warn("Could not disconnect component because it does not have an esDisconnected function", name, this.esDOM);
-          }
-        }
-        if (this.esElement instanceof Element) {
-          this.esElement.remove();
-          if (this.onremove) {
-            const context2 = this.__esProxy ?? this;
-            this.onremove.call(context2);
-          }
-        }
-        if (this.__esCode)
-          this.__esCode.remove();
-        const context = this.__esProxy ?? this;
-        if (ogDelete)
-          ogDelete.call(context);
-        this.esConnected = ogInit;
-        this.esDisconnected = ogDelete;
-        return this;
-      };
+      esm2[specialKeys.element] = el;
+      esm2[specialKeys.start] = () => start.call(esm2, specialKeys);
+      esm2[specialKeys.stop] = () => stop_default.call(esm2, specialKeys);
       for (let key in esm2) {
+        if (isPrivate(key))
+          continue;
         if (typeof esm2[key] === "function") {
           const desc = Object.getOwnPropertyDescriptor(esm2, key);
           if (desc && desc.get && !desc.set)
             esm2 = Object.assign({}, esm2);
           const og = esm2[key];
           esm2[key] = (...args) => {
-            const context = esm2.__esProxy ?? esm2;
+            const context = esm2[specialKeys.proxy] ?? esm2;
             return og.call(context, ...args);
           };
         }
       }
       const isESC = { value: "", enumerable: false };
       if (typeof id === "string") {
-        if (parent?.__isESComponent)
-          isESC.value = [parent.__isESComponent, id];
+        const path = parent[specialKeys.path];
+        if (path)
+          isESC.value = [path, id];
         else
           isESC.value = [id];
         isESC.value = isESC.value.join(keySeparator);
       }
-      Object.defineProperty(esm2, "__isESComponent", isESC);
-      Object.defineProperty(esm2, "esOriginal", { value: copy, enumerable: false });
-      esm2.esOnResize = finalStates.onresize;
-      esm2.esParent = finalStates.parentNode;
+      Object.defineProperty(esm2, specialKeys.path, isESC);
+      Object.defineProperty(esm2, specialKeys.original, { value: copy, enumerable: false });
+      esm2[specialKeys.resize] = finalStates.onresize;
+      esm2[specialKeys.parent] = finalStates.parentNode;
       return esm2;
     } catch (e) {
       console.error(`Failed to create an ES Component (${typeof id === "string" ? id : id.toString()}):`, e);
@@ -2286,483 +2902,65 @@
     }
   };
 
-  // ../../libraries/escompose/src/index.ts
-  var listenerObject = Symbol("listenerObject");
-  var createErrorComponent = (message) => {
-    return {
-      esElement: "p",
-      esDOM: {
-        b: {
-          esElement: "b",
-          esAttributes: {
-            innerText: "Error: "
-          }
-        },
-        span: {
-          esElement: "span",
-          esAttributes: {
-            innerText: message
-          }
-        }
-      }
-    };
-  };
-  var esCompile = (o, opts = {}) => {
-    let uri = typeof o === "string" ? o : o.esURI;
-    if (uri && opts.utilities) {
-      return new Promise(async (resolve3) => {
-        try {
-          const bundleOpts = opts.utilities.bundle;
-          const compileOpts = opts.utilities.compile;
-          if (typeof bundleOpts.function === "function") {
-            const options = bundleOpts.options ?? {};
-            if (!options.bundler)
-              options.bundler = "datauri";
-            if (!options.bundle)
-              options.collection = "global";
-            const bundle = bundleOpts.function(uri, options);
-            await bundle.resolve();
-            o = Object.assign({}, bundle.result);
-          } else if (typeof compileOpts.function === "function") {
-            const resolved = await compileOpts.function(o, compileOpts.options);
-            o = resolved;
-          } else {
-            throw new Error("Cannot transform esCompose string without a compose utility function");
-          }
-        } catch (e) {
-          if (o.esReference) {
-            console.warn("[escompose]: Falling back to ES Component reference...", e);
-            o = o.esReference;
-          } else
-            o = createErrorComponent(e.message);
-        }
-        resolve3(deep(o));
-      });
-    }
-    return deep(o);
-  };
-  var esMerge = (base, esCompose = {}, path = [], opts = {}) => {
-    if (!Array.isArray(esCompose))
-      esCompose = [esCompose];
-    let promise = resolve(esCompose.map((o) => {
-      const compiled = esCompile(o, opts);
-      return resolve(compiled, (compiled2) => {
-        let arr = [compiled2];
-        let target = compiled2;
-        while (target.esCompose) {
-          const val = target.esCompose;
-          delete target.esCompose;
-          target = resolve(esCompile(val, opts));
-          arr.push(target);
-        }
-        return arr;
-      });
-    }));
-    return resolve(promise, (clonedEsCompose) => {
-      const flat = clonedEsCompose.flat();
-      let merged = Object.assign({}, base);
-      delete merged.esCompose;
-      flat.forEach((toCompose) => {
-        merged = merge(toCompose, merged, path);
-      });
-      return merged;
-    });
-  };
-  var esDrill = (o, id, toMerge = {}, parent, opts) => {
-    const parentId = parent?.__isESComponent;
+  // ../../libraries/escompose/src/create/helpers/hierarchy.ts
+  function hierarchy(o, id, toMerge = {}, parent, directParent, opts = {}, callbacks = {}, waitForChildren = false) {
+    const parentId = parent?.[specialKeys.path];
     const path = parentId ? [parentId, id] : typeof id === "string" ? [id] : [];
     const firstMerge = merge(toMerge, o, path);
-    const merged = esMerge(firstMerge, o.esCompose, path, opts);
+    const merged = merge2(firstMerge, o[specialKeys.compose], path, opts);
     const res = resolve(merged, (merged2) => {
-      delete merged2.esCompose;
       const instance = create_default(id, merged2, parent, opts);
-      const savePath = path.join(opts.keySeparator ?? keySeparator);
-      if (opts?.components)
-        opts.components[savePath] = { instance, depth: parent ? path.length + 1 : path.length };
-      if (instance.esDOM) {
+      const absolutePath = path.join(opts.keySeparator ?? keySeparator);
+      if (directParent)
+        directParent[id] = instance;
+      if (callbacks[id])
+        callbacks[id](instance);
+      if (callbacks.onInstanceCreated)
+        callbacks.onInstanceCreated(absolutePath, instance);
+      const isReady = () => {
+        if (callbacks.onInstanceReady)
+          callbacks.onInstanceReady(absolutePath, instance);
+      };
+      if (instance[specialKeys.hierarchy]) {
         let positions = /* @__PURE__ */ new Set();
         let position = 0;
-        for (let name in instance.esDOM) {
-          const base = instance.esDOM[name];
-          const pos = base.esChildPosition;
+        const promises = Object.entries(instance[specialKeys.hierarchy]).map(async ([name2, base], i) => {
+          base = Object.assign({}, base);
+          const pos = base[specialKeys.childPosition];
           if (pos !== void 0) {
             if (positions.has(pos))
-              console.warn(`[escompose]: Duplicate esChildPosition value of ${pos} found in ${name} of ${instance.__isESComponent}`);
+              console.warn(`[escompose]: Duplicate ${specialKeys.childPosition} value of ${pos} found in ${name2} of ${instance[specialKeys.path]}`);
             else
               positions.add(pos);
           } else {
             while (positions.has(position))
               position++;
-            base.esChildPosition = position;
+            base[specialKeys.childPosition] = position;
             positions.add(position);
           }
-          const promise = esDrill(base, name, void 0, instance, opts);
-          instance.esDOM[name] = promise;
-          resolve2(promise, (res2) => {
-            instance.esDOM[name] = res2;
+          const promise = hierarchy(base, name2, void 0, instance, instance[specialKeys.hierarchy], opts, callbacks, true);
+          Object.defineProperty(instance[specialKeys.hierarchy][name2], specialKeys.promise, {
+            value: promise,
+            writable: false
           });
-        }
-      }
+          return resolve(promise);
+        });
+        const res2 = resolve(promises, (resolved) => {
+          isReady();
+          return resolved;
+        });
+        if (waitForChildren)
+          return resolve(res2, () => instance);
+      } else
+        isReady();
       return instance;
     });
     return res;
-  };
-  var initializedStatus = "INITIALIZED";
-  var registeredStatus = "REGISTERED";
-  var globalListeners = {};
-  var ListenerManager = class {
-    constructor(listeners2 = {}, root, context) {
-      this.original = {};
-      this.active = {};
-      this.context = {};
-      this.rootPath = "";
-      this.status = "";
-      this.#toRun = [];
-      this.register = (listeners2) => {
-        Object.defineProperty(listeners2, "__manager", {
-          value: this,
-          enumerable: false,
-          writable: true
-        });
-        for (let toPath in listeners2) {
-          const from2 = listeners2[toPath];
-          if (!from2) {
-            console.warn("Skipping empty listener:", toPath);
-            continue;
-          }
-          if (from2 && typeof from2 === "object") {
-            for (let fromPath in from2)
-              this.add(fromPath, toPath, from2[fromPath]);
-          } else {
-            if (typeof toPath === "string")
-              this.add(from2, toPath, toPath);
-            else
-              console.error("Improperly Formatted Listener", toPath);
-          }
-        }
-        this.status = registeredStatus;
-      };
-      this.#initialize = (o) => {
-        const res = this.context.monitor.get(o.path, "info");
-        if (typeof res.value === "function") {
-          const args = Array.isArray(o.args) ? o.args : [o.args];
-          res.value(...args);
-        } else
-          console.error("Cannot yet trigger values...", o);
-      };
-      this.initialize = (o) => {
-        if (!this.status)
-          this.#toRun.push(o);
-        else if (this.status === registeredStatus) {
-          this.status = initializedStatus;
-          this.#toRun.forEach(this.#initialize);
-        } else
-          this.#initialize(o);
-      };
-      this.#getAbsolutePath = (name) => {
-        return !name || !this.rootPath || name.includes(this.rootPath) ? name : [this.rootPath, name].join(this.context.monitor.options.keySeparator);
-      };
-      this.#getPathInfo = (path) => {
-        path = this.#getAbsolutePath(path);
-        const array = [this.context.id, ...path.split(this.context.options.keySeparator)];
-        const obj = this.context.monitor.get(array);
-        if (obj?.hasOwnProperty("__isESComponent"))
-          array.push(defaultPath);
-        path = array.slice(1).join(this.context.options.keySeparator);
-        const rel = this.rootPath ? path.replace(`${this.rootPath}.`, "") : path;
-        return {
-          absolute: {
-            value: path,
-            array
-          },
-          relative: {
-            value: rel,
-            array: rel.split(this.context.options.keySeparator)
-          }
-        };
-      };
-      this.add = (from2, to2, value2 = true, subscription = this.active[from2]?.sub) => {
-        const fromInfo = this.#getPathInfo(from2);
-        const toInfo = this.#getPathInfo(to2);
-        if (!subscription) {
-          subscription = this.context.monitor.on(fromInfo.absolute.array, (path, _, update) => {
-            return passToListeners(this, path, update);
-          });
-        }
-        if (!this.active[fromInfo.absolute.value])
-          this.active[fromInfo.absolute.value] = {};
-        const info2 = this.active[fromInfo.absolute.value][toInfo.absolute.value] = {
-          value: value2,
-          subscription,
-          [listenerObject]: true
-        };
-        let base = this.original[toInfo.relative.value];
-        if (!base)
-          base = this.original[toInfo.relative.value] = {};
-        if (typeof base !== "object") {
-          if (typeof base === "function")
-            base = this.original[toInfo.relative.value] = { [Symbol("function listener")]: base };
-          else
-            base = this.original[toInfo.relative.value] = { [base]: true };
-        }
-        base[fromInfo.relative.value] = value2;
-        const args = value2.esTrigger;
-        if (args)
-          this.initialize({
-            path: fromInfo.absolute.array,
-            args
-          });
-        let target = globalListeners;
-        const globalPath = fromInfo.absolute.array.slice(1);
-        const last = globalPath.pop();
-        globalPath.forEach((key) => {
-          if (!target)
-            target[key] = {};
-          target = target[key];
-        });
-        target[last] = true;
-        return info2;
-      };
-      this.remove = (from2, to2) => {
-        const fromInfo = this.#getPathInfo(from2);
-        const toInfo = this.#getPathInfo(to2);
-        const toRemove = [
-          { ref: this.active, path: [fromInfo.absolute.value, toInfo.absolute.value], unlisten: true },
-          { ref: this.original, path: [toInfo.relative.value, fromInfo.relative.value] }
-        ];
-        toRemove.forEach((o) => {
-          const { ref, path, unlisten } = o;
-          let base = ref[path[0]];
-          if (typeof base === "object") {
-            const info2 = base[path[1]];
-            delete base[path[1]];
-            if (Object.keys(base).length === 0) {
-              delete ref[path[0]];
-              if (unlisten && info2.subscription) {
-                this.context.monitor.remove(info2.subscription);
-              }
-            }
-          } else
-            delete ref[path[0]];
-        });
-      };
-      this.clear = (name) => {
-        const value2 = this.#getAbsolutePath(name);
-        Object.keys(this.active).forEach((from2) => {
-          Object.keys(this.active[from2]).forEach((to2) => {
-            if (!value2 || from2.slice(0, value2.length) === value2 || to2.slice(0, value2.length) === value2)
-              this.remove(from2, to2);
-          });
-        });
-      };
-      this.has = (from2) => !!this.active[from2];
-      this.get = (from2) => this.active[from2];
-      this.context = context;
-      this.rootPath = root;
-      let target = globalListeners;
-      root.split(this.context.options.keySeparator).forEach((key) => {
-        if (!target)
-          target[key] = {};
-        target = target[key];
-      });
-      if (target)
-        console.error("AHHHHHHHH");
-      this.register(listeners2);
-    }
-    #toRun;
-    #initialize;
-    #getAbsolutePath;
-    #getPathInfo;
-  };
-  var setListeners = (context, components) => {
-    let toRun = [];
-    for (let root in components) {
-      const info2 = components[root];
-      const to2 = info2.instance.esListeners ?? {};
-      const listeners2 = new ListenerManager(to2, root, context);
-      info2.instance.esListeners = to2;
-      toRun.push(listeners2.initialize);
-    }
-    return toRun;
-  };
-  var isConfigObject = (o) => "esFormat" in o || "esBranch" in o || "esTrigger" in o || "esBind" in o;
-  function pass(from2, target, update, context) {
-    const id = context.id;
-    let parent, key, subscription;
-    const isValue = target?.__value;
-    parent = target.parent;
-    key = target.key;
-    subscription = target.subscription;
-    const info2 = target.parent[key];
-    target = info2.value;
-    let config = info2?.esConfig;
-    let ogValue = target;
-    const type = typeof target;
-    const checkIfSetter = (path, willSet) => {
-      const info3 = context.monitor.get(path, "info");
-      if (info3.exists) {
-        const val = info3.value;
-        const noDefault = typeof val !== "function" && !val?.default;
-        const value2 = noDefault ? toSet : val;
-        const res = {
-          value: value2,
-          subscription
-        };
-        if (willSet) {
-          target = res.value;
-          parent[key] = res;
-        }
-        return res;
-      } else
-        return { value: void 0 };
-    };
-    const transform = (willSet) => {
-      const fullPath = [id];
-      fullPath.push(...key.split(context.options.keySeparator));
-      return checkIfSetter(fullPath, willSet);
-    };
-    const getPathArray = (latest) => {
-      const path = [id];
-      const topPath = [];
-      topPath.push(...latest.split(context.options.keySeparator));
-      path.push(...topPath);
-      return path;
-    };
-    if (typeof target === "boolean") {
-      if (!isValue)
-        transform(true);
-      else
-        console.error("Cannot use a boolean for esListener...");
-    } else if (type === "string") {
-      const path = getPathArray(ogValue);
-      checkIfSetter(path, true);
-      if (isValue) {
-        parent[key] = { [ogValue]: parent[key] };
-        key = ogValue;
-      }
-    } else if (target && type === "object") {
-      const isConfig = isConfigObject(ogValue);
-      if (isConfig) {
-        if ("value" in ogValue) {
-          if (isValue) {
-            target = parent[key] = ogValue.value;
-          } else {
-            target = parent[key].value = ogValue.value;
-          }
-        } else
-          transform(true);
-        if (ogValue) {
-          if (ogValue)
-            config = ogValue;
-        }
-        Object.defineProperty(parent[key], "esConfig", { value: config });
-      }
-    }
-    let isValidInput = true;
-    if (config) {
-      if ("esBind" in config) {
-        const path = getPathArray(config.esBind.original ?? config.esBind);
-        if (typeof config.esBind === "string") {
-          const res = context.monitor.get(path);
-          if (!res)
-            target = `because ${path.slice(1).join(context.options.keySeparator)} does not point correctly to an existing component.`;
-          else {
-            config.esBind = {
-              value: res,
-              original: config.esBind
-            };
-          }
-        } else if (!config.esBind.value.esParent) {
-          target = `because ${config.esBind.original ?? id.toString()} has become unparented.`;
-        }
-      } else {
-        if ("esBranch" in config) {
-          const isValid = config.esBranch.find((o) => {
-            let localValid = [];
-            if ("condition" in o)
-              localValid.push(o.condition(update));
-            if ("equals" in o)
-              localValid.push(o.equals === update);
-            const isValidLocal = localValid.length > 0 && localValid.reduce((a, b) => a && b, true);
-            if (isValidLocal) {
-              if ("value" in o)
-                update = o.value;
-            }
-            return isValidLocal;
-          });
-          if (!isValid)
-            isValidInput = false;
-        }
-        if ("esFormat" in config) {
-          try {
-            update = config.esFormat(update);
-            if (update === void 0)
-              isValidInput = false;
-          } catch (e) {
-            console.error("Failed to format arguments", e);
-          }
-        }
-      }
-    }
-    if (isValidInput && update !== void 0) {
-      const arrayUpdate = Array.isArray(update) ? update : [update];
-      if (target === toSet) {
-        const parentPath = [id];
-        parentPath.push(...key.split(context.options.keySeparator));
-        const idx = parentPath.pop();
-        const info3 = context.monitor.get(parentPath, "info");
-        info3.value[idx] = update;
-      } else if (target?.default)
-        target.default.call(target, ...arrayUpdate);
-      else if (typeof target === "function") {
-        const noContext = parent[key][listenerObject];
-        if (noContext)
-          target.call(config?.esBind?.value ?? context.instance, ...arrayUpdate);
-        else
-          target(...arrayUpdate);
-      } else {
-        let baseMessage = key ? `listener: ${from2} \u2014> ${key}` : `listener from ${from2}`;
-        if (parent) {
-          console.warn(`Deleting ${baseMessage}`, target);
-          delete parent[key];
-        } else
-          console.error(`Failed to add ${baseMessage}`, target);
-      }
-    }
   }
-  function passToListeners(listeners2, name, update) {
-    const context = listeners2.context;
-    const listenerGroups = [{
-      info: listeners2.get(name),
-      name
-    }];
-    listenerGroups.forEach((group) => {
-      const info2 = group.info;
-      if (info2) {
-        if (info2[listenerObject]) {
-          pass(name, {
-            value: info2.value,
-            parent: listeners2.active,
-            key: group.name,
-            subscription: info2.subscription,
-            __value: true
-          }, update, context);
-        } else if (typeof info2 === "object") {
-          for (let key in info2) {
-            pass(name, {
-              parent: info2,
-              key,
-              subscription: info2[key].subscription,
-              value: info2[key].value
-            }, update, context);
-          }
-        } else
-          console.error("Improperly Formatted Listener", info2);
-      }
-    });
-  }
-  var toSet = Symbol("toSet");
+
+  // ../../libraries/escompose/src/index.ts
   var create2 = (config, toMerge = {}, options = {}) => {
+    options = deep(options);
     let monitor;
     if (options.monitor instanceof src_default) {
       monitor = options.monitor;
@@ -2775,64 +2973,66 @@
           options.keySeparator = keySeparator;
         options.monitor.keySeparator = options.keySeparator;
       }
-      monitor = new src_default(options.monitor);
+      options.monitor = new src_default(options.monitor);
     }
     if (options.clone)
       config = deep(config);
-    monitor.options.fallbacks = ["esDOM"];
+    options.monitor.options.fallbacks = [specialKeys.hierarchy];
     const fullOptions = options;
-    const components = {};
-    const drillOpts = {
-      components,
-      keySeparator: fullOptions.keySeparator,
-      utilities: fullOptions.utilities,
-      await: fullOptions.await
-    };
     let instancePromiseOrObject;
-    let context;
     const onConnected = (instance) => {
-      const noParent = !instance.esParent;
+      const noParent = !instance[specialKeys.parent];
       if (noParent)
         return instance;
       else
-        return new Promise((resolve3) => {
-          const possiblePromise = instance.esConnected(() => {
-            if (context && options.listen !== false) {
-              const toRun = setListeners(context, components);
-              toRun.forEach((func) => func());
-            }
-          }, true);
-          resolve(possiblePromise, (toRun) => {
-            toRun.forEach((o) => o.ref.default(o.args));
-            resolve3(instance);
-          });
-        });
+        return resolve(instance[specialKeys.start](), resolve2);
     };
     if (options.nested?.parent && options.nested?.name) {
-      instancePromiseOrObject = esDrill(config, options.nested.name, toMerge, options.nested.parent, drillOpts);
-      return resolve(instancePromiseOrObject, onConnected);
+      instancePromiseOrObject = hierarchy(config, options.nested.name, toMerge, options.nested.parent, void 0, fullOptions);
     } else {
       const id = Symbol("root");
-      instancePromiseOrObject = esDrill(config, id, toMerge, void 0, drillOpts);
-      const set2 = (instance) => {
-        monitor.set(id, instance, fullOptions.listeners);
-        context = {
-          id,
-          instance,
-          monitor,
-          options: fullOptions
-        };
-        return onConnected(instance);
-      };
-      return resolve(instancePromiseOrObject, set2);
+      let listeners2 = {};
+      instancePromiseOrObject = hierarchy(config, id, toMerge, void 0, void 0, fullOptions, {
+        [id]: (instance) => {
+          options.monitor.set(id, instance, fullOptions.listeners);
+        },
+        onInstanceCreated: (absolutePath, instance) => {
+          if (fullOptions.listen !== false) {
+            const to2 = instance[specialKeys.listeners.value] ?? {};
+            const manager = listeners2[absolutePath] = new edgelord_default(to2, absolutePath, {
+              id,
+              instance,
+              monitor: fullOptions.monitor,
+              options: fullOptions
+            });
+            instance[specialKeys.listeners.value] = to2;
+            Object.defineProperty(instance, specialKeys.flow, {
+              value: manager,
+              enumerable: false,
+              writable: false
+            });
+            if (specialKeys.trigger in instance) {
+              if (!Array.isArray(instance[specialKeys.trigger]))
+                instance[specialKeys.trigger] = [];
+              const args = instance[specialKeys.trigger];
+              manager.onStart(() => instance.default(...args));
+              delete instance[specialKeys.trigger];
+            }
+          }
+        },
+        onInstanceReady: (absolutePath) => {
+          listeners2[absolutePath].start();
+        }
+      });
     }
+    return resolve(instancePromiseOrObject, onConnected);
   };
   var src_default2 = create2;
   var resolve2 = resolve;
 
   // ../../libraries/escomposer/src/schema/graphscript.ts
   var from = (gs) => {
-    let globalListeners2 = { [""]: {} };
+    let globalListeners = { [""]: {} };
     const drill = (target, acc = {}, path = []) => {
       const nodeInfo = target._node;
       delete target._node;
@@ -2841,24 +3041,24 @@
         acc.default = target;
       } else if (nodeInfo) {
         if (nodeInfo.children) {
-          acc.esDOM = {};
+          acc.__children = {};
           for (let key in nodeInfo.children) {
             const child = nodeInfo.children[key];
-            acc.esDOM[key] = drill(child, {}, [...path, key]);
+            acc.__children[key] = drill(child, {}, [...path, key]);
           }
         }
         if (nodeInfo.listeners) {
           for (let key in nodeInfo.listeners) {
-            globalListeners2[""][key] = {
+            globalListeners[""][key] = {
               value: nodeInfo.listeners[key],
-              esBind: path.join(".")
+              __bind: path.join(".")
             };
           }
         }
         if (nodeInfo.operator && !acc.default)
           acc.default = nodeInfo.operator;
         if (nodeInfo.loop)
-          acc.esAnimate = nodeInfo.loop / 1e3;
+          acc.__animate = nodeInfo.loop / 1e3;
       }
       return acc;
     };
@@ -2869,32 +3069,32 @@
         }
       };
     const esc = drill(gs);
-    esc.esListeners = globalListeners2;
+    esc.__listeners = globalListeners;
     return esc;
   };
   var to = (esc) => {
     let listeners2 = {};
     const drill = (target, acc = {}, prevKey = "") => {
-      if (target.esListeners) {
-        Object.keys(target.esListeners).forEach((str) => {
-          Object.keys(target.esListeners[str]).forEach((key) => {
-            const listener = target.esListeners[str][key];
-            const targetStr = listener.esBind.split(".").slice(-1)[0] ?? key;
+      if (target.__listeners) {
+        Object.keys(target.__listeners).forEach((str) => {
+          Object.keys(target.__listeners[str]).forEach((key) => {
+            const listener = target.__listeners[str][key];
+            const targetStr = listener.__bind.split(".").slice(-1)[0] ?? key;
             if (!listeners2[targetStr])
               listeners2[targetStr] = {};
             listeners2[targetStr][key] = listener.value ?? listener;
           });
         });
       }
-      if (target.esDOM) {
+      if (target.__children) {
         if (!acc._node)
           acc._node = {};
         if (!acc._node.children)
           acc._node.children = {};
-        drill(target.esDOM, acc._node.children, "esDOM");
+        drill(target.__children, acc._node.children, "__children");
       }
       Object.keys(target).forEach((key) => {
-        if (prevKey === "esDOM") {
+        if (prevKey === "__children") {
           if (!acc[key])
             acc[key] = target[key];
           acc[key]._node = {};
@@ -2911,13 +3111,13 @@
           acc._node.operator = target[key];
           delete target[key];
         }
-        if (key === "esAnimate")
+        if (key === "__animate")
           acc._node.loop = target[key] * 1e3;
       });
       return acc;
     };
     const component = create2(esc, void 0, { listen: false, await: false });
-    const tree2 = drill({ esDOM: { component } })._node.children.component._node.children;
+    const tree2 = drill({ __children: { component } })._node.children.component._node.children;
     tree2._node = { listeners: listeners2[""] };
     return tree2;
   };
@@ -2948,19 +3148,19 @@
       tree2 = graphscript_exports.from(tree2);
     if (o.id === "esc" || transformToESC) {
       const onConnected = (tree3) => {
-        tree3.esDOM.nodeB.x += 1;
-        tree3.esDOM.nodeB.esDOM.nodeC.default(4);
-        tree3.esDOM.nodeA.jump();
-        const popped2 = tree3.esDOM.nodeB.esDisconnected();
-        divs[o.id].innerHTML += "<li><b>nodeB popped!</b></li>";
+        tree3.__children.nodeB.x += 1;
+        tree3.__children.nodeB.__children.nodeC.default(4);
+        tree3.__children.nodeA.jump();
+        const popped2 = tree3.__children.nodeB.__disconnected();
+        divs[o.id].innerHTML += "<li><b>nodeB removed!</b></li>";
         popped2.x += 1;
-        tree3.esDOM.nodeA.jump();
+        tree3.__children.nodeA.jump();
         setTimeout(() => {
-          tree3.esDOM.nodeE.esDisconnected();
-          divs[o.id].innerHTML += "<li><b>nodeE popped!</b></li>";
+          tree3.__children.nodeE.__disconnected();
+          divs[o.id].innerHTML += "<li><b>nodeE removed!</b></li>";
         }, 5500);
       };
-      create2(tree2, { esParent: divs[o.id] }, { listen: true, clone: true, await: true }).then(onConnected);
+      create2(tree2, { __parent: divs[o.id] }, { listen: true, clone: true, await: true }).then(onConnected);
       continue;
     } else if (o.id === toGS) {
       tree2 = graphscript_exports.to(tree2);
@@ -3013,13 +3213,13 @@
     };
     let graph2 = new Graph({ tree: tree22 });
     let popped = graph.remove("nodeB");
-    divs[o.id].innerHTML += "<li><b>nodeB popped!</b></li>";
+    divs[o.id].innerHTML += "<li><b>nodeB removed!</b></li>";
     graph2.add(popped);
     popped.x += 1;
     graph.get("nodeA").jump();
     setTimeout(() => {
       graph.remove("nodeE");
-      divs[o.id].innerHTML += "<li><b>nodeE popped!</b></li>";
+      divs[o.id].innerHTML += "<li><b>nodeE removed!</b></li>";
     }, 5500);
   }
 })();

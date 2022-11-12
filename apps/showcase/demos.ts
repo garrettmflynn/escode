@@ -90,6 +90,11 @@ import bci2000Fallbacks from './demos/bci2000/fallbacks'
 const bci2000JSON = './demos/bci2000/index.esc.json'
 const bci2000JS = './demos/bci2000/index.esc.ts'
 
+// P5 Demo
+import * as p5File from './demos/p5/index.esc'
+import p5Fallback from './demos/p5/fallbacks'
+const p5JSON = './demos/p5/index.esc.json'
+const p5JS = './demos/p5/index.esc.ts'
 
 
 // // Broken
@@ -221,6 +226,14 @@ const bci2000Package = {
     js: bci2000JS
 }
 
+const p5Package = {
+    name: 'p5.js',
+    json: p5JSON,
+    fallbacks: p5Fallback,
+    file: p5File,
+    js: p5JS
+}
+
 
 const demos = {
 
@@ -249,6 +262,9 @@ const demos = {
 
     // Graph Demo
     graph: graphPackage,
+
+    // P5 Demo
+    p5: p5Package
 }
 
 

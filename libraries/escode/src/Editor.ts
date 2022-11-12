@@ -81,11 +81,13 @@ export class Editor extends LitElement {
       app?: any,
       dependencies?: any,
       graph: any,
+      gs: any,
     } = {
       esc: undefined,
       app: undefined,
       dependencies: undefined,
       graph: undefined,
+      gs: undefined
     }
 
     modal = new Modal()
@@ -260,6 +262,40 @@ export class Editor extends LitElement {
       return createComponent(esc, { nested: nestedInfo  })
     }
 
+
+    // Set GraphScript Object
+    set = (gs) => {
+      const attachedToThis = gs.__editorAttached === this
+      this.config.gs = gs
+      if (!attachedToThis) Object.defineProperty(gs, '__editorAttached', {value: this}) // Setting __editor to the component
+
+      const edges = {}
+
+      Object.values(gs.__node.state.triggers).map((arr: any) => {
+        arr.forEach(o => {
+          let target = edges[o.target]
+          if (!target) target = edges[o.target] = {}
+          target[o.source] = true
+        })
+      })
+
+
+
+      console.log('Edges', edges, gs.__node.state.triggers)
+      const graph = {
+        nodes: gs.__node.nodes,
+        edges
+      }
+
+      this.graph.workspace.edgeMode = 'to'
+
+      this.setGraph(graph) // forward to ESCode setter
+
+      return gs
+
+    }
+
+
     // TODO: Assign ES Component types
     setComponent = (esc: any = {}) => {
 
@@ -277,16 +313,24 @@ export class Editor extends LitElement {
         const esc = component.__children[key]
         local[key] = esc.__original
       }
-      
-      this.setPlugins({
-        ['Local Components']: {
-          ...component.__define,
-          ...local
-        },
-        ['Component Registry']: {
-          ...components,
-        }
+
+      // Set Plugins from NPM
+      fetch('https://api.npms.io/v2/search?q=keywords:escomponent').then(async r => {
+        const res = await r.json()
+
+        console.log('Got Plugins from NPM', res)
+        this.setPlugins({
+          ['Local Components']: {
+            ...component.__define,
+            ...local
+          },
+          ['Component Registry']: {
+            ...components,
+          },
+        })
+
       })
+    
 
       const graph = {
         nodes: component.__children,

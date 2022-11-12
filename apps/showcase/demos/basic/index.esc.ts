@@ -84,7 +84,7 @@ export const __children = {
 
 const branchConfig = {
     __branch: [
-        {equals: false, value: true}
+        {is: false, value: true}
     ]
 }
 

@@ -16,14 +16,14 @@ export const __listeners = {
     ['game.companion.velocity']: {
         ['keys.a']: {
             __branch: [
-                { equals: true, value: -200 },
-                { equals: false, value: 0 },
+                { is: true, value: -200 },
+                { is: false, value: 0 },
             ]
         },
         ['keys.d']: {
             __branch: [
-                { equals: true, value: 200 },
-                { equals: false, value: 0 },
+                { is: true, value: 200 },
+                { is: false, value: 0 },
             ]
         }
     }

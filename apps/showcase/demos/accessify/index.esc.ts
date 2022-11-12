@@ -109,7 +109,7 @@ export const __listeners = {
     'speak.start': {
         enableVoice: {
             __branch: [
-                {equals: true, value: true}
+                {is: true, value: true}
             ]
         }
     },
@@ -133,7 +133,7 @@ export const __listeners = {
     ['mouse.click']: {
         ['keys. ']: {
             __branch: [
-                {equals: true, value: true}
+                {is: true, value: true}
             ]
         }
     },
@@ -166,7 +166,7 @@ export const __listeners = {
 //     enableVoice: {
 //         'speak.start': {
 //             __branch: [
-//                 {equals: true, value: true}
+//                 {is: true, value: true}
 //             ]
 //         }
 //     },
@@ -180,7 +180,7 @@ export const __listeners = {
 //     ['keys. ']: {
 //         ['mouse.click']: {
 //             __branch: [
-//                 {equals: true, value: true}
+//                 {is: true, value: true}
 //             ]
 //         }
 //     },

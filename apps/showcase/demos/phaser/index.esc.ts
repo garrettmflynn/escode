@@ -115,15 +115,15 @@ export const __listeners = {
 
             ['keys.ArrowLeft']: {
                 __branch: [
-                    {equals: true, value: -150},
-                    {equals: false, value: 0},
+                    {is: true, value: -150},
+                    {is: false, value: 0},
                 ]
             },
 
             ['keys.ArrowRight']: {
                 __branch: [
-                    {equals: true, value: 150},
-                    {equals: false, value: 0},
+                    {is: true, value: 150},
+                    {is: false, value: 0},
                 ]
             }
         }

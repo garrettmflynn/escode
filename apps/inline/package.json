@@ -22,7 +22,7 @@
   "author": "",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "escompose": "^0.0.27"
+    "escompose": "*"
   },
   "nodemonConfig": {
     "env": {

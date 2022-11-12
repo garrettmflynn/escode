@@ -54,7 +54,7 @@ for (let i in trees){
                         
                 const popped = tree.__children.nodeB.__disconnected()  
 
-                divs[o.id].innerHTML += '<li><b>nodeB popped!</b></li>'
+                divs[o.id].innerHTML += '<li><b>nodeB removed!</b></li>'
 
                 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
             
@@ -63,7 +63,7 @@ for (let i in trees){
                 setTimeout(()=>{ 
 
                     tree.__children.nodeE.__disconnected()  
-                    divs[o.id].innerHTML += '<li><b>nodeE popped!</b></li>'
+                    divs[o.id].innerHTML += '<li><b>nodeE removed!</b></li>'
 
                 }, 5500)
 
@@ -138,7 +138,7 @@ for (let i in trees){
 
     let popped = graph.remove('nodeB');
 
-    divs[o.id].innerHTML += '<li><b>nodeB popped!</b></li>'
+    divs[o.id].innerHTML += '<li><b>nodeB removed!</b></li>'
 
     graph2.add(popped); //reparent nodeB to the parent graph
 
@@ -151,7 +151,7 @@ for (let i in trees){
     setTimeout(()=>{ 
 
         graph.remove('nodeE'); 
-        divs[o.id].innerHTML += '<li><b>nodeE popped!</b></li>'
+        divs[o.id].innerHTML += '<li><b>nodeE removed!</b></li>'
 
     },5500)
 

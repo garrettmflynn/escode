@@ -15,7 +15,7 @@ export const __listeners = {
     'speak.start': {
         enableVoice: {
             __branch: [
-                {equals: true, value: true}
+                {is: true, value: true}
             ]
         }
     },
@@ -24,7 +24,7 @@ export const __listeners = {
     ['game.companion.jump']: {
         speak: {
             __branch: [
-                {equals: 'jump small alien', value: true},
+                {is: 'jump small alien', value: true},
             ]
         },
     },
@@ -32,8 +32,8 @@ export const __listeners = {
     ['game.player.jump']: {
         speak: {
             __branch: [
-                {equals: 'jump big alien', value: true},
-                {equals: 'jump', value: true},
+                {is: 'jump big alien', value: true},
+                {is: 'jump', value: true},
             ]
         },
     },

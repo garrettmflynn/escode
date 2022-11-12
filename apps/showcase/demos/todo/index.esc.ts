@@ -82,7 +82,7 @@ export const __listeners = {
         load: true,
         ['form.button']: {
             __branch: [
-                {condition: (input) => typeof input === 'string'},
+                {if: (input) => typeof input === 'string'},
             ]
         },
         ['remove']: true
@@ -95,7 +95,7 @@ export const __listeners = {
     ['form.input']: {
         ['form.button']: {
             __branch: [
-                {condition: (input) => typeof input === 'string', value: ''},
+                {if: (input) => typeof input === 'string', value: ''},
             ]
         }
     },

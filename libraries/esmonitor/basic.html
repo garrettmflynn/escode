@@ -45,9 +45,9 @@ const funcSubs = monitor.on([id, ...functionPath], (path, info, output) => {
 // const storeSubs = monitor.on(storeId, {
 //     func1: (path, info, output) => console.log(`Updated Store (${path}) - ${output}`, info),
 //     __branch: [
-//         {equals: 1, value: () => console.log(`Is One!`)},
-//         {equals: 2, value: () => console.log(`Is Two!`)},
-//         {equals: true, value: () => console.log(`Is True!`)},
+//         {is: 1, value: () => console.log(`Is One!`)},
+//         {is: 2, value: () => console.log(`Is Two!`)},
+//         {is: true, value: () => console.log(`Is True!`)},
 //     ],
 //     __format: (...args) => {
 //         console.log('Formatting!', args)

@@ -9,6 +9,8 @@ export const isPrivate = (key) => false //key[0] === '_' // No private keys
 
 export const specialKeys = {
 
+    default: defaultPath,
+
     start: '__connected', // asked to start
     stop: '__disconnected',
     connected: '__ready', // wait until connected

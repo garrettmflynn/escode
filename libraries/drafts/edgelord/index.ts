@@ -462,8 +462,8 @@ pass = (from, target, update) => {
                 const isValid = config[branchKey].find(o => {
 
                     let localValid: boolean[] = []
-                    if ('condition' in o) localValid.push(o.condition(update)) // Condition Function
-                    if ('equals' in o) localValid.push(o.equals === update) // Equality Check
+                    if ('if' in o) localValid.push(o.if(update)) // Condition Function
+                    if ('is' in o) localValid.push(o.is === update) // Equality Check
                     const isValidLocal = localValid.length > 0 && localValid.reduce((a, b) => a && b, true)
 
                     if (isValidLocal) {
