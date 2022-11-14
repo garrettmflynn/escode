@@ -121,6 +121,8 @@ export class TabToggle extends LitElement {
     grow: TabToggleProps['grow'] = false
     bar: TabBar
 
+    button = document.createElement('button')
+
     constructor(props: TabToggleProps) {
       super();
         this.to = props.tab
@@ -178,17 +180,38 @@ export class TabToggle extends LitElement {
     updated = () => {
       this.bar = this.getBar()
     }
+
+    onchange
     
     render() {
 
-      return html`
-      <button @click=${() => {
-        if (this.parentNode) this.select() // Only allow if in the DOM
-      }}>
-        ${this.to.name ?? `Tab`}
-        ${(this.close === true) ? html`<visualscript-icon id=close type=close @click=${() => this.getBar().delete(this.to.name)}></visualscript-icon>` : ''}
-      </button>
-    `
+      if (this.to.type === 'dropdown'){
+        
+        // Add dropdown
+        if (this.selected) {
+          if (this.to.innerHTML) {
+            const style = getComputedStyle(this.button)
+            this.to.style.backgroundColor = style.backgroundColor
+            this.bar.insertAdjacentElement('afterend', this.to)
+          }
+        } 
+        
+        // Remove dropdown
+        else this.to.remove()
+      }
+
+      // Only onClick event if in the DOM
+      this.button.onclick = () => {
+        if (this.parentNode) {
+          if (this.to.type === 'dropdown' && this.selected === true) this.selected = false
+          else this.select()
+        }
+      }
+
+      this.button.innerHTML = ` ${this.to.name ?? `Tab`}
+      ${(this.close === true) ? html`<visualscript-icon id=close type=close @click=${() => this.getBar().delete(this.to.name)}></visualscript-icon>` : ''}`
+
+      return this.button
     }
   }
   

@@ -153,8 +153,11 @@ export class Modal extends LitElement {
     toggle = () => {
       this.open = !this.open
 
-      if (!this.open) this.onClose()
-      else this.onOpen()
+      if (!this.open) {
+        if (this.onClose instanceof Function) this.onClose()
+      } else {
+        if (this.onOpen instanceof Function) this.onOpen()
+      }
 
     }
 

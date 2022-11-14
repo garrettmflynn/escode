@@ -20,7 +20,8 @@ export type EditorProps = {
   app?: any, // brainsatplay.editable.App
   plugins?: any[]
   ui?: HTMLElement
-  style?: Editor['style']
+  style?: Editor['style'],
+  bind?: string
 }
 
 export class Editor extends LitElement {
@@ -29,10 +30,12 @@ export class Editor extends LitElement {
     return css`
 
     :host { 
+      position: relative;
       display: block;
       width: 100%;
       height: 100%;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     :host > div > * {
@@ -45,9 +48,22 @@ export class Editor extends LitElement {
       height: 100%;
     }
 
+    visualscript-tab-bar {
+      max-height: 7px;
+      transition: max-height 1s;
+    }
+
+    visualscript-tab-bar:hover {
+      max-height: 100px;
+    }
+
     #files {
       display: flex;
       height: 100%;
+    }
+
+    #ui {
+      overflow: scroll;
     }
 
     #files > visualscript-tree {
@@ -108,6 +124,7 @@ export class Editor extends LitElement {
     filesystem = {}
 
     onCreateFile?: Function
+    bind?: string
 
     constructor(props:EditorProps={}) {
       super();
@@ -115,8 +132,10 @@ export class Editor extends LitElement {
       if (props.style) for (let key in props.style) this.style[key] = props.style[key]
 
       this.ui.setAttribute('name', 'UI')
+      this.ui.id = 'ui'
       if (props.app) this.setApp(props.app)
       if (props.ui) this.setUI(props.ui)
+      if (props.bind) this.bind = props.bind
 
       // Setup Files Tab
       const div = document.createElement('div')
@@ -297,14 +316,15 @@ export class Editor extends LitElement {
 
 
     // TODO: Assign ES Component types
-    setComponent = (esc: any = {}) => {
+    setComponent = (esc: any = {}, ui = !this.bind) => {
 
       const component = (esc.hasOwnProperty('__path')) ? esc : this.createComponent(esc) 
       const attachedToThis = esc.__editorAttached === this
 
       this.config.esc = component
 
-      this.setUI(component.__element) // Maintain a reference to the true parent at esc.__parent
+      const uiElement = (ui === true) ? component.__element : ui
+      this.setUI(uiElement) // Maintain a reference to the true parent at esc.__parent
 
       if (!attachedToThis) Object.defineProperty(component, '__editorAttached', {value: this}) // Setting __editor to the component
 
@@ -315,10 +335,11 @@ export class Editor extends LitElement {
       }
 
       // Set Plugins from NPM
-      fetch('https://api.npms.io/v2/search?q=keywords:escomponent').then(async r => {
+      const keyword = 'graphscript'
+      fetch(`https://api.npms.io/v2/search?q=keywords:${keyword}`).then(async r => {
         const res = await r.json()
 
-        console.log('Got Plugins from NPM', res)
+        console.log('NPM Plugins from NPM', res)
         this.setPlugins({
           ['Local Components']: {
             ...component.__define,
@@ -356,7 +377,11 @@ export class Editor extends LitElement {
 
     setUI = (ui) => {
       this.ui.innerHTML = ''
-      this.ui.appendChild(ui)
+      this.ui.style.width = `0px`
+      if (ui) {
+        this.ui.style.width = `100%`
+        this.ui.appendChild(ui)
+      }
     }
 
     isPlugin = (f) => {
@@ -523,21 +548,33 @@ export class Editor extends LitElement {
       // const addBox = new Icon({type: 'addBox'})
       // addBox.id = 'palette'
 
-      const newProject = document.createElement('div')
-      newProject.innerHTML = 'Create new project'
-      const fileTab =  new Tab({name: 'File', type:'dropdown'})
-      fileTab.insertAdjacentElement('beforeend', newProject)
-      newProject.onclick = () => {
-        this.modal.open = true
-      }
+      const projectTab =  new Tab({name: 'Project', type:'dropdown'})
+      const projectOptions = [
+        { label: 'New', onclick: () =>  console.log('Coming soon...') }, // Create a new project
 
-      const tabs = [
-        fileTab,
-        new Tab({name: 'Edit', type:'dropdown'}),
-        new Tab({name: 'View'}),
-        new Tab({name: 'Window'}),
-        new Tab({name: 'Help'}),
+        // Open project
+        { label: 'Open', onclick: () => this.modal.open = true },
+        { label: 'Open from template', onclick: () => this.modal.open = true },
+        { label: 'Open from filesystem', onclick: () => console.log('Coming soon...') },
+
+        // Save
+        { label: 'Save', onclick: () => console.log('Coming soon...') }, // Save locally
+        { label: 'Save to filesystem', onclick: () => console.log('Coming soon...') }, // Save to filesystem
+
+        // Management Methods
+        { label: 'Reset', onclick: () => console.log('Coming soon...') }, // Reset to original configuration
+        { label: 'Manage', onclick: () => console.log('Coming soon...') }, // Manage changes
       ]
+
+      projectOptions.forEach(o => {
+        const option = document.createElement('div')
+        option.innerHTML = o.label
+        projectTab.insertAdjacentElement('beforeend', option)
+        option.onclick = o.onclick
+      })
+
+
+      const tabs = [projectTab]
 
       const panel = new Panel({minTabs: 2})
       const graphTab = new Tab({name: 'Graph'})
@@ -545,20 +582,14 @@ export class Editor extends LitElement {
       panel.addTab(graphTab)
       if (Object.keys(this.filesystem).length) panel.addTab(this.filesTab)
 
-      // return html`
-      //     ${this.modal}
-      //     <visualscript-tab-bar>
-      //       ${tabs.map(t => t.toggle)}
-      //     </visualscript-tab-bar>
-
-
-    //   <visualscript-tab name="Properties">
-    //   ${this.properties}
-    // </visualscript-tab>
+      document.body.insertAdjacentElement('afterend', this.modal)
       return html`
+      <visualscript-tab-bar>
+          ${tabs.map(t => t.toggle)}
+      </visualscript-tab-bar>
           <div>
-            ${this.ui}
             ${panel}
+            ${this.ui}
           </div>
       `
 

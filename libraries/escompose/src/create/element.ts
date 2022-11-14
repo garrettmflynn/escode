@@ -4,6 +4,7 @@ import { ESComponent, ESElementInfo } from "../../../esc/esc";
 import { resolve } from "../utils";
 import { specialKeys } from "../../../esc/standards";
 
+const boundEditorKey = `__bound${specialKeys.editor}s`
 
 export type ESComponentStates = {
 
@@ -234,10 +235,10 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                     const nextPosition = v.children.length
 
                     let ref = esm[specialKeys.element]
+
                     const __editor = esm[`__${specialKeys.editor}`]
-                    if (__editor) {
-                        ref = __editor // Set inside parent. Set focused component in __connected
-                    }
+
+                    if (__editor) ref = __editor // Set inside parent. Set focused component in __connected
 
 
                     // Resolved After Siblings Have Been Added
@@ -248,7 +249,6 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
                     // ------------------ Visualize with ESCode -----------------
                     if (__editor) __editor.setComponent(esm); // Set the target component
-                    
                 }
             } 
             
@@ -307,9 +307,27 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
         if (cls) {
             let options = utilities.code?.options ?? {}
             options = ((typeof config === 'boolean') ? options : {...options, ...config}) as EditorProps
+            const bound = options.bind
             const __editor = new cls(options)
             __editor.start() // start the editor
+
+            // Attach editor to component (ui)
             Object.defineProperty(esm, `__${specialKeys.editor}`, { value: __editor })
+
+            // Bind component to editor (graph)
+            if (bound !== undefined) {
+
+                let boundESM = esm // TODO: Use graphscript to find a specific node using relative uri
+                bound.split('/').forEach(str => {
+                    if (str === '..') boundESM = boundESM[specialKeys.states].parentNode[specialKeys.component] // Move to parent
+                    else if (str === '.') return // Do nothing
+                    else boundESM = boundESM[specialKeys.hierarchy][str] // Move to child
+                }) 
+
+                const key = boundEditorKey
+                if (!boundESM[key]) Object.defineProperty(boundESM, key, { value: [__editor] })
+                else boundESM[key].push(__editor)
+            }
         }
     }
     

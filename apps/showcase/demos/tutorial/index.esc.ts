@@ -93,6 +93,8 @@ const __editor = {
     }
 }
 
+const boundEditor = {...__editor, bind: '..'}
+
 for (let key in demos) {
     demoInfo[key] = {
         __compose: demos[key],
@@ -113,6 +115,12 @@ export const __children = {
             innerHTML: "Welcome to ESCode"
         }
     },
+
+
+    editor: {
+        __editor: boundEditor
+    },
+
     firstsection: {
         __children: {
             h2: {

@@ -25,6 +25,11 @@ async function asyncConnect (keys, onReadyCallback) {
 
     this[keys.states].connected = true
 
+    const boundEditorsKey = `__bound${keys.editor}s`
+    const boundEditors = this[boundEditorsKey]
+    if (boundEditors) boundEditors.forEach(editor => editor.setComponent(this)) // set after all children have been set
+
+
     // Initialize Nested Components (and wait for them to be done)
     for (let name in this[keys.hierarchy]) {
         let component = this[keys.hierarchy][name]
@@ -47,7 +52,7 @@ function connect (keys, callbacks: Function[] = []) {
     // ------------------ Retroactively set __editor editor on children of the focus element -----------------
     const __editor = this[keys.parent]?.[keys.component]?.[privateEditorKey]
     if (__editor) define.value(privateEditorKey, __editor, this)
-        
+
     // ------------------ Register Sources (from esmpile) -----------------
     let source = this[standards.esSourceKey]
     if (source) {

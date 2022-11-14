@@ -27,11 +27,12 @@ slot {
 
 :host([type="dropdown"]) {
   position: absolute;
-  top: 0;
-  left: 0: 
-  background: red;
+  z-index: 1;
+  width: auto;
+  height: auto;
+  border-radius: 5px 10px;
+  padding: 10px;
 }
-
 `
 
 export type TabProps = {
@@ -99,6 +100,7 @@ export class Tab extends LitElement {
       if (props.name) this.name = props.name
       if (props.controls) this.controls = props.controls // Will also check for controls in the <slot> later
       if (props.close) this.close = props.close
+      if (props.type) this.type = props.type
 
       if (props.on) this.on = props.on
       if (props.off) this.off = props.off
