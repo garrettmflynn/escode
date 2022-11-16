@@ -56,7 +56,7 @@ export const define = (config, esm) => {
 
             connectedCallback() {
                 console.log('Custom element added to page.');
-                this.__component.____ready();
+                this.__component.____connected(); // Notify that the Component is connected
             }
 
             disconnectedCallback() {

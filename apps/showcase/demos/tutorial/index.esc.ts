@@ -95,12 +95,21 @@ const __editor = {
 
 
 for (let key in demos) {
+
+    // Copy the editor properties
+    const thisEditor = Object.assign({}, __editor)
+    thisEditor.style = Object.assign({}, thisEditor.style)
+
     demoInfo[key] = {
         __compose: demos[key],
         __attributes: {
             style: Object.assign({}, demoEl.style)
         },
-        __editor
+        __editor: thisEditor
+    }
+
+    if (key === 'basic') {
+        demoInfo[key].__editor.style[`--${'visualscript'}-primary-color`] = 'black'
     }
 
     // if (key.includes('phaser')) demoInfo[key].__attributes.style.height = maxHeight

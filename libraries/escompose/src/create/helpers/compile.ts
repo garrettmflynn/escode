@@ -41,6 +41,7 @@ export default function compile(o, opts: Options) {
 
                         // Track Bundle Resolution
                         await bundle.compile()
+
                         o = Object.assign({}, bundle.result)
                     } 
                     

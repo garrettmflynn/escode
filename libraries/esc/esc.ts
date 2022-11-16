@@ -38,8 +38,8 @@ export type ESComponent<ElementType = GeneralElementType>  = {
 
     __childposition?: number // Will be resolved automatically if not set
 
-    __connected: Function
-    __disconnected: Function
+    __onconnected: Function
+    __ondisconnected: Function
 
     // HTML-Specific
     __element?: ElementType,
@@ -50,12 +50,12 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     __source: __source // Grabbed from esmpile
     __path: string, // Path of the Component (ALL HAVE IT)
     __editor?: boolean | EditorProps | typeof Editor // Shorthand for creating the editor
-    __ready: Promise<void>  // To resolve when fully loaded
+    __connected: Promise<void>  // To resolve when fully loaded
 
     // Keys to Manage Internal Things
     ____editor: Editor
     __proxy: ProxyConstructor,
-    ____ready: Function // Trigger for ready
+    ____connected: Function // Trigger for ready
     // __readyPromises: Promise<void>[]
 
 

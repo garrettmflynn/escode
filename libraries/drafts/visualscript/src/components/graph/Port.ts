@@ -10,7 +10,8 @@ export type GraphPortProps = {
   // preprocess?: Function,
   tag: string
   node?: GraphNode,
-  value?: any
+  value?: any,
+  type?: 'properties' | 'children' | 'default'
 }
 
 export class GraphPort extends LitElement {
@@ -33,7 +34,6 @@ export class GraphPort extends LitElement {
         display: flex; 
         align-items: center;
         justify-content: space-between;
-        color: white;
         font-size:7px;
     }
 
@@ -88,11 +88,13 @@ export class GraphPort extends LitElement {
 
     node: GraphPortProps['node']
     tag: GraphPortProps['tag']
+    type: GraphPortProps['type']
+    value: GraphPortProps['value']
+
     element: HTMLDivElement
     output: HTMLDivElement = document.createElement('div')
     input: HTMLDivElement = document.createElement('div')
 
-    value: GraphPortProps['value']
 
     resolving: boolean = false
     edges: Map<string, any> = new Map()
@@ -103,7 +105,8 @@ export class GraphPort extends LitElement {
       this.node = props.node
       this.tag = props.tag
       this.value = props.value
-      
+      this.type = props.type ?? 'properties'
+
 
       this.output.classList.add('port')
       this.output.classList.add('output')

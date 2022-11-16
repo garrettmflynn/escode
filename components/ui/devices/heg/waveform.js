@@ -6,7 +6,7 @@
 
     export const __element = 'canvas'
 
-    export function __connected() { 
+    export function __onconnected() { 
 
         if (this.__element instanceof HTMLCanvasElement) this.canvas = this.__element
         else {

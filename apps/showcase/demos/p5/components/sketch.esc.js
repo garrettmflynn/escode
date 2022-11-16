@@ -23,7 +23,7 @@ const ignoredKeys = ['constructor']
 
 export const ____cache = {}
 
-export function __connected() {
+export function __onconnected() {
 
 
     const initialValues = []
@@ -82,10 +82,14 @@ export function __connected() {
 
         // Basic setup and draw
         this.windowResized = () => {
-            this.createCanvas(this.__element.offsetWidth, this.__element.offsetHeight);
+            this.resizeCanvas(this.__element.offsetWidth, this.__element.offsetHeight);
         }
 
         this.setup = () => {
+            const res = this.createCanvas(this.__element.offsetWidth, this.__element.offsetHeight);
+            this.__element.appendChild(res.canvas) // Add the canvas to the element
+            res.canvas.setAttribute('data-hidden', false)
+            res.canvas.style.visibility = ''
             this.windowResized()
         };
       
@@ -119,7 +123,8 @@ export function __connected() {
 
       };
       
-      new p5(sketch, this.__element.id);
+
+      new p5(sketch);
 }
 
 export const instance = null;

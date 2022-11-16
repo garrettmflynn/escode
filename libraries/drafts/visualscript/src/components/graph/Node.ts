@@ -35,19 +35,26 @@ export class GraphNode extends LitElement {
     :host > div {
       min-width: 50px;
       background: rgb(60,60,60);
-  }
+    }
 
     #header {
-      color: white;
+      color: var(--visualscript-primary-font-color, white);
       font-size: 8px;
-      background: black;
+      background: var(--visualscript-primary-color, black);
       padding: 5px;
       padding-right: 25px;
       font-weight: 800;
     }
 
+
     #ports {
       min-height: 10px;
+      color: var(--visualscript-secondary-font-color, white);
+      background: var(--visualscript-secondary-color);
+    }
+
+    #ports > div:not(:last-child) {
+      border-bottom: 1px solid var(--visualscript-secondary-font-color, gray);
     }
 
     #ports visualscript-graph-port{
@@ -87,9 +94,27 @@ export class GraphNode extends LitElement {
     info: GraphNodeProps['info'];
     edges: Map<string, GraphEdge> = new Map()
     ports: Map<string, GraphPort> = new Map()
+    portCategories: {
+      properties: Map<string, GraphPort>,
+      children: Map<string, GraphPort>,
+      default: Map<string, GraphPort>,
+    } = {
+      properties: new Map(),
+      children: new Map(),
+      default: new Map(),
+    }
 
+    portOrder = ['default', 'children', 'properties']
+
+    elements = {
+      main: document.createElement('div')
+    }
+
+    
     constructor(props: GraphNodeProps = {}) {
       super();
+
+      this.elements.main.id = 'ports'
 
       this.workspace = props.workspace
       this.info = props.info ?? {tag: 'node', __extensions: {visualscript: {x: 0, y:0}}}
@@ -110,24 +135,42 @@ export class GraphNode extends LitElement {
       this.updatePorts(info)
     }
 
-    updatePorts = (info=this.info) => {
+    updatePorts = async (info=this.info) => {
 
+      const notify = (tag, value) => {
+        const got = this.portCategories[type].get(tag)
+
+          if (got === value) console.warn('Redeclared port: ', `${this.tag}.${tag}`)
+          else {
+            console.error('Port conflict: ', `${this.tag}.${tag}`)
+          }
+      }
+      
+      const type = 'properties'
       Object.keys(info).forEach(tag => {
         if (tag.slice(0,2) === '__') return // no __ (esCode special) properties
         if (isPrivate(tag)) return // no underscore (pseudo-private) properties
 
-        if (this.ports.has(tag)) return
-        this.addPort({ tag })
+        let thisType = type
+        if (tag === 'default' || tag === '__operator') thisType = 'default'
+        if (this.portCategories[thisType].has(tag)) {
+          notify(tag, info[tag])
+          return
+        }
+        this.addPort({ tag, type: thisType as any})
       })
 
       // Add Port for Each Active ES Component instance (i.e. the internal graph)
-      if (info.__children) Object.keys(info.__children).forEach(tag => {
-        if (this.ports.has(tag)) {
-          console.error('Port conflict: ', `${this.tag}.${tag}`)
-          return
-        }
-        this.addPort({ tag })
-      })
+      if (info.__children) {
+          const type = 'children'
+          Object.keys(info.__children).forEach(tag => {
+          if (this.portCategories[type].has(tag)) {
+            notify(tag, info.__children[tag])
+            return
+          }
+          this.addPort({ tag, type })
+        })
+      }
 
     }
 
@@ -142,7 +185,6 @@ export class GraphNode extends LitElement {
     }
 
     updated() {
-      this.element = this.shadowRoot.querySelector("div")
       if (!this.workspace) this.workspace = (this.parentNode.parentNode as any).host
 
       // add drag handler
@@ -160,8 +202,24 @@ export class GraphNode extends LitElement {
     addPort = (info: GraphPortProps) => {
       const port = new GraphPort(Object.assign({node: this}, info))
       this.ports.set(port.tag, port)
-      const ports = this.shadowRoot && this.shadowRoot.getElementById('ports')
-      if (ports) ports.appendChild(port) // Adding port to rendered html
+
+      // Set in type-specific registry
+      this.portCategories[info.type].set(port.tag, port)
+
+      let ports = this.elements[info.type]
+
+      if (!ports) {
+        this.elements[info.type] = ports = document.createElement('div')
+        ports.id = `${info.type}Ports`
+
+        const idx = this.portOrder.findIndex(str => str === info.type)
+        const beforeChild = this.elements.main.children[idx]
+        if (beforeChild) this.elements.main.insertBefore(ports, beforeChild);
+        else this.elements.main.appendChild(ports)
+      }
+      
+      ports.appendChild(port) // Adding port to rendered html
+
       return port
     }
 
@@ -187,9 +245,7 @@ export class GraphNode extends LitElement {
           <div id="header">
             ${this.tag}
           </div>
-          <div id="ports">
-              ${Array.from(this.ports.values())}
-          </div>
+          ${this.elements.main}
         </div>
       `
 

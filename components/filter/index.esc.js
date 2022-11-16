@@ -19,7 +19,7 @@ export function update() {
     this.ref = new BiquadChannelFilterer(this.settings);
 }
 
-export function __connected () {
+export function __onconnected () {
     this.update()
 }
 

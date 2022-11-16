@@ -9,7 +9,7 @@ export const options = {
 
 export const itemTag = 'option'
 
-export const __connected = function() {
+export const __onconnected = function() {
     let target = this
     let element = target.__element
     if (!element) {

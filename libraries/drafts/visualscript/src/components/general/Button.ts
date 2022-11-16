@@ -40,13 +40,12 @@ export class Button extends LitElement {
     }
 
     .storybook-button--primary {
-      color: white;
-      background-color: #1ea7fd;
+      color: var(--visualscript-primary-font-color, white);
+      background-color: var(--visualscript-primary-color, #1ea7fd);
     }
     .storybook-button--secondary {
-      color: #333;
-      background-color: transparent;
-      box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
+      color: var(--visualscript-secondary-font-color, white);
+      background-color: var(--visualscript-secondary-color, #333);
     }
     .storybook-button--extra-small {
       font-size: 10px;

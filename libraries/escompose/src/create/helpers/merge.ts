@@ -1,7 +1,6 @@
 type anyObj = {[key: string]: any}
 type esComposeType = anyObj | anyObj[]
 
-import { deep } from "../../../../common/clone"
 // Standard Notation
 import { specialKeys } from "../../../../esc/standards"
 

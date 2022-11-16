@@ -22,13 +22,11 @@ export default function (keys, callbacks, asyncCallback?: Function) {
 async function asyncConnect (keys, onReadyCallback) {
 
     await this[keys.connected]
-
     this[keys.states].connected = true
 
     const boundEditorsKey = `__bound${keys.editor}s`
     const boundEditors = this[boundEditorsKey]
     if (boundEditors) boundEditors.forEach(editor => editor.setComponent(this)) // set after all children have been set
-
 
     // Initialize Nested Components (and wait for them to be done)
     for (let name in this[keys.hierarchy]) {
@@ -37,10 +35,12 @@ async function asyncConnect (keys, onReadyCallback) {
         if (promise && typeof promise.then === 'function' ) component = this[keys.hierarchy][name] = await promise // Wait for the component to be ready
         const init = component[keys.start]
         if (typeof init === 'function') await init()
-        else console.error(`Could not start component ${name} because it does not have a __connected function`)
+        else console.error(`Could not start component ${name} because it does not have a __onconnected function`)
     }
 
+    this[`__${keys.resolved}`]() // Tell other programs that the component is resolved
     if (onReadyCallback) await onReadyCallback()
+
 
     return this
 }

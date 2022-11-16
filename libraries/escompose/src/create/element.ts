@@ -19,8 +19,8 @@ export type ESComponentStates = {
     onresizeEventCallback: Function,
 
     initial: {
-        start: ESComponent['__connected'],
-        stop: ESComponent['__disconnected']
+        start: ESComponent['__onconnected'],
+        stop: ESComponent['__ondisconnected']
     }
 
     __source?: ESComponent['__source']
@@ -119,11 +119,19 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
 
     // Wait to initialize the element until it is inserted into an active DOM node
-    let isReady; 
+    let isConnected, isResolved; 
 
     // track if ready
     Object.defineProperty(esm, `${specialKeys.connected}`, {
-        value: new Promise(resolve => isReady = async () => {
+        value: new Promise(resolve => isConnected = async () => {
+            resolve(true)
+        }),
+        writable: false,
+        enumerable: false,
+    })
+
+    Object.defineProperty(esm, `${specialKeys.resolved}`, {
+        value: new Promise(resolve => isResolved = async () => {
             resolve(true)
         }),
         writable: false,
@@ -131,8 +139,8 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     })
     
     // trigger if ready
-    Object.defineProperty(esm, `__${specialKeys.connected}`, { value: isReady,  writable: false, enumerable: false })
-
+    Object.defineProperty(esm, `__${specialKeys.connected}`, { value: isConnected,  writable: false, enumerable: false })
+    Object.defineProperty(esm, `__${specialKeys.resolved}`, { value: isResolved,  writable: false, enumerable: false })
 
 
     const isEventListener = (key, value) => key.slice(0,2) === 'on' && typeof value === 'function'
@@ -238,7 +246,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
                     const __editor = esm[`__${specialKeys.editor}`]
 
-                    if (__editor) ref = __editor // Set inside parent. Set focused component in __connected
+                    if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
 
 
                     // Resolved After Siblings Have Been Added

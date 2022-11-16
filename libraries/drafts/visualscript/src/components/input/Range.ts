@@ -74,7 +74,7 @@ export class Range extends LitElement {
       -webkit-appearance: none;
       width: 0; /* 1 */
       height: 20px;
-      box-shadow: -100vw 0 0 100vw #1ea7fd;
+      box-shadow: -100vw 0 0 100vw var(--visualscript-primary-color, #1ea7fd);
       opacity: 0.9;
       transition: opacity 0.5s;
   }

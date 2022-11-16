@@ -30,7 +30,7 @@ const style = `
 export const elements = {}
 
 
-export function __connected() {
+export function __onconnected() {
 
     onElementUtils.start.call(this, {
         stylesheet: style,
@@ -40,7 +40,7 @@ export function __connected() {
 
 }
 
-export function __disconnected () {
+export function __ondisconnected () {
     onElementUtils.stop.call(this)
 
     // Remove framing elements

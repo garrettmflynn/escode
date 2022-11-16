@@ -176,7 +176,9 @@ const tutorialPackage = {
     json: tutorialJSON,
     fallbacks: tutorialFallbacks,
     file: tutorialFile,
-    js: tutorialJS
+    js: tutorialJS,
+    relativeTo: 'apps/showcase/demos/tutorial'
+
 }
 
 const accessifyPackage = {
@@ -231,7 +233,8 @@ const p5Package = {
     json: p5JSON,
     fallbacks: p5Fallback,
     file: p5File,
-    js: p5JS
+    js: p5JS,
+    relativeTo: 'apps/showcase/demos/p5'
 }
 
 

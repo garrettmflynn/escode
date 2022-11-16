@@ -32,7 +32,7 @@ export const container = null // Always create a container with its own scope
 
 export const pointerEvents = false
 
-export function __connected() {
+export function __onconnected() {
 
     // Allow scrolling on phaser games
     this.container = document.createElement('div')
@@ -45,7 +45,7 @@ export function __connected() {
     else nodes.push(this)
 }
 
-export function __disconnected() {
+export function __ondisconnected() {
     if (this.game) this.game.destroy(true, false)
 }
 

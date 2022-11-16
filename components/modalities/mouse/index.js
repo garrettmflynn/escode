@@ -34,7 +34,7 @@ export const __attributes = {
     }
 }
 
-export function __connected () {
+export function __onconnected () {
 
     // Replace default element with an image of cursor
     if (this.__element instanceof HTMLDivElement && this.__element.innerHTML === ''){
@@ -63,7 +63,7 @@ export function __connected () {
     this.__element.style.top = this.y + 'px'
 }
 
-export function __disconnected () {
+export function __ondisconnected () {
     if (this.__element != null) this.__element.remove()
 
     document.body.style.cursor = 'default'

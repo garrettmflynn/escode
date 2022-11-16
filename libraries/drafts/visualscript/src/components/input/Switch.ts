@@ -46,7 +46,7 @@ export class Switch extends LitElement {
 
 
     [role="switch"][aria-pressed="true"] {
-      background-color: #1ea7fd;
+      background-color: var(--visualscript-primary-color, #1ea7fd);
     }
 
     [role="switch"][aria-pressed="true"] > .slider{

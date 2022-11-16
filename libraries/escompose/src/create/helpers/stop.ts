@@ -20,7 +20,7 @@ export default function (keys) {
         for (let name in this[keys.hierarchy]) {
             const component = this[keys.hierarchy][name]
             if (typeof component[keys.stop] === 'function') component[keys.stop]()
-            else console.warn('Could not disconnect component because it does not have an __disconnected function', name, this.__children)
+            else console.warn('Could not disconnect component because it does not have an __ondisconnected function', name, this.__children)
         }
     }
 
@@ -33,9 +33,9 @@ export default function (keys) {
         }
     }
 
-    // // Remove code editor
-    // const privateEditorKey = `__${keys.editor}Attached`
-    // if (this[privateEditorKey]) this[privateEditorKey].remove() 
+    // Remove code editor
+    const privateEditorKey = `${keys.editor}Attached` // TODO: Ensure this key is standard
+    if (this[privateEditorKey]) this[privateEditorKey].remove() 
 
     const context = this[keys.proxy] ?? this
 

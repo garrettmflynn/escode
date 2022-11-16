@@ -94,8 +94,8 @@ function startFunction () {
         return val
     })
 
-    if (active?.__disconnected) {
-        active.__disconnected()
+    if (active?.__ondisconnected) {
+        active.__ondisconnected()
         active = undefined
     }
     
@@ -159,7 +159,7 @@ async function start (demo = "basic", mode="direct") {
                 
             // Create an active ES Component from a .esc file
 
-            const relativeTo = window.location.href + 'apps/showcase/demos/tutorial' // Only used by the tutorial here...
+            const relativeTo = window.location.href + selected.relativeTo // Only used by the tutorial here...
 
             // // TODO: Fix so this works without fallbacks
             // const filesystem = {
@@ -170,6 +170,7 @@ async function start (demo = "basic", mode="direct") {
             //         './apps/showcase/demos/signal/index.esc.ts': signalComponent,
             //     }
             // }
+
             const component = escompose.create(reference, {__parent: main}, {
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 
@@ -181,14 +182,14 @@ async function start (demo = "basic", mode="direct") {
                         class: escode.Editor,
                         options: {}
                     },
-                    // bundle: {
-                    //     function: esm.bundle.get,
-                    //     options: {
-                    //         relativeTo,
-                    //         nodeModules,
-                    //         // filesystem
-                    //     }
-                    // },
+                    bundle: {
+                        function: esm.bundle.get,
+                        options: {
+                            relativeTo,
+                            nodeModules,
+                            // filesystem
+                        }
+                    },
                     // compile: {
                     //     function: esm.compile,
                     //     options: {
@@ -202,7 +203,7 @@ async function start (demo = "basic", mode="direct") {
 
 
             const esc = await component // Promise for self is resolved
-            await esc.__ready // All children promises are resolved (if await is false)
+            await esc.__connected // All children promises are resolved (if await is false)
 
 
             active = esc
@@ -217,7 +218,7 @@ async function start (demo = "basic", mode="direct") {
             
                 graphDemo.__children.nodeA.jump();
                         
-                const popped = graphDemo.__children.nodeB.__disconnected()
+                const popped = graphDemo.__children.nodeB.__ondisconnected()
     
                 graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
     
@@ -227,7 +228,7 @@ async function start (demo = "basic", mode="direct") {
     
                 setTimeout(()=>{ 
                     if (graphDemo === active) {
-                        graphDemo.__children.nodeE.__disconnected()  
+                        graphDemo.__children.nodeE.__ondisconnected()  
                         graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
                     }
                 }, 5500)

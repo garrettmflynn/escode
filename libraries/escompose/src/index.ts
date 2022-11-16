@@ -50,7 +50,10 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
             // })
 
             // Return synchronously unless the user requests a promise
-            else return utils.resolve(instance[standards.specialKeys.start](), resolve)
+            else {
+                const startRes = instance[standards.specialKeys.start]()
+                return utils.resolve(startRes, resolve)
+            }
 
         }
 

@@ -1,6 +1,6 @@
 export const __attributes = {
     onmousedown: function (ev) {
-        this.__disconnected()
+        this.__ondisconnected()
     },
     style: {
         cursor: 'pointer'

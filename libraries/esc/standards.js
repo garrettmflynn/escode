@@ -11,9 +11,10 @@ export const specialKeys = {
 
     default: defaultPath,
 
-    start: '__connected', // asked to start
-    stop: '__disconnected',
-    connected: '__ready', // wait until connected
+    start: '__onconnected', // asked to start
+    stop: '__ondisconnected',
+    connected: '__connected', // wait until connected
+    resolved: '__resolved', // wait until fully resolved
 
     hierarchy: '__children',
     element: '__element',

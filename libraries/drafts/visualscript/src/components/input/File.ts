@@ -43,7 +43,7 @@ export class File extends LitElement {
       border-bottom-left-radius: 5px;
       border: none;  
       color: #ffffff;
-      background-color: #1ea7fd;
+      background-color: var(--visualscript-primary-color, #1ea7fd);
       width: 100%;
       cursor: pointer;    
       /* white-space: nowrap; */

@@ -169,7 +169,7 @@ export class Select extends LitElement {
 
     .selectCustom-option.isHover,
     .selectCustom-option:hover {
-      background-color: #1ea7fd; // contrast AA
+      background-color: var(--visualscript-primary-color, #1ea7fd); // contrast AA
       color: white;
       cursor: default;
     }

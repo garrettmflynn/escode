@@ -52,7 +52,7 @@ for (let i in trees){
             
                 tree.__children.nodeA.jump();
                         
-                const popped = tree.__children.nodeB.__disconnected()  
+                const popped = tree.__children.nodeB.__ondisconnected()  
 
                 divs[o.id].innerHTML += '<li><b>nodeB removed!</b></li>'
 
@@ -62,7 +62,7 @@ for (let i in trees){
 
                 setTimeout(()=>{ 
 
-                    tree.__children.nodeE.__disconnected()  
+                    tree.__children.nodeE.__ondisconnected()  
                     divs[o.id].innerHTML += '<li><b>nodeE removed!</b></li>'
 
                 }, 5500)

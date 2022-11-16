@@ -130,7 +130,13 @@ export class Editor extends LitElement {
     constructor(props:EditorProps={}) {
       super();
 
-      if (props.style) for (let key in props.style) this.style[key] = props.style[key]
+      
+      if (props.style) {
+          for (let key in props.style) {
+            const value = props.style[key]
+            this.style.setProperty(key, value)
+        }
+      }
 
       this.ui.setAttribute('name', 'UI')
       this.ui.id = 'ui'
@@ -243,7 +249,7 @@ export class Editor extends LitElement {
         const activeGraph = this.config.graph
         if (this.config.esc){
           const activeNode = activeGraph.nodes[node.tag]
-          activeNode.__disconnected()
+          activeNode.__ondisconnected()
           delete activeGraph.nodes[node.tag]
         }
       }
@@ -418,7 +424,9 @@ export class Editor extends LitElement {
 
       this.graph.workspace.edgeMode = 'to'
 
-      this.setGraph(graph) // forward to ESCode setter
+      const isReady = component.__resolved
+      if (isReady) isReady.then(() => this.setGraph(graph))
+      else this.setGraph(graph)
 
       return component
     }
@@ -584,7 +592,6 @@ export class Editor extends LitElement {
 
     render() {
 
-
       // const addBox = new Icon({type: 'addBox'})
       // addBox.id = 'palette'
 
@@ -632,10 +639,10 @@ export class Editor extends LitElement {
       <visualscript-tab-bar>
           ${tabs.map(t => t.toggle)}
       </visualscript-tab-bar>
-          <div>
-            ${panel}
-            ${this.ui}
-          </div>
+        <div>
+          ${panel}
+          ${this.ui}
+        </div>
       `
 
     }
