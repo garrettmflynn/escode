@@ -135,7 +135,6 @@ opacity: 0.5;
                         })}
                 type="${this.type}"
                 placeholder="${this.label}"
-                .value=${(this.value != 'null' && this.value != 'undefined') ? this.value : ''}
                 ?disabled="${this.disabled}"
 
                 @change=${(ev) => {

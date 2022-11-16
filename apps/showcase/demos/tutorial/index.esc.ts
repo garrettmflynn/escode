@@ -93,7 +93,6 @@ const __editor = {
     }
 }
 
-const boundEditor = {...__editor, bind: '..'}
 
 for (let key in demos) {
     demoInfo[key] = {
@@ -114,11 +113,6 @@ export const __children = {
         __attributes: {
             innerHTML: "Welcome to ESCode"
         }
-    },
-
-
-    editor: {
-        __editor: boundEditor
     },
 
     firstsection: {
@@ -209,6 +203,20 @@ export const __children = {
                         }
                     },
                     demo6: demoInfo.speakPhaser,
+                }
+            },
+
+            block7: {
+                __children: {
+                    p6: {
+                        __element: 'p',
+                        __attributes: {
+                            innerHTML: "You can even use an embedded editor to edit the entire application!"
+                        }
+                    },
+                    demo7: {
+                        __editor: {...__editor, bind: '../../..'}
+                    }
                 }
             }
         }

@@ -3,12 +3,12 @@ import { LitElement, html, css } from 'lit';
 
 type MenuItem = {
   text: string;
-  onclick: (e:any) => any
+  onclick: (e:any, returned: any) => any
 }
 
 
 type Response = {
-  condition: (target: HTMLElement) => boolean
+  condition: (target: HTMLElement[]) => boolean | any
   contents: (ev: MouseEvent) => MenuItem[];
 }
 
@@ -39,7 +39,7 @@ export class ContextMenu extends LitElement {
   
    li { 
     cursor: pointer;
-    border-bottom:solid 1px #CCC; 
+    /* border-bottom:solid 1px #CCC; */
     padding: 5px 10px;
   }
   
@@ -48,6 +48,10 @@ export class ContextMenu extends LitElement {
    li:hover {
     background: #EEE;
    }
+
+    hr {
+      margin: 5px;
+    }
 
     @media (prefers-color-scheme: dark) {
 
@@ -81,14 +85,15 @@ export class ContextMenu extends LitElement {
     delete = (id) => this.responses.delete(id)
 
     onContextMenu = (e) => {
-      
-        const selected = e.path[0]
-        // console.log(selected)
 
+      this.list.innerHTML = '' // Clear
+      
+
+        let count = 0;
         this.responses.forEach((o) => {
           // console.log(o, o.condition(selected))
 
-          const isMatch = o.condition(selected)
+          const isMatch = o.condition(e.path)
           if (isMatch) {
             e.preventDefault();
 
@@ -100,15 +105,22 @@ export class ContextMenu extends LitElement {
             this.style.top = e.pageY - rect.top + 'px'
             this.style.display = 'block'
             const list = o.contents(e) ?? []
-            
-            this.list.innerHTML = ''
-            
-            list.forEach(item => {
-              const li = document.createElement('li')
-              li.innerHTML = item.text
-              li.onclick = item.onclick
-              this.list.appendChild(li)
-            })
+                        
+            if (list.length > 0) {
+
+              if (count > 0) this.list.appendChild(document.createElement('hr')) // Split
+
+              list.forEach(item => {
+                const li = document.createElement('li')
+                li.innerHTML = item.text
+                li.onclick = (ev) => {
+                  item.onclick(ev, isMatch)
+                }
+                this.list.appendChild(li)
+              })
+
+              count++
+            }
           }
         })
     }

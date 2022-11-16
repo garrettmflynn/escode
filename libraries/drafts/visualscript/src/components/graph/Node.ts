@@ -46,6 +46,10 @@ export class GraphNode extends LitElement {
       font-weight: 800;
     }
 
+    #ports {
+      min-height: 10px;
+    }
+
     #ports visualscript-graph-port{
       padding: 2px 0px;
     }
@@ -159,6 +163,12 @@ export class GraphNode extends LitElement {
       const ports = this.shadowRoot && this.shadowRoot.getElementById('ports')
       if (ports) ports.appendChild(port) // Adding port to rendered html
       return port
+    }
+
+    deinit = (triggerInWorkspace= true) => {
+      if (triggerInWorkspace) this.workspace.removeNode(this)
+      this.edges.forEach(e => e.deinit()) // Remove edges
+      this.remove()
     }
     
     render() {

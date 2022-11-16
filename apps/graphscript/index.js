@@ -16,9 +16,11 @@ let graph = new Graph({
     loaders: {
 
         'looper': (props, parent, graph) => { //badabadabadabooop
-
+            
+            let oncreate = () => {}
+            
             if (props.__loop && typeof props.__loop === 'number') {
-                let oncreate = (node) => {
+                oncreate= (node) => {
                     if (node.__loop && typeof node.__loop === 'number') {
                         node.__isLooping = true
                         if (!node.__looper) {
@@ -32,21 +34,19 @@ let graph = new Graph({
                         }
                     }
                 }
-
-
-                if (typeof props.__onconnected === 'undefined') props.__onconnected = [oncreate];
-                else if (typeof props.__onconnected === 'function') props.__onconnected = [oncreate, props.__onconnected];
-                else if (Array.isArray(props.__onconnected)) props.__onconnected.unshift(oncreate);
-
-                let ondelete = (node) => {
-                    if (node.__isLooping) node.__isLooping = false;
-                }
-
-                if (typeof props.__ondisconnected === 'undefined') props.__ondisconnected = [ondelete];
-                else if (typeof props.__ondisconnected === 'function') props.__ondisconnected = [ondelete, props.__ondisconnected];
-                else if (Array.isArray(props.__ondisconnected)) props.__ondisconnected.unshift(ondelete);
             }
 
+            if (typeof props.__onconnected === 'undefined') props.__onconnected = [oncreate];
+            else if (typeof props.__onconnected === 'function') props.__onconnected = [oncreate, props.__onconnected];
+            else if (Array.isArray(props.__onconnected)) props.__onconnected.unshift(oncreate);
+
+            let ondelete = (node) => {
+                if (node.__isLooping) node.__isLooping = false;
+            }
+
+            if (typeof props.__ondisconnected === 'undefined') props.__ondisconnected = [ondelete];
+            else if (typeof props.__ondisconnected === 'function') props.__ondisconnected = [ondelete, props.__ondisconnected];
+            else if (Array.isArray(props.__ondisconnected)) props.__ondisconnected.unshift(ondelete);
         }
     }
 });
@@ -73,8 +73,8 @@ graph.get('nodeA').jump();
 
 // popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
-graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
+// graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 
-setTimeout(() => {
-    graph.remove('nodeE');
-}, 5500)
+// setTimeout(() => {
+//     graph.remove('nodeE');
+// }, 5500)

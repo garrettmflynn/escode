@@ -33,6 +33,8 @@ export class ObjectEditor extends LitElement {
       height: 100%;
       width: 100%;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     img {
@@ -42,7 +44,9 @@ export class ObjectEditor extends LitElement {
     .header {
       padding: 5px 10px;
       font-size: 70%;
-      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .header span {
@@ -145,11 +149,12 @@ export class ObjectEditor extends LitElement {
 
     mode: string
     timeseries: TimeSeries
+    base: any
 
     constructor(props: ObjectEditorProps = {target: {}, header: 'Object'}) {
       super();
 
-      this.set(props.target)
+      this.set(props.target, {base: true})
       this.header = props.header ?? 'Object'
       this.mode = props.mode ?? 'view'
       this.plot = props.plot ?? []
@@ -165,14 +170,106 @@ export class ObjectEditor extends LitElement {
       return (plot) ? 'plot' : 'view' 
     }
 
-    set = async (target={}, plot=false) => {
+    set = async (target={}, options: {
+      plot?: boolean,
+      base?: boolean
+    } = {
+      plot: false,
+      base: false
+    }) => {
+
+      if (options.base) this.base = target
       if (this.preprocess instanceof Function) this.target = await this.preprocess(target)
       else this.target = target
       this.keys = Object.keys(this.target).sort()
-      this.mode = this.getMode(this.target, plot)
+      this.mode = this.getMode(this.target, options.plot)
+    }
+
+    to = (path) => {
+
+      this.history = []
+
+      const specialHierarchyKey = '__children'
+
+      const registerAll = (path, target) => {
+
+        let info: any = {
+          history: []
+        }
+
+        // Multiple Values
+        if (path.includes('.')) {
+          const split = path.split('.')
+          for (let key of split) {
+
+            target = register(split, target, info)
+            if (target === false) {
+              console.error('Invalid path', key, path)
+              return
+            }
+          }
+        } 
+
+        // Single Value
+        else {
+          register(path, target, info)
+        }
+
+        return info
+      }
+
+      const register = (key, target, info: any = {}) => {
+
+        const hasKey = (key in target)
+
+        // Check first for special hierarchy key
+        const deeper = target[specialHierarchyKey]
+        if (deeper && !hasKey){
+           target = register(specialHierarchyKey, target, info)
+        }
+
+        const hasKeyBase = (key in target)
+        if (!hasKeyBase) return false
+
+        // Grab general key
+        const parent = target
+        target = target[key]
+        this.updateHistory(parent, key, info.history)
+
+        info.last = key
+        info.parent = parent
+        info.value = target
+
+        return target
+      }
+
+
+      this.updateHistory(parent, this.header) // Update base history
+      const info = registerAll(path, this.base)
+      if (!info) return
+      else {
+        this.history = [{key: this.header, parent: this.base}, ...info.history.slice(0, -1)]
+        this.set(info.value, {
+          plot: this.checkToPlot(info.last, info.parent)
+        }).then(() => {
+          this.header = info.last
+        })
+        return true
+      }
     }
 
     checkToPlot = (key, o) => this.plot.length !== 0 && this.plot.reduce((a,f) => a + f(key, o), 0) === this.plot.length
+
+    updateHistory = (parent, key, history = this.history) => history.push({parent, key})
+
+    change = async (val, key, parent=this.target, previousKey=this.header) => {
+      this.updateHistory(parent, previousKey)
+      await this.set(val, {
+        plot: this.checkToPlot(key,parent)
+      })
+      this.header = key
+      return true
+    }
 
     getActions = async (key:keyType, o:any) => {
 
@@ -182,11 +279,7 @@ export class ObjectEditor extends LitElement {
 
       if (typeof val === 'object') {
         const mode = this.getMode(val, this.checkToPlot(key,o))
-        actions = html`<visualscript-button primary=true size="small" @click="${async () => {
-          this.history.push({parent: o, key: this.header})
-          await this.set(val, this.checkToPlot(key,o))
-          this.header = key
-        }}">${mode[0].toUpperCase() + mode.slice(1)}</visualscript-button>`
+        actions = html`<visualscript-button primary=true size="small" @click="${async () => this.change(val, key, o)}">${mode[0].toUpperCase() + mode.slice(1)}</visualscript-button>`
       }
 
       return html`
@@ -209,8 +302,8 @@ export class ObjectEditor extends LitElement {
         } else {
           display = new Input()
           display.value = val
-          display.oninput = () => {
-            o[key] = display.value // Modify original data
+          display.onInput = (ev) => {
+            o[key] = ev.target.value // Modify original data
           }
         }
 
@@ -245,9 +338,14 @@ export class ObjectEditor extends LitElement {
 
       return until(Promise.all(content).then((data) => {
 
+        const history = [...this.history.map(o => o.key), this.header].join(`<wbr>.`)
+        const small = document.createElement('small')
+        small.innerHTML = history
+
         return html`
         <div>
           <div class="header">
+            <small>${small}</small>
             ${ (this.history.length > 0) ? html`<visualscript-button size="extra-small" @click="${() => {
                 const historyItem = this.history.pop()
                 this.set(historyItem.parent)

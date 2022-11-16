@@ -82,6 +82,8 @@ export class GraphEditor extends LitElement {
     onnodeadded: GraphWorkspace['onnodeadded']
     onnoderemoved: GraphWorkspace['onnoderemoved']
 
+    contextMenu = context
+
     constructor(props?: GraphEditorProps) {
       super();
 
@@ -105,15 +107,33 @@ export class GraphEditor extends LitElement {
             // ------------------------------------- Setting Context Menu Response -------------------------------------
             // ---------------------------------------------------------------------------------------------------------
 
-            if (!context.parentNode) document.body.appendChild(context)
-            context.set('visualscript-graph-editor', {
-              condition: (el) => {
-                const root =  this.workspace.shadowRoot
-                if (root){
-                  return el ===  this.workspace // Is the workspace
-                  || root.contains(el) // Is the workspace grid
-                } else return false
-              },
+            if (!this.contextMenu.parentNode) document.body.appendChild(this.contextMenu)
+
+            // Setting Context Menu Responses
+            this.contextMenu.set(`visualscript-graph-editor_nodes_${Math.random()}`, {
+              condition: (path) => {
+                  let returned: any = false
+                  this.workspace.nodes.forEach(n => {
+                    if (path.includes(n)) returned = n
+                  })
+                  return returned
+                },
+              contents: () => {
+                return [
+                  {
+                    text: 'Delete',
+                    onclick: (_, node) => {
+                      this.workspace.removeNode(node)
+                  }
+                }
+                ]
+                
+              }
+            })
+
+
+            this.contextMenu.set(`visualscript-graph-editor_${Math.random()}`, {
+              condition: (path) => path.includes(this),
               contents: (ev) => {
                 return [
                   {

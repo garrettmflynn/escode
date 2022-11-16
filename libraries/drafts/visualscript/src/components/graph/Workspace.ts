@@ -313,8 +313,9 @@ export class GraphWorkspace extends LitElement {
 
     }
 
-    removeNode = (name) => {
-      const node = this.nodes.get(name)
+    removeNode = (node: string | GraphNode) => {
+      if (typeof node === 'string') node = this.nodes.get(node)
+
       if (
         this.toResolve.length === 0 // workspace has rendered
         && this.onnoderemoved instanceof Function // callback is a function
@@ -322,7 +323,9 @@ export class GraphWorkspace extends LitElement {
 
 
       // update ui
-      this.nodes.delete(name)
+      node.deinit(false)
+      this.nodes.delete(node.tag)
+
     }
 
     addNode = (props: GraphNodeProps) => {
@@ -385,9 +388,9 @@ export class GraphWorkspace extends LitElement {
           if (typeof nodeEdges === 'string') nodeEdges = {[nodeEdges]: true}
 
           for (let targetKey in nodeEdges) {
-
-          const output = (this.edgeMode === 'from') ? this.match(key) : this.match(targetKey)
-          const input = (this.edgeMode === 'from') ? this.match(targetKey) : this.match(key)
+            const info = nodeEdges[targetKey]
+            const output = (this.edgeMode === 'from') ? this.match(key) : this.match(targetKey, info)
+            const input = (this.edgeMode === 'from') ? this.match(targetKey, info) : this.match(key)
 
           const edges = {}
 
@@ -397,7 +400,7 @@ export class GraphWorkspace extends LitElement {
           if (!edges[outTag].includes(input.port.tag)){
 
             await this.resolveEdge({
-              info: nodeEdges[targetKey],
+              info,
               input: input.port,
               output: output.port
             });    
@@ -414,11 +417,13 @@ export class GraphWorkspace extends LitElement {
       return nodes
     }
 
-   match = (route:string) => {
+   match = (route:string, edgeInfo: any = {}) => {
 
       let tags = route.split('.')
-      const portName = (tags.length === 1) ? 'default' : tags.slice(1).join('.'); // fallback to default port
       let match = this.nodes.get(tags[0]);
+
+      // If no port name, choose between operator and default
+      const portName = (tags.length === 1) ? (match.info.__operator ? '__operator' : 'default') : tags.slice(1).join('.'); // fallback to default port
 
       tags.forEach(t => {
         const temp = this.nodes.get(t)
@@ -430,7 +435,7 @@ export class GraphWorkspace extends LitElement {
         port = match.ports.get(portName);
         if (!port) {
           // alert('Port not found: ' + route)
-          port = match.addPort({tag: portName})
+          port = match.addPort({tag: portName, value: edgeInfo.target})
         }
       } catch (e) {
         console.error('failed to get port', e, route, this.nodes)

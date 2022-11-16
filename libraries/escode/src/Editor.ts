@@ -14,10 +14,10 @@ import createComponent from '../../escompose/src/index'
 // Default ES Component Pool for Plugins
 import * as components from '../../../components/index.js'
 import { __source } from '../../esc/esc';
+import { isListenerPort } from '../../drafts/visualscript/src/components/graph/utils/check';
 
 
 export type EditorProps = {
-  app?: any, // brainsatplay.editable.App
   plugins?: any[]
   ui?: HTMLElement
   style?: Editor['style'],
@@ -94,28 +94,29 @@ export class Editor extends LitElement {
 
     config: {
       esc?: any,
-      app?: any,
       dependencies?: any,
       graph: any,
       gs: any,
+      original: any
     } = {
       esc: undefined,
-      app: undefined,
       dependencies: undefined,
       graph: undefined,
-      gs: undefined
+      gs: undefined,
+      original: undefined
     }
 
     modal = new Modal()
     ui = document.createElement('visualscript-tab') 
     files = new Panel()
     filesTab = new Tab({name: 'Files'})
+    objectTab = new Tab({name: "Properties"})
 
     info = new Panel()
     history: {[x:string]: any} = {}
     fileUpdate: number = 0
     graph = new GraphEditor()
-    properties = new ObjectEditor()
+    object = new ObjectEditor()
     tree = new Tree({
       target: {},
       mode: 'filesystem'
@@ -133,7 +134,6 @@ export class Editor extends LitElement {
 
       this.ui.setAttribute('name', 'UI')
       this.ui.id = 'ui'
-      if (props.app) this.setApp(props.app)
       if (props.ui) this.setUI(props.ui)
       if (props.bind) this.bind = props.bind
 
@@ -143,6 +143,33 @@ export class Editor extends LitElement {
       div.appendChild(this.tree)
       div.appendChild(this.files)
       this.filesTab.appendChild(div)
+
+      // Setup Properties Tab
+      this.objectTab.appendChild(this.object)
+
+      // Setting Context Menu Responses
+      this.graph.contextMenu.set(`visualscript-graph-editor_nodes_${Math.random()}`, {
+        condition: (path) => {
+            let returned: any = false
+            this.graph.workspace.nodes.forEach(n => {
+              if (path.includes(n)) returned = n
+            })
+            return returned
+          },
+        contents: () => {
+          return [
+            {
+              text: 'View Properties',
+              onclick: (_, node) => {
+                const relPath = node.info.__path.replace(`${this.config.esc.__path}.`, '')
+                const res = this.object.to(relPath)
+                if (res) this.objectTab.toggle.select()
+            },
+          },
+          ]
+          
+        }
+      })
 
       // -------------------- Setup ESCode x visualscript interface --------------------
 
@@ -159,7 +186,17 @@ export class Editor extends LitElement {
 
       this.graph.onedgeadded = async (edge: GraphEdge) => {    
 
-        if (this.config.esc){         
+        if (this.config.gs) {
+          let key = ( edge.input.tag === '__operator') ? '' : edge.input.tag
+          const isFound = isListenerPort(key)
+          if (isFound) key = undefined
+
+          // setListeners
+          // this.config.gs.setListeners({
+          //   [edge.output.node.info.tag]: isFound ? edge.input.value : key
+          // })
+          edge.output.node.info.__subscribe(isFound ? edge.input.value : edge.input.node.info, key)
+        } else if (this.config.esc){         
           let tags = getTags(edge)
           this.config.esc.__manager.add(tags[0], tags[1], edge.info)
         } else {
@@ -189,7 +226,10 @@ export class Editor extends LitElement {
       this.graph.onedgeremoved = async (edge) => {
 
         if (edge.input && edge.output){
-          if (this.config.esc){
+
+          console.log(edge.input)
+          if (this.config.gs) edge.output.node.info.__unsubscribe(edge.info.sub, edge.info.key)
+          else if (this.config.esc){
             const tags = getTags(edge)
             this.config.esc.__manager.remove(tags[0], tags[1])
           } else {
@@ -284,29 +324,47 @@ export class Editor extends LitElement {
 
     // Set GraphScript Object
     set = (gs) => {
+      
       const attachedToThis = gs.__editorAttached === this
-      this.config.gs = gs
+      this.config.original = this.config.gs = gs
       if (!attachedToThis) Object.defineProperty(gs, '__editorAttached', {value: this}) // Setting __editor to the component
 
       const edges = {}
+      const isTop = !!gs.__node.nodes
+      const nodes = gs.__node.nodes || gs.__node.graph.__node.nodes
+      const cutoffTag = gs.__node.tag
+      const include = (tag) => tag.slice(0, cutoffTag.length) === cutoffTag
 
-      Object.values(gs.__node.state.triggers).map((arr: any) => {
+      // Get Edges
+      Object.values(gs.__node.state.triggers).map((arr: any, i) => {
         arr.forEach(o => {
-          let target = edges[o.target]
-          if (!target) target = edges[o.target] = {}
-          target[o.source] = true
+
+            const sourceStr = (o.key) ? `${o.source}.${o.key}` : o.source
+            const targetStr = (typeof o.target === 'string') ? o.target : `${o.bound}.[${o.target.constructor.name}_${i}]`
+
+            // Filter edges for visualization
+            if (isTop || (include(sourceStr) && include(targetStr))) {
+              let source = edges[sourceStr]
+              if (!source) source = edges[sourceStr] = {}
+              source[targetStr] = o
+            }
         })
       })
 
-
-
-      console.log('Edges', edges, gs.__node.state.triggers)
+      // Get Nodes
       const graph = {
-        nodes: gs.__node.nodes,
+        nodes: new Map(Array.from(nodes.entries()).filter((args: any) => {
+          const split = args[0].split('.')
+
+          if (isTop) return split.length === 1 // Top level nodes
+          else return (split.length > 1 && include(args[0])) // Nested nodes
+
+        }) as any), // Only Top-Level Nodes
         edges
       }
 
-      this.graph.workspace.edgeMode = 'to'
+
+      this.graph.workspace.edgeMode = 'from'
 
       this.setGraph(graph) // forward to ESCode setter
 
@@ -321,7 +379,7 @@ export class Editor extends LitElement {
       const component = (esc.hasOwnProperty('__path')) ? esc : this.createComponent(esc) 
       const attachedToThis = esc.__editorAttached === this
 
-      this.config.esc = component
+      this.config.original = this.config.esc = component
 
       const uiElement = (ui === true) ? component.__element : ui
       this.setUI(uiElement) // Maintain a reference to the true parent at esc.__parent
@@ -365,11 +423,6 @@ export class Editor extends LitElement {
       return component
     }
 
-    setApp = (app) => {
-      this.config.app = app // keep app reference
-      this.setComponent(app.esc) // forward to ESCode setter
-    }
-
     setPlugins = (plugins) => {
       this.graph.plugins = plugins
     }
@@ -399,8 +452,6 @@ export class Editor extends LitElement {
       this.files.reset() 
 
       const previousTabs = new Set(Object.keys(this.history))
-
-      const allProperties = {}
 
       // TODO: Only Show ESM at Top Level. Show editable things
       // const isValidPlugin = this.isPlugin(f)
@@ -456,14 +507,6 @@ export class Editor extends LitElement {
               tabInfo.container.addTab(infoTab)
             }
           }
-
-          // Show Property Editor for Objects (including esm modules)
-          // if (typeof await f.body === 'object') {
-          //   const objectTab = new Tab({name: "Properties"})
-          //   tabInfo.object = new ObjectEditor()
-          //   objectTab.appendChild(tabInfo.object)
-          //   container.addTab(objectTab)
-          // }
 
           // Always Show Code Editor
           if (isFile){
@@ -524,9 +567,6 @@ export class Editor extends LitElement {
       }
     } 
 
-
-    this.properties.set(allProperties)
-
     // Remove Tabs That No Longer Exist
     previousTabs.forEach(str => {
       const info = this.history[str]
@@ -579,8 +619,13 @@ export class Editor extends LitElement {
       const panel = new Panel({minTabs: 2})
       const graphTab = new Tab({name: 'Graph'})
       graphTab.appendChild(this.graph)
+
+      // Add Tabs
       panel.addTab(graphTab)
       if (Object.keys(this.filesystem).length) panel.addTab(this.filesTab)
+
+      panel.addTab(this.objectTab)
+      this.object.set(this.config.original, {base: true})
 
       document.body.insertAdjacentElement('afterend', this.modal)
       return html`

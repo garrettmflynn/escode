@@ -9,7 +9,7 @@ import * as filter from "../../../../../../components/devices/extensions/filter/
 // ----------------------------- Base Component -----------------------------
 export const __compose = phaser
 
-export const __editor = true
+// export const __editor = true
 
 // ----------------------------- Will Merge In -----------------------------
 export const __attributes = { style: { position: 'relative' } }

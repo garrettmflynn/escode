@@ -1,6 +1,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { GraphNode } from './Node';
+import { isListenerPort } from './utils/check';
 
 export type GraphPortProps = {
   // tree: {[x:string]: any}
@@ -8,7 +9,8 @@ export type GraphPortProps = {
   // onPlot?: Function
   // preprocess?: Function,
   tag: string
-  node?: GraphNode
+  node?: GraphNode,
+  value?: any
 }
 
 export class GraphPort extends LitElement {
@@ -43,6 +45,11 @@ export class GraphPort extends LitElement {
     .output {
       transform: translateX(50%);
       right: 0;
+    }
+
+    .output.hidden {
+      pointer-events: none;
+      background: transparent;
     }
 
     .port {
@@ -85,6 +92,8 @@ export class GraphPort extends LitElement {
     output: HTMLDivElement = document.createElement('div')
     input: HTMLDivElement = document.createElement('div')
 
+    value: GraphPortProps['value']
+
     resolving: boolean = false
     edges: Map<string, any> = new Map()
 
@@ -93,12 +102,15 @@ export class GraphPort extends LitElement {
 
       this.node = props.node
       this.tag = props.tag
+      this.value = props.value
+      
 
       this.output.classList.add('port')
       this.output.classList.add('output')
       this.input.classList.add('port')
       this.input.classList.add('input')
 
+      if (isListenerPort(this.tag)) this.output.classList.add('hidden')
     }
 
     // set = async (tree={}) => {

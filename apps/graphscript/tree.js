@@ -28,13 +28,13 @@ const nodeAInstance = Object.assign({}, nodeA)
 
                 __listeners:{
 
-                    'nodeA.x':function(newX) { 
+                    'nodeA.x': function(newX) { 
                         element.innerHTML += `<li>nodeA x prop updated ${newX}</li>`
                     },
 
-                    'nodeA.jump':function(jump) { 
+                    'nodeA.jump': function(jump) { 
                         element.innerHTML += `<li>nodeA ${jump}</li>`
-                    }
+                    },
                 }
             }
 
@@ -49,8 +49,9 @@ const nodeAInstance = Object.assign({}, nodeA)
         __ondisconnected: () => {
             element.innerHTML += '<li><b>nodeE removed!</b></li>'
         },
-        __operator:function(){
+        __operator: function(){
             element.innerHTML += `<li>looped!</li>`
+            return 'looped!'
         }
     }
 

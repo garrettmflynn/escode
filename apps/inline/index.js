@@ -15,8 +15,8 @@ const toESC = 'gsXesc'
 const trees = [
     {id: 'tree', value: tree},
     {id: 'esc', value: esc},
-    {id: 'escXgs', value: esc},
-    {id: 'gsXesc', value: deep(tree) } // Otherwise I get node properties...
+    // {id: 'escXgs', value: esc},
+    // {id: 'gsXesc', value: deep(tree) } // Otherwise I get node properties...
 ];
 
 const readouts = document.getElementById('readouts')
@@ -91,35 +91,36 @@ for (let i in trees){
 
             'looper':(props,parent,graph)=>{ //badabadabadabooop
 
-                if(props._node.loop && typeof props._node.loop === 'number') {
-                    let oncreate = (node) => {
-                        if(node._node.loop && typeof node._node.loop === 'number') {
-                            node._node.isLooping = true
-                            if(!node._node.looper) {
-                                node._node.looper = () => {
-                                    if(node._node.isLooping) {
-                                        node._node.operator();
-                                        setTimeout(node._node.looper,node._node.loop);
+                let oncreate = () => {}
+            
+                if (props.__loop && typeof props.__loop === 'number') {
+                    oncreate= (node) => {
+                        if (node.__loop && typeof node.__loop === 'number') {
+                            node.__isLooping = true
+                            if (!node.__looper) {
+                                node.__looper = () => {
+                                    if (node.__isLooping) {
+                                        node.__operator();
+                                        setTimeout(node.__looper, node.__loop);
                                     }
                                 }
-                                node._node.looper();
+                                node.__looper();
                             }
                         }
                     }
-        
-                    if(typeof props._node.oncreate === 'undefined') props._node.oncreate = [oncreate];
-                    else if (typeof props._node.oncreate === 'function') props._node.oncreate = [oncreate,props._node.oncreate];
-                    else if (Array.isArray(props._node.oncreate)) props._node.oncreate.unshift(oncreate);
-        
-                    let ondelete = (node) => {
-                        if(node._node.isLooping) node._node.isLooping = false;
-                    }
-        
-                    if(typeof props._node.ondelete === 'undefined') props._node.ondelete = [ondelete];
-                    else if (typeof props._node.ondelete === 'function') props._node.ondelete = [ondelete,props._node.ondelete];
-                    else if (Array.isArray(props._node.ondelete)) props._node.ondelete.unshift(ondelete);
                 }
-                
+
+                if (typeof props.__onconnected === 'undefined') props.__onconnected = [oncreate];
+                else if (typeof props.__onconnected === 'function') props.__onconnected = [oncreate, props.__onconnected];
+                else if (Array.isArray(props.__onconnected)) props.__onconnected.unshift(oncreate);
+
+                let ondelete = (node) => {
+                    if (node.__isLooping) node.__isLooping = false;
+                }
+
+                if (typeof props.__ondisconnected === 'undefined') props.__ondisconnected = [ondelete];
+                else if (typeof props.__ondisconnected === 'function') props.__ondisconnected = [ondelete, props.__ondisconnected];
+                else if (Array.isArray(props.__ondisconnected)) props.__ondisconnected.unshift(ondelete);
             }
         }
     });
@@ -144,7 +145,7 @@ for (let i in trees){
 
     popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
-    // popped._node.children.nodeC._node.operator(1);
+    popped.__children.nodeC.__operator(1);
 
     graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 

@@ -25,5 +25,11 @@ export const __listeners = {
 
     'nodeB.nodeC.z':function(newZ){
         element.innerHTML += `<li>nodeC z prop changed: ${newZ}</li>`
-    }
+    },
+
+    'nodeE': 'jump'
+    
+    // function(e) {
+    //     element.innerHTML += `<li>nodeE ${e}</li>`
+    // } // 'jump'
 }

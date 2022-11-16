@@ -50,6 +50,8 @@
             });
             if (obj)
               triggers.splice(idx, 1);
+            if (this.onRemoved)
+              this.onRemoved(obj);
             return true;
           }
         }
@@ -61,6 +63,12 @@
           this.unsubscribeTrigger(key, sub);
         };
         sub = this.subscribeTrigger(key, changed);
+      };
+      this.getTrigger = (key, sub) => {
+        for (const s in this.triggers[key]) {
+          if (this.triggers[key][s].idx === sub)
+            return this.triggers[key][s];
+        }
       };
       if (typeof data === "object")
         this.data = data;
@@ -76,24 +84,54 @@
         unique: `${Math.random()}`,
         state
       };
-      this.__subscribe = (callback, key, subInput) => {
+      this.__subscribe = (callback, key, subInput, bound, target) => {
+        const subscribeToFunction = (k, setTarget = (callback2, target2) => callback2, triggerCallback = callback) => {
+          let sub = this.__node.state.subscribeTrigger(k, triggerCallback);
+          let trigger = this.__node.state.getTrigger(k, sub);
+          trigger.source = this.__node.tag;
+          if (key)
+            trigger.key = key;
+          trigger.target = setTarget(callback);
+          if (bound)
+            trigger.bound = bound;
+          return sub;
+        };
+        const subscribeToGraph = (callback2) => {
+          let fn = this.__node.graph.get(callback2);
+          if (!fn && callback2.includes(".")) {
+            let n = this.__node.graph.get(callback2.substring(0, callback2.lastIndexOf(".")));
+            let key2 = callback2.substring(callback2.lastIndexOf(".") + 1);
+            if (n && typeof n[key2] === "function")
+              callback2 = (...args) => {
+                return n[key2](...args);
+              };
+            console.log(n, fn);
+          }
+        };
         if (key) {
           if (!this.__node.localState) {
             this.__addLocalState(this);
           }
           if (typeof callback === "string") {
-            if (this.__node.graph)
-              callback = this.__node.graph.get(callback);
-            else
-              callback = this.__node.graph.nodes.get(callback);
+            if (typeof this[callback] === "function")
+              callback = this[callback];
+            else if (this.__node.graph)
+              subscribeToGraph(callback);
           }
-          if (typeof callback === "function") {
-            return this.__node.state.subscribeTrigger(subInput ? this.__node.__node.unique + "." + key + "input" : this.__node.unique + "." + key, callback);
-          } else if (callback?.__node)
-            return this.__node.state.subscribeTrigger(subInput ? this.__node.unique + "." + key + "input" : this.__node.unique + "." + key, (state2) => {
-              if (callback.__operator)
-                callback.__operator(state2);
-            });
+          let sub;
+          let k = subInput ? this.__node.unique + "." + key + "input" : this.__node.unique + "." + key;
+          if (typeof callback === "function")
+            sub = subscribeToFunction(k);
+          else if (callback?.__node)
+            sub = subscribeToFunction(
+              k,
+              (callback2, target2) => target2 ? target2 : callback2.__node.unique,
+              (state2) => {
+                if (callback.__operator)
+                  callback.__operator(state2);
+              }
+            );
+          return sub;
         } else {
           if (typeof callback === "string") {
             if (this.__node.graph)
@@ -101,34 +139,30 @@
             else
               callback = this.__node.graph.nodes.get(callback);
           }
-          if (typeof callback === "function") {
-            return this.__node.state.subscribeTrigger(subInput ? this.__node.unique + "input" : this.__node.unique, callback);
-          } else if (callback?.__node)
-            return this.__node.state.subscribeTrigger(subInput ? this.__node.unique + "input" : this.__node.unique, (res) => {
+          let sub;
+          let k = subInput ? this.__node.unique + "input" : this.__node.unique;
+          if (typeof callback === "function")
+            sub = subscribeToFunction(k);
+          else if (callback?.__node) {
+            sub = this.__node.state.subscribeTrigger(k, (res) => {
               if (callback.__operator)
                 callback.__operator(res);
             });
+            let trigger = this.__node.state.getTrigger(k, sub);
+            trigger.source = this.__node.tag;
+            if (key)
+              trigger.key = key;
+            trigger.target = target ? target : callback.__node.unique;
+            if (bound)
+              trigger.bound = bound;
+          }
+          return sub;
         }
-      };
-      this.__subscribeState = (callback) => {
-        if (typeof callback === "string") {
-          if (this.__node.graph)
-            callback = this.__node.graph.get(callback);
-          else
-            callback = this.__node.graph.nodes.get(callback);
-        }
-        if (typeof callback === "function") {
-          return this.__node.state.subscribeTrigger(this.__node.unique, callback);
-        } else if (callback?.__node)
-          return this.__node.state.subscribeTrigger(this.__node.unique, (state2) => {
-            if (callback?.__operator)
-              callback.__operator(state2);
-          });
       };
       this.__unsubscribe = (sub, key, subInput) => {
-        if (key)
+        if (key) {
           return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique + "." + key + "input" : this.__node.unique + "." + key, sub);
-        else
+        } else
           return this.__node.state.unsubscribeTrigger(subInput ? this.__node.unique + "input" : this.__node.unique, sub);
       };
       this.__setOperator = (fn) => {
@@ -146,15 +180,13 @@
             this.__node.state.setValue(this.__node.unique, result);
           return result;
         };
-        this.default = this.__operator;
-        if (typeof this.__node.initial === "object")
-          this.__node.initial.default = this.__operator;
         return this.__operator;
       };
       if (typeof properties === "function") {
         properties = {
           __operator: properties,
           __node: {
+            forward: true,
             tag: properties.name
           }
         };
@@ -173,8 +205,9 @@
           properties.__node = {};
         if (!properties.__parent && parent)
           properties.__parent = parent;
-        if (graph)
+        if (graph) {
           properties.__node.graph = graph;
+        }
         if (properties.__operator) {
           if (typeof properties.__operator === "string") {
             if (graph) {
@@ -220,6 +253,22 @@
             parent?.__unsubscribe(sub);
           };
           this.__addDisconnected(ondelete);
+        } else if (typeof properties.default === "function" && !properties.__operator) {
+          let fn = properties.default.bind(this);
+          this.default = (...args) => {
+            if (this.__node.inputState)
+              this.__node.state.setValue(this.__node.unique + "input", args);
+            let result = fn(...args);
+            if (typeof result?.then === "function") {
+              result.then((res) => {
+                if (res !== void 0)
+                  this.__node.state.setValue(this.__node.unique, res);
+              }).catch(console.error);
+            } else if (result !== void 0)
+              this.__node.state.setValue(this.__node.unique, result);
+            return result;
+          };
+          properties.default = this.default;
         }
         if (properties instanceof Graph)
           this.__node.source = properties;
@@ -257,10 +306,9 @@
               return localState[k];
             },
             set: (v) => {
-              if (this.__node.state.triggers[this.__node.unique]) {
-                this.__node.state.setValue(this.__node.unique, this);
-              }
-              this.__node.state.setValue(this.__node.unique + "." + k, v);
+              if (this.__node.state.triggers[this.__node.unique + "." + k])
+                this.__node.state.setValue(this.__node.unique + "." + k, v);
+              localState[k] = v;
             },
             enumerable: true,
             configurable: true
@@ -457,8 +505,15 @@
       this.removeTree = (tree2) => {
       };
       this.run = (node, ...args) => {
-        if (typeof node === "string")
-          node = this.get(node);
+        if (typeof node === "string") {
+          let nd = this.get(node);
+          if (!nd && node.includes(".")) {
+            nd = this.get(node.substring(0, node.lastIndexOf(".")));
+            if (typeof nd?.[node.substring(node.lastIndexOf(".") + 1)] === "function")
+              return nd[node.substring(node.lastIndexOf(".") + 1)](...args);
+          } else
+            return nd.__operator(...args);
+        }
         if (node?.__operator) {
           return node?.__operator(...args);
         }
@@ -470,22 +525,24 @@
             for (const k in listeners2[key]) {
               let n = this.get(k);
               let sub;
+              console.log("listener", k, "for", key, "k first part:", k.substring(0, k.lastIndexOf(".")), "; k second part:", k.substring(k.lastIndexOf(".") + 1));
               if (typeof listeners2[key][k] === "function")
                 listeners2[key][k] = { callback: listeners2[key][k] };
-              listeners2[key][k].callback = listeners2[key][k].callback.bind(node);
+              if (typeof listeners2[key][k].callback === "function")
+                listeners2[key][k].callback = listeners2[key][k].callback.bind(node);
               if (typeof node.__listeners !== "object")
                 node.__listeners = {};
               if (!n) {
                 let tag = k.substring(0, k.lastIndexOf("."));
                 n = this.get(tag);
                 if (n) {
-                  sub = this.subscribe(n, listeners2[key][k].callback, k.substring(k.lastIndexOf(".") + 1), listeners2[key][k].inputState);
+                  sub = this.subscribe(n, listeners2[key][k].callback, k.substring(k.lastIndexOf(".") + 1), listeners2[key][k].inputState, key, k);
                   if (typeof node.__listeners[k] !== "object")
                     node.__listeners[k] = { callback: listeners2[key][k].callback, inputState: listeners2[key][k]?.inputState };
                   node.__listeners[k].sub = sub;
                 }
               } else {
-                sub = this.subscribe(n, listeners2[key][k].callback, void 0, listeners2[key][k].inputState);
+                sub = this.subscribe(n, listeners2[key][k].callback, void 0, listeners2[key][k].inputState, key, k);
                 if (typeof node.__listeners[k] !== "object")
                   node.__listeners[k] = { callback: listeners2[key][k].callback, inputState: listeners2[key][k]?.inputState };
                 node.__listeners[k].sub = sub;
@@ -538,28 +595,30 @@
           }
         }
       };
-      this.subscribe = (node, callback, key, subInput) => {
+      this.subscribe = (node, callback, key, subInput, target, bound) => {
         let nd = node;
         if (!(node instanceof GraphNode))
           nd = this.get(node);
         let sub;
         if (nd instanceof GraphNode) {
-          sub = nd.__subscribe(callback, key, subInput);
+          if (typeof callback === "string" && target)
+            callback = target + "." + callback;
+          sub = nd.__subscribe(callback, key, subInput, target, bound);
           let ondelete = () => {
             nd.__unsubscribe(sub, key, subInput);
           };
           nd.__addDisconnected(ondelete);
         } else if (typeof node === "string") {
-          if (typeof callback === "string")
-            callback = this.get(callback);
           if (callback instanceof GraphNode && callback.__operator) {
-            sub = this.__node.state.subscribeTrigger(this.get(node).__node.unique, callback.__operator);
+            sub = this.get(node).__subscribe(callback.__operator, key, subInput, target, bound);
             let ondelete = () => {
-              this.__node.state.unsubscribeTrigger(this.get(node).__node.unique, sub);
+              this.get(node).__unsubscribe(sub);
             };
             callback.__addDisconnected(ondelete);
-          } else if (typeof callback === "function")
-            sub = this.__node.state.subscribeTrigger(this.get(node).__node.unique, callback);
+          } else if (typeof callback === "function" || typeof callback === "string") {
+            sub = this.get(node).__subscribe(callback, key, subInput, target, bound);
+            this.__node.state.getTrigger(this.get(node).__node.unique, sub).source = node;
+          }
         }
         return sub;
       };
@@ -742,7 +801,7 @@
   // nodes/nodeA.js
   var nodeA_exports = {};
   __export(nodeA_exports, {
-    _node: () => _node,
+    __listeners: () => __listeners2,
     jump: () => jump2,
     x: () => x3,
     y: () => y3
@@ -750,29 +809,29 @@
   var x3 = 1;
   var y3 = 2;
   var jump2 = function() {
-    const id = this._node ? "tree" : "gsXesc";
+    const id = this.__node ? "tree" : "gsXesc";
     const treeDiv = document.getElementById(id);
     treeDiv.innerHTML += `<li>jump!</li>`;
     return "jumped!";
   };
-  var _node = {
-    listeners: {
-      "nodeB.x": function(newX) {
-        this.x = newX;
-        const id = this._node ? "tree" : "gsXesc";
-        const treeDiv = document.getElementById(id);
-        treeDiv.innerHTML += `<li>nodeB x prop changed: ${newX}</li>`;
-      },
-      "nodeB.nodeC": function(op_result) {
-        const id = this._node ? "tree" : "gsXesc";
-        const treeDiv = document.getElementById(id);
-        treeDiv.innerHTML += `<li>nodeC operator returned: ${op_result}</li>`;
-      },
-      "nodeB.nodeC.z": function(newZ) {
-        const id = this._node ? "tree" : "gsXesc";
-        const treeDiv = document.getElementById(id);
-        treeDiv.innerHTML += `<li>nodeC z prop changed: ${newZ}</li>`;
-      }
+  var __listeners2 = {
+    "nodeB.x": function(newX) {
+      console.log("Changing a.x with b.x listener", this);
+      this.x = newX;
+      const id = this.__node ? "tree" : "gsXesc";
+      const treeDiv = document.getElementById(id);
+      treeDiv.innerHTML += `<li>nodeB x prop changed: ${newX}</li>`;
+    },
+    "nodeB.nodeC": function(op_result) {
+      const id = this.__node ? "tree" : "gsXesc";
+      const treeDiv = document.getElementById(id);
+      treeDiv.innerHTML += `<li>nodeC operator returned: ${op_result}</li>`;
+    },
+    "nodeB.nodeC.z": function(newZ) {
+      console.log("nodeC z prop changed... (NOT HAPPENING)");
+      const id = this.__node ? "tree" : "gsXesc";
+      const treeDiv = document.getElementById(id);
+      treeDiv.innerHTML += `<li>nodeC z prop changed: ${newZ}</li>`;
     }
   };
 
@@ -783,30 +842,28 @@
     nodeB: {
       x: 3,
       y: 4,
-      _node: {
-        children: {
-          nodeC: {
-            z: 4,
-            _node: {
-              operator: function(a) {
-                this.z += a;
-                const id = this._node ? "tree" : "gsXesc";
-                const div = document.getElementById(id);
-                div.innerHTML += `<li>nodeC z prop added to</li>`;
-                return this.z;
-              },
-              listeners: {
-                "nodeA.x": function(newX) {
-                  const id = this._node ? "tree" : "gsXesc";
-                  const div = document.getElementById(id);
-                  div.innerHTML += `<li>nodeA x prop updated ${newX}</li>`;
-                },
-                "nodeA.jump": function(jump3) {
-                  const id = this._node ? "tree" : "gsXesc";
-                  const div = document.getElementById(id);
-                  div.innerHTML += `<li>nodeA ${jump3}</li>`;
-                }
-              }
+      __children: {
+        nodeC: {
+          z: 4,
+          __operator: function(a) {
+            console.log("NODE C Z THING", this);
+            this.z += a;
+            const id = this.__node ? "tree" : "gsXesc";
+            const div = document.getElementById(id);
+            div.innerHTML += `<li>nodeC z prop added to</li>`;
+            return this.z;
+          },
+          __listeners: {
+            "nodeA.x": function(newX) {
+              console.log("Node A x changed");
+              const id = this.__node ? "tree" : "gsXesc";
+              const div = document.getElementById(id);
+              div.innerHTML += `<li>nodeA x prop updated ${newX}</li>`;
+            },
+            "nodeA.jump": function(jump3) {
+              const id = this.__node ? "tree" : "gsXesc";
+              const div = document.getElementById(id);
+              div.innerHTML += `<li>nodeA ${jump3}</li>`;
             }
           }
         }
@@ -816,13 +873,11 @@
       return a + b + c;
     },
     nodeE: {
-      _node: {
-        loop: 1e3,
-        operator: function() {
-          const id = this._node ? "tree" : "gsXesc";
-          const div = document.getElementById(id);
-          div.innerHTML += `<li>looped!</li>`;
-        }
+      __loop: 1e3,
+      __operator: function() {
+        const id = this.__node ? "tree" : "gsXesc";
+        const div = document.getElementById(id);
+        div.innerHTML += `<li>looped!</li>`;
       }
     }
   };
@@ -2381,6 +2436,7 @@
   }
 
   // ../../libraries/escompose/src/create/element.ts
+  var boundEditorKey = `__bound${specialKeys.editor}s`;
   function checkESCompose(__compose) {
     if (!__compose)
       return false;
@@ -2536,9 +2592,8 @@
             const nextPosition = v.children.length;
             let ref = esm2[specialKeys.element];
             const __editor = esm2[`__${specialKeys.editor}`];
-            if (__editor) {
+            if (__editor)
               ref = __editor;
-            }
             if (desiredPosition !== void 0 && desiredPosition < nextPosition)
               v.children[desiredPosition].insertAdjacentElement("beforebegin", ref);
             else
@@ -2588,9 +2643,26 @@
       if (cls) {
         let options = utilities.code?.options ?? {};
         options = typeof config === "boolean" ? options : { ...options, ...config };
+        const bound = options.bind;
         const __editor = new cls(options);
         __editor.start();
         Object.defineProperty(esm2, `__${specialKeys.editor}`, { value: __editor });
+        if (bound !== void 0) {
+          let boundESM = esm2;
+          bound.split("/").forEach((str) => {
+            if (str === "..")
+              boundESM = boundESM[specialKeys.states].parentNode[specialKeys.component];
+            else if (str === ".")
+              return;
+            else
+              boundESM = boundESM[specialKeys.hierarchy][str];
+          });
+          const key = boundEditorKey;
+          if (!boundESM[key])
+            Object.defineProperty(boundESM, key, { value: [__editor] });
+          else
+            boundESM[key].push(__editor);
+        }
       }
     }
     if (esm2.__element instanceof Element) {
@@ -2696,6 +2768,10 @@
   async function asyncConnect(keys, onReadyCallback) {
     await this[keys.connected];
     this[keys.states].connected = true;
+    const boundEditorsKey = `__bound${keys.editor}s`;
+    const boundEditors = this[boundEditorsKey];
+    if (boundEditors)
+      boundEditors.forEach((editor) => editor.setComponent(this));
     for (let name2 in this[keys.hierarchy]) {
       let component = this[keys.hierarchy][name2];
       const promise = component[keys.promise];
@@ -3128,9 +3204,7 @@
   var toESC = "gsXesc";
   var trees = [
     { id: "tree", value: tree_default },
-    { id: "esc", value: index_esc_exports },
-    { id: "escXgs", value: index_esc_exports },
-    { id: "gsXesc", value: deep(tree_default) }
+    { id: "esc", value: index_esc_exports }
   ];
   var readouts = document.getElementById("readouts");
   for (let i in trees) {
@@ -3170,38 +3244,40 @@
       tree: tree2,
       loaders: {
         "looper": (props, parent, graph3) => {
-          if (props._node.loop && typeof props._node.loop === "number") {
-            let oncreate = (node) => {
-              if (node._node.loop && typeof node._node.loop === "number") {
-                node._node.isLooping = true;
-                if (!node._node.looper) {
-                  node._node.looper = () => {
-                    if (node._node.isLooping) {
-                      node._node.operator();
-                      setTimeout(node._node.looper, node._node.loop);
+          let oncreate = () => {
+          };
+          if (props.__loop && typeof props.__loop === "number") {
+            oncreate = (node) => {
+              if (node.__loop && typeof node.__loop === "number") {
+                node.__isLooping = true;
+                if (!node.__looper) {
+                  node.__looper = () => {
+                    if (node.__isLooping) {
+                      node.__operator();
+                      setTimeout(node.__looper, node.__loop);
                     }
                   };
-                  node._node.looper();
+                  node.__looper();
                 }
               }
             };
-            if (typeof props._node.oncreate === "undefined")
-              props._node.oncreate = [oncreate];
-            else if (typeof props._node.oncreate === "function")
-              props._node.oncreate = [oncreate, props._node.oncreate];
-            else if (Array.isArray(props._node.oncreate))
-              props._node.oncreate.unshift(oncreate);
-            let ondelete = (node) => {
-              if (node._node.isLooping)
-                node._node.isLooping = false;
-            };
-            if (typeof props._node.ondelete === "undefined")
-              props._node.ondelete = [ondelete];
-            else if (typeof props._node.ondelete === "function")
-              props._node.ondelete = [ondelete, props._node.ondelete];
-            else if (Array.isArray(props._node.ondelete))
-              props._node.ondelete.unshift(ondelete);
           }
+          if (typeof props.__onconnected === "undefined")
+            props.__onconnected = [oncreate];
+          else if (typeof props.__onconnected === "function")
+            props.__onconnected = [oncreate, props.__onconnected];
+          else if (Array.isArray(props.__onconnected))
+            props.__onconnected.unshift(oncreate);
+          let ondelete = (node) => {
+            if (node.__isLooping)
+              node.__isLooping = false;
+          };
+          if (typeof props.__ondisconnected === "undefined")
+            props.__ondisconnected = [ondelete];
+          else if (typeof props.__ondisconnected === "function")
+            props.__ondisconnected = [ondelete, props.__ondisconnected];
+          else if (Array.isArray(props.__ondisconnected))
+            props.__ondisconnected.unshift(ondelete);
         }
       }
     });
@@ -3216,6 +3292,7 @@
     divs[o.id].innerHTML += "<li><b>nodeB removed!</b></li>";
     graph2.add(popped);
     popped.x += 1;
+    popped.__children.nodeC.__operator(1);
     graph.get("nodeA").jump();
     setTimeout(() => {
       graph.remove("nodeE");

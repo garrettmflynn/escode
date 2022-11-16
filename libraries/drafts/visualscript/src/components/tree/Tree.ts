@@ -214,15 +214,8 @@ export class Tree extends LitElement {
     addContextOptions = () => {
 
       // Setting Context Menu Response
-      context.set('visualscript-tree', {
-        condition: (el) => {
-          const root = this.shadowRoot
-          if (root){
-            console.log('MATCHING', el)
-            return el === this 
-            // || root.contains(el) // Is the workspace grid
-          } else return false
-        },
+      context.set(`visualscript-tree_${Math.random()}`, {
+        condition: (path) => path.includes(this),
         contents: () => {
           return [
             {

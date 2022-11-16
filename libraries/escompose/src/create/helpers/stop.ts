@@ -8,7 +8,7 @@ export default function (keys) {
 
     // Clear all listeners above this node that reference it
     let target = this
-    while (target[keys.parent].hasAttribute(keys.attribute)) {
+    while (target[keys.parent] && target[keys.parent].hasAttribute(keys.attribute)) {
         const res = target[keys.element][keys.parent]?.[keys.component]
         if (res) {
             target = res
@@ -33,9 +33,9 @@ export default function (keys) {
         }
     }
 
-    // Remove code editor
-    const privateEditorKey = `__${keys.editor}`
-    if (this[privateEditorKey]) this[privateEditorKey].remove() 
+    // // Remove code editor
+    // const privateEditorKey = `__${keys.editor}Attached`
+    // if (this[privateEditorKey]) this[privateEditorKey].remove() 
 
     const context = this[keys.proxy] ?? this
 
