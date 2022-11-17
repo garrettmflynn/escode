@@ -1,50 +1,99 @@
 {
+
+    "__attributes": {
+        "style": {
+            "margin": "25px"
+        }
+    },
+    
+    "__define": {
+        "listItem": {
+            "__element": {
+                "name": "es-removable-list-item",
+                "extends": "li"
+            },
+            "__compose": "../../../components/ui/behaviors/removable.js"
+        }
+    },
+
     "__children": {
+
         "list": {
+            "itemType": "es-removable-list-item",
             "__compose": "../../../components/ui/ul.js"
         },
+        
         "form": {
-            "tagName": "form",
-            "attributes": {
-                "onsubmit": {
-                    "__compose": "./scripts/onSubmit.js"
+            "__element": "form",
+            "__compose": "./components/onSubmit.esc.js",
+            "__children": {
+                "input": {
+                    "__attributes": {
+                        "placeholder": "Write your todo here"
+                    },
+                    "__compose": "../../../components/ui/input.js"
+                },
+                "button": {
+                    "__attributes": {
+                        "type": "submit",
+                        "innerHTML": "Add Todo"
+                    },
+                    "__compose": "../../../components/ui/button.js"
                 }
-            },
-            "__children": {}
+            }
         },
-        "input": {
-            "__compose": "../../../components/ui/input.js"
-        },
-        "button": {
-            "attributes": {
-                "innerHTML": "Add Todo",
-                "type": "submit"
+
+        "clearButton": {
+            "__attributes": {
+                "innerHTML": "Clear List"
             },
-            "__compose": "../../../components/ui/button.js"
+            "__compose": "button"
         },
         "store": {
             "__compose": "../../../components/storage/local/set.js"
         },
+        "remove": {
+            "__compose": "../../../components/storage/local/remove.js"
+        },
         "load": {
-            "arguments": {
-                "key": "todos"
-            },
+            "__trigger": "todos",
             "__compose": "../../../components/storage/local/get.js"
         }
     },
-    "listeners": {
-        "load": {
-            "list": true
-        },
-        "input": {
-            "button": true
-        },
-        "button": {
-            "log": true,
-            "list": true
-        },
+    
+    "__listeners": {
         "list": {
-            "store": true
+            "load": true,
+            "form.button": {
+                "__branch": [
+                    {"if": "(input) => typeof input === 'string'"}
+                ]
+            },
+            "remove": true
+        },
+    
+        "form.button": {
+            "form.input": true
+        },
+    
+        "form.input": {
+            "form.button": {
+                "__branch": [
+                    {"if": "(input) => typeof input === 'string', value: ''"}
+                ]
+            }
+        },
+    
+        "remove": {
+            "clearButton": {
+                "__format": "() => 'todos'"
+            }
+        },
+    
+        "store": {
+            "list": {
+                "__format": "(value) => [value, 'todos']"
+            }
         }
     }
 }

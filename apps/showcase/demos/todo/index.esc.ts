@@ -7,7 +7,7 @@ import * as store from  "../../../../components/storage/local/set.js"
 import * as load from  "../../../../components/storage/local/get.js"
 import * as remove from  "../../../../components/storage/local/remove.js"
 
-import onSubmit from  "./scripts/onSubmit.js"
+import * as onSubmit from  "./components/onSubmit.esc.js"
 
 
 export const __attributes = {
@@ -35,9 +35,7 @@ export const __children = {
         },
         form: {
             __element: 'form',
-            __attributes: {
-                onsubmit: onSubmit 
-            },
+            __compose: onSubmit,
             __children: {
                 input: {
                     __element: 'input',
