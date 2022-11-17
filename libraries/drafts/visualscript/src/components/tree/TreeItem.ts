@@ -33,7 +33,26 @@ export class TreeItem extends LitElement {
         width: 100%;
     }
 
-    li > div > div {
+    #itemHeader {
+      position: relative;
+    }
+
+    #background {
+      background: transparent;
+      filter: alpha(opacity=40);
+      /* IE */
+      -moz-opacity: 0.4;
+      /* Mozilla */
+      opacity: 0.4;
+      /* CSS3 */
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    #text {
         display: flex;
         font-size: 12px;
         padding: 6px;
@@ -41,17 +60,21 @@ export class TreeItem extends LitElement {
         align-items: center;
         user-select: none;
         overflow: hidden;
+        z-index: 1;
+        position: sticky;
     }
 
-    li.error:not(.editing) > div { background: rgb(255,210,210); }
-    li.selected > div { background: rgb(230,230,230); }
-    li.last > div { background: #b6e3ff;}
-
-    li:not(.selected):not(.last):not(.error):not(.editing) > div:hover {
-        background: rgb(240,240,240);
+    li.error:not(.editing) #background { background: rgb(255,150,150); }
+    li.selected #background { background: rgb(200,200,200); }
+    li.last #background { 
+      background: var(--visualscript-primary-color, #65c2fc);
     }
 
-    li div:hover {
+    li:not(.selected):not(.last):not(.error):not(.editing) #itemHeader:hover #background {
+        background: rgb(220,220,220);
+    }
+
+    li #itemHeader:hover {
       cursor: pointer;
     }
 
@@ -61,11 +84,11 @@ export class TreeItem extends LitElement {
 
     @media (prefers-color-scheme: dark) {
 
-      li > div:hover{ background-color: rgb(70, 70, 70) }
+      li #itemHeader:hover #background{ background-color: rgb(70, 70, 70) }
 
-      li.error:not(.editing) > div { background: rgb(95,60,60); }
-      li.selected > div { background: rgb(80,80,80); }
-      li.last > div { background: #0091ea;}
+      li.error:not(.editing) #background { background: rgb(95,60,60); }
+      li.selected #background { background: rgb(80,80,80); }
+      li.last #background { background: #0091ea;}
 
     }
 
@@ -168,7 +191,7 @@ export class TreeItem extends LitElement {
 
         return html`
         <li class="${`${this.editing ? 'editing' : ``} ${this.error ? 'error' : ``}`}">
-        <div @click=${() => {
+        <div id="itemHeader" @click=${() => {
 
           if (!this.editing && !this.error) {
             this.li = this.shadowRoot.querySelector('li')
@@ -200,13 +223,15 @@ export class TreeItem extends LitElement {
               }
             }
           }}>
-            <div style="padding-left: ${leftPad}px">
-             ${filesystemStrings.includes(this.type) ? icon : ''}
-            <span class="name" style="padding-left: ${filesystemStrings.includes(this.type) ? '0' : '7'}px">
-              ${content}
-            </span>
-            </div>
-          </div>
+        <div id="background">
+        </div>
+          <div id="text" style="padding-left: ${leftPad}px">
+            ${filesystemStrings.includes(this.type) ? icon : ''}
+          <span class="name" style="padding-left: ${filesystemStrings.includes(this.type) ? '0' : '7'}px">
+            ${content}
+          </span>
+         </div>
+         </div>
           ${this.tree}
         </li>
       `
