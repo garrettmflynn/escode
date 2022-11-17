@@ -7,6 +7,7 @@ export const cliConfig = new conf({
 });
 
 import watch from './commands/watch/index.js';
+import convert from './commands/convert/index.js';
 
 const cli = new Command();
 cli.version('0.0.0');
@@ -25,5 +26,11 @@ cli
 .command('watch [files...]')
 .description('watch a set of files')
 .action(watch)
+
+cli
+.command('convert [files...]')
+.description('convert one file to the other')
+.action(convert)
+
 
 cli.parse(process.argv)

@@ -27,7 +27,7 @@ escode
 ##### Convert ESC Files
 This command allows you to convert the first file into the second one.
 ``` bash
-escode convert index.esc.json index.esc.html
+escode convert demo/index.esc.json demo/output/index.esc.html
 ```
 
 ##### Compare ESC Files

@@ -2,9 +2,8 @@
   "name": "escode-cli",
   "version": "0.0.0",
   "description": "The Command Line Interface for ESCode",
-  "main": "src/index.js",  
+  "main": "src/index.js",
   "type": "module",
-  
   "bin": {
     "escode": "./src/index.js"
   },
@@ -23,10 +22,7 @@
     "cli": "npm i -g ./src/cli",
     "tinybuild": "npm i -g ./src/build",
     "ui": "cd src/visualscript && yarn start",
-
-
     "watch": "node src/watch.js"
-
   },
   "repository": {
     "type": "git",
@@ -41,14 +37,23 @@
   "keywords": [
     "cli"
   ],
-
   "dependencies": {
     "chalk": "^5.0.0",
     "commander": "^8.3.0",
     "conf": "^10.1.1",
     "cross-spawn": "^7.0.3",
     "inquirer": "^8.2.0",
-    "simple-git": "^2.48.0",
-    "node-html-parser": "^6.1.1"
+    "node-html-parser": "^6.1.1",
+    "simple-git": "^2.48.0"
+  },
+  "devDependencies": {
+    "jest": "^29.3.1"
+  },
+
+  "jest": {
+    "moduleNameMapper": {
+      "#ansi-styles": "./vendor/ansi-styles/index.js",
+      "#supports-color": "./vendor/supports-color/index.js"
+    }
   }
 }

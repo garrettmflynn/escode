@@ -56,27 +56,26 @@ function handleComponents(name, parentObject, parent, opts) {
 }
 
 // ------------------------------ HTML Core Functions ------------------------------
-export function wasl(json) {
+export function json(json) {
 
     if (typeof json === 'string' || json.constructor.name === 'Buffer') json = JSON.parse(json);
+    
 
     const drill = (object, acc='') => {
         
-        for (let name in object.components) {
-            const component = object.components[name];
-            const tag = component.tagName
-            console.log(tag)
+        for (let name in object.__children) {
+            const component = object.__children[name];
+            const tag = component.__element ?? (component.__children ? 'div' : 'link')
 
-            const content = (component.components) ? drill(component) : ''
-            console.log(content)
+            const content = (component.__children) ? drill(component) : ''
 
             if (tag) {
 
                 let inner = ''
                 const attributes = []
-                for (let attr in component.attributes) {
+                for (let attr in component.__attributes) {
                     const key = updateKey(attr)
-                    const val = component.attributes[attr]
+                    const val = component.__attributes[attr]
                     if (key === 'innerText') inner = val
                     else if (key === 'innerHTML') inner = val
                     else attributes.push(`${key}="${val}"`)
@@ -85,7 +84,7 @@ export function wasl(json) {
                 const attrText = (attributes.length) ? ` ${attributes.join(' ')}` : ''
                 inner = content ? `\n\t${content}\n` : inner
 
-                acc += `<${tag} id=${name}${attrText}>${inner ? `${inner}` : ''}</${tag}>`
+                acc += `<${tag} id=${name}${attrText}>${inner ? `${inner}` : ''}</${tag}>\n`
             }
         }
 
@@ -95,11 +94,11 @@ export function wasl(json) {
     return drill(json)
 }
 
-export function toHTMLElement(wasl, opts, parent) {
+export function toHTMLElement(json, opts, parent) {
     if (!parent) parent = opts.parentNode ?? document.body // set first parent with options...
-    for (let key in wasl) {
+    for (let key in json) {
         if (key === 'components') {
-            for (let name in wasl[key]) handleComponents(name, wasl[key], parent, opts)
+            for (let name in json[key]) handleComponents(name, json[key], parent, opts)
         }
     }
 

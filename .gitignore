@@ -11,3 +11,6 @@ libraries/old/**/dist
 libraries/**/build
 
 .DS_Store
+
+# Jest
+coverage 
