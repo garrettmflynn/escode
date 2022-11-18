@@ -60,38 +60,91 @@ export function json(json) {
 
     if (typeof json === 'string' || json.constructor.name === 'Buffer') json = JSON.parse(json);
     
+    const listeners = {}
 
-    const drill = (object, acc='') => {
+    const drill = (object, acc='', path=[], indentation = 0) => {
+
+
+        let outerTag = 'link'
         
-        for (let name in object.__children) {
-            const component = object.__children[name];
-            const tag = component.__element ?? (component.__children ? 'div' : 'link')
-
-            const content = (component.__children) ? drill(component) : ''
-
-            if (tag) {
-
-                let inner = ''
-                const attributes = []
-                for (let attr in component.__attributes) {
-                    const key = updateKey(attr)
-                    const val = component.__attributes[attr]
-                    if (key === 'innerText') inner = val
-                    else if (key === 'innerHTML') inner = val
-                    else attributes.push(`${key}="${val}"`)
-                }
-
-                const attrText = (attributes.length) ? ` ${attributes.join(' ')}` : ''
-                inner = content ? `\n\t${content}\n` : inner
-
-                acc += `<${tag} id=${name}${attrText}>${inner ? `${inner}` : ''}</${tag}>\n`
-            }
+        for (let key in object.__listeners) {
+            const transformedKey = [...path, key].join('.')
+            if (!listeners[transformedKey]) listeners[transformedKey] = {}
+            listeners[transformedKey] = {...listeners[transformedKey], ...object.__listeners[transformedKey]} // merge listeners
         }
 
-        return acc
+        const indents = Array.from({length: indentation}, () => '\t').join('')
+
+        for (let name in object.__children) {
+            const component = object.__children[name];
+
+            const thisPathArr = [...path, name]
+            const thisPath = thisPathArr.join('.')
+
+            const contentInfo = (component.__children) ? drill(component, undefined, thisPathArr, indentation + 1) : ''
+
+            const content = contentInfo.content
+            const tag = component.__element ?? ((contentInfo.tag && contentTag !== 'link') ? 'div' : 'link')
+            if (tag !== 'link') outerTag = 'div'
+
+            let inner = ''
+
+            const attributes = []
+
+            // Set True Attributes
+            for (let attr in component.__attributes) {
+                const key = updateKey(attr)
+                const val = component.__attributes[attr]
+                if (key === 'innerText') inner = val
+                else if (key === 'innerHTML') inner = val
+                else attributes.push(`${key}="${val}"`)
+            }
+            
+
+            // Set Properties not encoded into the HTML
+            const properties = Object.keys(component).filter(key => !['__element', '__children', '__attributes', '__listeners'].includes(key))
+            properties.forEach(str => {
+                if (str.slice(0,2) === '__') attributes.push(`${str}="${component[str]}"`)
+                else attributes.push(`.${str}="${component[str]}"`)
+            })
+
+            // Set Listeners
+            if (listeners[thisPath]) {
+                for (let key in listeners[thisPath]) {
+                    const listener = listeners[thisPath][key]
+                    if (listener === true) attributes.push(`__listeners.${key}`)
+                    else if (typeof listener === 'function') attributes.push(`__listeners.${key}="${listener.toString()}"`)
+                    else {
+                        let drill = (value, path=[]) => {
+                            for (let key in value) {
+                                const thisPath =  [...path, key]
+                                if (typeof value[key] === 'object') drill(value[key], thisPath)
+                                else attributes.push(`${['__listeners', ...thisPath].join('.')}="${value[key]}"`)
+                            }
+                        }
+                        drill(listener)
+                    }
+                }
+                delete listeners[thisPath]
+            }
+
+            // Finalize Attributes
+            let attrText = (attributes.length) ? `${[`id="${name}"`, ...attributes].join(' ')}` : ''
+
+            // Set Inner Content
+            inner = content ? `${indents}${content}` : inner
+
+            acc += `\n${indents}<${tag} ${attrText}>${inner ? `${inner}` : ''}</${tag}>`
+        }
+
+        return {
+            content: acc,
+            tag: outerTag
+        }
     }
 
-    return drill(json)
+    const contentInfo = drill(json, undefined, undefined, 1)
+    return `<${contentInfo.tag}>${contentInfo.content}\n</${contentInfo.tag}>`
 }
 
 export function toHTMLElement(json, opts, parent) {

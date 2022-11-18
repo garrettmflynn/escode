@@ -7,7 +7,7 @@ import * as store from  "../../../../components/storage/local/set.js"
 import * as load from  "../../../../components/storage/local/get.js"
 import * as remove from  "../../../../components/storage/local/remove.js"
 
-import onSubmit from  "./scripts/onSubmit.js"
+import onSubmit from  "./scripts/onSubmit.js.js"
 
 export const __attributes = {
     style: {

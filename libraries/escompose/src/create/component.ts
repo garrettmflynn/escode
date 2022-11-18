@@ -11,7 +11,13 @@ document.createElement = function (name, options) {
 }
 
 const tagToClassMap = {
-    li: 'LI'
+    li: 'LI',
+    ol: 'OL',
+    ul: 'UL',
+    br: 'BR',
+    p: 'Paragraph',
+    textarea: 'TextArea',
+
 }
 
 const isAutonomous = false

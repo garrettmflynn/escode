@@ -79,7 +79,7 @@
         "form.input": {
             "form.button": {
                 "__branch": [
-                    {"if": "(input) => typeof input === 'string', value: ''"}
+                    {"if": "(input) => typeof input === 'string'", "value": ""}
                 ]
             }
         },

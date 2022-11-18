@@ -1,0 +1,73 @@
+{
+  "__element": "div",
+  "__children": {
+    "list": {
+      "__element": "link",
+      "itemType": "es-removable-list-item",
+      "__compose": "../../../../components/ui/ul.js"
+    },
+    "form": {
+      "__element": "form",
+      "__compose": "../../../../apps/showcase/demos/todo/components/onSubmit.esc.js",
+      "__children": {
+        "input": {
+          "__element": "link",
+          "__compose": "../../../../components/ui/input.js",
+          "__attributes": {
+            "placeholder": "Write your todo here"
+          }
+        },
+        "button": {
+          "__element": "link",
+          "__compose": "../../../../components/ui/button.js",
+          "__attributes": {
+            "type": "submit"
+          }
+        }
+      },
+      "__attributes": {
+        "innerText": "Add Todo"
+      }
+    },
+    "clearButton": {
+      "__element": "link",
+      "__compose": "button"
+    },
+    "store": {
+      "__element": "link",
+      "__compose": "../../../../components/storage/local/set.js"
+    },
+    "remove": {
+      "__element": "link",
+      "__compose": "../../../../components/storage/local/remove.js"
+    },
+    "load": {
+      "__element": "link",
+      "__trigger": "todos",
+      "__compose": "../../../../components/storage/local/get.js"
+    }
+  },
+  "__listeners": {
+    "list": {
+      "load": true,
+      "__branch.0.if": "(input) => typeof input === 'string'",
+      "remove": true
+    },
+    "form.input": {
+      "__branch.0.if": "(input) => typeof input === 'string'",
+      "__branch.0.value": true
+    },
+    "form.button": {
+      "form.input": true
+    },
+    "store": {
+      "__format": "(value) => [value, 'todos']"
+    },
+    "remove": {
+      "__format": "() => 'todos'"
+    }
+  },
+  "__attributes": {
+    "innerText": "Clear List"
+  }
+}

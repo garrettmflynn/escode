@@ -1,10 +1,10 @@
-<link id=list></link>
-<form id=form>
-	<link id=input placeholder="Write your todo here"></link>
-<link id=button type="submit">Add Todo</link>
-
-</form>
-<link id=clearButton>Clear List</link>
-<link id=store></link>
-<link id=remove></link>
-<link id=load></link>
+<div>
+	<link id="list" .itemType="es-removable-list-item" __compose="../../../../components/ui/ul.js" __listeners.load __listeners.__branch.0.if="(input) => typeof input === 'string'" __listeners.remove></link>
+	<form id="form" __compose="../../../../apps/showcase/demos/todo/components/onSubmit.esc.js">	
+		<link id="input" placeholder="Write your todo here" __compose="../../../../components/ui/input.js" __listeners.__branch.0.if="(input) => typeof input === 'string'" __listeners.__branch.0.value=""></link>
+		<link id="button" type="submit" __compose="../../../../components/ui/button.js" __listeners.form.input>Add Todo</link></form>
+	<link id="clearButton" __compose="button">Clear List</link>
+	<link id="store" __compose="../../../../components/storage/local/set.js" __listeners.__format="(value) => [value, 'todos']"></link>
+	<link id="remove" __compose="../../../../components/storage/local/remove.js" __listeners.__format="() => 'todos'"></link>
+	<link id="load" __trigger="todos" __compose="../../../../components/storage/local/get.js"></link>
+</div>
