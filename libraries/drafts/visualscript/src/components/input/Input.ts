@@ -66,7 +66,7 @@ position: relative;
 margin: 15px 0;
 }
 input.outline {
-border: 1px solid  #333333;
+border: 1px solid gray;
 border-radius: 5px;
 }
 label {
@@ -87,7 +87,7 @@ border: none;
 border-radius: 0px;
 padding: 15px 0.6rem 10px 0.6rem;
 transition: 0.1s ease-out;
-border-bottom: 1px solid  #333333;
+border-bottom: 1px solid gray;
 background: transparent;
 cursor: text;
 margin-left: auto;
@@ -121,6 +121,10 @@ opacity: 0.5;
 @media (prefers-color-scheme: dark) {
     label {
       color: rgb(120,120,120);
+    }
+
+    input {
+        color: white;
     }
   }
 `;

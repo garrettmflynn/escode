@@ -3,6 +3,7 @@ import { LitElement, html, css } from 'lit';
 import { Tab } from './Tab';
 import './TabToggle';
 import { TabBar } from './TabBar';
+import { lighterDarkBackgroundColor } from 'src/globals';
 
 export type PanelProps = {
   minTabs?: number,
@@ -18,8 +19,8 @@ export class Panel extends LitElement {
       box-sizing: border-box;
       grid-area: main;
       overflow: hidden;
-      background: inherit;
-      color: inherit;
+      background: white;
+      color: black;
       position: relative;
       width: 100%;
       height: 100%;
@@ -41,6 +42,13 @@ export class Panel extends LitElement {
       align-items: center;
       justify-content: center;
       font-size: 80%;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :host {
+        color: white;
+        background-color: ${lighterDarkBackgroundColor};
+      }
     }
     `;
   }

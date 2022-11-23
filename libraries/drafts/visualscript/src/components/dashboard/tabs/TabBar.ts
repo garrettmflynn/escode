@@ -58,6 +58,7 @@ export class TabBar extends LitElement {
 
         :host {
           background: rgb(25,25,25);
+          color: white;
         }
 
         :host(:hover)::-webkit-scrollbar-thumb {

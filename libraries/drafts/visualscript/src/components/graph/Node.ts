@@ -22,8 +22,6 @@ export class GraphNode extends LitElement {
 
     :host {
       font-family: var(--visualscript-font-family, sans-serif);
-
-
       position: absolute;
       box-sizing: border-box;
       top: 10px;
@@ -62,7 +60,10 @@ export class GraphNode extends LitElement {
     }
 
     @media (prefers-color-scheme: dark) { 
-
+      #header {
+        color: var(--visualscript-primary-font-color-dark, var(--visualscript-primary-font-color, black));
+        background: var(--visualscript-primary-color-dark, var(--visualscript-primary-color, white));
+      }
     }
 
     `;

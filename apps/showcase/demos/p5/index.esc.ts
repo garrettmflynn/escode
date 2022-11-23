@@ -8,12 +8,14 @@ import * as global from './sketches/global.js'
 
 const prefix = 'visualscript'
 export const __editor = {
+    views: {
+        menubar: false,
+    },
     style: {
         [`--${prefix}-primary-color`]: '#ed225d',
         [`--${prefix}-secondary-color`]: '#d9d9d9',
         [`--${prefix}-secondary-font-color`]: '#333',
         [`--${prefix}-font-family`]: 'Montserrat, sans-serif'
-
     }
 }
 

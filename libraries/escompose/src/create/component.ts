@@ -10,6 +10,7 @@ document.createElement = function (name, options) {
     return created
 }
 
+// TODO: Add support for componentizing SVG elements
 const tagToClassMap = {
     li: 'LI',
     ol: 'OL',
@@ -17,7 +18,7 @@ const tagToClassMap = {
     br: 'BR',
     p: 'Paragraph',
     textarea: 'TextArea',
-
+    a: 'Anchor',
 }
 
 const isAutonomous = false
@@ -34,7 +35,7 @@ export const define = (config, esm) => {
 
         // Derive the Base Class Name
         const clsName = (isAutonomous) ? '' : (tagToClassMap[config.extends] ?? config.extends[0].toUpperCase() + config.extends.slice(1))
-        
+
         const BaseClass = (new Function(`
 
         class ESComponentBase extends HTML${clsName}Element { 

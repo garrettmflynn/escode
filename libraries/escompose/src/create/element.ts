@@ -6,6 +6,11 @@ import { specialKeys } from "../../../esc/standards";
 
 const boundEditorKey = `__bound${specialKeys.editor}s`
 
+// Proper SVG Support
+// Incomplete SVG Support List: https://developer.mozilla.org/en-US/docs/Web/SVG/Element
+const createSVG = (name = 'svg', options?: ElementCreationOptions) => document.createElementNS("http://www.w3.org/2000/svg", name, options)
+
+
 export type ESComponentStates = {
 
     // Initial
@@ -46,6 +51,12 @@ function check (target) {
     }
 }
 
+
+const createElement = (args: [string, ElementCreationOptions?], parent) => {
+    if (args[0] === 'svg' || ( parent && parent.__element instanceof SVGElement)) return createSVG(...args)
+    else return document.createElement(...args)
+}
+
 export function create(id, esm: ESComponent, parent, states?, utilities: Options['utilities'] = {}) {
 
     // --------------------------- Get Element ---------------------------
@@ -61,7 +72,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
         // Nothing Defined
         if (element === undefined) element = defaultTagName
-        else if (Array.isArray(element)) element = document.createElement(...element as [string, ElementCreationOptions]);
+        else if (Array.isArray(element)) element = createElement(element as [string, ElementCreationOptions], parent);
 
 
         // Configuration Object Defined
@@ -74,7 +85,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
             else element = defaultTagName // default to div
         }
 
-        if (typeof element === 'string') element = document.createElement(element);
+        if (typeof element === 'string') element = createElement([element], parent);
 
         // Automatically Set innerText for inoputs
         const noInput = Symbol('no input to the default function')
@@ -167,7 +178,13 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
                             const context = esm[specialKeys.proxy] ?? esm
                             return func.call(context ?? esm, ...args)
                         }; // replace this scope
-                    } else esm[specialKeys.element][key] = handleAttribute(key, value, esm)
+                    } else {
+                        const valueToSet = handleAttribute(key, value, esm)
+
+                        // Set in two different ways
+                        esm[specialKeys.element].setAttribute(key, valueToSet)
+                        try { esm[specialKeys.element][key] = valueToSet} catch (e) {};
+                    }
                 }
             }
         }

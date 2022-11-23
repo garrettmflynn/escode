@@ -109,7 +109,9 @@ for (let key in demos) {
     }
 
     if (key === 'basic') {
-        demoInfo[key].__editor.style[`--${'visualscript'}-primary-color`] = 'black'
+        demoInfo[key].__editor.style[`--${'visualscript'}-primary-color`] = 'darkblue'
+        demoInfo[key].__editor.style[`--${'visualscript'}-primary-font-color`] = 'white'
+
     }
 
     // if (key.includes('phaser')) demoInfo[key].__attributes.style.height = maxHeight

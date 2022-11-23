@@ -4,6 +4,7 @@ import {until} from 'lit-html/directives/until.js';
 
 import { TimeSeries } from '../plots';
 import {Input} from '../input/Input'
+import { darkBackgroundColor } from 'src/globals';
 
 type keyType = string | number | symbol
 export type ObjectEditorProps = {
@@ -94,7 +95,7 @@ export class ObjectEditor extends LitElement {
 
     @media (prefers-color-scheme: dark) {
       :host > * {
-        background-color: rgb(40, 40, 40);
+        background-color: ${darkBackgroundColor};
         box-shadow: 0 1px 5px 0 rgb(255 255 255 / 20%);
       }
 

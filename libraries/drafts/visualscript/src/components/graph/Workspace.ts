@@ -6,22 +6,26 @@ import './Node';
 import drag from './utils/drag'
 import { GraphEdge } from './Edge';
 import { GraphWorkspaceProps } from './types/general';
+import { darkBackgroundColor } from 'src/globals';
 
 export class GraphWorkspace extends LitElement {
 
   static get styles() {
     return css`
-
+    
     :host * {
       box-sizing: border-box;
     }
 
     :host {
+        --visualscript-dark-background-color: ${darkBackgroundColor};
+
         overflow: hidden;
         height: 100%;
         display: block;
         --grid-size: 5000px;
         --grid-color: rgb(210, 210, 210);
+        background: white;
     }
 
     #grid {
@@ -45,7 +49,8 @@ export class GraphWorkspace extends LitElement {
 
       @media (prefers-color-scheme: dark) { 
         :host {
-            --grid-color: rgb(45, 45, 45);
+            --grid-color: rgb(80, 80, 80);
+            background: var(--visualscript-dark-background-color);
         }
       }
 

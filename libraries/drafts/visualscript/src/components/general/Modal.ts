@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { darkBackgroundColor } from 'src/globals';
 import './Button'
 
 export interface ModalProps {
@@ -102,6 +103,15 @@ export class Modal extends LitElement {
 .modal-content.open {
   opacity: 1;
   pointer-events: all;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  .modal-content {
+    background-color: ${darkBackgroundColor};
+    color: white;
+  }
+
 }
 
     `;

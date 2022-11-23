@@ -5,7 +5,7 @@ import { LitElement, html, css } from 'lit';
 import { Plugin } from './Plugin';
 
 // Visualscript Dependencies
-import { Tab, Panel, Tree, CodeEditor, ObjectEditor, GraphEditor, Modal, global } from "../../drafts/visualscript/src/index"
+import { Tab, Panel, Tree, CodeEditor, ObjectEditor, GraphEditor, Modal, global, TabBar } from "../../drafts/visualscript/src/index"
 import { GraphEdge } from '../../drafts/visualscript/src/components/graph/Edge';
 
 // ESCompose and ESMonitor Dependencies
@@ -17,11 +17,21 @@ import { __source } from '../../esc/esc';
 import { isListenerPort } from '../../drafts/visualscript/src/components/graph/utils/check';
 
 
+type ViewType = null | undefined | boolean | HTMLElement
+type ViewsType = {
+  ui?: ViewType,
+  menubar?: ViewType,
+  properties?: ViewType,
+  files?: ViewType,
+  graph?: ViewType,
+}
+
 export type EditorProps = {
   plugins?: any[]
   ui?: HTMLElement
   style?: Editor['style'],
-  bind?: string
+  bind?: string,
+  views?: ViewsType
 }
 
 export class Editor extends LitElement {
@@ -110,19 +120,27 @@ export class Editor extends LitElement {
     ui = document.createElement('visualscript-tab') 
     files = new Panel()
     filesTab = new Tab({name: 'Files'})
-    objectTab = new Tab({name: "Properties"})
+    propertiesTab = new Tab({name: "Properties"})
 
     info = new Panel()
     history: {[x:string]: any} = {}
     fileUpdate: number = 0
     graph = new GraphEditor()
-    object = new ObjectEditor()
+    properties = new ObjectEditor()
+    menubar = new TabBar()
     tree = new Tree({
       target: {},
       mode: 'filesystem'
     })
 
     filesystem = {}
+    views: ViewsType = {
+      ui: true,
+      menubar: true,
+      properties: true,
+      files: true,
+      graph: true
+    }
 
     onCreateFile?: Function
     bind?: string
@@ -138,6 +156,16 @@ export class Editor extends LitElement {
         }
       }
 
+      if (props.views) {
+        this.views = Object.assign(this.views, props.views)
+        for (let key in this.views) {
+          const value = this.views[key]
+          if (value instanceof HTMLElement) this[key] = value
+        }
+      }
+
+      const contextOptions : any[]= []
+
       this.ui.setAttribute('name', 'UI')
       this.ui.id = 'ui'
       if (props.ui) this.setUI(props.ui)
@@ -147,11 +175,21 @@ export class Editor extends LitElement {
       const div = document.createElement('div')
       div.id = 'files'
       div.appendChild(this.tree)
-      div.appendChild(this.files)
+      if (this.files) div.appendChild(this.files)
       this.filesTab.appendChild(div)
 
       // Setup Properties Tab
-      this.objectTab.appendChild(this.object)
+      if (this.properties) {
+        this.propertiesTab.appendChild(this.properties)
+        contextOptions.push({
+          text: 'View Properties',
+          onclick: (_, node) => {
+            const relPath = node.info.__path.replace(`${this.config.esc.__path}.`, '')
+            const res = this.properties.to(relPath)
+            if (res) this.propertiesTab.toggle.select()
+          }
+        })
+      }
 
       // Setting Context Menu Responses
       this.graph.contextMenu.set(`visualscript-graph-editor_nodes_${Math.random()}`, {
@@ -163,16 +201,7 @@ export class Editor extends LitElement {
             return returned
           },
         contents: () => {
-          return [
-            {
-              text: 'View Properties',
-              onclick: (_, node) => {
-                const relPath = node.info.__path.replace(`${this.config.esc.__path}.`, '')
-                const res = this.object.to(relPath)
-                if (res) this.objectTab.toggle.select()
-            },
-          },
-          ]
+          return contextOptions
           
         }
       })
@@ -392,41 +421,46 @@ export class Editor extends LitElement {
 
       if (!attachedToThis) Object.defineProperty(component, '__editorAttached', {value: this}) // Setting __editor to the component
 
-      const local = {}
-      for (let key in component.__children) {
-        const esc = component.__children[key]
-        local[key] = esc.__original
-      }
 
       // Set Plugins from NPM
       const keyword = 'graphscript'
       fetch(`https://api.npms.io/v2/search?q=keywords:${keyword}`).then(async r => {
         const res = await r.json()
 
+        const local = {}
+        for (let key in component.__children) {
+          const esc = await component.__children[key]
+          local[key] = esc.__original
+        }
+
         console.log('NPM Plugins from NPM', res)
         this.setPlugins({
-          ['Local Components']: {
+          ['Local']: {
             ...component.__define,
             ...local
           },
-          ['Component Registry']: {
+          ['NPM']: {
             ...components,
           },
         })
 
       })
     
-
-      const graph = {
-        nodes: component.__children,
-        edges: component.__listeners
-      }
-
       this.graph.workspace.edgeMode = 'to'
 
-      const isReady = component.__resolved
-      if (isReady) isReady.then(() => this.setGraph(graph))
-      else this.setGraph(graph)
+      // Only set if not bound (otherwise handled externally)
+      const toSet = !this.bind || (component.__bound__editors && component.__bound__editors.includes(this))
+      if (toSet) {
+
+        const graph = {
+          nodes: component.__children,
+          edges: component.__listeners
+        }
+
+        const isReady = component.__resolved
+        if (isReady) isReady.then(() => this.setGraph(graph))
+        else this.setGraph(graph)
+      }
 
       return component
     }
@@ -437,12 +471,12 @@ export class Editor extends LitElement {
 
 
     setUI = (ui) => {
-      this.ui.innerHTML = ''
-      this.ui.style.width = `0px`
-      if (ui) {
-        this.ui.style.width = `100%`
-        this.ui.appendChild(ui)
-      }
+        this.ui.innerHTML = ''
+        this.ui.style.width = `0px`
+        if (ui) {
+          this.ui.style.width = `100%`
+          this.ui.appendChild(ui)
+        }
     }
 
     isPlugin = (f) => {
@@ -624,24 +658,36 @@ export class Editor extends LitElement {
       const tabs = [projectTab]
 
       const panel = new Panel({minTabs: 2})
-      const graphTab = new Tab({name: 'Graph'})
-      graphTab.appendChild(this.graph)
+      if (this.views.graph) {
+        const graphTab = new Tab({name: 'Graph'})
+        if (this.graph) graphTab.appendChild(this.graph)
 
-      // Add Tabs
-      panel.addTab(graphTab)
-      if (Object.keys(this.filesystem).length) panel.addTab(this.filesTab)
+        // Add Tabs
+        panel.addTab(graphTab)
+    }
 
-      panel.addTab(this.objectTab)
-      this.object.set(this.config.original, {base: true})
+      if (this.views.files){
+        if (Object.keys(this.filesystem).length) panel.addTab(this.filesTab)
+      }
+
+      if (this.views.properties){
+        panel.addTab(this.propertiesTab)
+        this.properties.set(this.config.original, {base: true})
+      }
+
+  //     <visualscript-tab-bar>
+  //     ${tabs.map(t => t.toggle)}
+  // </visualscript-tab-bar>
+      if (this.views.menubar) {
+        this.menubar.tabs = tabs
+      }
 
       document.body.insertAdjacentElement('afterend', this.modal)
       return html`
-      <visualscript-tab-bar>
-          ${tabs.map(t => t.toggle)}
-      </visualscript-tab-bar>
+        ${this.views.menubar ? this.menubar : ''}
         <div>
-          ${panel}
-          ${this.ui}
+          ${panel.tabs.size ? panel : ''}
+          ${this.views.ui ? this.ui ?? '' : ''}
         </div>
       `
 

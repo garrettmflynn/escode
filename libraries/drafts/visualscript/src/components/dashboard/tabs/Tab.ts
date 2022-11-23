@@ -26,13 +26,44 @@ slot {
 }
 
 :host([type="dropdown"]) {
-  position: absolute;
-  z-index: 1;
+  border-radius: 10px;
+  box-shadow: 0 1px 5px 0 rgb(0 0 0 / 20%);
+  position:absolute; 
+  z-index: 3;
   width: auto;
   height: auto;
-  border-radius: 5px 10px;
-  padding: 10px;
+  padding: 5px;
+  color: black;
+  font-size: 80%;
+  min-width: 200px;
+  background: rgba(255,255,255, 0.8);
+  backdrop-filter: blur(6px);
 }
+
+:host([type="dropdown"]) > div {
+  margin:0; 
+  padding:0;
+  border-radius: 3px;
+  user-select: none;
+  padding: 5px 10px;
+}
+
+:host([type="dropdown"]) > div:hover {
+  background: #EEE;
+ }
+
+@media (prefers-color-scheme: dark) {
+  
+  :host([type="dropdown"]) {
+    background: rgba(100,100,100, 0.8);
+    color: white;
+  }
+
+  :host([type="dropdown"]) > div:hover {
+    background: #AAA;
+   }
+}
+
 `
 
 export type TabProps = {

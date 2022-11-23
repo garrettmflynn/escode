@@ -15,52 +15,66 @@ type Response = {
 export interface ContextMenuProps {
 }
 
+const contextMenuStyles = css`
+
+:host { 
+  border-radius: 10px;
+  box-shadow: 0 1px 5px 0 rgb(0 0 0 / 20%);
+  position:absolute; 
+  display:none; 
+  z-index: 10000;
+  padding: 5px;
+  color: black;
+  font-size: 80%;
+  min-width: 200px;
+  background: rgba(255,255,255, 0.8);
+  backdrop-filter: blur(6px);
+}
+
+ ul, li {
+    list-style:none;
+    margin:0; 
+    padding:0;
+    border-radius: 3px;
+    user-select: none;
+}
+
+ li { 
+  /* border-bottom:solid 1px #CCC; */
+  padding: 5px 10px;
+}
+
+ li:last-child { border:none; }
+
+ li:hover {
+  background: #EEE;
+ }
+
+  hr {
+    margin: 5px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+
+    :host {
+      background: rgba(100,100,100, 0.8);
+      color: white;
+    }
+
+    li:hover {
+      background: #AAA;
+     }
+
+  }
+
+  `;
+
 
 // Is automatically instantiated globally on import
 export class ContextMenu extends LitElement {
 
   static get styles() {
-    return css`
-
-  :host { 
-    border-radius: 10px;
-    box-shadow: 0 1px 5px 0 rgb(0 0 0 / 20%);
-
-    position:absolute; 
-    display:none; 
-    z-index: 10000;
-  }
-  
-   ul, li {
-      list-style:none;
-      margin:0; padding:0;
-      background:white;
-  }
-  
-   li { 
-    cursor: pointer;
-    /* border-bottom:solid 1px #CCC; */
-    padding: 5px 10px;
-  }
-  
-   li:last-child { border:none; }
-
-   li:hover {
-    background: #EEE;
-   }
-
-    hr {
-      margin: 5px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-
-      ul, li {
-        background:black;
-      }
-    }
-
-    `;
+    return contextMenuStyles;
   }
     
     static get properties() {
@@ -78,6 +92,7 @@ export class ContextMenu extends LitElement {
 
     onClick = () => {
       this.style.display = 'none';
+      if (this.style.display === 'block') document.body.style.overflow = ''
     }
 
     set = (id, info:Response) => this.responses.set(id, info)
@@ -85,6 +100,9 @@ export class ContextMenu extends LitElement {
     delete = (id) => this.responses.delete(id)
 
     onContextMenu = (e) => {
+
+      document.body.style.overflow = 'hidden'
+
 
       this.list.innerHTML = '' // Clear
       
@@ -101,8 +119,8 @@ export class ContextMenu extends LitElement {
             let parent = (this.parentNode as any)
             if (parent.host) parent = parent.host // LitElement correction
             var rect = parent.getBoundingClientRect()
-            this.style.left = e.pageX - rect.left + 'px'
-            this.style.top = e.pageY - rect.top + 'px'
+            this.style.left = e.clientX - rect.left + 'px'
+            this.style.top = e.clientY - rect.top + 'px'
             this.style.display = 'block'
             const list = o.contents(e) ?? []
                         

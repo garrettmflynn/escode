@@ -149,7 +149,7 @@ export class GraphEditor extends LitElement {
                       const overlay = new Overlay()
 
                       // Create a Modal
-                      const modal = new Modal({open: true, header: 'Components', footer: '<small>All ES Compomnents can be found on the <a href="https://github.com/brainsatplay/escode/blob/main/components">ESCode</a> repository.</small>'})
+                      const modal = new Modal({open: true, header: 'Components', footer: '<small>All ES Components can be found on the <a href="https://github.com/brainsatplay/escode/blob/main/components">ESCode</a> repository.</small>'})
                       overlay.appendChild(modal)
 
                       modal.onClose = () => {
@@ -171,7 +171,8 @@ export class GraphEditor extends LitElement {
                            } // pass a shallow copy onwards
                         })
                         modal.appendChild(list)
-                        this.workspace.parentNode.appendChild(overlay)
+                        document.body.appendChild(overlay)
+                        // this.workspace.parentNode.appendChild(overlay)
                         overlay.open = true
                         
                       }) as any // TODO: Add ES Component types...
