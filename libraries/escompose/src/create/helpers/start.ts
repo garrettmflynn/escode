@@ -15,7 +15,7 @@ export default function (keys, callbacks, asyncCallback?: Function) {
     // Default to attempted synchronous loading
     else {
         asyncConnect.call(this, keys, asyncCallback)
-        return connect.call(this, keys)
+        return connect.call(this, keys, callbacks)
     }
 }
 

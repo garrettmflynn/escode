@@ -205,7 +205,8 @@ export class GraphNode extends LitElement {
       this.ports.set(port.tag, port)
 
       // Set in type-specific registry
-      this.portCategories[info.type].set(port.tag, port)
+      const category = this.portCategories[info.type] ?? this.portCategories.default
+      category.set(port.tag, port)
 
       let ports = this.elements[info.type]
 

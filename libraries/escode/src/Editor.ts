@@ -261,8 +261,6 @@ export class Editor extends LitElement {
       this.graph.onedgeremoved = async (edge) => {
 
         if (edge.input && edge.output){
-
-          console.log(edge.input)
           if (this.config.gs) edge.output.node.info.__unsubscribe(edge.info.sub, edge.info.key)
           else if (this.config.esc){
             const tags = getTags(edge)
