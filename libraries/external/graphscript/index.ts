@@ -7,34 +7,33 @@ export const state = new EventHandler();
 
 
 export type GraphNodeProperties = {
-    __operator?:((...args:any[])=>any)|string,
-    __children?:{[key:string]:GraphNodeProperties},
-    __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void}},
-    __onconnected?:((node)=>void|((node)=>void)[]),
-    __ondisconnected?:((node)=>void|((node)=>void)[]),
-    __node?:{
+    __props?:Function|GraphNodeProperties, //a class constructor function (calls 'new x()') or an object we want to proxy all of the methods on this node. E.g. an html element gains 'this' access through operators and listeners on this node.
+    __operator?:((...args:any[])=>any)|string, //The 'main' function of the graph node, children will call this function if triggered by a parent. Functions passed as graphnodeproperties become the operator which can set state.
+    __children?:{[key:string]:GraphNodeProperties}, //child nodes belonging to this node, e.g. for propagating results
+    __listeners?:{[key:string]:((result)=>void)|{callback:(result)=>void,subInput?:boolean,[key:string]:any}}, //subscribe by tag to nodes or their specific properties and method outputs
+    __onconnected?:((node)=>void|((node)=>void)[]), //what happens once the node is created?
+    __ondisconnected?:((node)=>void|((node)=>void)[]), //what happens when the node is deleted?
+    __node?:{ //node specific properties, can contain a lot more things
         tag?:string,
-        state?:EventHandler,
+        state?:EventHandler, //by default has a global shared state
         inputState?:boolean //we can track inputs on a node, subscribe to state with 'input' on the end of the tag or 'tag.prop' 
         [key:string]:any
     },
     [key:string]:any
 }
 
-export type GraphProperties = {
-    tree?:{[key:string]:any},
-    loaders?:{[key:string]:{node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties}},
-    state?:EventHandler,
-    childrenKey?:string,
-    mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
-    [key:string]:any
-}
 
 export type GraphOptions = {
     tree?:{[key:string]:any},
-    loaders?:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,properties:GraphNodeProperties)=>void},
+    loaders?:{[key:string]:(
+        node:GraphNode,
+        parent:Graph|GraphNode,
+        graph:Graph,
+        tree:any,
+        properties:GraphNodeProperties,
+        key:string
+    )=>void},
     state?:EventHandler,
-    childrenKey?:string,
     mapGraphs?:false, //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
     [key:string]:any
 }
@@ -61,12 +60,14 @@ export class GraphNode {
     __children?;
     __operator?;
     __listeners?;
+    __props?;
 
     [key:string]:any
     
     //pass GraphNodeProperties, functions, or tags of other nodes
     constructor(properties:any, parent?:{[key:string]:any}, graph?:Graph) {
 
+        let orig = properties;
         if(typeof properties === 'function') {
             properties = {
                 __operator:properties,
@@ -80,8 +81,16 @@ export class GraphNode {
                 properties = graph.get(properties);
             }
         }
-        
+        if(!properties.__node.initial) properties.__node.initial = orig; //original object or function
+
         if(typeof properties === 'object') {
+            if(properties.__props) { //e.g. some generic javascript object or class constructor that we want to proxy. Functions passed here are treated as constructors. E.g. pass an HTML canvas element for the node then set this.width on the node to set the canvas width  
+                if (typeof properties.__props === 'function') properties.__props = new properties.__props();
+                if (typeof properties.__props === 'object') {
+                    this.__proxyObject(properties.__props);
+                }
+            }
+
             if (typeof properties.__node === 'string') {
                 //copy
                 if(graph?.get(properties.__node.tag)) {
@@ -124,23 +133,23 @@ export class GraphNode {
 
                 if(parent.__node.mapGraphs) {
                     //do we still want to register the child graph's nodes on the parent graph with unique tags for navigation? Need to add cleanup in this case
-                    properties.__node.nodes.forEach((n) => {parent.__node.nodes.set(properties.__node.tag+'.'+n.__node.tag,n)});
+                    properties.__node.nodes.forEach((n) => {parent.set(properties.__node.tag+'.'+n.__node.tag,n)});
 
                     let ondelete = () => { properties.__node.nodes.forEach((n) => {parent.__node.nodes.delete(properties.__node.tag+'.'+n.__node.tag)}); }
-                    this.__addDisconnected(ondelete);
+                    this.__addOndisconnected(ondelete);
 
                 }
             }
 
-            properties.__node.initial = properties; //original object or function
-
             properties.__node = Object.assign(this.__node,properties.__node);
-            Object.assign(this,properties);
+            
+            let keys = Object.getOwnPropertyNames(properties);
+            for(const key of keys) { this[key] = properties[key]; }
 
             if(properties.__operator && parent instanceof GraphNode && parent.__operator) {
                 let sub = parent.__subscribe(this);
                 let ondelete = () => { parent?.__unsubscribe(sub);}
-                this.__addDisconnected(ondelete);
+                this.__addOndisconnected(ondelete);
             }
             else if (typeof properties.default === 'function' && !properties.__operator) { //make it so the node is subscribable
                 let fn = properties.default.bind(this);
@@ -166,12 +175,14 @@ export class GraphNode {
     __subscribe = (callback:string|GraphNode|((res)=>void), key?:string, subInput?:boolean, bound?:string, target?:string) => {
 
 
+        console.log('Subscribing', callback, key, subInput, bound, target);
+
+
         const subscribeToFunction = (k, setTarget = (callback, target?) => callback, triggerCallback=callback) => {
             let sub = this.__node.state.subscribeTrigger(k, triggerCallback);
 
             // Add details to trigger
             let trigger = this.__node.state.getTrigger(k,sub);
-            trigger.sub = sub;
             trigger.source = this.__node.tag;
             if(key) trigger.key = key;
             trigger.target = setTarget(callback) // Non-string value
@@ -247,89 +258,129 @@ export class GraphNode {
         this.__operator = (...args) => {
             if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'input',args);
             let result = fn(...args);
-            if(typeof result?.then === 'function') {
-                result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
-            } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
+            if(this.__node.state.triggers[this.__node.unique]) { //don't set state (i.e. copy the result) if no subscriptions
+                if(typeof result?.then === 'function') {
+                    result.then((res)=>{ if(res !== undefined) this.__node.state.setValue( this.__node.unique,res ) }).catch(console.error);
+                } else if(result !== undefined) this.__node.state.setValue(this.__node.unique,result);
+            }
             return result;
         } 
 
         return this.__operator;
     }
 
-    
-// added to GraphNode and Graph
-__addLocalState(props?:{[key:string]:any}) {
-    if(!props) return;
-    if(!this.__node.localState) {
-        this.__node.localState = {};
-    }
-    let localState = this.__node.localState;
-
-    console.log('DEFINGIN...')
-    for (let k in props) {
-        if(typeof props[k] === 'function') {
-            if(!k.startsWith('_')) {
-                let fn = props[k].bind(this) as Function;
-                props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
-                    if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
-                    let result = fn(...args);
-                    if(typeof result?.then === 'function') {
-                        result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
-                    } else this.__node.state.setValue(this.__node.unique+'.'+k,result);
-                    return result;
+    __addLocalState(props?:{[key:string]:any}) {
+        if(!props) return;
+        if(!this.__node.localState) {
+            this.__node.localState = {};
+        }
+        let localState = this.__node.localState;
+        for (let k in props) {
+            if(this.__props && this.__props[k]) continue; //already given a local state, continue
+            if(typeof props[k] === 'function') {
+                if(!k.startsWith('_')) {
+                    let fn = props[k].bind(this) as Function;
+                    props[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+                        if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
+                        let result = fn(...args);
+                        if(typeof result?.then === 'function') {
+                            if(this.__node.state.triggers[this.__node.unique+'.'+k]) result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
+                        } else if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,result);
+                        return result;
+                    }
+                    this[k] = props[k]; 
                 }
-                this[k] = props[k]; 
+            } else {
+                localState[k] = props[k];
+                //console.log(k, localState[k]);
+
+                let definition = {
+                    get: () => {
+                        return localState[k];
+                    },
+                    set: (v) => {
+                        localState[k] = v;
+                        if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,v); //this will update localState and trigger local key subscriptions
+                    },
+                    enumerable: true,
+                    configurable: true
+                } as any;
+
+                Object.defineProperty(this, k, definition);
+                
+                if(typeof this.__node.initial === 'object') {
+                    let dec = Object.getOwnPropertyDescriptor(this.__node.initial,k);
+                    if(dec === undefined || dec?.configurable) {
+                        Object.defineProperty(this.__node.initial, k, definition);
+                    }
+                }
             }
-        } else {
-            localState[k] = props[k];
-            //console.log(k, localState[k]);
-
-            let definition = {
-                get: () => {
-                    return localState[k];
-                },
-                set: (v) => {
-                    if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,v); //this will update localState and trigger local key subscriptions
-                    localState[k] = v;
-                },
-                enumerable: true,
-                configurable: true
-            } as any;
-
-            Object.defineProperty(this, k, definition);
-            
-            const ogProps = this.__node.initial;
-            let dec = Object.getOwnPropertyDescriptor(ogProps,k);
-            if(dec === undefined || dec?.configurable) Object.defineProperty(ogProps, k, definition);
         }
     }
-}
 
-__addOnconnected(callback:(node)=>void) {
-    if(Array.isArray(this.__ondisconnected)) { this.__onconnected.push(callback); }
-    else if (typeof this.__onconnected === 'function') { this.__onconnected = [callback,this.__onconnected] }
-    else this.__onconnected = callback;
-}
+    //we can proxy an original object and function outputs on the node
+    __proxyObject = (obj) => {
+        
+        let allProps = getAllProperties(obj);
 
-__addDisconnected(callback:(node)=>void) {
-    if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(callback); }
-    else if (typeof this.__ondisconnected === 'function') { this.__ondisconnected = [callback,this.__ondisconnected] }
-    else this.__ondisconnected = callback;
-}
+        for(const k of allProps) {
+            if(typeof this[k] === 'undefined') {
+                if(typeof obj[k] === 'function') {
+                    this[k] = (...args) => { //all functions get state functionality when called, incl resolving async results for you
+                        if(this.__node.inputState) this.__node.state.setValue(this.__node.unique+'.'+k+'input',args);
+                        let result = obj[k](...args);
+                        if(this.__node.state.triggers[this.__node.unique+'.'+k]) {
+                            if(typeof result?.then === 'function') {
+                                result.then((res)=>{ this.__node.state.setValue( this.__node.unique+'.'+k, res ) }).catch(console.error);
+                            } else this.__node.state.setValue(this.__node.unique+'.'+k,result);
+                        }
+                        return result;
+                    }
+                } else {
 
-__callConnected(node=this) {
-    if(typeof this.__onconnected === 'function') { this.__onconnected(this); }
-    else if (Array.isArray(this.__onconnected)) { this.__onconnected.forEach((o:Function) => { o(this); }) }
-}
+                    let definition = {
+                        get:()=>{return obj[k]},
+                        set:(value) => { 
+                            obj[k] = value;
+                            if(this.__node.state.triggers[this.__node.unique+'.'+k]) this.__node.state.setValue(this.__node.unique+'.'+k,value);
+                        },
+                        enumerable: true,
+                        configurable: true
+                    }
 
-__callDisconnected(node=this) {
-    if(typeof this.__ondisconnected === 'function') this.__ondisconnected(this);
-    else if (Array.isArray(this.__ondisconnected)) { this.__ondisconnected.forEach((o:Function) => {o(this)}); }
-}
+                    Object.defineProperty(this, k, definition);
+                }
+            }  
+        }
+    }
+
+    __addOnconnected(callback:(node)=>void) {
+        if(Array.isArray(this.__ondisconnected)) { this.__onconnected.push(callback); }
+        else if (typeof this.__onconnected === 'function') { this.__onconnected = [callback,this.__onconnected] }
+        else this.__onconnected = callback;
+    }
+
+    __addOndisconnected(callback:(node)=>void) {
+        if(Array.isArray(this.__ondisconnected)) { this.__ondisconnected.push(callback); }
+        else if (typeof this.__ondisconnected === 'function') { this.__ondisconnected = [callback,this.__ondisconnected] }
+        else this.__ondisconnected = callback;
+    }
+
+    __callConnected(node=this) {
+        if(typeof this.__onconnected === 'function') { this.__onconnected(this); }
+        else if (Array.isArray(this.__onconnected)) { this.__onconnected.forEach((o:Function) => { o(this); }) }
+    }
+
+    __callDisconnected(node=this) {
+        if(typeof this.__ondisconnected === 'function') this.__ondisconnected(this);
+        else if (Array.isArray(this.__ondisconnected)) { this.__ondisconnected.forEach((o:Function) => {o(this)}); }
+    }
 
 }
 
 export class Graph {
+
+    [key:string]:any;
 
     __node:{
         tag:string,
@@ -344,7 +395,6 @@ export class Graph {
         // mapGraphs:false //if adding a Graph as a node, do we want to map all the graph's nodes with the parent graph tag denoting it (for uniqueness)?
         // tree:undefined as any,
         // loaders:undefined as any,
-        // childrenKey:undefined as any
     }
 
 
@@ -366,17 +416,17 @@ export class Graph {
         this.__node.tree = Object.assign(this.__node.tree ? this.__node.tree : {}, tree);
 
         let cpy = Object.assign({},tree);
-        delete cpy.__node; //we can specify __node behaviors on the tree too to specify listeners
+        if(cpy.__node) delete cpy.__node; //we can specify __node behaviors on the tree too to specify listeners
 
-        let listeners = this.recursiveSet(cpy,this);
+        let listeners = this.recursiveSet(cpy,this,undefined,tree);
 
         //make the tree a node 
         if(tree.__node) {
             if(!tree.__node.tag) tree.__node._tag = `tree${Math.floor(Math.random()*1000000000000000)}`
             else if (!this.get(tree.__node.tag)) {
                 let node = new GraphNode(tree,this,this); //blank node essentially for creating listeners
-                for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree); } //run any passes on the nodes to set things up further
-                this.__node.nodes.set(node.__node.tag,node);
+                this.set(node.__node.tag,node);
+                for(const l in this.__node.loaders) { this.__node.loaders[l](node,this,this,tree,tree,tree.__node.tag); } //run any passes on the nodes to set things up further
                 if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
                 } //now the tree can specify nodes
@@ -386,9 +436,11 @@ export class Graph {
         //now setup event listeners
         this.setListeners(listeners);
 
+        return cpy; //should be the node tree
+
     }
 
-    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any)=>void}, replace?:boolean) => {
+    setLoaders = (loaders:{[key:string]:(node:GraphNode,parent:Graph|GraphNode,graph:Graph,tree:any,props:any,key:string)=>void}, replace?:boolean) => {
         if(replace)  this.__node.loaders = loaders;
         else Object.assign(this.__node.loaders,loaders);
 
@@ -398,14 +450,17 @@ export class Graph {
     add = (properties:any, parent?:GraphNode|string) => {
 
         let listeners = {}; //collect listener props declared
-
         if(typeof parent === 'string') parent = this.get(parent);
-        let props = Object.assign({},properties); if(properties.__node) props.__node = Object.assign({},properties.__node);
-        
-        if(!props.__node?.tag || !this.get(props.__node.tag)) {
-            let node = new GraphNode(props, parent as GraphNode, this);
+        if(typeof properties === 'function') properties = { __operator:properties }; 
+        else if (typeof properties === 'string') properties = this.__node.tree[properties];
+        let p = Object.assign({},properties); //make sure we don't mutate the original object
+        if(!p.__node) p.__node = {};
+        p.__node.initial = properties;
+
+        if(typeof properties === 'object' && (!p?.__node?.tag || !this.get(p.__node.tag))) {
+            let node = new GraphNode(p, parent as GraphNode, this);
+            this.set(node.__node.tag,node);
             for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,this.__node.tree,properties); } //run any passes on the nodes to set things up further
-            this.__node.nodes.set(node.__node.tag,node);
             this.__node.tree[node.__node.tag] = properties; //reference the original props by tag in the tree for children
             //console.log('old:',properties.__node,'new:',node.__node);
             
@@ -415,7 +470,7 @@ export class Graph {
     
             if(node.__children) {
                 node.__children = Object.assign({},node.__children);
-                this.recursiveSet(node.__children, node, listeners);
+                this.recursiveSet(node.__children, node, listeners,node.__children);
             }
     
             //now setup event listeners
@@ -430,33 +485,32 @@ export class Graph {
         return;
     }
 
-    recursiveSet = (t,parent,listeners={}) =>  {
-        for(const key in t) {
-            let p = t[key];
+    recursiveSet = (t,parent,listeners={},origin) =>  {
+        let keys = Object.getOwnPropertyNames(origin);
+        for(const key of keys) {
+            if(key.includes('__')) continue;
+            let p = origin[key];
             if(Array.isArray(p)) continue;
             if(typeof p === 'function') p = { __operator:p }; 
             else if (typeof p === 'string') p = this.__node.tree[p];
             else if (typeof p === 'boolean') p = this.__node.tree[key];
-            // else if (typeof p.default === 'function') {
-            //     p.__operator = p.default;
-            // } 
             if(typeof p === 'object') {
                 p = Object.assign({},p); //make sure we don't mutate the original object
                 if(!p.__node) p.__node = {};
                 if(!p.__node.tag) p.__node.tag = key;
-                if(this.get(p.__node.tag) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
-                let props = Object.assign({},p); props.__node = Object.assign({},p.__node);
-                let node = new GraphNode(props,parent,this);
-                for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,p); } //run any passes on the nodes to set things up further
+                p.__node.initial = t[key];
+                if((this.get(p.__node.tag) && !(parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) || (parent?.__node && this.get(parent.__node.tag + '.' + p.__node.tag))) continue; //don't duplicate a node we already have in the graph by tag
+                let node = new GraphNode(p,parent,this);
+                this.set(node.__node.tag,node);
+                for(const l in this.__node.loaders) { this.__node.loaders[l](node,parent,this,t,t[key],key); } //run any passes on the nodes to set things up further
                 t[key] = node; //replace child with a graphnode
                 this.__node.tree[node.__node.tag] = p; //reference the original props by tag in the tree for children
-                this.set(node.__node.tag,node);
                 if(node.__listeners) {
                     listeners[node.__node.tag] = node.__listeners;
                 }
-                else if(node.__children) {
+                if(node.__children) {
                     node.__children = Object.assign({},node.__children);
-                    this.recursiveSet(node.__children, node, listeners);
+                    this.recursiveSet(node.__children, node, listeners,node.__children);
                 }
 
                 node.__callConnected();
@@ -471,7 +525,7 @@ export class Graph {
         if(typeof node === 'string') node = this.get(node);
 
         if(node instanceof GraphNode) {
-            this.__node.nodes.delete(node.__node.tag);
+            this.delete(node.__node.tag);
             delete this.__node.tree[node.__node.tag];
 
             if(clearListeners) {
@@ -483,9 +537,9 @@ export class Graph {
             const recursiveRemove = (t) => {
                 for(const key in t) {
                     this.unsubscribe(t[key]);
-                    this.__node.nodes.delete(t[key].__node.tag);
+                    this.delete(t[key].__node.tag);
                     delete this.__node.tree[t[key].__node.tag]
-                    this.__node.nodes.delete(key);
+                    this.delete(key);
                     delete this.__node.tree[key]
 
                     //console.log(key, 'removing child',t[key]);
@@ -518,15 +572,13 @@ export class Graph {
         return node;
     }
 
-    removeTree = (tree:any) => {}
-
     run = (node:string|GraphNode, ...args:any[]) => {
         if(typeof node === 'string') {
             let nd = this.get(node);
             if(!nd && node.includes('.')) {
                 nd = this.get(node.substring(0,node.lastIndexOf('.')));
                 if(typeof nd?.[node.substring(node.lastIndexOf('.')+1)] === 'function') return nd[node.substring(node.lastIndexOf('.')+1)](...args);
-            } else return nd.__operator(...args);
+            } else if(nd?.__operator) return nd.__operator(...args);
         }
         if((node as GraphNode)?.__operator) {
             return (node as GraphNode)?.__operator(...args);
@@ -534,8 +586,6 @@ export class Graph {
     }
 
     setListeners = (listeners:{[key:string]:{[key:string]:any}}) => {
-
-        
         //now setup event listeners
         for(const key in listeners) {
             let node = this.get(key);
@@ -588,8 +638,9 @@ export class Graph {
         }
     }
 
-    get = (tag) => { return this.__node.nodes.get(tag); };
-    set = (tag,node) => { return this.__node.nodes.set(tag,node); };
+    get = (tag:string) => { return this.__node.nodes.get(tag); };
+    set = (tag:string,node:GraphNode) => { return this.__node.nodes.set(tag,node); };
+    delete = (tag:string) => { return this.__node.nodes.delete(tag); }
 
     getProps = (node:GraphNode|string, getInitial?:boolean) => {
         if(typeof node === 'string') node = this.get(node);
@@ -614,28 +665,20 @@ export class Graph {
         node:GraphNode|string, callback:string|GraphNode|((res:any)=>void), key?:string|undefined, subInput?:boolean, target?:string, bound?:string
     ) => {
 
-        console.log('SUBSCRIBING')
-
         let nd = node;
         if(!(node instanceof GraphNode)) nd = this.get(node);
 
         let sub;
 
-        //console.log(node,nd);
-        if(typeof callback === 'string' && target) {
-            let method = this.get(target)?.[callback];
-            // // console.log('I AM A STRING', method)
+        if(typeof callback === 'string') {
 
-            let thisNode = this.get(target)
-            // key = callback;
-            callback = `${thisNode.__node.tag}.${callback}`;
+            //console.log(node, callback, this.__node.nodes.keys());
 
-            // if(typeof method === 'function') callback = (...args) => {
-            //     const res = method(...args);
-            //     console.log(res)
-            //     return res
-            // }
-        }
+            if(target) {
+                let method = this.get(target)?.[callback];
+                if(typeof method === 'function') callback = method;
+            } else callback = this.get(callback)?.__operator;
+        } 
 
         if(nd instanceof GraphNode) {
             sub = nd.__subscribe(callback,key,subInput,target,bound);
@@ -644,21 +687,26 @@ export class Graph {
                 (nd as GraphNode).__unsubscribe(sub,key,subInput);
             }
 
-            nd.__addDisconnected(ondelete);
+            nd.__addOndisconnected(ondelete);
         } else if (typeof node === 'string') {
-            if(callback instanceof GraphNode && callback.__operator) {
-                sub = (this.get(node) as GraphNode).__subscribe(callback.__operator,key,subInput,target,bound); 
-                let ondelete = () => {
-                    this.get(node).__unsubscribe(sub)
-                    //console.log('unsubscribed', key)
+            if(this.get(node)) {
+                if(callback instanceof GraphNode && callback.__operator) {
+                    sub = (this.get(node) as GraphNode).__subscribe(callback.__operator,key,subInput,target,bound); 
+                    let ondelete = () => {
+                        this.get(node).__unsubscribe(sub)
+                        //console.log('unsubscribed', key)
+                    }
+        
+                    callback.__addOndisconnected(ondelete);
                 }
-    
-                callback.__addDisconnected(ondelete);
-            }
-            else if (typeof callback === 'function' || typeof callback === 'string') {
-                sub = (this.get(node) as GraphNode).__subscribe(callback,key,subInput,target,bound); 
-                
-                this.__node.state.getTrigger(this.get(node).__node.unique,sub).source = node;
+                else if (typeof callback === 'function' || typeof callback === 'string') {
+                    sub = (this.get(node) as GraphNode).__subscribe(callback,key,subInput,target,bound); 
+                    
+                    this.__node.state.getTrigger(this.get(node).__node.unique,sub).source = node;
+                }
+            } else {
+                if(typeof callback === 'string') callback = this.__node.nodes.get(callback).__operator; 
+                if(typeof callback === 'function') sub = this.__node.state.subscribeTrigger(node, callback);
             }
         }
         return sub;
@@ -678,7 +726,6 @@ export class Graph {
 }
 
 
-
 function recursivelyAssign (target,obj) {
     for(const key in obj) {
         if(obj[key]?.constructor.name === 'Object' && !Array.isArray(obj[key])) {
@@ -695,3 +742,25 @@ function recursivelyAssign (target,obj) {
 }
 
 
+export function getAllProperties(obj){ //https://stackoverflow.com/questions/8024149/is-it-possible-to-get-the-non-enumerable-inherited-property-names-of-an-object
+    var allProps = [], curr = obj
+    do{
+        var props = Object.getOwnPropertyNames(curr)
+        props.forEach(function(prop){
+            if (allProps.indexOf(prop) === -1)
+                allProps.push(prop)
+        })
+    }while(curr = Object.getPrototypeOf(curr))
+    return allProps;
+}
+
+export function instanceObject(obj) {
+    let props = getAllProperties(obj); //e.g. Math
+    let instance = {};
+    for(const key of props) {
+        instance[key] = obj[key];
+    }
+
+    return instance;
+    //simply copies methods, nested objects will not be instanced to limit recursion
+}

@@ -22,38 +22,30 @@ export class EventHandler {
         if(this.triggers[key]) this.triggers[key].forEach((obj) => obj.onchange(this.data[key]));
     }
     subscribeTrigger = (key:string,onchange:(res:any)=>void) => {
-
         if(key) {
             if(!this.triggers[key]) {
                 this.triggers[key] = [];
             }
             let l = this.triggers[key].length;
 
-            this.triggers[key].push({idx:l, onchange});
-            const res = this.triggers[key].length-1;
-            console.log('Adding Trigger', res, this.triggers[key])
-            return res
+            this.triggers[key].push({sub:l, onchange});
+            return this.triggers[key].length-1;
         } else return undefined;
     }
     unsubscribeTrigger = (key:string,sub?:number) => {
-
         let triggers = this.triggers[key]
-
         if (triggers){
-
-            if(sub === undefined) delete this.triggers[key];
+            if(!sub) delete this.triggers[key];
             else {
-                let idx = undefined;
+                let sub = undefined;
                 let obj = triggers.find((o,i)=>{
-                    if(o.idx===sub) {
-                        idx = i;
+                    if(o.sub===sub) {
+                        sub = i;
                         return true;
                     }
                 });
 
-                console.log('Removing Trigger', obj);
-
-                if(obj) triggers.splice(idx,1);
+                if(obj) triggers.splice(sub,1);
                 
                 if(this.onRemoved) this.onRemoved(obj);
                 return true;
@@ -71,7 +63,7 @@ export class EventHandler {
     }
     getTrigger = (key,sub) => {
         for(const s in this.triggers[key]) {
-            if(this.triggers[key][s].idx === sub) return this.triggers[key][s];
+            if(this.triggers[key][s].sub === sub) return this.triggers[key][s];
         }
     }
     onRemoved;

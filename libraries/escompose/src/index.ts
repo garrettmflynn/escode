@@ -8,9 +8,29 @@ import FlowManager from "../../drafts/edgelord/index"
 import handleHierarchy from './create/helpers/hierarchy'
 
 
-export const create = (config, toMerge = {}, options: Partial<Options> = {}) => {
+export const create = (config, toMerge:any = {}, options: Partial<Options> = {}) => {
 
     // -------------- Create Complete Options Object --------------
+
+    // Reject mobile devices
+    const parent = config.__parent ?? toMerge.__parent ?? document.body
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+
+        const div = document.createElement('div')
+        const p1 = document.createElement('p')
+        p1.innerHTML = '<b>Sorry, this app is not supported on mobile devices.</b>'
+        div.appendChild(p1)
+
+        const p2 = document.createElement('p')
+        p2.innerText = 'Please use a desktop or laptop computer to view this app.'
+        div.appendChild(p2)
+
+        div.style = 'background: black; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;'
+
+        parent.appendChild(div)
+
+    }
+               
 
     options = deepClone(options)
     let monitor;
@@ -104,8 +124,9 @@ export const create = (config, toMerge = {}, options: Partial<Options> = {}) => 
             })
         }
 
-        return utils.resolve(instancePromiseOrObject, onConnected)
-
+        const res = utils.resolve(instancePromiseOrObject, onConnected)
+        console.log('Resolved', res)
+        return res
 }
 
 export default create

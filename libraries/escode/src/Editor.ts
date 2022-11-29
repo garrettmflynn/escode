@@ -15,6 +15,7 @@ import createComponent from '../../escompose/src/index'
 import * as components from '../../../components/index.js'
 import { __source } from '../../esc/esc';
 import { isListenerPort } from '../../drafts/visualscript/src/components/graph/utils/check';
+import { Console } from './Console';
 
 
 type ViewType = null | undefined | boolean | HTMLElement
@@ -41,7 +42,7 @@ export class Editor extends LitElement {
 
     :host { 
       position: relative;
-      display: block;
+      /* display: block; */
       width: 100%;
       height: 100%;
       box-sizing: border-box;
@@ -117,7 +118,10 @@ export class Editor extends LitElement {
     }
 
     modal = new Modal()
-    ui = document.createElement('visualscript-tab') 
+    ui = new Tab() 
+    uiContainer = document.createElement('div')
+    console = new Console()
+
     files = new Panel()
     filesTab = new Tab({name: 'Files'})
     propertiesTab = new Tab({name: "Properties"})
@@ -166,10 +170,19 @@ export class Editor extends LitElement {
 
       const contextOptions : any[]= []
 
+
+      this.ui.appendChild(this.uiContainer)
       this.ui.setAttribute('name', 'UI')
       this.ui.id = 'ui'
       if (props.ui) this.setUI(props.ui)
       if (props.bind) this.bind = props.bind
+
+      // Setup UI Style
+      this.uiContainer.style.overflow = 'scroll'
+      this.ui.style.display = 'grid'
+      this.ui.style.gridTemplateRows = '1fr auto'
+      this.ui.style.position = 'sticky'
+      this.ui.style.bottom = '0px'
 
       // Setup Files Tab
       const div = document.createElement('div')
@@ -469,12 +482,16 @@ export class Editor extends LitElement {
 
 
     setUI = (ui) => {
-        this.ui.innerHTML = ''
+        this.uiContainer.innerHTML = ''
         this.ui.style.width = `0px`
+
         if (ui) {
           this.ui.style.width = `100%`
-          this.ui.appendChild(ui)
+          this.uiContainer.appendChild(ui)
         }
+
+        this.ui.appendChild(this.console)
+
     }
 
     isPlugin = (f) => {
