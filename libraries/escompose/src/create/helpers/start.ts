@@ -2,26 +2,37 @@
 import * as standards from '../../../../esc/standards';
 import * as define from '../define';
 
+const set = (esm, keys, value, writable=true) => {
+    Object.defineProperty(esm, `__${keys.started}`, { value, writable, configurable: false, enumerable: false })
+}
+
 export default function (keys, callbacks, asyncCallback?: Function) {
 
     // Ensure asynchronous loading
+    let output;
     if (this[keys.options].await) {
-        return asyncConnect.call(this, keys, async () => {
+        output = asyncConnect.call(this, keys, async () => {
             if (asyncCallback) await asyncCallback() // Callback when then entire object is ready
             connect.call(this, keys, callbacks)
+            set(this, keys, true, false)
         })
+        set(this, keys, output)
     } 
     
     // Default to attempted synchronous loading
     else {
         asyncConnect.call(this, keys, asyncCallback)
-        return connect.call(this, keys, callbacks)
+        output = connect.call(this, keys, callbacks)
+        set(this, keys, true, false)
     }
+
+    return output
 }
 
 async function asyncConnect (keys, onReadyCallback) {
 
     await this[keys.connected]
+
     this[keys.states].connected = true
 
     const boundEditorsKey = `__bound${keys.editor}s`
@@ -39,6 +50,7 @@ async function asyncConnect (keys, onReadyCallback) {
     }
 
     this[`__${keys.resolved}`]() // Tell other programs that the component is resolved
+
     if (onReadyCallback) await onReadyCallback()
 
 
@@ -64,7 +76,8 @@ function connect (keys, callbacks: Function[] = []) {
 
     // Call After Children + Before Running (...TODO: Is this right?)
     const context = this[keys.proxy] ?? this
-    if (this[keys.states].initial.start) this[keys.states].initial.start.call(context)
+
+    if (this[keys.states].initial.start) this[keys.states].initial.start.call(context) // Start callback defined by the user
 
     // Run Callbacks (e.g. start animations)
     callbacks.forEach(f => f.call(this))

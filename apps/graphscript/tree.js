@@ -53,9 +53,18 @@ const nodeAInstance = Object.assign({}, nodeA)
             element.innerHTML += `<li>looped!</li>`
             return 'looped!'
         }
+    },
+
+    __listeners:{
+        'nodeE': {
+            'nodeA.jump': true,
+            // 'nodeZ.method': {
+            //     if: 
+            // }
+        }
     }
 
 }
 
-
+// 2. I'd also like to specify sheets of listeners for single sources
 export default tree

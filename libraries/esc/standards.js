@@ -15,6 +15,7 @@ export const specialKeys = {
     stop: '__ondisconnected',
     connected: '__connected', // wait until connected
     resolved: '__resolved', // wait until fully resolved
+    started: '__started', // wait until started
 
     hierarchy: '__children',
     element: '__element',

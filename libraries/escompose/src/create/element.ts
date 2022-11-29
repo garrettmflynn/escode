@@ -3,6 +3,7 @@ import { EditorProps } from "../../../escode/src";
 import { ESComponent, ESElementInfo } from "../../../esc/esc";
 import { resolve } from "../utils";
 import { specialKeys } from "../../../esc/standards";
+import pathLoader from "./helpers/path";
 
 const boundEditorKey = `__bound${specialKeys.editor}s`
 
@@ -57,11 +58,14 @@ const createElement = (args: [string, ElementCreationOptions?], parent) => {
     else return document.createElement(...args)
 }
 
-export function create(id, esm: ESComponent, parent, states?, utilities: Options['utilities'] = {}) {
+export function create(id, esm: ESComponent, parent, options:Partial<Options> = {},  states?) {
+    const utilities = options?.utilities
 
     // --------------------------- Get Element ---------------------------
     let element = esm[specialKeys.element] as ESComponent['__element'] | null; // Always create div at the least
     const attributes = esm[specialKeys.attributes]
+
+    const ogElement = element
 
     let info: undefined | ESElementInfo;
     if (!(element instanceof Element)) {
@@ -135,6 +139,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     // track if ready
     Object.defineProperty(esm, `${specialKeys.connected}`, {
         value: new Promise(resolve => isConnected = async () => {
+            Object.defineProperty(esm, `__${specialKeys.connected}`, { value: true,  writable: false, enumerable: false })
             resolve(true)
         }),
         writable: false,
@@ -150,7 +155,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
     })
     
     // trigger if ready
-    Object.defineProperty(esm, `__${specialKeys.connected}`, { value: isConnected,  writable: false, enumerable: false })
+    Object.defineProperty(esm, `__${specialKeys.connected}`, { value: isConnected,  writable: true, enumerable: false })
     Object.defineProperty(esm, `__${specialKeys.resolved}`, { value: isResolved,  writable: false, enumerable: false })
 
 
@@ -250,48 +255,60 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
 
             // Set Parent Node on Element
             if (v?.[specialKeys.element] instanceof Element) v = v[specialKeys.element]
-            if (esm[specialKeys.element] instanceof Element) {
-                if(esm[specialKeys.element].parentNode) esm[specialKeys.element].remove()
-                if (v instanceof Element) {
-
-                    // --------------------------- Place inside ESCode Instance (if created) ---------------------------
-
-                    const desiredPosition = esm[specialKeys.childPosition]
-                    const nextPosition = v.children.length
-
-                    let ref = esm[specialKeys.element]
-
-                    const __editor = esm[`__${specialKeys.editor}`]
-
-                    if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
 
 
-                    // Resolved After Siblings Have Been Added
-                    if (desiredPosition !== undefined && desiredPosition < nextPosition) v.children[desiredPosition].insertAdjacentElement('beforebegin', ref)
-                   
-                    // Resolved Immediately or Before Siblings
-                    else v.appendChild(ref);
+            const current = esm[specialKeys.element].parentNode
 
-                    // ------------------ Visualize with ESCode -----------------
-                    if (__editor) __editor.setComponent(esm); // Set the target component
+            if (current !== v){
+                if (esm[specialKeys.element] instanceof Element) {
+                    if(current) esm[specialKeys.element].remove()
+                    if (v instanceof Element) {
+
+                        // --------------------------- Place inside ESCode Instance (if created) ---------------------------
+
+                        const desiredPosition = esm[specialKeys.childPosition]
+                        const nextPosition = v.children.length
+
+                        let ref = esm[specialKeys.element]
+
+                        const __editor = esm[`__${specialKeys.editor}`]
+
+                        if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
+
+
+                        // Resolved After Siblings Have Been Added
+                        if (desiredPosition !== undefined && desiredPosition < nextPosition) v.children[desiredPosition].insertAdjacentElement('beforebegin', ref)
+                    
+                        // Resolved Immediately or Before Siblings
+                        else v.appendChild(ref);
+
+                        // ------------------ Visualize with ESCode -----------------
+                        if (__editor) __editor.setComponent(esm); // Set the target component
+                    }
+                } 
+                
+                // Set Child Parent Nodes to This
+                else {
+                    console.error('No element was created for this Component...', esm)
+                    // for (let name in esm.__children) {
+                    //     const component = esm.__children[name]
+                    //     component.__parent = v
+                    // }
                 }
-            } 
-            
-            // Set Child Parent Nodes to This
-            else {
-                console.error('No element was created for this Component...', esm)
-                // for (let name in esm.__children) {
-                //     const component = esm.__children[name]
-                //     component.__parent = v
-                // }
             }
 
-            if (
-                v instanceof HTMLElement // Is element
-                // && !v.hasAttribute('escomponent')  // Is not an ES Component (which are observed elsewhere...)
-                // && v.isConnected // Is connected to the DOM
-            ) {
-                esm[`__${specialKeys.connected}`]()
+
+            if (v instanceof HTMLElement) {
+                pathLoader(specialKeys, esm, id, options, v) // update path
+
+                const parentComponent = v[specialKeys.component]
+        
+                // // Start the component
+                const isConnected = esm[`__${specialKeys.connected}`]
+                const toConnect = isConnected instanceof Function
+
+                if (esm[`__${specialKeys.started}`] !== true && parentComponent?.[`__${specialKeys.started}`] === true)  esm[specialKeys.start]()
+                if (toConnect) isConnected()
             }
         },
         enumerable:true
@@ -369,6 +386,7 @@ export function create(id, esm: ESComponent, parent, states?, utilities: Options
         // console.error('Produced component', esm)
         if (finalStates.parentNode) esm.__parent = finalStates.parentNode
     }
+
 
     return element;
 }

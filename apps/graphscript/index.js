@@ -6,7 +6,6 @@ import tree from './tree.js'
 const readout = document.getElementById('readout')
 
 
-
 const editor = new Editor()
 
 document.body.appendChild(editor)
@@ -60,6 +59,8 @@ graph.get('nodeB').x += 1; //should trigger nodeA listener
 graph.run('nodeB.nodeC', 4); //should trigger nodeA listener
 
 graph.get('nodeA').jump();
+
+// 2. I'd also like to specify sheets of listeners for single sources. This introduces a few more behaviors that would be relevant
 
 // let tree2 = {
 //     graph

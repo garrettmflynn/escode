@@ -27,7 +27,7 @@ export const __listeners = {
         element.innerHTML += `<li>nodeC z prop changed: ${newZ}</li>`
     },
 
-    'nodeE': 'jump'
+    // 'nodeE': 'jump'
     
     // function(e) {
     //     element.innerHTML += `<li>nodeE ${e}</li>`

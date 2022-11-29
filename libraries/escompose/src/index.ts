@@ -125,7 +125,6 @@ export const create = (config, toMerge:any = {}, options: Partial<Options> = {})
         }
 
         const res = utils.resolve(instancePromiseOrObject, onConnected)
-        console.log('Resolved', res)
         return res
 }
 

@@ -1,3 +1,4 @@
+import { specialKeys } from '../../../esc/standards'
 import createComponent from '../index'
 import { resolve } from '../utils'
 
@@ -55,15 +56,14 @@ export const define = (config, esm) => {
 
             constructor(properties){
                 super(properties)
-                resolve(createComponent(esm), res => {
-                    res.__element = this
-                    this.__component = res
-                })
+                esm[specialKeys.element] = this
+                createComponent(esm)
             }
 
             connectedCallback() {
-                console.log('Custom element added to page.');
-                this.__component.____connected(); // Notify that the Component is connected
+                const component = this[specialKeys.component]
+                const parent = component[specialKeys.parent]
+                component[specialKeys.parent] = parent // Trigger parent setter
             }
 
             disconnectedCallback() {
@@ -71,7 +71,7 @@ export const define = (config, esm) => {
             }
               
             adoptedCallback() {
-            console.log('Custom element moved to new page.');
+                console.log('Custom element moved to new page.');
             }
 
             attributeChangedCallback(name, oldValue, newValue) {

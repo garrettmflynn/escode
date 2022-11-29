@@ -5,6 +5,8 @@ import * as clone from "../../../common/clone.js"
 import { Options } from '../../../common/types';
 import * as define from './define'
 import * as helpers from './helpers/index'
+import pathLoader from './helpers/path';
+import { resolve } from '../utils';
 
 export default (id, esm, parent?, opts: Partial<Options> = {}) => {
     
@@ -46,7 +48,7 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
         
             // ------------------ Produce a Complete ESM Element ------------------
 
-            let el = element.create(id, esm, parent, states, opts.utilities);
+            let el = element.create(id, esm, parent, opts, states);
 
             const finalStates = states as element.ESComponentStates
             
@@ -73,18 +75,8 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                 }
             }
 
-            const isESC = {value: '', enumerable: false} as any
-            if (typeof id === 'string') {
-                const path = parent[standards.specialKeys.path]
-                if (path) isESC.value = [path, id]
-                else isESC.value = [id]
-                isESC.value = isESC.value.join(standards.keySeparator)
-            }
-
-            Object.defineProperty(esm, standards.specialKeys.path, isESC)    
+            pathLoader(standards.specialKeys, esm, opts, id)
             Object.defineProperty(esm, standards.specialKeys.original, {value: copy, enumerable: false})    
-
-            // Trigger state changes at the end
             esm[standards.specialKeys.resize] = finalStates.onresize
             esm[standards.specialKeys.parent] = finalStates.parentNode
 

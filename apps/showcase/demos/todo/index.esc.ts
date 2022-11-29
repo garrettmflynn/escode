@@ -27,6 +27,9 @@ export const __define = {
 }
 
 export const __children = {
+        item: {
+            __element: 'es-removable-list-item'
+        },
 
         list: {
             itemType: 'es-removable-list-item',
