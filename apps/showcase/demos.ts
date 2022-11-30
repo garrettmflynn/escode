@@ -22,6 +22,12 @@ import animationsFallbacks from './demos/animations/fallbacks'
 const animationsJSON = './demos/animations/index.esc.json'
 const animationsJS = './demos/animations/index.esc.ts'
 
+// Todo Demo
+import * as draggableFile from './demos/draggable/index.esc'
+import draggableFallbacks from './demos/draggable/fallbacks'
+const draggableJSON = './demos/draggable/index.esc.json'
+const draggableJS = './demos/draggable/index.esc.ts'
+
 // Multiplayer Phaser Demo
 import * as multiplayerPhaserFile from './demos/phaser/versions/multiplayer/index.esc'
 import multiplayerPhaserFallbacks from './demos/phaser/versions/multiplayer/fallbacks'
@@ -147,6 +153,14 @@ const todoPackage = {
     js: todoJS
 }
 
+const draggablePackage = {
+    name: 'draggable',
+    json: draggableJSON,
+    fallbacks: draggableFallbacks,
+    file: draggableFile,
+    js: draggableJS
+}
+
 const multiplayerPackage = {
     name: 'Multiplayer Game',
     json: multiplayerPhaserJSON,
@@ -246,6 +260,8 @@ const demos = {
     // Basic ESC Demos
     basic: basicPackage,
     animations: animationsPackage,
+    draggable: draggablePackage,
+
     todo: todoPackage,
     phaser: phaserPackage,
     multiplayer: multiplayerPackage,

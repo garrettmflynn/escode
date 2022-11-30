@@ -4,6 +4,7 @@ import { ESComponent, ESElementInfo } from "../../../esc/esc";
 import { resolve } from "../utils";
 import { specialKeys } from "../../../esc/standards";
 import pathLoader from "./helpers/path";
+import * as component from "./component";
 
 const boundEditorKey = `__bound${specialKeys.editor}s`
 
@@ -65,15 +66,21 @@ export function create(id, esm: ESComponent, parent, options:Partial<Options> = 
     let element = esm[specialKeys.element] as ESComponent['__element'] | null; // Always create div at the least
     const attributes = esm[specialKeys.attributes]
 
-    const ogElement = element
 
-    let info: undefined | ESElementInfo;
+    let info: undefined | ESComponent['__element'];
     if (!(element instanceof Element)) {
 
 
         const mustShow = (attributes && Object.keys(attributes).length) || checkForInternalElements(esm)
         const defaultTagName = mustShow ? 'div' : 'link'
 
+        // ------------------ Register Components (children) ------------------
+        const isWebComponent = element && typeof element === 'object' && element.name && element.extends
+        if (isWebComponent) {
+            component.define(element, esm)
+            esm[specialKeys.element] = element = element.name // create a custom element
+        }
+        
         // Nothing Defined
         if (element === undefined) element = defaultTagName
         else if (Array.isArray(element)) element = createElement(element as [string, ElementCreationOptions], parent);
@@ -102,7 +109,6 @@ export function create(id, esm: ESComponent, parent, options:Partial<Options> = 
     }
 
     if (!(element instanceof Element)) console.warn('Element not found for', id);
-
 
     // Track All States
     let intermediateStates = states || {}

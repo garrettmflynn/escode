@@ -1,3 +1,4 @@
+import { deep } from '../../../common/clone'
 import { specialKeys } from '../../../esc/standards'
 import createComponent from '../index'
 import { resolve } from '../utils'
@@ -27,11 +28,11 @@ const isAutonomous = false
 
 export const define = (config, esm) => {
 
-    // Split the Instances
-    esm = Object.assign({}, esm)
-
     // Register the Component
     if (!registry[config.name]) {
+
+        // Split the Instances
+        esm = deep(esm)
 
 
         // Derive the Base Class Name

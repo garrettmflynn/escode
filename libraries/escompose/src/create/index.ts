@@ -1,12 +1,11 @@
 import * as element from './element'
-import * as component from "./component";
 import * as standards from '../../../esc/standards';
 import * as clone from "../../../common/clone.js"
 import { Options } from '../../../common/types';
 import * as define from './define'
 import * as helpers from './helpers/index'
 import pathLoader from './helpers/path';
-import { resolve } from '../utils';
+import * as component from "./component";
 
 export default (id, esm, parent?, opts: Partial<Options> = {}) => {
     
@@ -37,7 +36,7 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                 }
             }
 
-            // ------------------ Register Components ------------------
+            // ------------------ Register Components (keyword) ------------------
             let registry = esm[standards.specialKeys.webcomponents] ?? {}
             for (let key in registry) {
                 const esm = registry[key]

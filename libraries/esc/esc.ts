@@ -22,15 +22,12 @@ export type ESElementArray = [ESDefineInfo['name'], {extends: ESDefineInfo['exte
 
 export type __source = string | (string | Bundle)[]
 
-type GeneralElementType = baseESElement | ESElementInfo
+type GeneralElementType = baseESElement | ESElementInfo | ESDefineInfo
 export type ESComponent<ElementType = GeneralElementType>  = {
     
     default: Function,
     __compose: ESComponent // Is Merged into this component
 
-    __define?: {
-        [x:string]: ESComponent<ESDefineInfo> // Component Definitions
-    }
 
     __children: {
         [x:string]: ESComponent // General Components

@@ -189,14 +189,31 @@ var get = (func, args, info2) => {
 var isProxy = Symbol("isProxy");
 var fromInspectable = Symbol("fromInspectable");
 
-// ../common/standards.ts
+// ../esc/standards.js
 var keySeparator = ".";
 
 // ../common/pathHelpers.ts
 var hasKey = (key, obj) => key in obj;
+var getShortcut = (path, shortcuts, keySeparator2) => {
+  const sc = shortcuts[path[0]];
+  if (sc) {
+    const value = sc[path.slice(1).join(keySeparator2)];
+    if (value)
+      return value;
+  }
+};
 var getFromPath = (baseObject, path, opts = {}) => {
   const fallbackKeys = opts.fallbacks ?? [];
   const keySeparator2 = opts.keySeparator ?? keySeparator;
+  if (opts.shortcuts) {
+    const shortcut = getShortcut(path, opts.shortcuts, keySeparator2);
+    if (shortcut) {
+      if (opts.output === "info")
+        return { value: shortcut, exists: true, shortcut: true };
+      else
+        return shortcut;
+    }
+  }
   if (typeof path === "string")
     path = path.split(keySeparator2);
   else if (typeof path == "symbol")
@@ -243,6 +260,8 @@ var setFromPath = (path, value, ref, opts = {}) => {
   path = [...path];
   const copy = [...path];
   const last = copy.pop();
+  if (ref.__children)
+    ref = ref.__children;
   for (let i = 0; i < copy.length; i++) {
     const str = copy[i];
     let has = hasKey(str, ref);
@@ -499,21 +518,28 @@ var setFromOptions = (path, value, baseOptions, opts) => {
 };
 
 // src/listeners.ts
-var info = (id, callback, path, originalValue, base, listeners2, options) => {
+var info = (id, callback, path, originalValue, base, listeners2, options, refShortcut = {}) => {
   if (typeof path === "string")
     path = path.split(options.keySeparator);
   const relativePath = path.join(options.keySeparator);
   const refs = base;
+  const shortcutRef = refShortcut.ref;
+  const shortcutPath = refShortcut.path;
   const get3 = (path2) => {
-    return getFromPath(base, path2, {
+    const thisBase = shortcutRef ?? base;
+    const res = getFromPath(thisBase, path2, {
       keySeparator: options.keySeparator,
       fallbacks: options.fallbacks
     });
+    return res;
   };
-  const set2 = (path2, value) => setFromOptions(path2, value, options, {
-    reference: base,
-    listeners: listeners2
-  });
+  const set2 = (path2, value) => {
+    const thisBase = shortcutRef ?? base;
+    setFromOptions(path2, value, options, {
+      reference: thisBase,
+      listeners: listeners2
+    });
+  };
   let onUpdate = options.onUpdate;
   let infoToOutput = {};
   if (onUpdate && typeof onUpdate === "object" && onUpdate.callback instanceof Function) {
@@ -540,13 +566,13 @@ var info = (id, callback, path, originalValue, base, listeners2, options) => {
       return output;
     },
     get current() {
-      return get3(info2.path.absolute);
+      return get3(shortcutPath ?? info2.path.absolute);
     },
     set current(val) {
-      set2(info2.path.absolute, val);
+      set2(shortcutPath ?? info2.path.absolute, val);
     },
     get parent() {
-      return get3(info2.path.parent);
+      return get3(shortcutPath ? shortcutPath?.slice(0, -1) : info2.path.parent);
     },
     get reference() {
       return refs[id];
@@ -657,7 +683,8 @@ function functions2(info2, collection, lookups) {
     if (!parent[isProxy]) {
       parent[info2.last] = function(...args) {
         const listeners2 = collection[getPath("absolute", info2)];
-        return functionExecution(this, listeners2, info2.original, args);
+        const got = functionExecution(this, listeners2, info2.original, args);
+        return got;
       };
     }
   }, lookups);
@@ -734,8 +761,8 @@ var Monitor = class {
       lookup: createLookup()
     };
     this.references = {};
-    this.get = (path, output) => {
-      return getFromPath(this.references, path, {
+    this.get = (path, output, reference = this.references) => {
+      return getFromPath(reference, path, {
         keySeparator: this.options.keySeparator,
         fallbacks: this.options.fallbacks,
         output
@@ -775,7 +802,7 @@ var Monitor = class {
       const arrayPath = path;
       let baseRef = this.references[id];
       if (!baseRef) {
-        console.error(`Reference ${id} does not exist.`);
+        console.error(`Reference does not exist.`, id);
         return;
       }
       if (!__internal.poll)
@@ -785,7 +812,7 @@ var Monitor = class {
       const __internalComplete = __internal;
       if (!this.references[id])
         this.references[id] = baseRef;
-      let ref = this.get([id, ...arrayPath]);
+      const ref = this.get([id, ...arrayPath]);
       const toMonitorInternally = (val, allowArrays = false) => {
         const first = val && typeof val === "object";
         if (!first)
@@ -816,19 +843,17 @@ var Monitor = class {
       }
       let info2;
       try {
+        info2 = this.getInfo(id, callback, arrayPath, ref);
         if (__internalComplete.poll) {
-          info2 = this.getInfo(id, callback, arrayPath, ref);
           this.poller.add(info2);
         } else {
           let type = "setters";
           if (typeof ref === "function")
             type = "functions";
-          info2 = this.getInfo(id, callback, arrayPath, ref);
           this.add(type, info2);
         }
       } catch (e) {
         console.error("Fallback to polling:", path, e);
-        info2 = this.getInfo(id, callback, arrayPath, ref);
         this.poller.add(info2);
       }
       subs[getPath("absolute", info2)] = info2.sub;
