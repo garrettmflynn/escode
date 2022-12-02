@@ -9,6 +9,7 @@
     "start": "tinybuild"
   },
   "dependencies": {
+    "bcijs": "^1.8.0",
     "biquadjs": "^1.0.0",
     "device-decoder": "^0.2.29",
     "device-decoder.third-party": "^0.1.3",

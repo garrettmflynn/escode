@@ -1,7 +1,8 @@
 import * as webgl from 'webgl-plot-utils';//'../../../webgl-plot-utils/webgl-plot-utils'//
 let plotter = new webgl.WebglLinePlotUtil();
+globalThis.plotter = plotter
 
-import canvasworker from './canvas.worker' // NOTE: This breaks on text compilation...
+import canvasworker from './worker/canvas.worker' // NOTE: This breaks on text compilation...
 
 import { CanvasControls, CanvasProps, workerCanvasRoutes } from './worker/WorkerCanvas' //../../../GraphServiceRouter/services/worker/WorkerCanvas'//'graphscript/services/worker/WorkerCanvas';
 

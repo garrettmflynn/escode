@@ -8,6 +8,12 @@
 
 > **ESCode** is a sub-framework of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay).
 
+
+ESCode is currently a sub-implementation of [graphscript]. They have a shared representation of several “graph script” properties—such as __listener, __children, and __onconnected—but have implemented these in different ways.
+
+> Any [graphscript] component can be loaded into `escompose—though this may perform slightly differently. In Q1 2023, [graphscript] will replace the current backend for ESCode.
+
+
 ## The Programming Workflow
 ### ESMpile
 Compile a list of active ESM imports with [esmpile](./libraries/esmpile/README.md). This is achieved by bundling code hosted at standard `import` uris from their text sources. Resulting bundles also support incremental changes and recompilation.
@@ -107,3 +113,6 @@ This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) 
 <a href="https://opencollective.com/brainsatplay/sponsor/27/website" target="_blank"><img src="https://opencollective.com/brainsatplay/sponsor/27/avatar.svg"></a>
 <a href="https://opencollective.com/brainsatplay/sponsor/28/website" target="_blank"><img src="https://opencollective.com/brainsatplay/sponsor/28/avatar.svg"></a>
 <a href="https://opencollective.com/brainsatplay/sponsor/29/website" target="_blank"><img src="https://opencollective.com/brainsatplay/sponsor/29/avatar.svg"></a>
+
+
+[graphscript]: https://github.com/brainsatplay/graphscript

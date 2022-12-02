@@ -16,6 +16,12 @@ import phaserFallbacks from './demos/phaser/versions/devices/fallbacks'
 const phaserJSON = './demos/phaser/index.esc.json'
 const phaserJS = './demos/phaser/index.esc.ts'
 
+// Engagement Demo
+import * as engagementFile from './demos/engagement/index.esc'
+import engagementFallbacks from './demos/engagement/fallbacks'
+const engagementJSON = './demos/engagement/index.esc.json'
+const engagementJS = './demos/engagement/index.esc.ts'
+
 // Animations Demo
 import * as animationsFile from './demos/animations/index.esc'
 import animationsFallbacks from './demos/animations/fallbacks'
@@ -145,6 +151,15 @@ const animationsPackage = {
 
 }
 
+const engagementPackage = {
+    name: 'Engagement',
+    json: engagementJSON,
+    fallbacks: engagementFallbacks,
+    file: engagementFile,
+    js: engagementJS
+
+}
+
 const todoPackage = {
     name: 'Todo',
     json: todoJSON,
@@ -261,6 +276,7 @@ const demos = {
     basic: basicPackage,
     animations: animationsPackage,
     draggable: draggablePackage,
+    engagement: engagementPackage,
 
     todo: todoPackage,
     phaser: phaserPackage,
