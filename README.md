@@ -13,7 +13,6 @@ ESCode is currently a sub-implementation of [graphscript]. They have a shared re
 
 > Any [graphscript] component can be loaded into `escompose—though this may perform slightly differently. In Q1 2023, [graphscript] will replace the current backend for ESCode.
 
-
 ## The Programming Workflow
 ### ESMpile
 Compile a list of active ESM imports with [esmpile](./libraries/esmpile/README.md). This is achieved by bundling code hosted at standard `import` uris from their text sources. Resulting bundles also support incremental changes and recompilation.
@@ -30,8 +29,10 @@ Convert between .esc.js to .esc.html and .esc.json using [escomposer](./librarie
 ### Components
 Pull code from the official repository of ESC using [components](./components/README.md).
 
+> **Note:** In the near future, we will switch to the registration of ES Components through NPM via standardized use of the `graphscript` and `escomponent` keywords. These existing components will be published and distributed into independent repositories.
+
 ### ESCode
-Inspect and edit .esc files (using code written with .esc) using [escode](./libraries/escode/README.md).
+Inspect and edit .esc files (using code written with .esc) with [escode](./libraries/escode/README.md).
 
 ## Draft Libraries
 - [visualscript](./libraries/drafts/visualscript/README.md): Visual programming made simple for escode.
