@@ -4,68 +4,9 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-**ES Components** is a standard for transforming ES Modules into standardized Web Components to simplify the process of authoring composable web applications.
+The **escompose** library transforms [ES Components](https://github.com/brainsatplay/escomponent) into Web Components that respond to each other. 
 
-The **escompose** library transforms ES Components into Web Components that respond to each other. 
-
-> **escompose** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay)
-
-## The Specification
-Each Component contains one `default` export and any number of `named` exports.
-
-``` javascript
-export let nExecutions = 0
-
-export default function(){
-    this.nExecutions++
-    return this.nExecutions
-}
-```
-
-As such, this specification treats **namespace imports** (which access default *and* named exports) as first-class citizens.
-
-### Default Exports
-The `default` export defines the behavior of the Component.
-
-### Named Exports
- `named` exports define the states of the Component. 
-
- However, **multiple named exports** without a default function may also be passed. These are transformed into individual Components within the same graph.
-
- ## Special Properties
-### Cross-File Properties
-#### __define
-This is a registry of ESC that you'd like to transform into Web Components.
-- **Note:** This has to be loaded 
-
-##### __compose
-This is a key that allows you to specify how this ESC inherits from another.
-
-#### __children
-This is a tree of ESC instances that determine how they will be displayed on the screen—as well as how they're referenced in listener scope.
-
-#### __listeners
-This is a collection of configuration objects that specify how ESC will listen to each other.
-
-### JSON / HTML Properties
-#### __trigger
-This allows you to run the default function of an ESC using the arguments specified here.
-```json
-{
-    "__trigger": [true],
-    "__compose": "./components/trigger.js'
-}
-```
-
-#### __animate
-This allows you to specify an animation loop for your component.
-```json
-{
-    "__animate": 10, // Runs 10 times every second
-    // "__animate": true, // Runs on the default animation loop
-    "__compose": "./components/time.js'
-}
-```
+> **escompose** is a core library of the [Brains@Play](https://github.com/brainsatplay/brainsatplay) framework.
 
 ## Acknowledgments
 This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
