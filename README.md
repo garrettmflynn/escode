@@ -31,6 +31,8 @@ Pull code from the official repository of ESC using [components](./components/RE
 
 > **Note:** In the near future, we will switch to the registration of ES Components through NPM via standardized use of the `graphscript` and `escomponent` keywords. These existing components will be published and distributed into independent repositories.
 
+To learn more about the publication workflow, see the [escomponent](https://github.com/brainsatplay/escomponent) template repository.
+
 ### ESCode
 Inspect and edit .esc files (using code written with .esc) with [escode](./libraries/escode/README.md).
 
