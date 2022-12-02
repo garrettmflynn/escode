@@ -434,23 +434,30 @@ export class Editor extends LitElement {
 
 
       // Set Plugins from NPM
-      const keyword = 'graphscript'
-      fetch(`https://api.npms.io/v2/search?q=keywords:${keyword}`).then(async r => {
+      fetch('https://registry.npmjs.org/-/v1/search?text=keywords:graphscript,escomponent').then(async r => {
         const res = await r.json()
 
         const local = {}
+
+        // Grabbing components from the current object
         for (let key in component.__children) {
-          const esc = await component.__children[key]
+          const esc = await component.__children[key].__childresolved ?? component.__children[key]
           local[key] = esc.__original
         }
 
-        console.log('NPM Plugins from NPM', res)
+
+        const npm = {}
+        res.objects.forEach(o => npm[o.package.name] = o.package)
+
         this.setPlugins({
           ['Local']: {
-            ...component.__define,
+            'This Component': component.__original,
             ...local
           },
           ['NPM']: {
+            ...npm, // TODO: Make sure you can actually query the code...
+          },
+          ['Included']: {
             ...components,
           },
         })

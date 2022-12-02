@@ -43,7 +43,7 @@
     "devDependencies": {
         "tinybuild": "0.3.190"
     },
-    "script": {
+    "scripts": {
         "build": "tinybuild"
     }
 }

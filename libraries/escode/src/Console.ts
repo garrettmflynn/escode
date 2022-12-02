@@ -111,8 +111,7 @@ export class Console extends LitElement {
 
       message.innerText = text
 
-      
-      this.originals['log'](args)
+      // this.originals['log'](args)
 
       this.list.appendChild(message)
     }
