@@ -2,6 +2,10 @@ import { workerCanvasRoutes } from './WorkerCanvas';
 //minimal web worker for running offscreen canvases, 
 //no graphscript required
 
+// Add global plotter
+import * as webgl from 'webgl-plot-utils';//'../../../webgl-plot-utils/webgl-plot-utils'//
+globalThis.plotter = new webgl.WebglLinePlotUtil();
+
 const routes = {
     ...workerCanvasRoutes
     //add more compatible routes that don't require graphscript

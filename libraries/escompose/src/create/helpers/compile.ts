@@ -2,6 +2,8 @@ import { Options } from "../../../../common/types"
 import { specialKeys } from "../../../../esc/standards"
 import { deep as deepClone } from "../../../../common/clone"
 
+import wasm from './wasm'
+
 
 const catchError = (o, e) => {
     // Insert an Error Component
@@ -19,7 +21,30 @@ export default function compile(o, opts: Options) {
     // Special URL key
     let uri = (typeof o === 'string') ? o : o[specialKeys.uri]
 
-    if (uri && opts.utilities) {
+    if (uri && uri.slice(-5) === '.wasm') {
+        let relTo = o.relativeTo ?? opts?.relativeTo
+        if (relTo.slice(-1)[0] !== '/') relTo += '/'
+        const absoluteURI = new URL(uri, relTo).href
+        return new Promise(async (resolve) =>  {
+            const info = await wasm(absoluteURI, o.importOptions)
+            const copy = Object.assign({}, info.instance.exports) as any
+            // WebAssembly Support
+            for (let key in copy){
+                const val = copy[key]
+                if (val instanceof WebAssembly.Memory) copy[key] = new Uint8Array(val.buffer); // Replace Memory with Typed Array
+                else if (val instanceof WebAssembly.Global) {
+                    Object.defineProperty(copy, key, {
+                        get: () => val.value,
+                        set: (v) => val.value = v
+                    })
+                }
+            }
+
+            resolve(copy)
+        })
+    }
+
+    else if (uri && opts.utilities) {
 
         // Get Text Bundle
         const bundleOpts = opts.utilities.bundle
@@ -37,6 +62,7 @@ export default function compile(o, opts: Options) {
                         const options = bundleOpts.options ?? {}
                         if (!options.bundler) options.bundler = 'datauri' // link as datauri
                         if (!options.bundle) options.collection ='global' // same collection across all instances on the page
+                        if (!options.relativeTo) options.relativeTo = opts.relativeTo // Specify relativeTo in different locations
                         const bundle = bundleOpts.function(uri, options)
 
                         // Track Bundle Resolution
@@ -47,7 +73,9 @@ export default function compile(o, opts: Options) {
                     
                     // Just Compile
                     else if (gotCompileOpts) {
-                        const resolved = await compileOpts.function(o, compileOpts.options)
+                        const options = compileOpts.options ?? {}
+                        if (!options.relativeTo) options.relativeTo = opts.relativeTo // Specify relativeTo in different locations
+                        const resolved = await compileOpts.function(o, options)
                         o = resolved
                     } 
                     

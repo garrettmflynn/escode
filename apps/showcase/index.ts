@@ -175,6 +175,8 @@ async function start (demo = "basic", mode="direct") {
                 clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 
                 await: true, 
+                relativeTo,
+
 
                 // For Editor Creation + Source Text Loading
                 utilities: {
@@ -185,7 +187,6 @@ async function start (demo = "basic", mode="direct") {
                     bundle: {
                         function: esm.bundle.get,
                         options: {
-                            relativeTo,
                             nodeModules,
                             // filesystem
                         }

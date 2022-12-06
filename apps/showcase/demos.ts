@@ -4,7 +4,7 @@ import * as escFallbacks from './demos/basic/fallbacks'
 const escJSON = './/demos/basic/index.esc.json'
 const escJS = './demos/basic/index.esc.ts'
 
-// Basic ESC Demo
+// Basic Graph Demo
 import * as graphFile from './demos/graph/index.esc'
 import * as graphFallbacks from './demos/graph/fallbacks'
 const graphJSON = './/demos/graph/index.esc.json'
@@ -107,6 +107,12 @@ import * as p5File from './demos/p5/index.esc'
 import p5Fallback from './demos/p5/fallbacks'
 const p5JSON = './demos/p5/index.esc.json'
 const p5JS = './demos/p5/index.esc.ts'
+
+// P5 Demo
+import * as wasmFile from './demos/wasm/index.esc'
+import wasmFallback from './demos/wasm/fallbacks'
+const wasmJSON = './demos/wasm/index.esc.json'
+const wasmJS = './demos/wasm/index.esc.ts'
 
 
 // // Broken
@@ -267,6 +273,15 @@ const p5Package = {
 }
 
 
+const wasmPackage = {
+    name: 'WebAssembly',
+    json: wasmJSON,
+    fallbacks: wasmFallback,
+    file: wasmFile,
+    js: wasmJS,
+    relativeTo: 'apps/showcase/demos/wasm' // Appropriately find WASM asset
+}
+
 const demos = {
 
     // Complete Walkthrough
@@ -277,6 +292,8 @@ const demos = {
     animations: animationsPackage,
     draggable: draggablePackage,
     engagement: engagementPackage,
+    wasm: wasmPackage,
+
 
     todo: todoPackage,
     phaser: phaserPackage,

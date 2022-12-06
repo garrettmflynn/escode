@@ -32,8 +32,8 @@ export const __children = {
     // [`Sketch 1`]: sketchOne,
     [`Sketch 1`]: {
         __compose: {
-            __object: sketchOne,
-            __src: './sketches/one.esc.ts'
+            ref: sketchOne,
+            src: './sketches/one.esc.ts'
         },
     }, 
 

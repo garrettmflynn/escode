@@ -30,52 +30,52 @@ const demoEl = {
 
 const demos = {
     basic: {
-        __src: '../basic/index.esc',
-        __object: basicDemo
+        src: '../basic/index.esc',
+        ref: basicDemo
     },
     todo: {
-        __src: '../todo/index.esc',
-        __object: todoDemo
+        src: '../todo/index.esc',
+        ref: todoDemo
     },
     animations: {
-        __src: '../animations/index.esc',
-        __object: animationsDemo
+        src: '../animations/index.esc',
+        ref: animationsDemo
     },
     phaser: {
-        __src: '../phaser/index.esc',
-        __object: phaserDemo
+        src: '../phaser/index.esc',
+        ref: phaserDemo
     },
     multiplayerPhaser: {
-        __src: '../phaser/versions/multiplayer/index.esc',
-        __object: multiplayerPhaserDemo
+        src: '../phaser/versions/multiplayer/index.esc',
+        ref: multiplayerPhaserDemo
     },
     speakPhaser: {
-        __src: '../phaser/versions/speak/index.esc',
-        __object: speakPhaserDemo
+        src: '../phaser/versions/speak/index.esc',
+        ref: speakPhaserDemo
     },
 
     signal: {
-        __src: '../signal/index.esc',
-        __object: signalDemo
+        src: '../signal/index.esc',
+        ref: signalDemo
     },
     noisySignal: {
-        __src: '../signal/versions/noisy/index.esc',
-        __object: noisySignalDemo
+        src: '../signal/versions/noisy/index.esc',
+        ref: noisySignalDemo
     },
 
     filteredSignal: {
-        __src: '../signal/versions/filtered/index.esc',
-        __object: filteredSignalDemo
+        src: '../signal/versions/filtered/index.esc',
+        ref: filteredSignalDemo
     },
 
     devicePhaser: {
-        __src: '../phaser/versions/devices/index.esc',
-        __object: devicePhaserDemo
+        src: '../phaser/versions/devices/index.esc',
+        ref: devicePhaserDemo
     },
 
     audiofeedback: {
-        __src: '../devices/audiofeedback/index.esc',
-        __object: audiofeedbackDemo
+        src: '../devices/audiofeedback/index.esc',
+        ref: audiofeedbackDemo
     },
     
 }

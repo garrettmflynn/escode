@@ -12,6 +12,8 @@ export type Options = {
         static?: boolean
     },
 
+    relativeTo: string,
+
     listen?: boolean,
     clone?: boolean,
 

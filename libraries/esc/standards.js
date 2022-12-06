@@ -33,8 +33,8 @@ export const specialKeys = {
     trigger: '__trigger',
     compose: '__compose',
 
-    uri: '__src',
-    reference: '__object',
+    uri: 'src',
+    reference: 'ref',
 
     childPosition: '__childposition',
 
