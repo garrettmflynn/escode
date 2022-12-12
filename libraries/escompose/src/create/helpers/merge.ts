@@ -1,6 +1,11 @@
 type anyObj = {[key: string]: any}
 type esComposeType = anyObj | anyObj[]
 
+// ------------ Merge ------------
+// This merge function is used to merge two objects together WHILE RESOLVING COMPONENTS THAT MUST BE COMPILED
+// -------------------------------
+
+
 // Standard Notation
 import { specialKeys } from "../../../../esc/standards"
 
@@ -10,13 +15,15 @@ import { resolve, merge as mergeUtility } from "../../utils"
 // Helpers
 import compile from './compile'
 
-export default function merge (base, __compose: esComposeType = {}, path: any[] = [], opts: any = {}) {
+export default function merge (base, toComposeWith: esComposeType = {}, path: any[] = [], opts: any = {}, reverse=false, updateOriginal=false) {
+
+    let [toCompile, alreadyResolved] = (reverse) ? [base, toComposeWith] : [toComposeWith, base]
 
     // Ensure __compose is an array
-    if (!Array.isArray(__compose)) __compose = [__compose]
+    if (!Array.isArray(toCompile)) toCompile = [toCompile]
 
     // Merge nested __compose objects
-    let promise = resolve(__compose.map(o => {
+    let promise = resolve(toCompile.map(o => {
        const compiled = compile(o, opts) // Resolve from text if required
 
        const checkAndPushTo = (target, acc: any[] = [], forcePush = true) => {
@@ -40,16 +47,14 @@ export default function merge (base, __compose: esComposeType = {}, path: any[] 
        return resolve(compiled, (compiled) => checkAndPushTo(compiled))
     }))
 
-    return resolve(promise, (clonedEsCompose) => {
+    return resolve(promise, (compiled) => {
 
-        const flat = clonedEsCompose.flat();
-        let merged = Object.assign({}, base);
-        // delete merged[specialKeys.compose];
-        flat.forEach((toCompose) => {
-            merged = mergeUtility(toCompose, merged, path);
-        });
-
-        return merged;
-
+        const flat = compiled.flat();
+        if (reverse) return mergeUtility(alreadyResolved, Object.assign({}, flat[0]), path);
+        else {
+            let merged = (updateOriginal) ? base : Object.assign({}, base)
+            flat.forEach((toCompose) => merged = mergeUtility(toCompose, merged, path, updateOriginal));
+            return merged;
+        }
     })
 }

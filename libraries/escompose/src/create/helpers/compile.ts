@@ -22,7 +22,7 @@ export default function compile(o, opts: Options) {
     let uri = (typeof o === 'string') ? o : o[specialKeys.uri]
 
     if (uri && uri.slice(-5) === '.wasm') {
-        let relTo = o.relativeTo ?? opts?.relativeTo
+        let relTo = o.relativeTo ?? opts?.relativeTo ?? window.location.href
         if (relTo.slice(-1)[0] !== '/') relTo += '/'
         const absoluteURI = new URL(uri, relTo).href
         return new Promise(async (resolve) =>  {
@@ -62,7 +62,7 @@ export default function compile(o, opts: Options) {
                         const options = bundleOpts.options ?? {}
                         if (!options.bundler) options.bundler = 'datauri' // link as datauri
                         if (!options.bundle) options.collection ='global' // same collection across all instances on the page
-                        if (!options.relativeTo) options.relativeTo = opts.relativeTo // Specify relativeTo in different locations
+                        if (!options.relativeTo) options.relativeTo = opts.relativeTo ?? '.' // Specify relativeTo in different locations
                         const bundle = bundleOpts.function(uri, options)
 
                         // Track Bundle Resolution
@@ -74,7 +74,7 @@ export default function compile(o, opts: Options) {
                     // Just Compile
                     else if (gotCompileOpts) {
                         const options = compileOpts.options ?? {}
-                        if (!options.relativeTo) options.relativeTo = opts.relativeTo // Specify relativeTo in different locations
+                        if (!options.relativeTo) options.relativeTo = opts.relativeTo ?? '.' // Specify relativeTo in different locations
                         const resolved = await compileOpts.function(o, options)
                         o = resolved
                     } 

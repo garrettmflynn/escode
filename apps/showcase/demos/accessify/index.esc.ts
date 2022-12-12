@@ -7,7 +7,7 @@ import * as switchComponent from "../../../../components/modalities/switch/index
 
 const otherButton = {
     __element: 'button',
-    _compose: button,
+    __compose: button,
     default: function (...args) {
 
         const res = button.default.call(this, ...args)
@@ -18,7 +18,7 @@ const otherButton = {
             const r = floor + mult*Math.random()
             const g = floor + mult*Math.random()
             const b = floor + mult*Math.random()
-            this._element.style.backgroundColor = `rgb(${r}, ${g}, ${b})`
+            this.__element.style.backgroundColor = `rgb(${r}, ${g}, ${b})`
         }
     }
 }
@@ -142,13 +142,13 @@ export const __listeners = {
         ['keys.ArrowDown']: {
             __format: () => [{y: 10}]
         },
-        ['mouse.ArrowUp']: {
+        ['keys.ArrowUp']: {
             __format: () => [{y: -10}]
         },
-        ['mouse.ArrowLeft']: {
+        ['keys.ArrowLeft']: {
             __format: () => [{x: -10}]
         },
-        ['mouse.ArrowRight']: {
+        ['keys.ArrowRight']: {
             __format: () => [{x: 10}]
         },
     },

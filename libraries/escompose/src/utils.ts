@@ -19,11 +19,21 @@ export const resolve = (object, callback?) => {
     }
 }
 
+// ------------ Merge ------------
 // Merge individual object keys AND nest functions to maintain their bindings
+// -------------------------------
 
-export const merge = (main, override, path: any[] = []) => {
+export const merge = (
+    main, 
+    override, 
 
-    const copy = Object.assign({}, main) // choose to copy
+    path: any[] = [],  // for debugging only
+    updateOriginal = false, // choose to update original
+    composeFunctions: boolean = false, // use composition on functions
+    seen: any[]=[], // for circular references
+) => {
+
+    const copy = (updateOriginal) ? main : Object.assign({}, main) // choose to copy
     if (override){
 
         const keys = Object.keys(copy)
@@ -36,8 +46,18 @@ export const merge = (main, override, path: any[] = []) => {
 
             // Merge individual object keys
             if (typeof override[k] === 'object' && !Array.isArray(override[k])) {
-                if (typeof copy[k] === 'object') copy[k] =  merge(copy[k], override[k], thisPath)
-                else copy[k] = override[k]
+
+                    // Track seen so you don't drill infinitely on circular references
+                    if (typeof copy[k] === 'object') {
+                        const val = copy[k]
+                        const idx = seen.indexOf(val)
+                        if (idx !== -1) copy[k] = seen[idx]
+                        else {
+                            seen.push(val)
+                            copy[k] =  merge(val, override[k], thisPath, updateOriginal, seen)
+                        }
+                    }
+                    else copy[k] = override[k]
             } 
 
             // Nest functions
@@ -48,16 +68,22 @@ export const merge = (main, override, path: any[] = []) => {
                 if (isFunc && !original.functionList) original.functionList = [original]
 
                 const newFunc = override[k]
-                if (!isFunc) copy[k] = newFunc
-                else if (!original.functionList.includes(newFunc)) {
-                    const func = copy[k] = function(...args) {
-                        original.call(this, ...args);
-                        return newFunc.call(this, ...args);
-                    } as Function & {functionList?: Function[]}
+                const composeFunction = newFunc.__compose === true
 
-                    if (!func.functionList) func.functionList = [original]
-                    func.functionList.push(override)
-                } else console.warn(`This function was already merged into ${thisPath.join('.')}. Ignoring duplicate.`)
+                // Direct Function Replacement
+                if (!isFunc || (!composeFunctions && !composeFunction)) copy[k] = newFunc
+                
+                // Function Composition
+                else {
+                    if (!original.functionList.includes(newFunc)) {
+                        const func = copy[k] = function(...args) {
+                            const res = original.call(this, ...args);
+                            return newFunc.call(this, ...Array.isArray(res) ? res : [res]);
+                        } as Function & {functionList?: Function[]}
+                        if (!func.functionList) func.functionList = [original]
+                        func.functionList.push(override)
+                    } else console.warn(`This function was already composed into ${thisPath.join('.')}. Ignoring duplicate.`)
+                }
 
             }
             

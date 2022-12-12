@@ -1,0 +1,1 @@
+export const isPathString = (value) => typeof value === 'string' && (value.includes('/') || value.includes('.'))

@@ -1,5 +1,5 @@
 
-import merge from './merge'
+import mergeHelper from './merge'
 import createComponent from "../../create/index"
 
 // Standard Notation
@@ -10,25 +10,40 @@ import { resolve, merge as mergeUtility } from "../../utils"
 
 // Types
 import { Options } from '../../../../common/types'
+import { isPathString } from './utils'
 
+
+export const merge = (o, toApply, path, opts, updateOriginal=false) => {
+
+    o = mergeUtility(toApply, o, path, updateOriginal); // basic merge
+    o = mergeHelper(o, o[specialKeys.compose], path, opts, false, updateOriginal) // Basic Composition Support
+
+    return resolve(o, (o) => {
+
+        // ------------------ Set __apply Properties on Composition ------------------
+        const toApply = o[specialKeys.apply]
+        const toApplyFlag = (toApply && (typeof toApply === 'object' || isPathString(toApply)))
+        o = toApplyFlag ? mergeHelper(toApply, o, path, opts, true, updateOriginal) : o // Reverse Composition Support
+        return resolve(o)
+    })
+}
 
 // TODO: Ensure that this doesn't have a circular reference
-export default function hierarchy(o, id: string | symbol, toMerge = {}, parent?, directParent?, opts: Partial<Options> = {}, callbacks: any = {}, waitForChildren: boolean = false) {
+export default function hierarchy(o, id: string | symbol, toApply = {}, parent?, directParent?, opts: Partial<Options> = {}, callbacks: any = {}, waitForChildren: boolean = false) {
 
     const parentId = parent?.[specialKeys.path]
     const path = (parentId) ? [parentId, id] : ((typeof id === 'string') ? [id] : [])
 
     // TODO: Search the entire object for the __compose key. Then execute this merge script
-    // ------------------ Merge ESM with __compose Properties ------------------
-    const firstMerge = mergeUtility(toMerge, o, path); // basic merge
-    const merged = merge(firstMerge, o[specialKeys.compose], path, opts) // special merge
+    // ------------------ Create Composition from ESM with __compose Properties ------------------
+    o = merge(o, toApply, path, opts)
+   
+    return resolve(o, (o) => {
 
-    const res = resolve(merged, (merged) => {
-
-        // delete merged[specialKeys.compose]
+        // delete applied[specialKeys.compose]
 
         // ------------------ Create Instance with Special Keys ------------------
-        const instance = createComponent(id, merged, parent, opts)
+        const instance = createComponent(id, o, parent, opts)
         const absolutePath = path.join(opts.keySeparator ?? keySeparator)
         if (directParent) directParent[id] = instance // setting immediately
 
@@ -45,7 +60,7 @@ export default function hierarchy(o, id: string | symbol, toMerge = {}, parent?,
             let positions = new Set()
             let position = 0;
 
-           const promises = Object.entries(instance[specialKeys.hierarchy]).map(async ([name, base]: [string, any], i) => {
+            const promises = Object.entries(instance[specialKeys.hierarchy]).map(async ([name, base]: [string, any], i) => {
 
                 base = Object.assign({}, base) // Break ESM reference (to write a childPosition property)
 
@@ -66,13 +81,13 @@ export default function hierarchy(o, id: string | symbol, toMerge = {}, parent?,
                     value: promise,
                     writable: false,
                 })
-                
+
                 return resolve(promise)
 
             })
 
             // When All Children are Initialized
-            const res = resolve(promises, (resolved) => {        
+            const res = resolve(promises, (resolved) => {
                 isReady()
                 return resolved
             })
@@ -82,7 +97,5 @@ export default function hierarchy(o, id: string | symbol, toMerge = {}, parent?,
 
         return instance
     })
-
-    return res
 
 }

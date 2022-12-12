@@ -153,8 +153,10 @@ export const setterExecution = (listeners, value) => {
     })
 }
 
-export function setters (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups) {
-    handler(info, collection, (value, parent) => {
+export function setters (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups, parent?: any) {
+
+    const thisValue = this 
+    handler(info, collection['setters'], (value, parent) => {
         let val = value
 
         if (!parent[isProxy]) { 
@@ -172,9 +174,13 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookups?:
                     Object.defineProperty(parent, info.last, {
                         get: () => val,
                         set: async (v) => {
+                            const isFunction = typeof val === 'function'
                             val = v
-                            const listeners = Object.assign({}, collection[utils.getPath('absolute', info)])
-                            setterExecution(listeners, v)
+                            if (!isFunction) {
+                                const listeners = Object.assign({}, collection['setters'][utils.getPath('absolute', info)])
+                                setterExecution(listeners, v)
+                            }
+                            else val = getProxyFunction.call(thisValue, info, collection, val)
                         },
                         enumerable: true,
                         configurable: true // TODO: Ensure that you are removing later...
@@ -187,6 +193,13 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookups?:
     }, lookups)
 }
 
+
+export function getProxyFunction(info, collection, fn) {
+    return function (...args) {
+        const listeners = collection['functions'][utils.getPath('absolute', info)]
+        return functionExecution(this, listeners, fn ?? info.original, args)
+    }
+}
 
 export const functionExecution = (context, listeners, func, args) => {
     listeners = Object.assign({}, listeners)
@@ -204,13 +217,14 @@ export const functionExecution = (context, listeners, func, args) => {
 
 
 export function functions (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups) {
-    handler(info, collection, (_, parent) => {      
+
+    // Register for functions
+    handler(info, collection['functions'], (_, parent) => {      
         if (!parent[isProxy]) { 
-            parent[info.last] = function (...args) {
-                const listeners = collection[utils.getPath('absolute', info)]
-                const got = functionExecution(this, listeners, info.original, args)
-                return got
-            }
+            parent[info.last] = getProxyFunction.call(this, info, collection)
+
+            // Also register as a setter
+            setters(info, collection, lookups, parent)
         }
     }, lookups)
 }

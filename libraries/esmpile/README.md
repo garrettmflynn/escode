@@ -6,6 +6,8 @@
 
 This library allows for you to **compile ESM source files** using standard import paths. For instance, you can compile https://raw.githubusercontent.com/brainsatplay/escompose/blob/main/libraries/esmpile/index.js!
 
+Resulting bundles support incremental changes and recompilation.
+
 > **esmpile** is a core library of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/blob/main/README.md)
  
 ## Getting Started

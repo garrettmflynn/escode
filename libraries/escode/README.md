@@ -1,14 +1,14 @@
-# ESCode
+# escode
 [![Npm package version](https://badgen.net/npm/v/escode)](https://npmjs.com/package/escode)
 [![Npm package monthly downloads](https://badgen.net/npm/dm/escode)](https://npmjs.ccom/package/escode)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-**escode** is a visual programming environment for ESM / [ESC](../../README.md) applications and APIs. It allows for visual debugging and live editing with minimal modification of your existing codebase.
+**escode** is the **Universal Web Development IDE** developed by Brains@Play for ESM / [ESC](https://github.com/brainsatplay/escomponent) applications and APIs. It allows for visual debugging and live editing with minimal modification of your existing codebase.
 
 Additionally, it is designed to support user-defined themes for simple integration into existing applications.
 
-> **escode** is the centerpiece of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/blob/main/README.md), as it allows users to understand the big picture (i.e. rapid prototyping of high-performance web applications) before slowly peeling back each layer of the Framework.
+> **escode** is the centerpiece of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay/blob/main/README.md), as it allows users to understand the big picture (i.e. rapid prototyping of high-performance web applications) before slowly peeling back each layer of the framework.
 
 ### Core Views
 #### Flow Graph

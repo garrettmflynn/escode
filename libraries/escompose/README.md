@@ -8,6 +8,10 @@ The **escompose** library transforms [ES Components](https://github.com/brainsat
 
 > **escompose** is a core library of the [Brains@Play](https://github.com/brainsatplay/brainsatplay) framework.
 
+## Notable Features
+- [x] WASM Support (__compose)
+- [x] Can apply ESC to any DOM elements by using them as the first argument to escompose.create()
+
 ## Acknowledgments
 This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
 

@@ -1,5 +1,6 @@
 import * as counter from './components/counter.js'
 import * as timestamp from './components/timestamp.js'
+import * as time from './components/time.esc.js'
 
 const interval = true
 
@@ -36,20 +37,7 @@ export const __children = {
         }
     },
 
-    time: {
-        __element: 'p',
-        __children: {
-            header: {
-                __element: 'b',
-                __attributes: {
-                    innerText: 'Time: '
-                }
-            },
-            span: {
-                __element: 'span',
-            }
-        }
-    }
+    time
 }
 
 

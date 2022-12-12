@@ -192,7 +192,7 @@ export default class Monitor {
     }
 
     add = (type, info) => {
-        if (listeners[type]) listeners[type](info, this.listeners[type], this.listeners.lookup)
+        if (listeners[type]) listeners[type](info, this.listeners, this.listeners.lookup)
         else this.listeners[type][getPath('absolute', info)][info.sub] = info
     }
 

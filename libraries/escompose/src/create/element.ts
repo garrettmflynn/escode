@@ -114,7 +114,7 @@ export function create(id, esm: ESComponent, parent, options:Partial<Options> = 
     let intermediateStates = states || {}
     intermediateStates.element = element,
     intermediateStates.attributes = attributes,
-    intermediateStates.parentNode = esm[specialKeys.parent] ?? ((parent?.[specialKeys.element] instanceof Element) ? parent[specialKeys.element] : undefined),
+    intermediateStates.parentNode = esm[specialKeys.parent] ?? ((parent?.[specialKeys.element] instanceof Element) ? parent[specialKeys.element] : esm[specialKeys.element].parentNode), // Update based on Component hierarchy—or fallback to existing parent (if not nested...)
     intermediateStates.onresize = esm[specialKeys.resize],
     intermediateStates.onresizeEventCallback = undefined
 

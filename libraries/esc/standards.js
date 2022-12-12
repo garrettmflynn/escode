@@ -32,7 +32,9 @@ export const specialKeys = {
 
     trigger: '__trigger',
     compose: '__compose',
+    apply: '__apply',
 
+    // Internal to Compose
     uri: 'src',
     reference: 'ref',
 

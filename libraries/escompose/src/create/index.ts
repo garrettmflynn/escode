@@ -6,6 +6,7 @@ import * as define from './define'
 import * as helpers from './helpers/index'
 import pathLoader from './helpers/path';
 import * as component from "./component";
+import { isPathString } from './helpers/utils';
 
 export default (id, esm, parent?, opts: Partial<Options> = {}) => {
     
@@ -30,8 +31,13 @@ export default (id, esm, parent?, opts: Partial<Options> = {}) => {
                 const value = esm[hierarchyKey][name]
                 const isUndefined = value == undefined
                 const type = (isUndefined) ? JSON.stringify(value) : typeof value
-                if (type != 'object') {
-                    console.error(`Removing ${name} ${hierarchyKey} field that which is not an ES Component object. Got ${isUndefined ? type :`a ${type}`} instead.`)
+
+                // Transform Children Represented as String Paths
+                if (isPathString(value)) esm[hierarchyKey][name] = {[standards.specialKeys.apply]: value} // Use as composition
+
+                // Catch Improper Children
+                else if (type != 'object') {
+                    console.error(`Removing ${name} ${hierarchyKey} field, which is not an ES Component object. Got ${isUndefined ? type :`a ${type}`} instead.`)
                     delete esm[hierarchyKey][name]
                 }
             }

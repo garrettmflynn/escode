@@ -153,8 +153,8 @@ const animationsPackage = {
     json: animationsJSON,
     fallbacks: animationsFallbacks,
     file: animationsFile,
-    js: animationsJS
-
+    js: animationsJS,
+    relativeTo: 'apps/showcase/demos/animations'
 }
 
 const engagementPackage = {

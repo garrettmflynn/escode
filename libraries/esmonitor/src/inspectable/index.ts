@@ -3,7 +3,8 @@ import * as check from '../../../common/check'
 import { ArrayPath, ListenerRegistry, InspectableOptions } from '../types';
 import * as standards from '../../../esc/standards'
 import { setFromPath } from '../../../common/pathHelpers';
-import { isProxy, fromInspectable } from '../globals';
+import { isProxy } from '../globals';
+import define from './define';
 
 export type InspectableProxy = ProxyConstructor & {
     __proxy: ProxyConstructor,
@@ -59,6 +60,8 @@ export default class Inspectable {
     options: InspectableOptions
     proxy: ProxyConstructor
     listeners: Partial<ListenerRegistry> = {}
+    newKeys = new Set()
+
     target: any
     root: any
 
@@ -102,7 +105,7 @@ export default class Inspectable {
 
             let type = this.options.type
             if (type != 'object') type = (typeof target === 'function')  ? 'function' : 'object';
-            const handler =  handlers[`${type}s`](this)
+            const handler =  handlers[`${type}s`].call(this)
 
             this.proxy = new Proxy(target, handler)
 
@@ -112,40 +115,7 @@ export default class Inspectable {
 
 
             // Create Nested Inspectable Proxies
-            for (let key in target) {
-
-                if (!this.parent) {
-
-                    let value = target[key]
-
-                    // Intercept functions
-                    if (typeof value === 'function') {
-                        target[key] = async (...args) => await this.proxy[key]({ [fromInspectable]: true, value }, ...args)
-                    } 
-
-                    // Basic Getter / Setter for Original Input
-                    else {
-
-                        try {
-                            Object.defineProperty(target, key, {
-                                get: () => value,
-                                set: (val) => {
-                                    value = val
-                                    this.proxy[key] = {[fromInspectable]: true, value: val}
-                                },
-                                enumerable: true,
-                                configurable: true // TODO: Ensure that you are removing later...
-                            })
-
-                        } catch (e) {
-                            console.error(`Could not reassign ${key} to a top-level setter...`)
-                        }
-                    }
-                }
-
-                // Create More Proxies Inside
-                this.create(key, target, undefined, true)
-            }
+            for (let key in target) define.call(this, key)
         }
 
         return this.proxy as any // Replace class passed to the user with the proxy
