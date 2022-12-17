@@ -40,6 +40,7 @@ export class Console extends LitElement {
 
     :host li {
       padding: 5px 10px;
+      color: rgb(50,50,50);
       border: 1px solid rgba(220,220,220);
     }
 
@@ -49,8 +50,8 @@ export class Console extends LitElement {
     }
 
     :host li.warn {
-      background: rgba(255,255,0,0.1);
-      color: rgba(255,255,0, 0.8);
+      background: rgba(255,255,0,0.2);
+      color: #996515;
     }
 
     :host(.collapsed) > ul {
@@ -87,11 +88,13 @@ export class Console extends LitElement {
 
       if (collapsed) this.classList.add('collapsed')
 
-      const listen = (command) => {
+      const listen = (command: 'log' | 'warn' | 'error') => {
         this.originals[command] = console[command]
-        console.log =  (...args) => {
-          this.originals[command](...args)
-          this[command](...args)
+
+        const classThis = this
+        console[command] = function (...args) {
+          classThis.originals[command].call(this, ...args)
+          classThis[command](...args)
         }
       }
 
@@ -116,7 +119,7 @@ export class Console extends LitElement {
       this.list.appendChild(message)
     }
 
-    log = (...args) => this.#log('warn', ...args)
+    log = (...args) => this.#log('log', ...args)
 
     warn = (...args) => this.#log('warn', ...args)
 

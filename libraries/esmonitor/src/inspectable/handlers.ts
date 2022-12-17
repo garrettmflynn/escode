@@ -107,7 +107,6 @@ export const objects = function () {
             const info = inspectable?.state?.[pathStr]?.value ?? {}
             runCallback(callback, pathStr, info, newVal)
 
-
             if (isFromInspectable || !toActivate) return true
             else return Reflect.set(target, prop, newVal, receiver);
         },

@@ -1,43 +1,68 @@
+// import { Graph } from "../../Graph2"
 
-import Monitor from "../../esmonitor/src";
-import  { specialKeys, defaultPath } from "../../esc/standards"
 
+// Special Key Definition
+const defaultPath = 'default'
+const operatorPath = '__operator'
+const specialKeys = {
+    path: '__path',
+    isGraphScript: '__',
+    listeners: {
+        value: '__listeners',
+        branch: '__branch',
+        bind: '__bind',
+        trigger: '__trigger',
+        format: '__format',
+    },
+}
+
+// Symbols to Recognize
 const listenerObject = Symbol('listenerObject')
 const toSet = Symbol('toSet')
-const isConfigObject = (o) => specialKeys.listeners.format in o || specialKeys.listeners.branch in o || specialKeys.listeners.trigger in o || specialKeys.listeners.bind in o
-
-const initializedStatus = 'INITIALIZED'
-const registeredStatus = 'REGISTERED'
-
-const globalFrom = {} as any
-const globalTo = {} as any
-
-const globalActive = {}
-
 const subscriptionKey = Symbol('subscriptionKey')
 const configKey = Symbol('configKey')
 const toResolveWithKey = Symbol('toResolveWithKey')
 
+// Configuration Options
+const isConfigObject = (o) => specialKeys.listeners.format in o || specialKeys.listeners.branch in o || specialKeys.listeners.trigger in o || specialKeys.listeners.bind in o
+
+// Status Definitions
+const initializedStatus = 'INITIALIZED'
+const registeredStatus = 'REGISTERED'
+
+// Global References
+const globalFrom = {} as any
+const globalTo = {} as any
+const globalActive = {}
+
 class Edgelord {
 
-    monitor: Monitor
     original = {};
     active = {}
     globals: any = {}
-    context: any = {}
+    context: any = {
+        options: {},
+    }
     rootPath: string = ''
     status = ''
+
+    graph: any // Graph
     
-
-
     #triggers: any[] = []
     #queue: any[] = []
     #toResolveWith: Edgelord
-    // #sendsToExternalGraph = false
 
-    constructor (listeners = {}, root, context) {
-        this.context = context
-        this.rootPath = root
+    constructor (listeners?, root?, context?) {
+        if (listeners || root || context) this.setInitialProperties(listeners, root, context)
+    }
+
+    setInitialProperties = (listeners = {}, root, context={}) => {
+
+        Object.assign(this.context, context)
+        if (root) this.rootPath = root
+
+        if (!this.context.options.keySeparator) this.context.options.keySeparator = this.context.monitor.options.keySeparator
+        
         this.original = listeners
 
         const globals = [{name: 'active', ref: globalActive}, {name: 'from', ref: globalFrom}, {name: 'to', ref: globalTo}]
@@ -74,22 +99,37 @@ class Edgelord {
 
     runEachListener = (listeners, callback) => {
         if (!callback) return
-        for (let toPath in listeners) {
-            const from = listeners[toPath]
+        for (const first in listeners) {
+            const second = listeners[first]
 
-            if (!from) {
-                console.warn('Skipping empty listener:', toPath)
+            if (!second) {
+                console.warn('Skipping empty listener:', first)
                 continue;
             }
 
-            if (from && typeof from === 'object') {
-                for (let fromPath in from) callback(fromPath, toPath, from[fromPath])
+            // NOTE: Listener sheets are to / from
+            if (second && typeof second === 'object') {
+                const from = second
+                const to = first
+                for (let fromPath in from) {
+                    callback(
+                        fromPath,  // From Path
+                        to, // To Path
+                        from[fromPath] // Value
+                    )
+                }
             } 
             
             // Immediate Absolute Paths Only
+            // NOTE: Direct listeners are from / to
             else {
-                if (typeof toPath === 'string') callback(from, toPath, toPath)
-                else console.error('Improperly Formatted Listener', toPath)
+                const from = first
+                const to = second
+
+                const typeOf = typeof to
+                if (typeOf === 'function') callback(from, '', to)
+                else if (typeOf === 'string') callback(from, to, to)
+                else console.error('Improperly Formatted Listener', to)
             }
         }
 
@@ -148,13 +188,40 @@ class Edgelord {
         const baseArr = path.split(this.context.options.keySeparator)
         output.absolute.array = [this.context.id, ...baseArr]
         output.relative.array = rel.split(this.context.options.keySeparator)
-        const obj = this.context.monitor.get(output.relative.array, undefined, this.context.instance) // Allow for getting properties
-        const isComponent = obj?.hasOwnProperty(specialKeys.path)
 
-        // Updates based on default
-        if (isComponent) {
-            output.absolute.array.push(defaultPath)
-            output.relative.array.push(defaultPath)
+        let obj = this.context.monitor.get(output.relative.array, undefined, this.context.instance, false) // Allow for getting properties
+        
+        // Fallback to direct graph reference
+        if (this.context.graph) {
+
+            // Correct for paths that are relative to the bound object
+            if (obj && this.context.bound) {
+                output.absolute.array = [this.context.id, this.context.bound, ...output.absolute.array.slice(1)]
+                output.relative.array.unshift(this.context.bound)
+            } 
+            
+            // Assume you are targeting the global graph
+            else if (!obj) {
+                const rel = output.relative.array.join(this.context.options.keySeparator)
+                obj = this.context.graph.get(rel)
+            }
+        }
+        const isGraphScript = obj && typeof obj === 'object' && specialKeys.isGraphScript in obj
+
+        // Updates based on default / operators
+        if (isGraphScript) {
+
+            // Fallback to operator updates
+            if (obj[operatorPath]){
+                output.absolute.array.push(operatorPath)
+                output.relative.array.push(operatorPath)
+            } 
+            
+            // Fallback to default updates
+            else if (obj[defaultPath]){
+                output.absolute.array.push(defaultPath)
+                output.relative.array.push(defaultPath)
+            } 
         }
 
         output.absolute.value = output.absolute.array.slice(1).join(this.context.options.keySeparator) // update path
@@ -163,7 +230,7 @@ class Edgelord {
         return output
     }
 
-    add = (from, to, value: any = true, subscription) => {
+    add = (from, to, value: any = true, subscription?) => {
 
         if (!value) return // Any non-truthy value is not accepted
 
@@ -176,11 +243,14 @@ class Edgelord {
 
         // Only subscribe once
         if (!subscription) {
-            subscription = this.context.monitor.on(fromInfo.absolute.array, (path, _, update) => this.activate(path, update), {
+            subscription =this.context.monitor.on(fromInfo.absolute.array, (path, _, update) => this.activate(path, update), {
                 ref: this.context.instance,
                 path: fromInfo.relative.array
             })
         }
+
+        // Use updated string value if modified
+        if (typeof value == 'string') value = toInfo.absolute.array.slice(1).join(this.context.options.keySeparator)
 
         const info = {
             value,
@@ -250,6 +320,7 @@ class Edgelord {
             // { ref: this.original, path: [toInfo.relative.value, fromInfo.relative.value] }, // Just removing from the list
         ]
 
+
         toRemove.forEach(o => {
             const { ref, path, unlisten } = o
 
@@ -308,6 +379,7 @@ class Edgelord {
         if (info) {
 
             if (info[listenerObject]) {
+
                 this.pass(from, {
                     value: info.value,
                     parent: this.active,
@@ -490,15 +562,13 @@ pass = (from, target, update) => {
     }
 
     // ------------------ Handle Target ------------------
-
     if (
         isValidInput // Ensure input is valid
         && update !== undefined // Ensure input is not exactly undefined (though null is fine)
     ) {
 
-        // console.log('from', from, to)
-
         const arrayUpdate = Array.isArray(update) ? update : [update]
+
 
         // Set New Value on Parent
         if (target === toSet) {

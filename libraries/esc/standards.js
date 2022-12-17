@@ -9,6 +9,8 @@ export const isPrivate = (key) => false //key[0] === '_' // No private keys
 
 export const specialKeys = {
 
+    isGraphScript: '__',
+
     default: defaultPath,
 
     start: '__onconnected', // asked to start

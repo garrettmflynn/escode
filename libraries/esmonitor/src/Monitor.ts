@@ -49,13 +49,13 @@ export default class Monitor {
         this.poller.setOptions(opts.polling)
     }
 
-    get = (path, output?, reference = this.references) => {
+    get = (path, output?, reference = this.references, throwError = true) => {
 
         return getFromPath(reference, path, {
             keySeparator: this.options.keySeparator,
             fallbacks: this.options.fallbacks,
             output
-        })
+        }, throwError)
     }
 
     set = (path, value, opts: SetFromOptionsType= {}) => {
@@ -98,7 +98,8 @@ export default class Monitor {
 
         const arrayPath = path as ArrayPath
 
-        let baseRef = this.references[id]
+        let baseRef = this.get(id)
+
         if (!baseRef) {
             console.error(`Reference does not exist.`, id)
             return
@@ -110,11 +111,10 @@ export default class Monitor {
 
         const __internalComplete = __internal as InternalOptions
 
-        // Set Reference
-        if (!this.references[id]) this.references[id] = baseRef // Setting base reference
-
         // Drill Reference based on Path
-        const ref = this.get([id, ...arrayPath])
+        const thisPath = [id, ...arrayPath]
+        const ref = this.get(thisPath)
+
 
         // Create listeners for Objects
         const toMonitorInternally = (val, allowArrays=false) => {
@@ -136,7 +136,8 @@ export default class Monitor {
 
         // Case #1: Subscribe to each object property individually
         let subs = {}
-        if (toMonitorInternally(ref, true)) {
+        const subscribeAll = toMonitorInternally(ref, true)
+        if (subscribeAll) {
 
             if (ref.__esInspectable) ref.__esInspectable.options.globalCallback = callback
 
@@ -245,7 +246,10 @@ export default class Monitor {
             else if (func) {
                 delete funcs[sub]
                 if (!Object.getOwnPropertySymbols(funcs).length) {
-                    func.current = func.original
+                    Object.defineProperty(func.parent, func.last, {
+                        value: func.original,
+                        writable: true
+                    })
                     delete this.listeners.functions[absPath]
                 }
             }

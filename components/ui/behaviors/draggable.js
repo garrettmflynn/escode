@@ -18,6 +18,20 @@ export const __attributes = {
     }
 }
 
+
+export const ontouchstart = function (e) {dragStart.call(this, e)}
+export const ontouchend = function (e) {dragEnd.call(this, e)}
+export const ontouchmove = function (e) {drag.call(this, e)}
+export const onmousedown = function (e) { dragStart.call(this, e)}
+export const onmouseup = function (e) { dragEnd.call(this, e)}
+export const onmousemove = function (e) { drag.call(this, e)}
+
+function onAllWindowEvents (callback) {
+    for (let key in this) {
+        if (key.slice(0,2) === 'on') callback(key.slice(2), this[key])
+    }
+}
+
 export function __onconnected() {
 
     var style = this.__element.currentStyle || window.getComputedStyle(this.__element);
@@ -30,19 +44,19 @@ export function __onconnected() {
     this.offsetX = -marginX / 2;
     this.offsetY = -marginY / 2;
 
-    this.__element.addEventListener("touchstart", (e) => dragStart.call(this, e), false);
-    window.addEventListener("touchend", (e) => dragEnd.call(this, e), false);
-    window.addEventListener("touchmove", (e) => drag.call(this, e), false);
-
-    this.__element.addEventListener("mousedown", (e) => dragStart.call(this, e), false);
-    window.addEventListener("mouseup", (e) => dragEnd.call(this, e), false);
-    window.addEventListener("mousemove", (e) => drag.call(this, e), false);
+    
+    onAllWindowEvents.call(this, (key, value) => this.__element.addEventListener(key, value, false))
 }
 
 
+export function __ondisconnected() {
+    onAllWindowEvents.call(this, (key, value) => this.__element.removeEventListener(key, value, false))
+
+}
+
 export function dragStart(e) {
 
-    this.style(this.__parent)
+    this.style(this.__parent.__element)
 
     const base = (e.type === "touchstart") ? e.touches[0] : e
     this.initialX = (base.clientX - this.offsetX)
@@ -58,7 +72,7 @@ export function dragEnd() {
     this.initialX = this.offsetX;
     this.initialY = this.offsetY;
     this.active = false;
-    unstyle(this.newParent ?? this.__parent)
+    unstyle(this.newParent ?? this.__parent.__element)
     if (this.newParent) {
 
         const finalScreenPosition = this.__element.getBoundingClientRect()
@@ -80,7 +94,7 @@ const parentStyleComponents = [
     'boxSizing', '-moz-box-sizing', '-webkit-box-sizing',
 ]
 
-export function style(target = this.__parent) {
+export function style(target = this.__parent.__element) {
 
     this.originalParent = target
     this.parentInfo = this.originalParent.getBoundingClientRect()
@@ -98,7 +112,7 @@ export function style(target = this.__parent) {
     target.style['-webkit-box-sizing'] = 'border-box'
 }
 
-export function unstyle(target = this.__parent) {
+export function unstyle(target = this.__parent.__element) {
     parentStyleComponents.forEach(str => target.style[str] = '')
 }
 
@@ -122,7 +136,7 @@ export function drag(e) {
         if (this.reparent) {
             const path = document.elementsFromPoint(e.clientX, e.clientY)
             const newParent = (path[0] === this.__element) ? path[1] : path[0]
-            if (newParent && newParent !== document && newParent !== document.body && newParent !== this.__parent) {
+            if (newParent && newParent !== document && newParent !== document.body && newParent !== this.__parent.__element) {
                 this.unstyle(this.newParent)
                 this.newParent = newParent
                 this.style(this.newParent)

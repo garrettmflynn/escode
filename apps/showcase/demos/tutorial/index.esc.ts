@@ -28,53 +28,56 @@ const demoEl = {
     }
 }
 
+
+const tryFromText = true
+
 const demos = {
     basic: {
-        src: '../basic/index.esc',
+        src: tryFromText ? '../basic/index.esc' : undefined,
         ref: basicDemo
     },
     todo: {
-        src: '../todo/index.esc',
+        src: tryFromText ? '../todo/index.esc' : undefined,
         ref: todoDemo
     },
     animations: {
-        src: '../animations/index.esc',
+        src: tryFromText ? '../animations/index.esc' : undefined,
         ref: animationsDemo
     },
     phaser: {
-        src: '../phaser/index.esc',
+        src: tryFromText ? '../phaser/index.esc' : undefined,
         ref: phaserDemo
     },
     multiplayerPhaser: {
-        src: '../phaser/versions/multiplayer/index.esc',
+        src: tryFromText ? '../phaser/versions/multiplayer/index.esc' : undefined,
         ref: multiplayerPhaserDemo
     },
     speakPhaser: {
-        src: '../phaser/versions/speak/index.esc',
+        src: tryFromText ? '../phaser/versions/speak/index.esc' : undefined,
         ref: speakPhaserDemo
     },
 
     signal: {
-        src: '../signal/index.esc',
+        src: tryFromText ? '../signal/index.esc' : undefined,
         ref: signalDemo
     },
     noisySignal: {
-        src: '../signal/versions/noisy/index.esc',
+        src: tryFromText ? '../signal/versions/noisy/index.esc' : undefined,
         ref: noisySignalDemo
     },
 
     filteredSignal: {
-        src: '../signal/versions/filtered/index.esc',
+        src: tryFromText ? '../signal/versions/filtered/index.esc' : undefined,
         ref: filteredSignalDemo
     },
 
     devicePhaser: {
-        src: '../phaser/versions/devices/index.esc',
+        src: tryFromText ? '../phaser/versions/devices/index.esc' : undefined,
         ref: devicePhaserDemo
     },
 
     audiofeedback: {
-        src: '../devices/audiofeedback/index.esc',
+        src: tryFromText ? '../devices/audiofeedback/index.esc' : undefined,
         ref: audiofeedbackDemo
     },
     
@@ -368,7 +371,6 @@ const listeners = {
     },
 }
 
-
 const phaser = [3,6]
 const filtered = [4,5]
 
@@ -395,5 +397,4 @@ phaser.forEach(i => {
     }
 })
 
-// // const set = new Set()
 export const __listeners = listeners

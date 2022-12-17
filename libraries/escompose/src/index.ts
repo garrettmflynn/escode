@@ -2,10 +2,11 @@ import Monitor from "../../esmonitor/src"
 import { deep as deepClone } from "../../common/clone.js"
 import * as standards from "../../esc/standards"
 import { Options } from "../../common/types"
-import * as utils from "./utils"
+import * as utils from "./utils/misc"
 import FlowManager from "../../drafts/edgelord/index"
 
-import handleHierarchy, { merge as hierarchyMergeHelper } from './create/helpers/hierarchy'
+import handleHierarchy from './loaders/native/esc/hierarchy'
+import compose from './loaders/native/compose'
 
 // Use a global monitor instance to listen to an object property without creating an ES Component 
 export const monitor = new Monitor()
@@ -54,9 +55,9 @@ export const create = (config, toApply:any = {}, options: Partial<Options> = {})
                 toApply = Object.assign(toApply, shouldHaveApplied)
             }
 
-            // Actually complete the reverse merge
-            const merged = hierarchyMergeHelper(toApply, component, component[standards.specialKeys.path], options, true)
-            return utils.resolve(merged)
+            // Actually complete the reverse composition
+            const composition = compose(component, toApply, component[standards.specialKeys.path], options, true)
+            return utils.resolve(composition)
         }
         // Create new component with element as the base
         else {

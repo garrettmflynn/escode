@@ -22,11 +22,16 @@ export type ESElementArray = [ESDefineInfo['name'], {extends: ESDefineInfo['exte
 
 export type __source = string | (string | Bundle)[]
 
-type GeneralElementType = baseESElement | ESElementInfo | ESDefineInfo
+export type GeneralElementType = baseESElement | ESElementInfo | ESDefineInfo
 export type ESComponent<ElementType = GeneralElementType>  = {
     
     default: Function,
     __compose: ESComponent // Is Merged into this component
+
+    // From GraphScript
+    __node: {
+        [x:string]: any
+    }
 
 
     __children: {

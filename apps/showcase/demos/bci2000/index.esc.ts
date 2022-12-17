@@ -96,7 +96,9 @@ export const __listeners = {
         "bci2000.raw": true
     },
 
-    'overlay.p.span': 'bci2000.status',
+    'overlay.p.span': {
+        'bci2000.status': true
+    },
     '': {
 
         'bci2000.states.StimulusCode': (...args) => console.log('New StimulusCode', args),

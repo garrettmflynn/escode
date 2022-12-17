@@ -26,6 +26,10 @@ export const __children = {
 }
 
 export const __listeners = {
-    // 'plot': 'data'
-    'plot': 'devices.output'
+    // 'plot': {
+    //     'data': true
+    // }
+    'plot': {
+        'devices.output': true
+    }
 }

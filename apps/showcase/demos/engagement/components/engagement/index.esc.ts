@@ -37,7 +37,9 @@ export const __children = {
 }
 
 export const __listeners = {
-    'calculations.sps': 'device.connect.sps',
+    'calculations.sps': {
+        'device.connect.sps': true,
+    },
 
     'calculations': {
         'device.output': {

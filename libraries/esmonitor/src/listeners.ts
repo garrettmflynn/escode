@@ -153,10 +153,11 @@ export const setterExecution = (listeners, value) => {
     })
 }
 
-export function setters (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups, parent?: any) {
+export function setters (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups) {
 
     const thisValue = this 
     handler(info, collection['setters'], (value, parent) => {
+
         let val = value
 
         if (!parent[isProxy]) { 
@@ -224,7 +225,7 @@ export function functions (info: ListenerInfo, collection: ListenerPool, lookups
             parent[info.last] = getProxyFunction.call(this, info, collection)
 
             // Also register as a setter
-            setters(info, collection, lookups, parent)
+            setters(info, collection, lookups)
         }
     }, lookups)
 }

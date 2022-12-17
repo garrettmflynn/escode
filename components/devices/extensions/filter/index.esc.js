@@ -6,7 +6,9 @@ export const __children = {
 }
 
 export const __listeners = {
-    'filter.settings.sps': 'connect.sps',
+    'filter.settings.sps': {
+        'connect.sps': true
+    },
 
     filter: {
         preprocess: true

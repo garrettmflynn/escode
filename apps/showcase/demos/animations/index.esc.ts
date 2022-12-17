@@ -42,6 +42,8 @@ export const __children = {
 
 
 export const __listeners = {
+
+    // To / From
     'count.span': {
         counter: true
     },

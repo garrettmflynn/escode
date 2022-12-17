@@ -76,6 +76,9 @@ const run = async () => {
     const elementArray = document.body.querySelectorAll('button')
     await create(elementArray, {  __attributes: stuff })
 
+
+    await create(elementArray, {  __attributes: moreStuff })
+
     // Apply rule to all Components (only which exist on application though...)
     const rule = new Rule({ __attributes: Object.assign({}, moreStuff)})
     rule.apply()

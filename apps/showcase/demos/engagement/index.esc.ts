@@ -85,8 +85,12 @@ let average = 0
 const sum = (a,b) => a + b
 
 export const __listeners = {
-    'ui.now.value': 'metrics.calculations.engagement',
-    // 'ui.timeseries.plot': 'metrics.calculations.engagement'
+    'ui.now.value': {
+        'metrics.calculations.engagement': true
+    },
+    // 'ui.timeseries.plot': {
+    //     'metrics.calculations.engagement': true
+    // },
 
 
     // Declare an Arbitrary, User-Specified Callback

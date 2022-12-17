@@ -1,7 +1,7 @@
 export const getTopNode = (target) => {
 
-    while (target.__parent && target.__parent.hasAttribute('escomponent')) {
-        const component = target.__parent.__component
+    while (target.__parent && '__' in target.__parent) {
+        const component = target.__parent
         if (component.__parent) target = component
         else break
     }

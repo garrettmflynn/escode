@@ -66,22 +66,30 @@ const selects = [{
     element: document.getElementById('modeSelect') as HTMLSelectElement,
     key: 'mode',
     selected: localStorage.getItem('mode'),
-    options: modes
+    options: modes,
+    hidden: true
 }]
 
 selects.forEach(o => {
-    for (let key in o.options) {
-        const option = document.createElement('option')
-
-        const value = o.options[key]
-        const hasName = value?.name
-
-        option.value = (hasName) ? key : value
-        const text = (hasName) ? hasName : key
-        option.innerHTML = text[0].toUpperCase() + text.slice(1)
-        if (option.value === o.selected) option.selected = true
-        o.element.appendChild(option)
+    if (o.hidden) {
+        o.element.style.display = 'none'
+        const label = document.querySelector(`label[for="${o.element.id}"]`) as HTMLLabelElement
+        label.style.display = 'none'
     }
+    // else {
+        for (let key in o.options) {
+            const option = document.createElement('option')
+
+            const value = o.options[key]
+            const hasName = value?.name
+
+            option.value = (hasName) ? key : value
+            const text = (hasName) ? hasName : key
+            option.innerHTML = text[0].toUpperCase() + text.slice(1)
+            if (option.value === o.selected) option.selected = true
+            o.element.appendChild(option)
+        }
+    // }
 })
 
 const resetButton = document.getElementById('resetButton') as HTMLButtonElement
@@ -115,7 +123,7 @@ async function start (demo = "basic", mode="direct") {
             let selected = demos[demo]
         
         
-            let reference = selected.file
+            let reference = selected.reference
 
             const nodeModules =  window.location.href + 'node_modules'
 

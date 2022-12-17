@@ -26,10 +26,13 @@ export const __attributes = {
 
 export const __children = {
 
+    // INTERNAL NOT WORKING
     [id]: {
         __compose: testInfo.reference, // test
         __listeners: {
-            'imports.passedWithListener': `imports.nExecution`,
+            'imports.passedWithListener': {
+                'imports.nExecution': true
+            },
             ['ARBITRARY']: {
                 'imports.passedWithListener': (...args) =>  console.log('Passed with Listener!', args),
                 'imports.later': (...args) =>  console.log('Added Later!', args)
@@ -64,6 +67,7 @@ export const __children = {
                 __compose: [
 
                     // Additional onmousedown Function
+                    // TODO: Figure out how to include something like this...
                     {
                         __attributes: {
                             onmousedown: () => {
@@ -89,6 +93,8 @@ const branchConfig = {
 }
 
 export const __listeners = {
+
+    // To / From
     [`${id}.imports`]: {
         [`container.${buttonComponentId}`]: branchConfig
     },
@@ -96,4 +102,13 @@ export const __listeners = {
     [`container.p.span`]: {
         [`${id}.imports.nExecution`]: true
     }
+
+    // // // From / To
+    // [`container.${buttonComponentId}`]: {
+    //     [`${id}.imports`]: branchConfig
+    // },
+
+    // [`${id}.imports.nExecution`]: {
+    //     [`container.p.span`]: true
+    // }
 }

@@ -12,7 +12,7 @@ const getShortcut = (path, shortcuts, keySeparator) => {
     }
 }
 
-export const getFromPath = (baseObject, path, opts: any = {}) => {
+export const getFromPath = (baseObject, path, opts: any = {}, throwError = true) => {
 
 
     const fallbackKeys = opts.fallbacks ?? []
@@ -27,17 +27,21 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
     }
 
 
-    if (typeof path === 'string') path = path.split(keySeparator)
+    if (typeof path === 'string') path = path.split(keySeparator).flat()
     else if (typeof path == 'symbol') path = [path]
 
     let exists;
     path = [...path]
+
+    path = path.map(o => (typeof o === "string") ? o.split(keySeparator) : o)
+
 
     let ref =  baseObject
     
     for (let i = 0; i < path.length; i++) {
 
         if (!ref) {
+            if (!throwError) return
             const message = `Could not get path`
             console.error(message, path, ref)
             throw new Error(message)

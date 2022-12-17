@@ -42,7 +42,8 @@ export class Editor extends LitElement {
 
     :host { 
       position: relative;
-      /* display: block; */
+      display: flex;
+      flex-direction: column;
       width: 100%;
       height: 100%;
       box-sizing: border-box;
@@ -370,6 +371,9 @@ export class Editor extends LitElement {
 
     // Set GraphScript Object
     set = (gs) => {
+
+      // const tree = gs.get('tree')
+      // if (tree) gs = tree
       
       const attachedToThis = gs.__editorAttached === this
       this.config.original = this.config.gs = gs
@@ -382,7 +386,7 @@ export class Editor extends LitElement {
       const include = (tag) => tag.slice(0, cutoffTag.length) === cutoffTag
 
       // Get Edges
-      Object.values(gs.__node.state.triggers).map((arr: any, i) => {
+      Object.values(gs.__node.state.triggers).forEach((arr: any, i) => {
         arr.forEach(o => {
 
             const sourceStr = (o.key) ? `${o.source}.${o.key}` : o.source

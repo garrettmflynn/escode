@@ -1,52 +1,72 @@
-# ESCode: Recompose the Web
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./images/logo_with_text_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./images/logo_with_text_light.svg">
+    <img alt="escode: Recompose the Web" src="./images/logo_with_text_light.svg">
+  </picture>
+</p>
+
 [![Npm package version](https://badgen.net/npm/v/escode)](https://npmjs.com/package/escode)
 [![Npm package monthly downloads](https://badgen.net/npm/dm/escode)](https://npmjs.com/package/escode)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-**ESCode** is a framework for creating composable web applications.
+The [Brains@Play] **ESCode** project is a collection of ECMAScript libraries intended to further the Web as a **Universal Development Engine** by allowing you to create and share Web Components that naturally compose into larger applications.
 
-> **ESCode** is a sub-framework of the [Brains@Play Framework](https://github.com/brainsatplay/brainsatplay).
+## The Libraries
+### [esmpile]
+The [esmpile] software library allows you to compile ESM code from their text sources. This allows you to track a list of active imports.
 
+### [esmonitor]
+The [esmonitor] software library allows you to receive notification about changes to objects and their values.
 
-ESCode is currently a sub-implementation of [graphscript]. They have a shared representation of several “graph script” properties—such as __listener, __children, and __onconnected—but have implemented these in different ways.
+### [escompose]
+The [escompose] software library allows you to transform ESM into Web Components that send messages to each other using the [ECMAScript Components (ESC)](./libraries/escompose/README.md#the-specification) specification.
 
-> Any [graphscript] component can be loaded into `escompose—though this may perform slightly differently. In Q1 2023, [graphscript] will replace the current backend for ESCode.
+### [escomposer]
+The [escomposer] software library allows you to convert between JS, JSON, and HTML declarations of ESC.
 
-## The Programming Workflow
-### ESMpile
-Compile a list of active ESM imports with [esmpile](./libraries/esmpile/README.md). This is achieved by bundling code hosted at standard `import` uris from their text sources. Resulting bundles also support incremental changes and recompilation.
+### [escode]
+The [escode] software library is a visual programming system to visualize and edit ESC files.
 
-### ESMonitor
-Receive notification about changes to objects (including ESM) and their values using [esmonitor](./libraries/esmonitor/README.md).
+## The Architecture
 
-### ESCompose
-Transform ESM into Web Components that send messages to each other using [escompose](./libraries/escompose/README.md), which implements the [ECMAScript Components (ESC)](./libraries/escompose/README.md#the-specification) specification.
+> **Note:** We are currently in the middle of an integration effort in the [graphscript integration branch](https://github.com/brainsatplay/graphscript/tree/integration).
 
-### ESComposer
-Convert between .esc.js to .esc.html and .esc.json using [escomposer](./libraries/escomposer/README.md).
+[escompose] is a simple extension of [graphscript], which uses several “graph script” properties such as __listener, __children, and __onconnected to imbue objects with special behaviors.
 
-### Components
-Pull code from the official repository of ESC using [components](./components/README.md).
+ In general, [escompose] simply negates a flag that limiting flow graph behaviors to simple one-by-one IO for logic trees—thereby affording a map of black boxes to be produced. Outside of this change, we are also adding a few loaaders to the graphscript.Graph constructor.
 
-> **Note:** In the near future, we will switch to the registration of ES Components through NPM via standardized use of the `graphscript` and `escomponent` keywords. These existing components will be published and distributed into independent repositories.
+```js
+import graphscript from 'graphscript'
+import elementLoader from 'graphscript-element-loader'
+
+const graph = graphscript.Graph({
+    tree: {
+        __element: 'h1',
+        __attribures: {
+            innerText: 'Hello World'
+        }
+    },
+    limitConnections: false,
+    loaders: {
+        __element: elementLoader,
+    }
+})
+```
+ 
+By using [graphscript] at the core, we can consistently visualize and manipulate the flow behaviors of [graphscript] extension. This has been achieved by funneling all listener management (including operators) through a single EventHandler instance, as well as all non-DOM reparenting through a similar management interface to retain proper DOM + reference parity
+
+## Additional Repository Information
+### [components](./components/README.md)
+This is intended to be an official repository of ES Components.
+
+In the near future, we will switch to the registration of ES Components through NPM via standardized use of the `graphscript` and `escomponent` keywords. These existing components will be published and distributed into independent repositories.
 
 To learn more about the publication workflow, see the [escomponent](https://github.com/brainsatplay/escomponent) template repository.
 
-### ESCode
-Inspect and edit .esc files (using code written with .esc) with [escode](./libraries/escode/README.md).
-
-## Draft Libraries
-- [visualscript](./libraries/drafts/visualscript/README.md): Visual programming made simple for escode.
-
-#### Apps
-- [escode-chrome](./apps/chrome/README.md): A Chrome Extension for ESCode
-
-## Roadmap
-- Declare ESC with similar detail to [ESM](https://tc39.es/ecma262/#sec-modules).
-
 ## Acknowledgments
-This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
+This monorepo is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
 
 ### Backers
 [Support us with a monthly donation](https://opencollective.com/brainsatplay#backer) and help us continue our activities!
@@ -119,3 +139,10 @@ This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) 
 
 
 [graphscript]: https://github.com/brainsatplay/graphscript
+[escompose]: ./libraries/escompose/README.md
+[Brains@Play]: https://github.com/brainsatplay
+
+[esmpile]: ./libraries/esmpile/README.md
+[esmonitor]: ./libraries/esmonitor/README.md
+[escomposer]: ./libraries/escomposer/README.md
+[escode]: ./libraries/escode/README.md

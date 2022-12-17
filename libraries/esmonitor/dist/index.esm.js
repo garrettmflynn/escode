@@ -137,6 +137,7 @@ var listeners_exports = {};
 __export(listeners_exports, {
   functionExecution: () => functionExecution,
   functions: () => functions2,
+  getProxyFunction: () => getProxyFunction,
   info: () => info,
   register: () => register,
   set: () => set,
@@ -188,6 +189,7 @@ var get = (func, args, info2) => {
 // src/globals.ts
 var isProxy = Symbol("isProxy");
 var fromInspectable = Symbol("fromInspectable");
+var fromInspectableHandler = Symbol("fromInspectableHandler");
 
 // ../esc/standards.js
 var keySeparator = ".";
@@ -202,7 +204,7 @@ var getShortcut = (path, shortcuts, keySeparator2) => {
       return value;
   }
 };
-var getFromPath = (baseObject, path, opts = {}) => {
+var getFromPath = (baseObject, path, opts = {}, throwError = true) => {
   const fallbackKeys = opts.fallbacks ?? [];
   const keySeparator2 = opts.keySeparator ?? keySeparator;
   if (opts.shortcuts) {
@@ -215,14 +217,17 @@ var getFromPath = (baseObject, path, opts = {}) => {
     }
   }
   if (typeof path === "string")
-    path = path.split(keySeparator2);
+    path = path.split(keySeparator2).flat();
   else if (typeof path == "symbol")
     path = [path];
   let exists;
   path = [...path];
+  path = path.map((o) => typeof o === "string" ? o.split(keySeparator2) : o);
   let ref = baseObject;
   for (let i = 0; i < path.length; i++) {
     if (!ref) {
+      if (!throwError)
+        return;
       const message = `Could not get path`;
       console.error(message, path, ref);
       throw new Error(message);
@@ -288,7 +293,40 @@ __export(handlers_exports, {
   functions: () => functions,
   objects: () => objects
 });
-var functions = (proxy) => {
+
+// src/inspectable/define.ts
+function define(key, registerAsNewKey) {
+  const inspectable = this;
+  const target = this.target;
+  if (!this.parent) {
+    let value = target[key];
+    if (typeof value === "function") {
+      target[key] = async (...args) => await this.proxy[key]({ [fromInspectable]: true, value }, ...args);
+    } else {
+      try {
+        Object.defineProperty(target, key, {
+          get: () => value,
+          set: function(val) {
+            value = val;
+            inspectable.proxy[key] = { [isProxy]: this[isProxy], [fromInspectable]: true, value: val };
+          },
+          enumerable: true,
+          configurable: true
+        });
+      } catch (e) {
+        console.error(`Could not reassign ${key} to a top-level setter...`);
+      }
+    }
+  }
+  if (registerAsNewKey)
+    this.newKeys.add(key);
+  this.create(key, target, void 0, true);
+}
+var define_default = define;
+
+// src/inspectable/handlers.ts
+var functions = function() {
+  const inspectable = this;
   return {
     apply: async function(target, thisArg, argumentsList) {
       try {
@@ -298,8 +336,8 @@ var functions = (proxy) => {
           foo = argumentsList[0].value;
           argumentsList = argumentsList.slice(1);
         }
-        let listeners2 = proxy.listeners.functions;
-        const pathStr = proxy.path.join(proxy.options.keySeparator);
+        let listeners2 = inspectable.listeners.functions;
+        const pathStr = inspectable.path.join(inspectable.options.keySeparator);
         const toActivate = listeners2 ? listeners2[pathStr] : void 0;
         let output, executionInfo = {};
         if (toActivate) {
@@ -307,18 +345,19 @@ var functions = (proxy) => {
           output = executionInfo.output;
         } else {
           output = foo.apply(thisArg, argumentsList);
-          executionInfo = proxy?.state?.[pathStr]?.value ?? {};
+          executionInfo = inspectable?.state?.[pathStr]?.value ?? {};
         }
-        const callback = proxy.options.callback;
+        const callback = inspectable.options.callback;
         runCallback(callback, pathStr, executionInfo, output);
         return output;
       } catch (e) {
-        console.warn(`Function failed:`, e, proxy.path);
+        console.warn(`Function failed:`, e, inspectable.path);
       }
     }
   };
 };
-var objects = (proxy) => {
+var objects = function() {
+  const inspectable = this;
   return {
     get(target, prop, receiver) {
       if (prop === isProxy)
@@ -328,31 +367,36 @@ var objects = (proxy) => {
     set(target, prop, newVal, receiver) {
       if (prop === isProxy)
         return true;
-      const pathStr = [...proxy.path, prop].join(proxy.options.keySeparator);
+      const pathStr = [...inspectable.path, prop].join(inspectable.options.keySeparator);
+      const isFromProxy = newVal?.[isProxy];
       const isFromInspectable = newVal?.[fromInspectable];
       if (isFromInspectable)
         newVal = newVal.value;
-      const listeners2 = proxy.listeners.setters;
-      if (!target.hasOwnProperty(prop)) {
-        if (typeof proxy.options.globalCallback === "function") {
-          const id = proxy.path[0];
-          set("setters", pathStr, newVal, proxy.options.globalCallback, { [id]: proxy.root }, proxy.listeners, proxy.options);
+      const listeners2 = inspectable.listeners.setters;
+      const desc = Object.getOwnPropertyDescriptor(target, prop);
+      const createListener = desc && !desc.get && !desc.set;
+      if (createListener) {
+        if (typeof inspectable.options.globalCallback === "function") {
+          const id = inspectable.path[0];
+          define_default.call(inspectable, prop, true);
+          set("setters", pathStr, newVal, inspectable.options.globalCallback, { [id]: inspectable.root }, inspectable.listeners, inspectable.options);
         }
       }
       if (newVal) {
-        const newProxy = proxy.create(prop, target, newVal);
+        const newProxy = inspectable.create(prop, target, newVal);
         if (newProxy)
           newVal = newProxy;
       }
-      if (listeners2) {
-        const toActivate = listeners2[pathStr];
-        if (toActivate)
-          setterExecution(toActivate, newVal);
+      const toActivate = !isFromProxy;
+      if (listeners2 && toActivate && !inspectable.newKeys.has(prop)) {
+        const toActivate2 = listeners2[pathStr];
+        if (toActivate2)
+          setterExecution(toActivate2, newVal);
       }
-      const callback = proxy.options.callback;
-      const info2 = proxy?.state?.[pathStr]?.value ?? {};
+      const callback = inspectable.options.callback;
+      const info2 = inspectable?.state?.[pathStr]?.value ?? {};
       runCallback(callback, pathStr, info2, newVal);
-      if (isFromInspectable)
+      if (isFromInspectable || !toActivate)
         return true;
       else
         return Reflect.set(target, prop, newVal, receiver);
@@ -398,6 +442,7 @@ var Inspectable = class {
   constructor(target = {}, opts = {}, name, parent) {
     this.path = [];
     this.listeners = {};
+    this.newKeys = /* @__PURE__ */ new Set();
     this.state = {};
     this.set = (path, info2, update) => {
       this.state[path] = {
@@ -463,33 +508,12 @@ var Inspectable = class {
       let type = this.options.type;
       if (type != "object")
         type = typeof target === "function" ? "function" : "object";
-      const handler2 = handlers_exports[`${type}s`](this);
+      const handler2 = handlers_exports[`${type}s`].call(this);
       this.proxy = new Proxy(target, handler2);
       Object.defineProperty(target, "__proxy", { value: this.proxy, enumerable: false });
       Object.defineProperty(target, "__esInspectable", { value: this, enumerable: false });
-      for (let key in target) {
-        if (!this.parent) {
-          let value = target[key];
-          if (typeof value === "function") {
-            target[key] = async (...args) => await this.proxy[key]({ [fromInspectable]: true, value }, ...args);
-          } else {
-            try {
-              Object.defineProperty(target, key, {
-                get: () => value,
-                set: (val) => {
-                  value = val;
-                  this.proxy[key] = { [fromInspectable]: true, value: val };
-                },
-                enumerable: true,
-                configurable: true
-              });
-            } catch (e) {
-              console.error(`Could not reassign ${key} to a top-level setter...`);
-            }
-          }
-        }
-        this.create(key, target, void 0, true);
-      }
+      for (let key in target)
+        define_default.call(this, key);
     }
     return this.proxy;
   }
@@ -638,7 +662,8 @@ var setterExecution = (listeners2, value) => {
   });
 };
 function setters(info2, collection, lookups) {
-  handler(info2, collection, (value, parent) => {
+  const thisValue = this;
+  handler(info2, collection["setters"], (value, parent) => {
     let val = value;
     if (!parent[isProxy]) {
       let redefine = true;
@@ -653,9 +678,13 @@ function setters(info2, collection, lookups) {
           Object.defineProperty(parent, info2.last, {
             get: () => val,
             set: async (v) => {
+              const isFunction = typeof val === "function";
               val = v;
-              const listeners2 = Object.assign({}, collection[getPath("absolute", info2)]);
-              setterExecution(listeners2, v);
+              if (!isFunction) {
+                const listeners2 = Object.assign({}, collection["setters"][getPath("absolute", info2)]);
+                setterExecution(listeners2, v);
+              } else
+                val = getProxyFunction.call(thisValue, info2, collection, val);
             },
             enumerable: true,
             configurable: true
@@ -666,6 +695,12 @@ function setters(info2, collection, lookups) {
       }
     }
   }, lookups);
+}
+function getProxyFunction(info2, collection, fn) {
+  return function(...args) {
+    const listeners2 = collection["functions"][getPath("absolute", info2)];
+    return functionExecution(this, listeners2, fn ?? info2.original, args);
+  };
 }
 var functionExecution = (context, listeners2, func, args) => {
   listeners2 = Object.assign({}, listeners2);
@@ -679,13 +714,10 @@ var functionExecution = (context, listeners2, func, args) => {
   return executionInfo;
 };
 function functions2(info2, collection, lookups) {
-  handler(info2, collection, (_, parent) => {
+  handler(info2, collection["functions"], (_, parent) => {
     if (!parent[isProxy]) {
-      parent[info2.last] = function(...args) {
-        const listeners2 = collection[getPath("absolute", info2)];
-        const got = functionExecution(this, listeners2, info2.original, args);
-        return got;
-      };
+      parent[info2.last] = getProxyFunction.call(this, info2, collection);
+      setters(info2, collection, lookups);
     }
   }, lookups);
 }
@@ -761,12 +793,12 @@ var Monitor = class {
       lookup: createLookup()
     };
     this.references = {};
-    this.get = (path, output, reference = this.references) => {
+    this.get = (path, output, reference = this.references, throwError = true) => {
       return getFromPath(reference, path, {
         keySeparator: this.options.keySeparator,
         fallbacks: this.options.fallbacks,
         output
-      });
+      }, throwError);
     };
     this.set = (path, value, opts = {}) => {
       const optsCopy = { ...opts };
@@ -777,6 +809,7 @@ var Monitor = class {
       return setFromOptions(path, value, this.options, optsCopy);
     };
     this.on = (absPath, callback) => {
+      console.log("On", absPath, this.options);
       const info2 = getPathInfo(absPath, this.options);
       return this.listen(info2.id, callback, info2.path);
     };
@@ -800,7 +833,7 @@ var Monitor = class {
       else if (typeof path === "symbol")
         path = [path];
       const arrayPath = path;
-      let baseRef = this.references[id];
+      let baseRef = this.get(id);
       if (!baseRef) {
         console.error(`Reference does not exist.`, id);
         return;
@@ -810,9 +843,8 @@ var Monitor = class {
       if (!__internal.seen)
         __internal.seen = [];
       const __internalComplete = __internal;
-      if (!this.references[id])
-        this.references[id] = baseRef;
-      const ref = this.get([id, ...arrayPath]);
+      const thisPath = [id, ...arrayPath];
+      const ref = this.get(thisPath);
       const toMonitorInternally = (val, allowArrays = false) => {
         const first = val && typeof val === "object";
         if (!first)
@@ -867,7 +899,7 @@ var Monitor = class {
     };
     this.add = (type, info2) => {
       if (listeners_exports[type])
-        listeners_exports[type](info2, this.listeners[type], this.listeners.lookup);
+        listeners_exports[type](info2, this.listeners, this.listeners.lookup);
       else
         this.listeners[type][getPath("absolute", info2)][info2.sub] = info2;
     };
@@ -908,7 +940,10 @@ var Monitor = class {
       else if (func) {
         delete funcs[sub];
         if (!Object.getOwnPropertySymbols(funcs).length) {
-          func.current = func.original;
+          Object.defineProperty(func.parent, func.last, {
+            value: func.original,
+            writable: true
+          });
           delete this.listeners.functions[absPath];
         }
       } else if (setter) {
