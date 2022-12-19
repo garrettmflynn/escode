@@ -12,7 +12,7 @@ const getShortcut = (path, shortcuts, keySeparator) => {
     }
 }
 
-export const getFromPath = (baseObject, path, opts: any = {}, throwError = true) => {
+export const getFromPath = (baseObject, path, opts: any = {}) => {
 
 
     const fallbackKeys = opts.fallbacks ?? []
@@ -33,39 +33,35 @@ export const getFromPath = (baseObject, path, opts: any = {}, throwError = true)
     let exists;
     path = [...path]
 
-    path = path.map(o => (typeof o === "string") ? o.split(keySeparator) : o)
+    path = path.map(o => (typeof o === "string") ? o.split(keySeparator) : o).flat()
 
 
     let ref =  baseObject
     
     for (let i = 0; i < path.length; i++) {
 
-        if (!ref) {
-            if (!throwError) return
-            const message = `Could not get path`
-            console.error(message, path, ref)
-            throw new Error(message)
-        }
+        if (ref) {
 
-        const str = path[i]
-        // Try Inside ES Components
-        if (!hasKey(str, ref) && '__children' in ref) {
-            for (let i in fallbackKeys) {
-                const key = fallbackKeys[i]
-                if (hasKey(key, ref)) {
-                    ref = ref[key]
-                    break
+            const str = path[i]
+            // Try Inside ES Components
+            if (!hasKey(str, ref) && '__children' in ref) {
+                for (let i in fallbackKeys) {
+                    const key = fallbackKeys[i]
+                    if (hasKey(key, ref)) {
+                        ref = ref[key]
+                        break
+                    }
                 }
             }
-        }
-        
-        // Try Standard Path
-        exists = hasKey(str, ref)
+            
+            // Try Standard Path
+            exists = hasKey(str, ref)
 
-        if (exists) ref = ref[str]
-        else {
-            ref = undefined
-            exists = true
+            if (exists) ref = ref[str]
+            else {
+                ref = undefined
+                exists = true
+            }
         }
     }
 
@@ -100,16 +96,11 @@ export const setFromPath = (path: PathFormat, value: any, ref:any, opts: SetValu
         // Swap reference
         if (has) ref = ref[str]
 
-        // Throw error if not found
-        else {
-            const message = `Could not set path`
-            console.error(message, path)
-            throw new Error(message)
-        }
-
         // Transfer to ESComponents automatically (if not second-to-last key...)
         if (ref.__children) ref = ref.__children 
     }
 
     ref[last] = value
+
+    return true
 }

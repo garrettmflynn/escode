@@ -1,4 +1,4 @@
-// import { Graph } from "../../Graph2"
+import { Graph } from "../../Graph2"
 
 
 // Special Key Definition
@@ -46,7 +46,7 @@ class Edgelord {
     rootPath: string = ''
     status = ''
 
-    graph: any // Graph
+    graph: Graph
     
     #triggers: any[] = []
     #queue: any[] = []
@@ -183,7 +183,9 @@ class Edgelord {
         } as any
 
         // Transform name to absolute 
+        console.log('OG Path', path)
         path =  this.#getAbsolutePath(path)
+        console.log('Got Path', path)
         let rel = this.rootPath ? path.replace(`${this.rootPath}.`, '') : path
         const baseArr = path.split(this.context.options.keySeparator)
         output.absolute.array = [this.context.id, ...baseArr]
@@ -206,6 +208,7 @@ class Edgelord {
                 obj = this.context.graph.get(rel)
             }
         }
+        
         const isGraphScript = obj && typeof obj === 'object' && specialKeys.isGraphScript in obj
 
         // Updates based on default / operators
@@ -232,6 +235,7 @@ class Edgelord {
 
     add = (from, to, value: any = true, subscription?) => {
 
+        console.log('Adding', from, to, value, subscription)
         if (!value) return // Any non-truthy value is not accepted
 
         const fromInfo = this.#getPathInfo(from)
@@ -247,6 +251,7 @@ class Edgelord {
                 ref: this.context.instance,
                 path: fromInfo.relative.array
             })
+            // console.log('Subscribing', fromInfo.absolute.array, subscription)
         }
 
         // Use updated string value if modified
@@ -562,6 +567,8 @@ pass = (from, target, update) => {
     }
 
     // ------------------ Handle Target ------------------
+
+    // console.log('target', target, isValidInput, update)
     if (
         isValidInput // Ensure input is valid
         && update !== undefined // Ensure input is not exactly undefined (though null is fine)
@@ -577,7 +584,8 @@ pass = (from, target, update) => {
             parentPath.push(...to.split(this.context.options.keySeparator))
             const idx = parentPath.pop()
             const info = this.context.monitor.get(parentPath, 'info')
-            info.value[idx] = update
+            if (info.value) info.value[idx] = update
+            else console.error(`Cannot set value on ${parentPath.filter(str => typeof str !== 'symbol').join(this.context.options.keySeparator)} from ${from}`)
         }
 
         // Direct Object with Default Function

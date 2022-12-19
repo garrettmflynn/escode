@@ -10,6 +10,9 @@ html, body {
     background-color: black;
 }
 
+html { height: 100%; overflow:auto; }
+body { height: 100%; }
+
 
 section {
     display: flex;

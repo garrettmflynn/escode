@@ -11,11 +11,11 @@ declare global {
 }
 
 // ------------- Global Inspectable (monitored for all changes) -------------
-window.ESMonitorState = {
+globalThis.ESMonitorState = {
     state: {},
     callback: undefined,
     info: {}
 } as GlobalESMonitorState
 
 
-export default window.ESMonitorState
+export default globalThis.ESMonitorState

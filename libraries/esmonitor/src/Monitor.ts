@@ -155,46 +155,55 @@ export default class Monitor {
 
         // Case #2: Subscribe to specific property
         let info;
+        let success = false
         try {
             
             // Force Polling
             info = this.getInfo(id, callback, arrayPath, ref)
 
-            if (__internalComplete.poll) {
-                this.poller.add(info)
-            }
+            if (info) {
+                if (__internalComplete.poll) success = this.poller.add(info)
 
-            // Direct Methods
-            else {
+                // Direct Methods
+                else {
 
-                let type = 'setters' // trigger setters
-                if (typeof ref === 'function') type = 'functions' // intercept function calls
+                    let type = 'setters' // trigger setters
+                    if (typeof ref === 'function') type = 'functions' // intercept function calls
 
-                this.add(type, info)
+                    success = this.add(type, info)
+                }
             }
             
         } catch (e) {
             console.error('Fallback to polling:', path, e)
-            this.poller.add(info)
+            success = this.poller.add(info)
             // __internalComplete.poll = true
         }
         
 
-        subs[getPath('absolute', info)] = info.sub
+        if (success) {
+            subs[getPath('absolute', info)] = info.sub
 
-        // Notify User of Initialization
-        if (this.options.onInit instanceof Function) {
-            const executionInfo = {}
-            for (let key in info.infoToOutput) executionInfo[key] = undefined
-            this.options.onInit(getPath('output', info), executionInfo)
+            // Notify User of Initialization
+            if (this.options.onInit instanceof Function) {
+                const executionInfo = {}
+                for (let key in info.infoToOutput) executionInfo[key] = undefined
+                this.options.onInit(getPath('output', info), executionInfo)
+            }
+
+            return subs
+        } else {
+            console.error('Failed to subscribe to:', path)
+            return
         }
-
-        return subs
     }
 
     add = (type, info) => {
-        if (listeners[type]) listeners[type](info, this.listeners, this.listeners.lookup)
-        else this.listeners[type][getPath('absolute', info)][info.sub] = info
+        if (listeners[type]) return listeners[type](info, this.listeners, this.listeners.lookup)
+        else {
+            this.listeners[type][getPath('absolute', info)][info.sub] = info
+            return true
+        }
     }
 
     // Unsubscribe from a subscription
@@ -259,9 +268,11 @@ export default class Monitor {
                 delete setters[sub]
                 if (!Object.getOwnPropertySymbols(setters).length) {
                     const parent = setter.parent
-                    const last = setter.last
-                    const value = parent[last]
-                    Object.defineProperty(parent, last, { value, writable: true })
+                    if (parent) {
+                        const last = setter.last
+                        const value = parent[last] // Parent always exists!
+                        Object.defineProperty(parent, last, { value, writable: true })
+                    }
                     delete this.listeners.setters[absPath]
                 }
             } else return false

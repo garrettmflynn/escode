@@ -106,6 +106,7 @@ export const register = (info, collection, lookups?: ListenerLookups) => {
 
     // Place in Lookup Registry
     registerInLookup(absolute, info.sub, lookups)
+    return true
 }
 
 const listeners = {
@@ -135,14 +136,17 @@ const get = (info, collection) => collection[utils.getPath('absolute', info)]
 const handler = (info, collection, subscribeCallback, lookups?: ListenerLookups) => {
     
     // Create Listener for this Object
-    if (!get(info, collection)) {
+    let success = !!get(info, collection)
+    if (!success) {
         let parent = info.parent
-        let val = parent[info.last]
-        subscribeCallback(val, parent)
+        let val = parent?.[info.last] // Parent may not exist yet...but we still want to register a potential listener
+        success = subscribeCallback(val, parent)
     }
 
     // Register in Collection
-    register(info, collection, lookups)
+    // if (success) 
+    return register(info, collection, lookups)
+    // else console.warn('Listener revoked for non-existent parent:', info.path.absolute ) 
 }
 
 
@@ -156,9 +160,10 @@ export const setterExecution = (listeners, value) => {
 export function setters (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups) {
 
     const thisValue = this 
-    handler(info, collection['setters'], (value, parent) => {
+    return handler(info, collection['setters'], (value, parent) => {
 
         let val = value
+        if (!parent) return
 
         if (!parent[isProxy]) { 
 
@@ -220,12 +225,12 @@ export const functionExecution = (context, listeners, func, args) => {
 export function functions (info: ListenerInfo, collection: ListenerPool, lookups?: ListenerLookups) {
 
     // Register for functions
-    handler(info, collection['functions'], (_, parent) => {      
+    return handler(info, collection['functions'], (_, parent) => {      
         if (!parent[isProxy]) { 
             parent[info.last] = getProxyFunction.call(this, info, collection)
 
             // Also register as a setter
-            setters(info, collection, lookups)
+            return setters(info, collection, lookups)
         }
     }, lookups)
 }

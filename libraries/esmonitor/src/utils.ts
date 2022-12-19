@@ -43,9 +43,9 @@ export const runCallback = (callback, path, info, output, setGlobal=true) => {
     }
 
     // ------------------ Set Manually in Inspected State ------------------
-    if (setGlobal && window.ESMonitorState) {
-        const callback = window.ESMonitorState.callback
-        window.ESMonitorState.state[path] = { output, value: info }
+    if (setGlobal && globalThis.ESMonitorState) {
+        const callback = globalThis.ESMonitorState.callback
+        globalThis.ESMonitorState.state[path] = { output, value: info }
         runCallback(callback, path, info, output, false)
     }
 }

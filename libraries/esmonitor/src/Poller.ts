@@ -43,6 +43,7 @@ export default class Poller {
         const sub = info.sub
         this.listeners[sub] = info
         this.start() // Start polling if not already started
+        return true
     }
     get = (sub: ListenerInfo['sub']) => this.listeners[sub]
     remove = (sub: ListenerInfo['sub']) => {
