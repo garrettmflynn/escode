@@ -32,7 +32,9 @@ const list = {
 }
 
 const links = [
+    { label: 'Home', href: '' },
     { label: 'About', href: '#about' },
+    { label: 'Work', href: '#work' },
     { label: 'Ethos', href: '#ethos' },
     { label: 'Twitch', href: '#twitch' },
 

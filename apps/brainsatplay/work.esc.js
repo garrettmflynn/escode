@@ -8,21 +8,15 @@ export const __children = {
                     title: {
                         __element: 'h1',
                         __attributes: {
-                            innerText: 'The Universal Web Development Cooperative'
+                            innerText: 'Our Work'
                         },
                     },
                     subtitle: {
                         __element: 'h2',
                         __attributes: {
-                            innerText: 'It all began with a dream of agency for every brain.'
+                            innerText: 'The Universal Web Development Cooperative'
                         }
                     },
-                    description: {
-                        __element: 'p',
-                        __attributes: {
-                            innerText: 'We started working in 2021 and never stopped.'
-                        }
-                    }
                 }
             }
         }
