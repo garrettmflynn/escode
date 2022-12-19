@@ -32,7 +32,7 @@ const list = {
 }
 
 const links = [
-    { label: 'Home', href: '' },
+    { label: 'Home', href: '/' },
     { label: 'About', href: '#about' },
     { label: 'Work', href: '#work' },
     { label: 'Ethos', href: '#ethos' },
@@ -348,7 +348,6 @@ export const __children = {
             links: {
                 __compose: list,
                 list: [
-                    { label: 'Home', href: '/' },
                     ...links
                 ]
             },
