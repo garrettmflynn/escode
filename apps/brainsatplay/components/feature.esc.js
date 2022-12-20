@@ -8,6 +8,10 @@ export function __onconnected () {
         this.projects.forEach(project => {
             const li = document.createElement('li')
             const a = document.createElement('a')
+            const span = document.createElement('sub')
+            span.style.fontSize = '75%'
+            span.style.userSelect = 'none'
+
             if (project.active === false) {
                 li.style.opacity = '0.5'
                 li.style.pointerEvents = 'none'
@@ -20,7 +24,9 @@ export function __onconnected () {
             }
 
             li.appendChild(a)
+            li.appendChild(span)
             a.innerText = project.name
+            span.innerText = ` ${project.version}`
 
 
             this.__children.container.__children.projects.__element.appendChild(li)

@@ -10,6 +10,9 @@
 [![Npm package monthly downloads](https://badgen.net/npm/dm/escode)](https://npmjs.com/package/escode)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 The [Brains@Play] **ESCode** project is a collection of ECMAScript libraries intended to further the Web as a **Universal Development Engine** by allowing you to create and share Web Components that naturally compose into larger applications.
 
@@ -56,6 +59,17 @@ const graph = graphscript.Graph({
 ```
  
 By using [graphscript] at the core, we can consistently visualize and manipulate the flow behaviors of [graphscript] extension. This has been achieved by funneling all listener management (including operators) through a single EventHandler instance, as well as all non-DOM reparenting through a similar management interface to retain proper DOM + reference parity
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Additional Repository Information
 ### [components](./components/README.md)

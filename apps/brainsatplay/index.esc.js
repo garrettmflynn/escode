@@ -108,7 +108,7 @@ export const __children = {
                                     text: {
                                         __element: 'h2',
                                         __attributes: {
-                                            innerText: 'Who We Are'
+                                            innerText: 'About Us'
                                         }
                                     },
                                     support: {
@@ -140,7 +140,7 @@ export const __children = {
                             description: {
                                 __element: 'p',
                                 __attributes: {
-                                    innerHTML: "We're currently a group of two developers—<a href='https://github.com/garrettmflynn' target='_blank'>Garrett Flynn</a> and <a href='https://github.com/garrettmflynn' target='_blank'>Joshua Brewster</a>—working to build a better Web with free software."
+                                    innerHTML: "Brains@Play is currently led by two developers—<a href='https://github.com/garrettmflynn' target='_blank'>Garrett Flynn</a> and <a href='https://github.com/garrettmflynn' target='_blank'>Joshua Brewster</a>—working to build a better Web with free software."
                                 }
                             },
                             statements: {
@@ -202,16 +202,19 @@ export const __children = {
                                     {
                                         name: 'ES Components (ESC)',
                                         link: 'https://github.com/brainsatplay/escomponent',
+                                        version: '0.1.7',
                                         description: 'A specification for composable JavaScript objects with concurrent message-passing.',
                                     },
                                     {
                                         name: 'ESCode',
                                         link: 'https://github.com/brainsatplay/escode',
+                                        version: '0.1.7',
                                         description: 'A framework for using ES Components using graphscript.',
                                     },
                                     {
                                         name: 'Web Source Accessibility Guidelines (WSAG)',
                                         active: false,
+                                        version: '0.0.0',
                                         description: 'Identify best practices to allow anyone to use, modify, and share Web Components.',
                                     },
                                 ],
@@ -225,6 +228,7 @@ export const __children = {
                                     {
                                         name: 'Browser Extension',
                                         link: 'https://github.com/brainsatplay/brainsatplay-extension',
+                                        version: '0.0.0',
                                         oncreate: (element) => {
 
                                             const extensionScriptId = 'brainsatplay-injection-proxy'
@@ -270,6 +274,7 @@ export const __children = {
                                     {
                                         name: 'Desktop App',
                                         link: 'https://github.com/brainsatplay/brainsatplay-electron',
+                                        version: '0.0.0',
                                         onclick: () => {
                                             customProtocolCheck(
                                                 "brainsatplay://",
@@ -297,11 +302,13 @@ export const __children = {
                                         name: 'WebNWB',
                                         link: 'https://github.com/brainsatplay/webnwb',
                                         description: 'Enable citizen neuroscience.',
+                                        version: '0.0.12',
                                     },
                                     {
                                         name: 'MyAlyce',
                                         link: 'https://myalyce.com',
                                         description: 'Enable citizen neuroscience.',
+                                        version: '0.0.0',
                                     }
                                 ],
                                 __compose: feature
