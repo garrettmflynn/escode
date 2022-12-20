@@ -1,19 +1,88 @@
-## escompose
+# escompose
 [![Npm package version](https://badgen.net/npm/v/escompose)](https://npmjs.com/package/escompose)
 [![Npm package monthly downloads](https://badgen.net/npm/dm/escompose)](https://npmjs.com/package/escompose)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-The **escompose** library transforms [ES Components](https://github.com/brainsatplay/escomponent) into Web Components that respond to each other. 
+**escompose** implements the [ES Components] specification to allow you to define special properties on a hierarchy of reactive objects.
 
-> **escompose** is a core library of the [Brains@Play](https://github.com/brainsatplay/brainsatplay) framework.
+> **escompose** is a core library of [Brains@Play].
 
-## Notable Features
-- [x] WASM Support (__compose)
-- [x] Can apply ESC to any DOM elements by using them as the first argument to escompose.create()
+## Getting Started
+To create a component, pass any object with GraphScript properties to the `create` function:
+```js
+const esc = {
+    __element: 'button',
+    __attributes: {
+        onclick: function (input) { console.log(this) }
+    }
+}
+
+const component = escompose.create(esc, {__parent: document.body})
+component.__element.click()
+```
+
+If you prefer to work with classes, these will also be instanced using this function:
+
+```js
+class MyButton {
+    __element: 'button',
+    __attributes: {
+        onclick: function (input) { console.log(this) }
+    }
+}
+
+const component = escompose.create(MyButton, {__parent: document.body})
+component.__element.click()
+```
+
+In specific cases, an array may be useful to apply bulk operations to independent Components:
+```js
+const components = escompose.create([esc, myButton, esc], {
+    __parent: document.body,
+    __attributes: {
+        onclick: function (input) { console.log(this) }
+    }
+})
+components.forEach(component => component.__element.click())
+```
+
+### Linking Components to Source Text
+A string can be passed to grab the Component from a local JavaScript file—or, with additional utilities, compile from source text:
+```js
+import * as esm from 'esmpile'
+const esc = './index.esc.js'
+const component = escompose.create(esc)
+const component = escompose.create(esc, {__parent: document.body},  { utilities: { bundle: esm.bundle.get}})
+component.__element.click()
+```
+
+
+### Creating Components from Functions
+A function can be passed directly as a Component, which simply makes it listenable:
+```js
+const esc = (input) => console.log(input)
+const component = escompose.create(esc, {__parent: document.body})
+component.default()
+```
+
+### Applying Components to DOM Element
+Elements can be passed to apply Components to existing DOM elements:
+```js
+const esc = document.querySelector('button')
+const component = escompose.create(esc, {
+    __attributes: {
+        onclick: function (input) { console.log(this) }
+    }
+})
+component.__element.click()
+```
+
+## GraphScript Properties
+See the [ES Components] specification for a full list of properties.
 
 ## Acknowledgments
-This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
+[Brains@Play] is managed by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
 
 ### Backers
 [Support us with a monthly donation](https://opencollective.com/brainsatplay#backer) and help us continue our activities!
@@ -83,3 +152,6 @@ This library is maintained by [Garrett Flynn](https://github.com/garrettmflynn) 
 <a href="https://opencollective.com/brainsatplay/sponsor/27/website" target="_blank"><img src="https://opencollective.com/brainsatplay/sponsor/27/avatar.svg"></a>
 <a href="https://opencollective.com/brainsatplay/sponsor/28/website" target="_blank"><img src="https://opencollective.com/brainsatplay/sponsor/28/avatar.svg"></a>
 <a href="https://opencollective.com/brainsatplay/sponsor/29/website" target="_blank"><img src="https://opencollective.com/brainsatplay/sponsor/29/avatar.svg"></a>
+
+[ES Components]: https://github.com/brainsatplay/escomponent
+[Brains@Play]:https://github.com/brainsatplay

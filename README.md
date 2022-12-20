@@ -60,6 +60,8 @@ const graph = graphscript.Graph({
  
 By using [graphscript] at the core, we can consistently visualize and manipulate the flow behaviors of [graphscript] extension. This has been achieved by funneling all listener management (including operators) through a single EventHandler instance, as well as all non-DOM reparenting through a similar management interface to retain proper DOM + reference parity
 
+Unlike other frameworks that use hooks—such as useEffect (React) and watchEffect (Vue)—[escompose] monitors **objects** for changes to their values based on specified **listeners**, meaning we don't require explicitly registering references or using returned objects.
+
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->

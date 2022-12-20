@@ -3,6 +3,7 @@ import * as esm from "../esmpile/src";
 
 import Monitor from "../esmonitor/src";
 import { MonitorOptions } from "../esmonitor/src/types";
+import { Loaders } from "../escompose/src/types";
 
 
 export type Options = {
@@ -11,6 +12,8 @@ export type Options = {
     listeners?: {
         static?: boolean
     },
+
+    loaders: Loaders
 
     relativeTo: string,
 
@@ -21,10 +24,10 @@ export type Options = {
     synchronous?: boolean, // TODO: Test if this really works...
     await?: boolean, // Return a promise that resolves after the entire app is ready
 
-    nested: {
-        parent: any,
-        name: any,
-    }, // Add ES Component types here
+    // nested: {
+    //     parent: any,
+    //     name: any,
+    // }, // Add ES Component types here
 
     utilities: {
         code?: {

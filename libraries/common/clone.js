@@ -1,16 +1,25 @@
 import { drillSimple } from "./drill"
+import { all } from "./properties"
 
-export const deep = (obj, opts={}) => {
-
+export const shallow = (obj, opts={}) => {
     if (typeof obj === 'object') {
         if (Array.isArray(obj)) {
             obj = [...obj] // Clone the orignal object
             opts.accumulator = []
         } else {
-            obj = {...obj} // Clone the orignal object
+            const keys = all(obj)
+            const newObj = {}
+            for (let key of keys)  newObj[key] = obj[key] // Clone the orignal object
+            obj = newObj
             opts.accumulator =  {}
         }
-    } else return obj
+    }
+
+    return obj
+}
+
+export const deep = (obj, opts={}) => {
+    obj = shallow(obj, opts)
 
     drillSimple(obj, (key, val, info) => {
         if (info.simple && info.object) return Array.isArray(val) ? [] : {}

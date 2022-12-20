@@ -16,6 +16,7 @@ import * as components from '../../../components/index.js'
 import { __source } from '../../esc/esc';
 import { isListenerPort } from '../../drafts/visualscript/src/components/graph/utils/check';
 import { Console } from './Console';
+import { specialKeys } from '../../esc/standards';
 
 
 type ViewType = null | undefined | boolean | HTMLElement
@@ -446,7 +447,7 @@ export class Editor extends LitElement {
         // Grabbing components from the current object
         for (let key in component.__children) {
           const esc = await component.__children[key].__childresolved ?? component.__children[key]
-          local[key] = esc.__original
+          local[key] = esc[specialKeys.isGraphScript].original
         }
 
 
@@ -455,7 +456,7 @@ export class Editor extends LitElement {
 
         this.setPlugins({
           ['Local']: {
-            'This Component': component.__original,
+            'This Component': component[specialKeys.isGraphScript].original,
             ...local
           },
           ['NPM']: {

@@ -136,6 +136,7 @@ export default class Monitor {
 
         // Case #1: Subscribe to each object property individually
         let subs = {}
+        let success = false
         const subscribeAll = toMonitorInternally(ref, true)
         if (subscribeAll) {
 
@@ -151,17 +152,18 @@ export default class Monitor {
             }, {
                 condition: (_, val) => toMonitorInternally(val)
             })
+
+            success = true
         } 
 
         // Case #2: Subscribe to specific property
         let info;
-        let success = false
         try {
             
             // Force Polling
             info = this.getInfo(id, callback, arrayPath, ref)
 
-            if (info) {
+            if (info && !success) {
                 if (__internalComplete.poll) success = this.poller.add(info)
 
                 // Direct Methods

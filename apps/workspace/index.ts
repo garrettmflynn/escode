@@ -8,6 +8,12 @@ import * as escode from '../../libraries/escode/src/index'
 
 import * as reference from './index.esc.js'
 import { Rule } from '../../libraries/drafts/rules/Rule'
+
+
+
+
+const useRule = true
+
 const string = './index.esc.js'
 
 const create = async (config, toApply: any = {}) => {
@@ -43,10 +49,11 @@ const create = async (config, toApply: any = {}) => {
     })
 
 
-    const esc = await component // Promise for self is resolved
-    await esc.__connected // All children promises are resolved (if await is false)
+    const esc = await component
+    await component.__resolved
 
-    console.log('ESC', esc)
+    console.log('Created:', esc)
+    return esc
 }
 
 
@@ -67,6 +74,9 @@ const moreStuff = {
 const run = async () => {
 
     // Create ESC from string
+    await create([string])
+
+    // Create ESC from string
     await create(string)
 
     // Create ESC from reference
@@ -76,12 +86,11 @@ const run = async () => {
     const elementArray = document.body.querySelectorAll('button')
     await create(elementArray, {  __attributes: stuff })
 
-
-    await create(elementArray, {  __attributes: moreStuff })
-
     // Apply rule to all Components (only which exist on application though...)
-    const rule = new Rule({ __attributes: Object.assign({}, moreStuff)})
-    rule.apply()
+    if (useRule) {
+        const rule = new Rule({ __attributes: Object.assign({}, moreStuff)})
+        rule.apply()
+    } else await create(elementArray, {  __attributes: moreStuff })
 
 
     // -------------- Lesson #2: Any Object Can Participate (`listen` and `merge`) --------------
@@ -156,7 +165,6 @@ const run = async () => {
     console.log(objectOneProxy.test, objectOne.test)
     console.log(objectOneProxy.active, objectOne.active)
     console.log(objectOneProxy.success, objectOne.success)
-
 
 
 }   
