@@ -1,4 +1,7 @@
 <p align="center">
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./images/logo_with_text_dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="./images/logo_with_text_light.svg">
@@ -63,6 +66,20 @@ By using [graphscript] at the core, we can consistently visualize and manipulate
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><a href="http://garrettflynn.com/"><img src="https://avatars.githubusercontent.com/u/46533749?v=4?s=100" width="100px;" alt="Garrett Michael Flynn"/><br /><sub><b>Garrett Michael Flynn</b></sub></a><br /><a href="#ideas-garrettmflynn" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/brainsatplay/escode/commits?author=garrettmflynn" title="Code">💻</a> <a href="#business-garrettmflynn" title="Business development">💼</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 
