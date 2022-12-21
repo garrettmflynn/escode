@@ -45,6 +45,7 @@ export const merge = (
 
     if (flipPrecedence) [copy, override] = [override, copy]
 
+
     if (override){
 
         const keys = all(copy)
@@ -53,8 +54,12 @@ export const merge = (
         keys.forEach(k => {
             newKeys.delete(k)
 
+            const exists = k in override
+            const newValue = override[k]
+            if (exists && newValue === undefined)  delete copy[k] // delete if undefined
+
             // Merge individual object keys
-            if (typeof override[k] === 'object' && !Array.isArray(override[k])) {
+            else if (typeof newValue === 'object' && !Array.isArray(newValue)) {
 
                     // Track seen so you don't drill infinitely on circular references
                     if (typeof copy[k] === 'object') {
@@ -63,19 +68,19 @@ export const merge = (
                         if (idx !== -1) copy[k] = seen[idx]
                         else {
                             seen.push(val)
-                            copy[k] =  merge(val, override[k], updateOriginal, false, composeFunctions, seen)
+                            copy[k] =  merge(val, newValue, updateOriginal, false, composeFunctions, seen)
                         }
                     }
-                    else copy[k] = override[k]
+                    else copy[k] = newValue
             } 
 
             // Nest functions
-            else if (typeof override[k] === 'function') {
+            else if (typeof newValue === 'function') {
 
                 const original = copy[k]
                 const isFunc = typeof original === 'function'
 
-                const newFunc = override[k]
+                const newFunc = newValue
                 const composeFunction = newFunc.__compose === true
 
                 // Direct Function Replacement
@@ -107,10 +112,15 @@ export const merge = (
             }
             
             // Replace values and arrays
-            else if (k in override) copy[k] = override[k]
+            else if (k in override) copy[k] = newValue
         })
 
-        newKeys.forEach(k => copy[k] = override[k])
+
+        newKeys.forEach(k => {
+            const newValue = override[k]
+            if (newValue === undefined) return
+            else copy[k] = newValue
+        })
     }
 
     return copy // named exports

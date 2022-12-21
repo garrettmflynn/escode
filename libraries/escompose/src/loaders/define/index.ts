@@ -14,9 +14,9 @@ export default (esc) => {
         // ------------------ Register Components (keyword) ------------------
         let registry = esc[specialKeys.webcomponents] ?? {}
         for (let key in registry) {
-            const esm = registry[key]
-            const info = esm[specialKeys.element]
-            if (info.name && info.extends) define(info, esm)
+            const model = registry[key]
+            const config =  model[specialKeys.element]
+            if (config.name && config.extends) define(config, esc, model)
         }
 
         return esc
@@ -45,14 +45,13 @@ const tagToClassMap = {
 const isAutonomous = false
 
 
-export const define = (config, esm) => {
+export const define = (config, esc, model = esc) => {
 
     // Register the Component
     if (!registry[config.name]) {
 
         // Split the Instances
-        esm = deep(esm)
-
+        const copy = deep(model)
 
         // Derive the Base Class Name
         const clsName = (isAutonomous) ? '' : (tagToClassMap[config.extends] ?? config.extends[0].toUpperCase() + config.extends.slice(1))
@@ -76,8 +75,8 @@ export const define = (config, esm) => {
 
             constructor(properties){
                 super(properties)
-                esm[specialKeys.element] = this
-                esm[specialKeys.isGraphScript].create(esm)
+                copy[specialKeys.element] = this
+                esc[specialKeys.isGraphScript].create(copy)
             }
 
             connectedCallback() {

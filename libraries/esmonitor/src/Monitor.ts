@@ -53,7 +53,6 @@ export default class Monitor {
     }
 
     get = (path, output?, reference = this.references) => {
-
         return getFromPath(reference, path, {
             keySeparator: this.options.keySeparator,
             fallbacks: this.options.fallbacks,
@@ -62,11 +61,13 @@ export default class Monitor {
     }
 
     set = (path, value, opts: SetFromOptionsType= {}) => {
+
         const optsCopy = {...opts}
         if (!optsCopy.reference) optsCopy.reference = this.references
         if (!optsCopy.listeners) optsCopy.listeners = this.listeners
 
-        return setFromOptions(path, value, this.options, optsCopy)
+        const set = setFromOptions(path, value, this.options, optsCopy)
+        return set
     }
 
     // A simple wrapper for listen()

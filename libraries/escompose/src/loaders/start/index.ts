@@ -7,11 +7,11 @@ import * as animate from "../animate/index"
 
 export const name = 'start'
 
+export const required = true
+
 export const properties = {
     dependents: [
-        specialKeys.start,
         specialKeys.source, // Activates this from the composition
-        specialKeys.started,
         ...animate.properties.dependents
     ],
     dependencies: [
@@ -28,12 +28,13 @@ export const properties = {
 }
 
 export default (esc) => {
-    esc[specialKeys.start] = () => start(esc, [ animate.default ]) // Add the start function with additiobnal loaders
+    esc[specialKeys.isGraphScript].start.add(() => {
+        start(esc, [ animate.default ])  // Add the start function with additiobnal loaders
+    })
 }
 
-const set = (esm, value, writable=true) => Object.defineProperty(esm, `__${specialKeys.started}`, { value, writable })
+const set = (esm, value) => esm[specialKeys.isGraphScript].start.value = value
 
-// TODO: Ensure you have the right properties
 function start (
     esc: ESComponent, 
     callbacks, 
@@ -46,7 +47,7 @@ function start (
         output = asyncConnect.call(esc, async () => {
             if (asyncCallback) await asyncCallback() // Callback when then entire object is ready
             connect.call(esc, callbacks)
-            set(esc, true, false)
+            set(esc, true)
         })
         set(esc, output)
     } 
@@ -55,7 +56,7 @@ function start (
     else {
         asyncConnect.call(esc, asyncCallback)
         output = connect.call(esc, callbacks)
-        set(esc, true, false)
+        set(esc, true)
     }
 
     return output
@@ -71,16 +72,6 @@ async function asyncConnect (onReadyCallback) {
     const boundEditorsKey = `__bound${specialKeys.editor}s`
     const boundEditors = this[boundEditorsKey]
     if (boundEditors) boundEditors.forEach(editor => editor.setComponent(this)) // set after all children have been set
-
-    // Initialize Nested Components (and wait for them to be done)
-    for (let name in this[specialKeys.hierarchy]) {
-        let component = this[specialKeys.hierarchy][name]
-        const promise = component[specialKeys.promise]
-        if (promise && typeof promise.then === 'function' ) component = this[specialKeys.hierarchy][name] = await promise // Wait for the component to be ready
-        const init = component[specialKeys.start]
-        if (typeof init === 'function') await init()
-        else console.error(`Could not start component ${name} because it does not have a __onconnected function`)
-    }
 
     this[`__${specialKeys.resolved}`]() // Tell other programs that the component is resolved
 
@@ -106,12 +97,6 @@ function connect (callbacks: Function[] = []) {
         const path = this[specialKeys.isGraphScript].path
         if (this[privateEditorKey]) this[privateEditorKey].addFile(path, source)
     }
-
-    // Call After Children + Before Running (...TODO: Is this right?)
-    const context = this[specialKeys.proxy] ?? this
-
-    const states = this[specialKeys.isGraphScript].states
-    if (states.initial.start) states.initial.start.call(context) // Start callback defined by the user
 
     // Run Callbacks (e.g. start animations)
     callbacks.forEach(f => f.call(this))

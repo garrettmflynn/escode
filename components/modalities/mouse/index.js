@@ -64,6 +64,7 @@ export function __onconnected () {
 }
 
 export function __ondisconnected () {
+
     if (this.__element != null) this.__element.remove()
 
     document.body.style.cursor = 'default'

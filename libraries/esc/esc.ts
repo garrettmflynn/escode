@@ -24,15 +24,13 @@ export type __source = string | (string | Bundle)[]
 
 export type GeneralElementType = baseESElement | ESElementInfo | ESDefineInfo
 export type ESComponent<ElementType = GeneralElementType>  = {
+
+    __: {
+        [x:string]: any
+    } // Replaces __node from graphscript
     
     default: Function,
     __compose: ESComponent // Is Merged into this component
-
-    // From GraphScript
-    __node: {
-        [x:string]: any
-    }
-
 
     __children: {
         [x:string]: ESComponent // General Components

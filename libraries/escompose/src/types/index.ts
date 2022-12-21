@@ -23,13 +23,27 @@ export type ApplyOptions = {
 
 export type LoaderFunction = (o: ESComponent, toApply: any, options: Partial<Options>) => any
 
-export type Loader = LoaderFunction | {
+
+export type LoaderBehaviorType = 'load' | 'activate' | 'start' | 'stop'
+export type LoaderObject = {
     name?: string,
+    required?: boolean,
+    behavior?: LoaderBehaviorType,
     default: LoaderFunction,
     properties: {
         dependencies?: string[]
         dependents?: string[]
-    }
+    },
 }
 
+export type Loader = LoaderFunction | LoaderObject
+
 export type Loaders = Loader[]
+
+
+export type SortedLoaders = {
+    load?: Loaders,
+    activate?: Loaders,
+    start?: Loaders,
+    stop?: Loaders,
+}

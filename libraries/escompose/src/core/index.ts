@@ -26,15 +26,18 @@ export const create = (
 
         const callbacks = {
 
-            onRootCreated: (id, esc) =>  (fullOptions.monitor as Monitor).set(id, esc, fullOptions.listeners), // Setting root instance
+            onRootCreated: (id, esc) => (fullOptions.monitor as Monitor).set(id, esc, fullOptions.listeners), // Setting root instance
             
             onInstanceCreated: (absolutePath, esc) => {
 
                 // Set listeners as soon as possible
                 if (fullOptions.listen !== false) {
                     const to = esc[specialKeys.listeners.value] ?? {}  // Uses to —> from syntax | Always set
+
                     const manager = listeners[absolutePath] = new FlowManager(to, absolutePath, {
-                        id: esc[specialKeys.isGraphScript].graph, esc, monitor: fullOptions.monitor, options: fullOptions
+                        id: esc[specialKeys.isGraphScript].graph, 
+                        monitor: fullOptions.monitor, 
+                        options: fullOptions
                     }) // Uses from —> to syntax
                     esc[specialKeys.listeners.value] = to // Replace with listeners assigned (in case of unassigned)
 
@@ -73,13 +76,10 @@ export const create = (
             let arr = (!isArray) ? [esc] : esc
             arr.map(esc => {
                 if (esc[specialKeys.parent]) {
-
-                    // Don't start the Component multiple times
-                    const hasStarted = esc[`__${specialKeys.started}`]
-                    if (hasStarted === undefined) {
-                        const start = esc[specialKeys.start]
-                        const startRes = start ? start() : esc
-                        return utils.resolve(startRes, resolve) // Return synchronously unless the user requests a promise
+                    const configuration = esc[specialKeys.isGraphScript]
+                    const hasStarted = configuration.start.value
+                    if (hasStarted === false) {
+                        return utils.resolve(configuration.start.run(), resolve) // Return synchronously unless the user requests a promise
                     }
 
                 } else return esc // Just return instance synchronously since the component is only activated when placed in the DOM

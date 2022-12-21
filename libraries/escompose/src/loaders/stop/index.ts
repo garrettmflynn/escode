@@ -3,6 +3,8 @@ import { specialKeys } from "../../../../esc/standards"
 
 export const name = 'stop'
 
+export const required = true
+
 export const properties = {
     dependencies: [
         specialKeys.isGraphScript,
@@ -12,17 +14,17 @@ export const properties = {
         specialKeys.element,
         specialKeys.hierarchy,
         specialKeys.proxy,
-        specialKeys.start,
     ],
-    dependents: [specialKeys.stop]
+    dependents: []
 }
 export default (esc) => {
-    esc[specialKeys.stop] = () => stop(esc)
+    esc[specialKeys.isGraphScript].stop.add(() => stop(esc)) // Add this as the final stop callback
 }
 
 
+// TODO: Move this to all the relevant files...
 function stop(esc) {
-
+    
     if ( esc[specialKeys.animate] && typeof esc[specialKeys.animate].stop === 'function') esc[specialKeys.animate].stop()
 
     // Clear all listeners below esc node
@@ -39,14 +41,6 @@ function stop(esc) {
         } else break
     }
 
-    if (esc[specialKeys.hierarchy]) {
-        for (let name in esc[specialKeys.hierarchy]) {
-            const component = esc[specialKeys.hierarchy][name]
-            if (typeof component[specialKeys.stop] === 'function') component[specialKeys.stop]()
-            else console.warn('Could not disconnect component because it does not have an __ondisconnected function', name, esc.__children)
-        }
-    }
-
     // Remove Element
     if ( esc[specialKeys.element] instanceof Element)  esc[specialKeys.element].remove();
 
@@ -54,14 +48,5 @@ function stop(esc) {
     const privateEditorKey = `${specialKeys.editor}Attached` // TODO: Ensure esc key is standard
     if (esc[privateEditorKey]) esc[privateEditorKey].remove() 
 
-    const context = esc[specialKeys.proxy] ?? esc
-
-    const states = esc[specialKeys.isGraphScript].states
-    const ogStop = states.initial.stop
-    if (ogStop) ogStop.call(context)
-
-    // Replace Updated Keywords with Original Values
-    esc[specialKeys.start] = states.initial.start
-    esc[specialKeys.stop] = ogStop
     return esc
 }

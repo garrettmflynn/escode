@@ -19,6 +19,11 @@ const localSpecialKeys = {
     bundle: esSourceKey
 }
 
+export const behavior = 'load'
+// export const behavior = 'set'
+// export const behavior = 'start'
+// export const behavior = 'stop'
+
 export const properties = {
     dependents:  Object.values(localSpecialKeys),
 }

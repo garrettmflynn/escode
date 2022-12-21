@@ -66,6 +66,8 @@ const boundEditorKey = `__bound${specialKeys.editor}s`
 
 export const name = 'element'
 
+export const required = true
+
 export const properties = {
     dependents: [
         specialKeys.element, 
@@ -86,12 +88,6 @@ export const properties = {
         specialKeys.isGraphScript, 
         specialKeys.proxy, 
     ],
-
-    // NOTE: Try to remove this...
-    extra: [
-        specialKeys.start,
-        specialKeys.started,
-    ]
 }
 
 export default function create(esm: ESComponent, _, options:Partial<Options> = {}) {
@@ -118,7 +114,9 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
         const isWebComponent = element && typeof element === 'object' && (element as any).name && (element as any).extends
         if (isWebComponent) {
             const esDefineInfo = element as ESDefineInfo
-            component.define(esDefineInfo, esm)
+            const config = esm[specialKeys.element]
+            component.define(config, esm)
+            console.log('Defining a custom element', esDefineInfo.name, esDefineInfo.extends)
             esm[specialKeys.element] = element = esDefineInfo.name // create a custom element
         }
         
@@ -266,10 +264,10 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
                 // Trigger __parent Setter on Nested Components
                 if (esm[specialKeys.isGraphScript]) {
                     for (let name in esm[specialKeys.hierarchy]) {
-                        const component = esm[specialKeys.hierarchy][name] as ESComponent | Promise<ESComponent>; // TODO: Ensure that this is resolved first...
-                        resolve(component, (res) => {
-                            res[specialKeys.parent] = v;
-                        })
+                        const component = esm[specialKeys.hierarchy][name] as ESComponent | Promise<ESComponent>; // TODO: Update these types since resolution order is different
+                        if (component && component[specialKeys.isGraphScript]){
+                            resolve(component, (res) => res[specialKeys.parent] = v)
+                        }
                     }
                 }
 
@@ -328,6 +326,7 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
                         if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
 
                         // Resolved After Siblings Have Been Added
+
                         if (desiredPosition !== undefined && desiredPosition < nextPosition) v.children[desiredPosition].insertAdjacentElement('beforebegin', ref)
                     
                         // Resolved Immediately or Before Siblings
@@ -351,13 +350,12 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
             if (v instanceof HTMLElement) {
                 pathLoader(esm, {[specialKeys.parent]: v, [specialKeys.isGraphScript]:  {path: id}}, options) // update path
-
-                const parentComponent = v[specialKeys.component]
         
                 // Start the component | NOTE: This is a hacky dependendy on the start loader...
                 const isConnected = esm[`__${specialKeys.connected}`]
                 const toConnect = isConnected instanceof Function
-                if (esm[`__${specialKeys.started}`] !== true && parentComponent?.[`__${specialKeys.started}`] === true)  esm[specialKeys.start]()
+
+                esm[specialKeys.isGraphScript].start.run()
                 if (toConnect) isConnected()
             }
         },
@@ -430,11 +428,11 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
     // --------------------------- Trigger State Changes (if not accessible elsewhere) ---------------------------
     // if (!states) {
-        esm[specialKeys.resize] = finalStates.onresize
-        // console.error('Produced component', esm)
-        if (finalStates.parentNode) esm[specialKeys.parent] = finalStates.parentNode
-    // }
 
+    configuration.start.add(() =>{
+        esm[specialKeys.resize] = finalStates.onresize
+        if (finalStates.parentNode) esm[specialKeys.parent] = finalStates.parentNode
+    }, true)
 
     return esm;
 }

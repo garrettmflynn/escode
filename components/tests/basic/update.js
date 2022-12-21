@@ -2,10 +2,10 @@ export let nExecution = 0
 export let esmOnly = 0
 export let passedWithListener = undefined
 
-// Implicit Variables
+// Variables Added Later
 // - delayId
 
-export default function ( ) {
+export default function () {
 
     if (this.delayId) clearTimeout(this.delayId)
 

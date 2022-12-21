@@ -1,5 +1,7 @@
 // import { Graph } from "../../../Graph2"
 
+import { deep } from "../../common/clone"
+
 
 // Special Key Definition
 const defaultPath = 'default'
@@ -56,7 +58,7 @@ class Edgelord {
         if (listeners || root || context) this.setInitialProperties(listeners, root, context)
     }
 
-    setInitialProperties = (listeners = {}, root, context={}) => {
+    setInitialProperties = (listeners = {}, root, context: any ={}) => {
 
         Object.assign(this.context, context)
         if (root) this.rootPath = root
@@ -183,16 +185,19 @@ class Edgelord {
         } as any
 
         // Transform name to absolute 
-        console.log('OG Path', path)
         path =  this.#getAbsolutePath(path)
-        console.log('Got Path', path)
         let rel = this.rootPath ? path.replace(`${this.rootPath}.`, '') : path
         const baseArr = path.split(this.context.options.keySeparator)
         output.absolute.array = [this.context.id, ...baseArr]
         output.relative.array = rel.split(this.context.options.keySeparator)
 
-        let obj = this.context.monitor.get(output.relative.array, undefined, this.context.instance, false) // Allow for getting properties
-        
+        let obj = this.context.monitor.get(
+            output.absolute.array,  // For General Use
+            undefined, 
+            // this.context.instance, 
+        ) // Allow for getting properties
+
+
         // Fallback to direct graph reference
         if (this.context.graph) {
 
@@ -211,20 +216,13 @@ class Edgelord {
         
         const isGraphScript = obj && typeof obj === 'object' && specialKeys.isGraphScript in obj
 
-        // Updates based on default / operators
-        if (isGraphScript) {
-
-            // Fallback to operator updates
-            if (obj[operatorPath]){
-                output.absolute.array.push(operatorPath)
-                output.relative.array.push(operatorPath)
-            } 
-            
-            // Fallback to default updates
-            else if (obj[defaultPath]){
-                output.absolute.array.push(defaultPath)
-                output.relative.array.push(defaultPath)
-            } 
+        // Fallback to default updates
+        const useOperator = obj && isGraphScript && obj[operatorPath]
+        const useDefault = obj && obj[defaultPath]
+        const extraPath = (useOperator) ? operatorPath : (useDefault) ? defaultPath : undefined
+        if (extraPath) {
+            output.absolute.array.push(extraPath)
+            output.relative.array.push(extraPath)
         }
 
         output.absolute.value = output.absolute.array.slice(1).join(this.context.options.keySeparator) // update path
@@ -235,7 +233,6 @@ class Edgelord {
 
     add = (from, to, value: any = true, subscription?) => {
 
-        console.log('Adding', from, to, value, subscription)
         if (!value) return // Any non-truthy value is not accepted
 
         const fromInfo = this.#getPathInfo(from)
@@ -248,7 +245,7 @@ class Edgelord {
         // Only subscribe once
         if (!subscription) {
             subscription =this.context.monitor.on(fromInfo.absolute.array, (path, _, update) => this.activate(path, update), {
-                ref: this.context.instance,
+                ref: this.context.instance, // TODO: What does this do?
                 path: fromInfo.relative.array
             })
             // console.log('Subscribing', fromInfo.absolute.array, subscription)
@@ -431,7 +428,7 @@ pass = (from, target, update) => {
             const noDefault = typeof val !== 'function' && !val?.default
             const value = (noDefault) ? toSet : val
 
-            const res = { value }
+            const res = { value, bound: info.parent } // Ensure you have access to the bound parent
 
             if (willSet) {
                 target = res.value
@@ -567,8 +564,6 @@ pass = (from, target, update) => {
     }
 
     // ------------------ Handle Target ------------------
-
-    // console.log('target', target, isValidInput, update)
     if (
         isValidInput // Ensure input is valid
         && update !== undefined // Ensure input is not exactly undefined (though null is fine)
@@ -589,12 +584,17 @@ pass = (from, target, update) => {
         }
 
         // Direct Object with Default Function
-        else if (target?.default) target.default.call(target, ...arrayUpdate) // Call with parent context
+        else if (target?.default) {
+            target.default.call(target, ...arrayUpdate) // Call with parent context
+        }
 
         // Direct Function
         else if (typeof target === 'function') {
-            const noContext = parent[to][listenerObject]
-            if (noContext) target.call(config?.[specialKeys.listeners.bind]?.value ?? this.context.instance, ...arrayUpdate) // Call with top-level context
+
+            // const noContext = parent[to][listenerObject]
+            // if (noContext) 
+            const boundTo = config?.[specialKeys.listeners.bind]?.value ?? info.bound ?? this.context.instance
+            if (boundTo) target.call(boundTo, ...arrayUpdate) // Call with top-level context
             else target(...arrayUpdate) // Call with default context
         }
 

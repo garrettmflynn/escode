@@ -19,6 +19,7 @@ export const shallow = (obj, opts={}) => {
 }
 
 export const deep = (obj, opts={}) => {
+    if (typeof obj !== 'object') return obj
     obj = shallow(obj, opts)
 
     drillSimple(obj, (key, val, info) => {

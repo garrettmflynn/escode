@@ -41,10 +41,10 @@ export function __onconnected() {
     const bottom = parseInt(style.marginBottom, 10);
     const marginX = left + right
     const marginY = top + bottom
+
     this.offsetX = -marginX / 2;
     this.offsetY = -marginY / 2;
 
-    
     onAllWindowEvents.call(this, (key, value) => this.__element.addEventListener(key, value, false))
 }
 
@@ -59,6 +59,7 @@ export function dragStart(e) {
     this.style(this.__parent.__element)
 
     const base = (e.type === "touchstart") ? e.touches[0] : e
+
     this.initialX = (base.clientX - this.offsetX)
     this.initialY = (base.clientY - this.offsetY)
 

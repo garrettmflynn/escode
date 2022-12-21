@@ -1,5 +1,6 @@
 import { PathFormat, SetValueOptions } from "../esmonitor/src/types"
 import * as standards from '../esc/standards'
+import { deep } from "./clone"
 
 const hasKey = (key, obj) =>  key in obj
 
@@ -37,6 +38,7 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
 
 
     let ref =  baseObject
+    const chain = [ref]
     
     for (let i = 0; i < path.length; i++) {
 
@@ -49,6 +51,7 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
                     const key = fallbackKeys[i]
                     if (hasKey(key, ref)) {
                         ref = ref[key]
+                        chain.push(ref)
                         break
                     }
                 }
@@ -62,10 +65,12 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
                 ref = undefined
                 exists = true
             }
+
+            chain.push(ref)
         }
     }
 
-    if (opts.output === 'info') return { value: ref, exists }
+    if (opts.output === 'info') return { value: ref, exists,  parent: chain[chain.length - 2] }
     else return ref
 }
 

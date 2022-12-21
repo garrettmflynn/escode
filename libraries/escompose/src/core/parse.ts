@@ -80,7 +80,7 @@ export const parseOptions = (options: Partial<Options>) => {
  let monitor;
  if (copy.monitor instanceof Monitor) {
      monitor = copy.monitor
-     copy.keySeparator = monitor.copy.keySeparator // Inherit key separator
+     copy.keySeparator = monitor.keySeparator // Inherit key separator
  } else {
      if (!copy.monitor) copy.monitor = {}
      if (!copy.monitor.keySeparator) {
