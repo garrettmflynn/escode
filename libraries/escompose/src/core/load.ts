@@ -92,7 +92,10 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions) 
                 stop: esc[specialKeys.stop],
             }
         },
-        create: (esc) => create(esc, undefined, opts, loaders), // Define a consistent create function
+        create: (esc) => {
+            if (!opts.loaders) opts.loaders = loaders // re-apply loaders to the options
+            return create(esc, undefined, opts)
+        }, // Define a consistent create function
     }
 
     esc[specialKeys.isGraphScript] = __ // Set __ property

@@ -81,6 +81,14 @@ component.__element.click()
 ## GraphScript Properties
 See the [ES Components] specification for a full list of properties.
 
+### Loaders
+Additional properties can be added using the loaders argument for escompose: 
+```js
+const component = escompose.create(esc, {__parent: document.body}, {
+    loaders: [ myLoader ]
+})
+```
+
 ## Acknowledgments
 [Brains@Play] is managed by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
 

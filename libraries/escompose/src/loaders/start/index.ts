@@ -2,7 +2,7 @@ import { ESComponent } from "../../../../esc/esc"
 import { esSourceKey, specialKeys } from "../../../../esc/standards"
 
 // TODO: Move animate out to its own independent loader
-import * as animate from "../animate"
+import * as animate from "../animate/index"
 
 
 export const name = 'start'

@@ -17,7 +17,6 @@ export const create = (
     config: ConfigInput , // This is a configuration object, which can be many things
     toApply:any = {}, // This is an object that is applied to resulting objects from the configuration object
     options: Partial<Options> = {}, // There are a few options that the user can set to configure their Components
-    loaders: Loaders = []
 ) => {
 
         // Parse the options object into a final options object
@@ -61,6 +60,7 @@ export const create = (
             onInstanceReady: (absolutePath) => listeners[absolutePath].start()
         }
 
+        const loaders = fullOptions.loaders
         const component = load(config, loaders, {
             toApply, 
             opts: fullOptions, 
