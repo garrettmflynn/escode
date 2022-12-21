@@ -1,20 +1,23 @@
 import { Options } from "../../../common/types"
 import { keySeparator, specialKeys } from "../../../esc/standards"
 import Monitor from "../../../esmonitor/src"
-import { resolve } from "../utils"
 import { deep as deepClone } from "../../../common/clone"
 import { AnyClass, ConfigInput, FinalConfig } from "../types"
 
 // TODO: Completely separate here...
 import compose from "../loaders/compose"
 import { toReturn } from "./symbols"
+import { isNode } from "../globals"
+
 
 const isNativeClass= (o) => typeof o === 'function' && o.hasOwnProperty('prototype') && !o.hasOwnProperty('arguments')
 
 // This function accepts pre-parsed configuration objects and returns a final configuration object
 export default function parse(config: ConfigInput, toApply: any = {}, options: Partial<Options> = {}) {
 
-    if (config instanceof NodeList) config = Array.from(config)  // DOM NodeList Support (e.g. from querySelectorAll): Converts to an array of configurations
+    if (!isNode) {
+        if (config instanceof NodeList) config = Array.from(config)  // DOM NodeList Support (e.g. from querySelectorAll): Converts to an array of configurations
+    }
 
     if ( typeof config === 'string') config =  { [specialKeys.apply]: config } // String Support: Transform string so that it is compiled from source
 
@@ -25,7 +28,7 @@ export default function parse(config: ConfigInput, toApply: any = {}, options: P
     }
 
     // Apply Component to the Element
-    else if (config instanceof Element) {
+    else if (!isNode && config instanceof Element) {
         const component = config[specialKeys.component]
 
         // Directly Merge into existing element + component pairs (TO FINISH)

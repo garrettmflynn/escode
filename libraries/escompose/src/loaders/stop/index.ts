@@ -1,5 +1,8 @@
 import { specialKeys } from "../../../../esc/standards"
 
+
+export const name = 'stop'
+
 export const properties = {
     dependencies: [
         specialKeys.isGraphScript,
@@ -10,7 +13,6 @@ export const properties = {
         specialKeys.hierarchy,
         specialKeys.proxy,
         specialKeys.start,
-        specialKeys.remove,
     ],
     dependents: [specialKeys.stop]
 }
@@ -46,13 +48,7 @@ function stop(esc) {
     }
 
     // Remove Element
-    if ( esc[specialKeys.element] instanceof Element) {
-        esc[specialKeys.element].remove();
-        if(esc[specialKeys.remove]) {
-            const context = esc[specialKeys.proxy] ?? esc
-            esc[specialKeys.remove].call(context); 
-        }
-    }
+    if ( esc[specialKeys.element] instanceof Element)  esc[specialKeys.element].remove();
 
     // Remove code editor
     const privateEditorKey = `${specialKeys.editor}Attached` // TODO: Ensure esc key is standard

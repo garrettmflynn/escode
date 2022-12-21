@@ -1,10 +1,60 @@
 import create, { resolve } from "."
 import { all } from "../../../common/properties"
-import { keySeparator, specialKeys } from "../../../esc/standards"
+import { defaultProperties, keySeparator, specialKeys } from "../../../esc/standards"
 import parse from "./parse"
 import { ApplyOptions, Loaders } from "../types"
 import pathLoader from "../loaders/path"
 import { toReturn } from "./symbols"
+
+
+// Use a function composition technique run the loaders in order
+const runLoaders = (loaders: Loaders, esc, toApply, opts) => {
+    return loaders.reduce(
+        (x, f) => resolve(x, (res) => {
+            let func = (typeof f === 'function') ? f : f.default
+            const output = func(res, toApply, opts)
+            return (output !== undefined) ? output : res // Return valid response
+        }),
+        esc
+    )
+}
+
+// TODO: Add a way to move this after the composition loader.
+// This will require defining specific keys on the loaders object to determine the order of execution
+
+const filterLoaders = (esc, loaders: Loaders) => {
+
+    const keys = all(esc).filter(str => str.slice(0, 2) === '__') // Grab used keys
+
+    const defaultPropertiesCopy = Object.values(defaultProperties)
+    const created = [...defaultPropertiesCopy] // Assume these are created
+
+    const usedLoaders = loaders.filter(o => {
+        if (o && typeof o === 'object') {
+            const name = o.name
+            const { dependencies, dependents } = o.properties
+            let include = !dependencies
+            if (dependencies) {
+                const optionalNameMessage = name ? ` (${name})` : ''
+                const found = dependencies.find(key => keys.includes(key))
+                if (found) {
+                    const deps = {}
+                    dependencies.forEach((key) => deps[key] = created.includes(key))
+                    const missingDependency = dependencies.filter((key) => !created.includes(key))
+                    if (missingDependency.length) console.warn(`The loader${optionalNameMessage} for ${dependencies.join(', ')} might be loaded too early, since we are missing the following dependencies: ${missingDependency.join(', ')}`)
+                    include = true
+                }
+                else console.warn(`Ignoring the loader${optionalNameMessage} for: ${dependencies.join(', ')}`)
+            }
+            
+            if (include && dependents) created.push(...dependents)
+
+            return include
+        }
+    })
+
+    return usedLoaders
+}
 
 
 export default function load(esc, loaders: Loaders = [], options: ApplyOptions) {
@@ -24,7 +74,7 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions) 
     esc = parse(esc, toApply, opts) // Parse the configuration object into a final configuration object (required)
 
     if (esc[toReturn]) return esc[toReturn] // Shortcut to return the existing (updated) component
-    
+
     // Return bulk operation requests
     if (Array.isArray(esc)) return resolve(esc.map(o => load(o, loaders, options)))
 
@@ -60,14 +110,8 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions) 
     if (!hasParent && parent) esc[specialKeys.parent] = parent
 
 
-    const res = loaders.reduce(
-        (x, f) => resolve(x, (res) => {
-            let func = (typeof f === 'function') ? f : f.default
-            const output = func(res, toApply, opts)
-            return (output !== undefined) ? output : res // Return valid response
-        }),
-        esc
-    )
+    const filtered = filterLoaders(esc, loaders)
+    const res = runLoaders(filtered, esc, toApply, opts)
 
     return resolve(res, (esc) => {
 

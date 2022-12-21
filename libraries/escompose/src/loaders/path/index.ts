@@ -1,5 +1,8 @@
 import { Options } from "../../../../common/types"
 import { specialKeys } from "../../../../esc/standards"
+import { isNode } from "../../globals"
+
+export const name = 'path'
 
 export const properties = {
     dependencies: [
@@ -15,18 +18,20 @@ const pathLoader = ( esc, toApply={}, opts: Partial<Options>={}) => {
     let parent = toApply[specialKeys.parent]
     const id = toApply[specialKeys.isGraphScript]?.path ?? configuration.path // Use an existing path as the id
 
-    parent = (parent instanceof Element ? parent?.[specialKeys.component] : parent) ?? esc[specialKeys.parent]
+    parent = ( (!isNode && parent instanceof Element) ? parent?.[specialKeys.component] : parent) ?? esc[specialKeys.parent]
 
-    const parentComponentConfiguration = parent[specialKeys.isGraphScript]
-        
     const isESC = {value: '', enumerable: false, writable: true} as any
 
-    if (parentComponentConfiguration){
-        if (typeof id === 'string') {
-            const path = parentComponentConfiguration.path
-            if (path) isESC.value = [path, id]
-            else isESC.value = [id]
-            isESC.value = isESC.value.join(opts.keySeparator ?? '.')
+    if (parent) {
+        const parentComponentConfiguration = parent[specialKeys.isGraphScript]
+            
+        if (parentComponentConfiguration){
+            if (typeof id === 'string') {
+                const path = parentComponentConfiguration.path
+                if (path) isESC.value = [path, id]
+                else isESC.value = [id]
+                isESC.value = isESC.value.join(opts.keySeparator ?? '.')
+            }
         }
     }
 

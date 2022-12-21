@@ -24,6 +24,7 @@ export type ApplyOptions = {
 export type LoaderFunction = (o: ESComponent, toApply: any, options: Partial<Options>) => any
 
 export type Loader = LoaderFunction | {
+    name?: string,
     default: LoaderFunction,
     properties: {
         dependencies?: string[]

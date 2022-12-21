@@ -7,15 +7,20 @@ import * as element from "./loaders/element"
 import * as define from "./loaders/define"
 import * as start from "./loaders/start"
 import * as stop from "./loaders/stop"
+import { isNode } from './globals'
+import { Loaders } from './types'
 
-// Default Loaders
-const standardLoaders = [
-    compose, // Load the composition
-    element,
-    define,
-    start,
-    stop
-]
+// --------- Specifying Loaders ---------
+const standardLoaders: Loaders = []
+
+// Object Composition
+standardLoaders.push(compose)
+
+// DOM Elements
+if (!isNode) standardLoaders.push(element, define)
+
+// Lifecycle Functions
+standardLoaders.push(start, stop)
 
 // Allow editing core loaders
 export const loaders = standardLoaders

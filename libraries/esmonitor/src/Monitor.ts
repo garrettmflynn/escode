@@ -1,18 +1,21 @@
-import * as check from '../../common/check.js'
-import Poller from './Poller.js'
+import * as check from '../../common/check'
+import Poller from './Poller'
 
 import { PathFormat, InternalOptions, ListenerRegistry, ArrayPath, MonitorOptions, SetFromOptionsType } from './types'
 import * as listeners from './listeners'
-import { iterateSymbols, getPath, getPathInfo } from './utils.js'
-import { drillSimple } from '../../common/drill.js'
-import { getFromPath } from '../../common/pathHelpers.js'
+import { iterateSymbols, getPath, getPathInfo } from './utils'
+import { drillSimple } from '../../common/drill'
+import { getFromPath } from '../../common/pathHelpers'
 
 import * as standards from '../../esc/standards'
-import { setFromOptions } from './optionsHelpers.js'
+import { setFromOptions } from './optionsHelpers'
 
 const createLookup = () => {
     return { symbol: {}, name: {} }
 }
+
+
+const isNode = typeof process === 'object'
 
 export default class Monitor {
 
@@ -49,13 +52,13 @@ export default class Monitor {
         this.poller.setOptions(opts.polling)
     }
 
-    get = (path, output?, reference = this.references, throwError = true) => {
+    get = (path, output?, reference = this.references) => {
 
         return getFromPath(reference, path, {
             keySeparator: this.options.keySeparator,
             fallbacks: this.options.fallbacks,
             output
-        }, throwError)
+        })
     }
 
     set = (path, value, opts: SetFromOptionsType= {}) => {
@@ -124,8 +127,10 @@ export default class Monitor {
             if (!first) return false
 
             // No Elements
-            const isEl = val instanceof Element
-            if(isEl) return false
+            if (!isNode) {
+                const isEl = val instanceof Element
+                if(isEl) return false
+            }
 
             if (allowArrays) return true
             else return !Array.isArray(val)

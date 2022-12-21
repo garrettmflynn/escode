@@ -1,4 +1,4 @@
-import { Graph } from "../../Graph2"
+// import { Graph } from "../../../Graph2"
 
 
 // Special Key Definition
@@ -46,7 +46,7 @@ class Edgelord {
     rootPath: string = ''
     status = ''
 
-    graph: Graph
+    graph: any // Graph
     
     #triggers: any[] = []
     #queue: any[] = []

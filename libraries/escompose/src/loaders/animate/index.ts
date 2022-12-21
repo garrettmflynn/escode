@@ -2,6 +2,9 @@ import { specialKeys } from "../../../../esc/standards"
 
 const animations = {}
 
+
+export const name = 'animate'
+
 export const properties = {
     dependents: [specialKeys.animate]
 }

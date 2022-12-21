@@ -74,9 +74,6 @@ const moreStuff = {
 const run = async () => {
 
     // Create ESC from string
-    await create([string])
-
-    // Create ESC from string
     await create(string)
 
     // Create ESC from reference

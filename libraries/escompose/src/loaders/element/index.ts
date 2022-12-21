@@ -63,21 +63,35 @@ const createElement = (args: [string, ElementCreationOptions?], parent) => {
 
 const boundEditorKey = `__bound${specialKeys.editor}s`
 
+
+export const name = 'element'
+
 export const properties = {
     dependents: [
         specialKeys.element, 
         specialKeys.attributes, 
         specialKeys.resize, 
-        specialKeys.connected, 
         specialKeys.resolved, 
-        specialKeys.proxy, 
         specialKeys.childPosition, 
         specialKeys.editor, 
         specialKeys.component, 
         specialKeys.attribute,
-        specialKeys.started, 
+
+        // Track Connection to the DOM
+        specialKeys.connected, 
     ],
-    dependencies: [specialKeys.hierarchy, specialKeys.parent, specialKeys.isGraphScript, specialKeys.start]
+    dependencies: [
+        specialKeys.hierarchy, 
+        specialKeys.parent, 
+        specialKeys.isGraphScript, 
+        specialKeys.proxy, 
+    ],
+
+    // NOTE: Try to remove this...
+    extra: [
+        specialKeys.start,
+        specialKeys.started,
+    ]
 }
 
 export default function create(esm: ESComponent, _, options:Partial<Options> = {}) {
@@ -340,10 +354,9 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
                 const parentComponent = v[specialKeys.component]
         
-                // // Start the component
+                // Start the component | NOTE: This is a hacky dependendy on the start loader...
                 const isConnected = esm[`__${specialKeys.connected}`]
                 const toConnect = isConnected instanceof Function
-
                 if (esm[`__${specialKeys.started}`] !== true && parentComponent?.[`__${specialKeys.started}`] === true)  esm[specialKeys.start]()
                 if (toConnect) isConnected()
             }

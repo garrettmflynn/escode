@@ -2,21 +2,25 @@ import { ESComponent } from "../../../../esc/esc"
 import { esSourceKey, specialKeys } from "../../../../esc/standards"
 
 // TODO: Move animate out to its own independent loader
-import animate from "../animate"
+import * as animate from "../animate"
+
+
+export const name = 'start'
 
 export const properties = {
     dependents: [
         specialKeys.start,
+        specialKeys.source, // Activates this from the composition
+        specialKeys.started,
+        ...animate.properties.dependents
     ],
     dependencies: [
         esSourceKey,
         specialKeys.isGraphScript,
         specialKeys.editor,
         specialKeys.parent,
-        specialKeys.source,
         specialKeys.proxy,
-        specialKeys.started,
-        specialKeys.connected,,
+        specialKeys.connected,
         specialKeys.hierarchy,
         specialKeys.promise,
         specialKeys.resolved,
@@ -24,7 +28,7 @@ export const properties = {
 }
 
 export default (esc) => {
-    esc[specialKeys.start] = () => start(esc, [ animate ]) // Add the start function with additiobnal loaders
+    esc[specialKeys.start] = () => start(esc, [ animate.default ]) // Add the start function with additiobnal loaders
 }
 
 const set = (esm, value, writable=true) => Object.defineProperty(esm, `__${specialKeys.started}`, { value, writable })

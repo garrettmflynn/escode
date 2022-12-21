@@ -4,11 +4,22 @@ export const defaultPath = 'default'
 
 export const esSourceKey = '__esmpileSourceBundle'
 
+
+export const defaultProperties = {
+    isGraphScript: '__',
+    default: defaultPath,
+    hierarchy: '__children',
+    parent: '__parent',
+    promise: '__childresolved',
+    flow: '__manager',
+
+    component: '__component',
+    proxy: '__proxy' // Handled by ESMonitor for Listeners
+}
+
 export const specialKeys = {
 
-    isGraphScript: '__',
-
-    default: defaultPath,
+   ...defaultProperties,
 
     start: '__onconnected', // asked to start
     stop: '__ondisconnected',
@@ -42,24 +53,15 @@ export const specialKeys = {
     attribute: 'escomponent',
     options: '__options',
 
-    parent: '__parent',
-    component: '__component',
-
     source: '__source',
     path: '__path',
 
     animate: '__animate',
     states: '__states',
 
-    promise: '__childresolved',
     editor: '__editor',
-
-    flow: '__manager',
 
     original: '__original',
 
     resize: '__onresize',    
-    
-
-    proxy: '__proxy'
 }

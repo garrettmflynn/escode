@@ -1,6 +1,9 @@
 import { specialKeys } from "../../../../esc/standards"
 import { deep } from '../../../../common/clone'
 
+
+export const name = 'define'
+
 export const properties = {
     dependents: [specialKeys.webcomponents],
     dependencies: [specialKeys.element, specialKeys.component, specialKeys.parent]

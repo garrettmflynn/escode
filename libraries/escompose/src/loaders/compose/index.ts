@@ -3,15 +3,20 @@ import { resolve, merge as basicMerge } from "../../utils"
 
 // Helpers
 import compile from './compile'
-import { specialKeys } from '../../../../esc/standards'
+import { esSourceKey, specialKeys } from '../../../../esc/standards'
 
 type anyObj = {[key: string]: any}
 type esComposeType = anyObj | anyObj[]
 
 
+export const name = 'compose'
+
 const localSpecialKeys = {
     compose: specialKeys.compose,
     apply: specialKeys.apply,
+
+    // Added with library
+    bundle: esSourceKey
 }
 
 export const properties = {
