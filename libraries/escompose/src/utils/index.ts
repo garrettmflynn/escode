@@ -26,6 +26,12 @@ export const resolve = (object, callback?) => {
 // Merge individual object keys AND nest functions to maintain their bindings
 // -------------------------------
 
+
+const functionRegistry: {
+    f: Function,
+    list: Function[]
+}[] = []
+
 export const merge = (
     main, 
     override, 
@@ -68,7 +74,6 @@ export const merge = (
 
                 const original = copy[k]
                 const isFunc = typeof original === 'function'
-                if (isFunc && !original.functionList) original.functionList = [original]
 
                 const newFunc = override[k]
                 const composeFunction = newFunc.__compose === true
@@ -78,13 +83,23 @@ export const merge = (
                 
                 // Function Composition
                 else {
-                    if (!original.functionList.includes(newFunc)) {
+                    let funcList = functionRegistry.find(o => o.f === original)
+
+                    let ogFunc = original
+                    if (!funcList) {
+                        if (ogFunc.__esInspectable) ogFunc = ogFunc.__esInspectable.target // Don't trigger proxies that have been updated
+                        funcList = {f: ogFunc, list: [ogFunc]}
+                        functionRegistry.push(funcList)
+                    }
+
+                    if (!funcList.list.includes(newFunc)) {
                         const func = copy[k] = function(...args) {
-                            const res = original.call(this, ...args);
+                            const res = ogFunc.call(this, ...args);
                             return newFunc.call(this, ...Array.isArray(res) ? res : [res]);
-                        } as Function & {functionList?: Function[]}
-                        if (!func.functionList) func.functionList = [original]
-                        func.functionList.push(override)
+                        } as Function & {__functionList?: Function[]}
+
+                        funcList.f = func
+                        funcList.list.push(newFunc)
                     } 
                     else console.warn(`This function was already composed. Ignoring duplicate.`)
                 }

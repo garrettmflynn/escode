@@ -122,7 +122,7 @@ export const set = (type, absPath, value, callback, base, allListeners: Partial<
     const fullInfo = info(id, callback, path, value, base, listeners, options)
 
     // ------------------ Set Listener in Registry ------------------
-    if (listeners[type]) listeners[type](fullInfo, allListeners[type], allListeners.lookup) // goes up to register()
+    if (listeners[type]) listeners[type](fullInfo, allListeners, allListeners.lookup) // goes up to register()
     else {
         const path = utils.getPath('absolute', fullInfo)
         allListeners[type][path][fullInfo.sub] = fullInfo
@@ -204,7 +204,8 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookups?:
 export function getProxyFunction(info, collection, fn) {
     return function (...args) {
         const listeners = collection['functions'][utils.getPath('absolute', info)]
-        return functionExecution(this, listeners, fn ?? info.original, args)
+        const res = functionExecution(this, listeners, fn ?? info.original, args)
+        return res.output // Return Standard Output
     }
 }
 

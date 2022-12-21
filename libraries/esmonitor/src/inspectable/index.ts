@@ -5,6 +5,7 @@ import * as standards from '../../../esc/standards'
 import { setFromPath } from '../../../common/pathHelpers';
 import { isProxy } from '../globals';
 import define from './define';
+import { isNode } from '../../../escompose/src/globals';
 
 export type InspectableProxy = ProxyConstructor & {
     __proxy: ProxyConstructor,
@@ -34,7 +35,7 @@ const canCreate = (parent, key?, val?) => {
     const notObjOrFunc = !val || !(isObject || isFunction )
     if (notObjOrFunc) return false
 
-    if (val instanceof Element) return false // Avoid HTML elements
+    if (!isNode && val instanceof Element) return false // Avoid HTML elements
     if (val instanceof EventTarget) return false // Avoid HTML elements
 
     const isESM = isObject && check.esm(val)
@@ -105,7 +106,9 @@ export default class Inspectable {
 
             let type = this.options.type
             if (type != 'object') type = (typeof target === 'function')  ? 'function' : 'object';
-            const handler =  handlers[`${type}s`].call(this)
+
+            let handler =  handlers[`${type}s`].call(this)
+            if (type === 'function') handler = {...handler, ...handlers.objects.call(this)} // Functions have both
 
             this.proxy = new Proxy(target, handler)
 

@@ -1,19 +1,18 @@
+import { isProxy } from '../../../esmonitor/src/globals';
 import * as core from '../core/index';
 
+const message = 'Hi'
 const object = {
   test: 1, 
   active: false,
   testFunction: () => {
-      const message = 'Hi!'
-      console.log(message)
-      return message
+    return message
   }
 }
 
 const o2TestMessage = 'Failed!'
 
 const o2TestFunction = () => {
-  console.log(o2TestMessage)
   return o2TestMessage
 }
 
@@ -28,7 +27,6 @@ const objectTwo = {
 const o3TestMessage = 'Succeeded!'
 
 const o3TestFunction = () => {
-  console.log(o3TestMessage)
   return o3TestMessage
 }
 
@@ -41,58 +39,33 @@ const objectThree = {
   testFunction: o3TestFunction // Function merge
 }
 
-// console.log('------------- Trying test function -------------')
-// await object.testFunction()
-
-
-// // Use merge for merging objects
-// console.log('------------- Starting failed merge -------------')
-// const failedToListenToNewKey = escompose.merge([object, objectTwo], true)
-// // object.testFunction = o2TestFunction // Direct replacement
-// await object.testFunction()
-// console.log('Failed to Listener to New Key', failedToListenToNewKey)
-
-// console.log('------------- Starting successful merge -------------')
-// const listenedToNewKey = escompose.merge([objectProxy, objectThree], true)
-// // objectProxy.testFunction = o3TestFunction // Direct replacement
-// await objectProxy.testFunction()
-
-// console.log('Merged + All Listeners Worked!', listenedToNewKey)
-
-// console.log(objectProxy, object)
-// console.log(objectProxy.test, object.test)
-// console.log(objectProxy.active, object.active)
-// console.log(objectProxy.success, object.success)
-
-
-// afterAll(() => {
-//   clearCityDatabase();
-// });
-
-
-// beforeEach(() => {
-//   initializeCityDatabase();
-// });
-
-// afterEach(() => {
-//   clearCityDatabase();
-// });
-
 describe('The core ESCompose helper functions behave appropriately on their own', () => {
 
+  const isStatic = false
   let proxy, changelog: {[x:string]: any} = {};
 
   beforeAll(() => {
-    proxy = core.monitor.set( 'object',  object,  {static: true} ) // Set object reference
-    core.monitor.on('object', (path, _, update) => changelog[path] = update) // Track changes in a changelog
+    proxy = core.monitor.set( 'object',  object,  { static: isStatic } ) // Set object reference
+    core.monitor.on('object', (path, _, update) => {
+      changelog[path] = update
+    }) // Track changes in a changelog
   });
 
   describe('merging into the original object has limited functionality', () => {
 
-    let merged;
+
+    let merged, returnedProxy
+    const shouldBeProxy = !isStatic && !!globalThis.Proxy
+
     beforeAll(() => {
+      returnedProxy = !!globalThis.Proxy && !!proxy[isProxy]
       merged = core.merge([object, objectTwo], true)
     });
+
+    test('a proxy object has been successfuly created when available', () => {
+      expect(shouldBeProxy).toBe(!!proxy[isProxy])
+    })
+
 
     test('values for existing keys are updated properly', () => {
       expect(proxy.test).toBe(objectTwo.test)
@@ -112,8 +85,10 @@ describe('The core ESCompose helper functions behave appropriately on their own'
 
     test('the test function is now replaced by a proxy function', async () => {
       const res = await object.testFunction()
-      expect(proxy.testFunction).not.toBe(o2TestFunction) 
-      expect((res as any).output).toBe(o2TestMessage) // TO FIX: This returns an object...
+      if (returnedProxy) expect(proxy.testFunction.__esInspectable.target).toBe(o2TestFunction) 
+      else expect(proxy.testFunction).not.toBe(o2TestFunction) 
+
+      expect(res).toBe(o2TestMessage)
       expect(changelog.testFunction).toBe(o2TestMessage)
     })
 
@@ -138,15 +113,14 @@ describe('The core ESCompose helper functions behave appropriately on their own'
       expect(proxy.success).toBe(objectThree.success)
     })
 
-    test('new keys will trigger updates on relevant listeners', () => {
-      expect('success' in changelog).toBe(true)
+    test('new keys will trigger updates on relevant listeners if Proxies are used', () => {
+      expect('success' in changelog).toBe(!!proxy[isProxy])
     })
 
     test('the test function is still replaced by a proxy function', async () => {
       const res = await object.testFunction()
-      console.log('Got Res', res)
       expect(proxy.testFunction).not.toBe(o2TestFunction) 
-      expect((res as any).output).toBe(o3TestMessage) // TO FIX: This returns an object...
+      expect(res).toBe(o3TestMessage)
       expect(changelog.testFunction).toBe(o3TestMessage)
     })
 

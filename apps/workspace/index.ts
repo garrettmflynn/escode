@@ -8,6 +8,7 @@ import * as escode from '../../libraries/escode/src/index'
 
 import * as reference from './index.esc.js'
 import { Rule } from '../../libraries/drafts/rules/Rule'
+import { isProxy } from '../../libraries/esmonitor/src/globals'
 
 
 
@@ -95,16 +96,12 @@ const run = async () => {
         test: 1, 
         active: false,
         testFunction: () => {
-            const message = 'Hi!'
-            console.log(message)
-            return message
+            return 'Hi!'
         }
     }
 
     const o2TestFunction = () => {
-        const message = 'Failed!'
-        console.log(message)
-        return message
+        return 'Failed!'
     }
 
     const objectTwo = {
@@ -114,11 +111,8 @@ const run = async () => {
         testFunction: o2TestFunction // Function merge
     }
 
-
     const o3TestFunction = () => {
-        const message = 'Succeeded!'
-        console.log(message)
-        return message
+        return 'Succeeded!'
     }
 
     o3TestFunction.__compose = true
@@ -130,12 +124,17 @@ const run = async () => {
         testFunction: o3TestFunction // Function merge
     }
 
+
+    const isStatic = false
      // Use listen for listening to an object
-     const objectOneProxy = escompose.monitor.set(
+     const proxy = escompose.monitor.set(
         'objectOne', 
         objectOne, 
-        {static: true}
+        { 
+            static: isStatic
+        }
     )
+
      escompose.monitor.on('objectOne', (path, _, update) => {
         console.log('Changed!', path, update)
      })
@@ -146,24 +145,12 @@ const run = async () => {
 
     // Use merge for merging objects
     console.log('------------- Starting failed merge -------------')
-    const failedToListenToNewKey = escompose.merge([objectOne, objectTwo], true)
-    // objectOne.testFunction = o2TestFunction // Direct replacement
+    escompose.merge([objectOne, objectTwo], true)
     await objectOne.testFunction()
-    console.log('Failed to Listener to New Key', failedToListenToNewKey)
 
     console.log('------------- Starting successful merge -------------')
-    const listenedToNewKey = escompose.merge([objectOneProxy, objectThree], true)
-    // objectOneProxy.testFunction = o3TestFunction // Direct replacement
-    await objectOneProxy.testFunction()
-
-    console.log('Merged + All Listeners Worked!', listenedToNewKey)
-
-    console.log(objectOneProxy, objectOne)
-    console.log(objectOneProxy.test, objectOne.test)
-    console.log(objectOneProxy.active, objectOne.active)
-    console.log(objectOneProxy.success, objectOne.success)
-
-
+    escompose.merge([proxy, objectThree], true)
+    await proxy.testFunction()
 }   
 
 

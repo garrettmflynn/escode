@@ -20,6 +20,8 @@ export const functions = function () {
                     argumentsList = argumentsList.slice(1)
                 }
 
+
+
                 let listeners = inspectable.listeners.functions
                 // Notify of Function Execution
                 const pathStr = inspectable.path.join(inspectable.options.keySeparator)
@@ -63,9 +65,11 @@ export const objects = function () {
             return Reflect.get(target, prop, receiver);
         },
         
-        set(target, prop, newVal, receiver) {            
-            
+        set(target, prop, newVal, receiver) {   
+                        
+
             if (prop === isProxy) return true;
+
             const pathStr = [...inspectable.path, prop].join(inspectable.options.keySeparator)
 
             const isFromProxy = newVal?.[isProxy]
@@ -88,7 +92,7 @@ export const objects = function () {
 
 
             // Create Proxies for Objects
-            if (newVal) {
+            if (newVal || typeof newVal === 'function') {
                 const newProxy = inspectable.create(prop, target, newVal)
                 if (newProxy) newVal = newProxy
             }
