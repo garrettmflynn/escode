@@ -14,8 +14,8 @@ class nodeClass { //treated as a class to instance rather than a function to set
 }
 
 
-const nodeD = (a,b,c)=>{ return a+b+c; }
-nodeD.__ = true
+const nodeD = (...args)=>{ return args.reduce((a,b) => a + b, 0); }
+// nodeD.__ = true
 
 let tree = {
 
@@ -79,6 +79,10 @@ let tree = {
     // Global Listeners
     // TODO: Allow for bound implementations of global listeners
     __listeners: {
+        'nodeD':function(res){
+            const message = 'nodeD operator returned: ' + res
+            log.add(message)
+        },
         'nodeB.nodeC':function(op_result){
             const message = 'nodeA listener: nodeC operator returned:'
             log.add(message)

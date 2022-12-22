@@ -8,6 +8,7 @@ import { AnyClass, ConfigInput, FinalConfig } from "../types"
 import compose from "../loaders/compose"
 import { toReturn } from "./symbols"
 import { isNode } from "../globals"
+import { all } from "../../../common/properties"
 
 
 const isNativeClass= (o) => typeof o === 'function' && o.hasOwnProperty('prototype') && !o.hasOwnProperty('arguments')
@@ -24,9 +25,11 @@ export default function parse(config: ConfigInput, toApply: any = {}, options: P
 
     // Function Support: Transform function so that it becomes an object
     else if ( typeof config === 'function') {
-        delete (config as any).__ // remove the __ property from the function
         if (isNativeClass(config)) config = new (config as AnyClass)(toApply, options) // Create a class
-        else config = { [specialKeys.default]: config } // Apply as a default function
+        else {
+            delete (config as any).__ // remove a triggering __ property from the function
+            config = { [specialKeys.default]: config } // Apply as a default function
+        }
     }
 
     // Apply Component to the Element

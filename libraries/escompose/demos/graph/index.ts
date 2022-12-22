@@ -30,9 +30,15 @@ export function start () {
 
 export const operations = [
     {
+        name: 'component.run("nodeD")',
+        function: () => {
+            component.nodeD(); // Can be listened to—but isn't a 'true' component
+        },
+    },
+    {
         name: 'component.run("nodeG")',
         function: () => {
-            component.nodeG.default();
+            component.nodeG.default(); // Has been instantiated because of the static __ property
         },
     },
     {
@@ -146,6 +152,7 @@ export const operations = [
         ignore: false,
         function: () => {
             popped.__parent = secondComponent
+            console.log('Has Been Reparented', popped.__.root === secondComponent.__.root)
         }
     },
     {

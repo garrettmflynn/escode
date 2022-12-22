@@ -245,20 +245,37 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
     const absolutePath = path.join(opts.keySeparator ?? keySeparator)
 
     const __ = {
+
+        // ---------- Identifiers ----------
         name,
         symbol: Symbol('isGraphScript'), // A unique value to compare against
-        graph: isSymbol ? name : parent[specialKeys.isGraphScript].graph, // Set graph property
+
+        // ---------- Relative Position ----------
+        root: isSymbol ? name : parent[specialKeys.isGraphScript].root, // Set graph property
+        path: absolutePath, // Temporary Path Property
+
+        // ---------- Instantiation Options ----------
         options: opts,
+
+        // ----------Original Instantiation Configuration Object ----------
         original,
+
+        // ---------- Loader State Tracker ----------
+        // TODO: Make sure the loaders are using this so it can be tracked!
         states: {
             connected: false,
         },
+
+        // ---------- Nested Components Map ----------
         components: new Map(),
+
+        // ---------- Listener Managers ----------
         flow: new FlowManager(),
+
+        // ---------- Creation Managers ----------
         create: equivalentCreateFunction,
 
-        path: absolutePath, // Temporary Path Property
-
+        // ---------- Lifecycle Managers ----------
         stop: {
             name: 'stop',
             value: false,
@@ -270,7 +287,6 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
             },
         },
 
-        // Trigger start sequence
         start: {
             name: 'start',
             value: false,

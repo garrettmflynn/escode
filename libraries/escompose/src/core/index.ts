@@ -37,7 +37,7 @@ export const create = (
 
                 const flow = esc[specialKeys.isGraphScript].flow
                 flow.setInitialProperties(to, absolutePath, {
-                    id: esc[specialKeys.isGraphScript].graph,
+                    id: esc[specialKeys.isGraphScript].root, // NOTE: Make sure this can change with the root
                     monitor: fullOptions.monitor,
                     options: fullOptions
                 })

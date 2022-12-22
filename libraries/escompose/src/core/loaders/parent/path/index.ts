@@ -36,7 +36,7 @@ const pathLoader = ( esc, _, opts: Partial<Options>={}) => {
                     const parentName = target[specialKeys.isGraphScript].name
                     if (typeof parentName === 'string') path.push(parentName)
                     else {
-                        if (typeof parentName === 'symbol') configuration.graph = parentName
+                        if (typeof parentName === 'symbol') configuration.root = parentName
                         else console.error('No graph reset occured for', parentName)
                         break
                     }

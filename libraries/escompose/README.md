@@ -81,6 +81,10 @@ component.__element.click()
 ## GraphScript Properties
 See the [ES Components] specification for a full list of properties.
 
+All ES Components have at least one GraphScript property at instantiation. All other properties throughout an ES Component are listeneable by the root Component.
+
+> **Note:** This includes classes and functions. Classes will not be instantiated without a static `__` property. On the other hand, functions will not converted to a `default` property without a `__` property set—though they will still be listenable without it.
+
 Active components are recognized by the presence of the `__` property on them. This provides access to utilities such as `run` and `subscribe`—as well as retains a record of read-only properties maintained by the library itself.
 
 All other `__` properties are considered GraphScript properties, and are used to program the behavior of the Component. 
