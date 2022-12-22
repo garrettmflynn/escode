@@ -90,7 +90,5 @@ export const parseOptions = (options: Partial<Options>) => {
      copy.monitor = new Monitor(copy.monitor)
  }
 
- copy.monitor.options.fallbacks = [specialKeys.hierarchy] // Always fall back to __children
-
  return copy as Options
 }

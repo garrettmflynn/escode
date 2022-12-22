@@ -86,12 +86,10 @@ export default async function(){
             call(originalCreate, this)
             this.context = this
 
-            if (instance.__children) {
-                for (let key in instance.__children) {
-                    const component = instance.__children[key]
-                    if (typeof component.ongame === 'function') component.ongame(this.context)
-                }
-            }
+            
+            instance.__.components.forEach(component => {
+                if (typeof component.ongame === 'function') component.ongame(this.context)
+            })
 
             resolve(this.context)
         }
@@ -102,12 +100,9 @@ export default async function(){
             call(originalUpdate, this) // TODO: Call all dependent objects...
 
             // run children with update functions
-            if (instance.__children) {
-                for (let key in instance.__children) {
-                    const component = instance.__children[key]
-                    if (typeof component.update === 'function') component.update(this, instance.__children) // can be internal or connected
-                }
-            }
+            instance.__.components.forEach(component => {
+                if (typeof component.update === 'function') component.update(this, instance.__.components) // can be internal or connected
+            })
         }
 
 

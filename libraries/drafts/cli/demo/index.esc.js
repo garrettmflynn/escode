@@ -1,13 +1,13 @@
-import * as list from  "../../../../components/ui/ul.js"
-import * as input from "../../../../components/ui/input.js"
-import * as removable from "../../../../components/ui/behaviors/removable.js"
+import * as listComponent from  "../../../../components/ui/ul.js"
+import * as inputComponent from "../../../../components/ui/input.js"
+import * as removableComponent from "../../../../components/ui/behaviors/removable.js"
 
-import * as button from  "../../../../components/ui/button.js"
-import * as store from  "../../../../components/storage/local/set.js"
-import * as load from  "../../../../components/storage/local/get.js"
-import * as remove from  "../../../../components/storage/local/remove.js"
+import * as buttonComponent from  "../../../../components/ui/button.js"
+import * as storeComponent from  "../../../../components/storage/local/set.js"
+import * as loadComponent from  "../../../../components/storage/local/get.js"
+import * as removeComponent from  "../../../../components/storage/local/remove.js"
 
-import onSubmit from  "./scripts/onSubmit.js.js"
+import onSubmit from  "./scripts/onSubmit.js"
 
 export const __attributes = {
     style: {
@@ -21,61 +21,59 @@ export const __define = {
             name: 'es-removable-list-item',
             extends: 'li',
         },
-        __compose: removable
+        __compose: removableComponent
     }
 }
 
-export const __children = {
-
-        list: {
+        export const list = {
             itemType: 'es-removable-list-item',
             __element: 'ul',
-            __compose: list
-        },
+            __compose: listComponent
+        }
         
-        form: {
+        export const form = {
             __element: 'form',
             __attributes: {
                 onsubmit: onSubmit 
             },
-            __children: {
-                input: {
-                    __element: 'input',
-                    __attributes: {
-                        placeholder: 'Write your todo here'
-                    },
-                    __compose: input
+            input: {
+                __element: 'input',
+                __attributes: {
+                    placeholder: 'Write your todo here'
                 },
-                button: {
-                    __element: 'button',
-                    __attributes: {
-                        type: 'submit',
-                        innerHTML: 'Add Todo'
-                    },
-                    __compose: button
-                }
+                __compose: inputComponent
+            },
+            button: {
+                __element: 'button',
+                __attributes: {
+                    type: 'submit',
+                    innerHTML: 'Add Todo'
+                },
+                __compose: buttonComponent
             }
-        },
+        }
 
-        clearButton: {
+        export const clearButton = {
             __element: 'button',
             __attributes: {
                 innerHTML: 'Clear List'
             },
-            __compose: button
-        },
-
-        store: {
-            __compose: store
-        },
-        remove: {
-            __compose: remove
-        },
-        load: {
-            __trigger: ["todos"],
-            __compose: load
+            __compose: buttonComponent
         }
-    }
+
+        export const store = {
+            __compose: storeComponent
+        }
+
+        export const remove = {
+            __compose: removeComponent
+        }
+
+        export const load = {
+            __trigger: ["todos"],
+            __compose: loadComponent
+        }
+
 export const __listeners = {
 
     list: {

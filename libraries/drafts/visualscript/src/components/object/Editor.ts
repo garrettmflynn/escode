@@ -190,8 +190,6 @@ export class ObjectEditor extends LitElement {
 
       this.history = []
 
-      const specialHierarchyKey = '__children'
-
       const registerAll = (path, target) => {
 
         let info: any = {
@@ -223,11 +221,11 @@ export class ObjectEditor extends LitElement {
 
         const hasKey = (key in target)
 
-        // Check first for special hierarchy key
-        const deeper = target[specialHierarchyKey]
-        if (deeper && !hasKey){
-           target = register(specialHierarchyKey, target, info)
-        }
+        // // Check first for special hierarchy key
+        // const deeper = target[specialHierarchyKey]
+        // if (deeper && !hasKey){
+        //    target = register(specialHierarchyKey, target, info)
+        // }
 
         const hasKeyBase = (key in target)
         if (!hasKeyBase) return false

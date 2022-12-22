@@ -5,18 +5,12 @@ const power = [50, 60]
 const movement = [1]
 
 const noiseOverride =  {
-    __children: {
-        devices: noise
-    }
+    devices: noise
 }
 
-export const __children =  {
-    devices:{
-        __children: {
-            noise: {
-                frequencies: [[...movement, ...power]] // setting custom frequencies
-            }
-        }
+export const devices = {
+    noise: {
+        frequencies: [[...movement, ...power]] // setting custom frequencies
     }
 }
 

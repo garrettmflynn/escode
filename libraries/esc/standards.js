@@ -8,7 +8,6 @@ export const esSourceKey = '__esmpileSourceBundle'
 export const defaultProperties = {
     isGraphScript: '__',
     default: defaultPath,
-    hierarchy: '__children',
     parent: '__parent',
     promise: '__childresolved',
 
@@ -26,7 +25,6 @@ export const specialKeys = {
     resolved: '__resolved', // wait until fully resolved
     started: '__started', // wait until started
 
-    hierarchy: '__children',
     element: '__element',
     webcomponents: '__define',
     attributes: '__attributes',

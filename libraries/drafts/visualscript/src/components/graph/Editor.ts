@@ -162,9 +162,7 @@ export class GraphEditor extends LitElement {
                         const list = new Tree({
                           target: this.plugins,
                           conditions: {
-                            value: (o) => {
-                              return o.hasOwnProperty('default') || o.hasOwnProperty('__children') || o.hasOwnProperty('__define') || o.hasOwnProperty('__element') || o.hasOwnProperty('__parent')
-                             } // esc always has default
+                            value: (o) => !!o.__ // Check if a component
                           },
                           onClick: (tag, thing:any) => {
                             resolve({tag, info: Object.assign({}, thing)}) // Copying thing so that it doesn't get modified globally

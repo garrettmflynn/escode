@@ -3,11 +3,13 @@ import { deep as deepClone } from "../../../common/clone.js"
 import { specialKeys } from "../../../esc/standards"
 import { Options } from "../../../common/types"
 import * as utils from "../utils"
-import FlowManager from "../../../drafts/edgelord/index"
 
 import { parseOptions } from "./parse"
 import { ConfigInput } from "../types"
 import load from "./load"
+
+import * as components from "./components"
+import { ESComponent } from "../../../esc"
 
 // Use a global monitor instance to listen to an object property without creating an ES Component 
 export const monitor = new Monitor()
@@ -22,8 +24,6 @@ export const create = (
         // Parse the options object into a final options object
         const fullOptions = parseOptions(options) 
 
-        let listeners = {}
-
         const callbacks = {
 
             onRootCreated: (id, esc) => (fullOptions.monitor as Monitor).set(id, esc, fullOptions.listeners), // Setting root instance
@@ -34,28 +34,28 @@ export const create = (
                 if (fullOptions.listen !== false) {
                     const to = esc[specialKeys.listeners.value] ?? {}  // Uses to —> from syntax | Always set
 
-                    const manager = listeners[absolutePath] = new FlowManager(to, absolutePath, {
+                    const flow = esc[specialKeys.isGraphScript].flow
+                    flow.setInitialProperties(to, absolutePath, {
                         id: esc[specialKeys.isGraphScript].graph, 
                         monitor: fullOptions.monitor, 
                         options: fullOptions
-                    }) // Uses from —> to syntax
+                    })
+
                     esc[specialKeys.listeners.value] = to // Replace with listeners assigned (in case of unassigned)
 
-                    
-                    esc[specialKeys.isGraphScript].flow = manager
-
+                
                     // -------- Trigger Execution when Ready --------
                     if (specialKeys.trigger in esc) {
                         if (!Array.isArray(esc[specialKeys.trigger])) esc[specialKeys.trigger] = []
                         const args = esc[specialKeys.trigger]
-                        manager.onStart(() => esc.default(...args))
+                        flow.onStart(() => esc.default(...args))
                         delete esc[specialKeys.trigger]
                     }
                 }
             },
 
             // Activate listeners when instance is ready
-            onInstanceReady: (absolutePath) => listeners[absolutePath].start(),
+            onInstanceReady: (absolutePath, esc) => esc[specialKeys.isGraphScript].flow.start(),
         }
 
         const loaders = fullOptions.loaders
@@ -80,13 +80,16 @@ export const create = (
                 } else return esc // Just return instance synchronously since the component is only activated when placed in the DOM
             })
 
-            if (!isArray) return arr[0]
-            else return arr
-
-        })
+            if (!isArray) return arr[0] as ESComponent
+            else return arr as ESComponent[]
+        }) as ESComponent
 }
 
 export default create
+
+
+// Find components on an object
+export const find = components.from
 
 // Apply a callback to promises and direct references
 export const resolve = utils.resolve

@@ -1,5 +1,5 @@
 import { Options } from "../../../common/types"
-import { ESComponent } from "../../../esc/esc"
+import { ESComponent } from "../../../esc"
 
 export type AnyClass = { new (...args: any): any }
 export type FinalConfig = { [key: string]: any }

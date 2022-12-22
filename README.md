@@ -36,7 +36,7 @@ The [escode] software library is a visual programming system to visualize and ed
 
 > **Note:** We are currently in the middle of an integration effort in the [graphscript integration branch](https://github.com/brainsatplay/graphscript/tree/integration).
 
-[escompose] is a simple extension of [graphscript], which uses several “graph script” properties such as __listener, __children, and __onconnected to imbue objects with special behaviors.
+[escompose] is a simple extension of [graphscript], which uses several “graph script” properties such as __listeners and __onconnected to imbue objects with special behaviors.
 
  In general, [escompose] simply negates a flag that limiting flow graph behaviors to simple one-by-one IO for logic trees—thereby affording a map of black boxes to be produced. Outside of this change, we are also adding a few loaaders to the graphscript.Graph constructor.
 

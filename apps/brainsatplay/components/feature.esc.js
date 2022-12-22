@@ -1,7 +1,7 @@
 export function __onconnected () {
     const properties = ['number', 'title', 'description']
     properties.forEach(property => {
-        if (this[property] !== undefined) this.__children.container.__children[property].__element.innerText = this[property]
+        if (this[property] !== undefined) this.container[property].__element.innerText = this[property]
     })
 
     if (this.projects !== undefined) {
@@ -28,8 +28,7 @@ export function __onconnected () {
             a.innerText = project.name
             span.innerText = ` ${project.version}`
 
-
-            this.__children.container.__children.projects.__element.appendChild(li)
+            this.container.projects.__element.appendChild(li)
         })
     }
 
@@ -41,9 +40,7 @@ export const __attributes = {
     }
 }
 
-export const __children = {
-    container: {
-        __children: {
+    export const container = {
             number: {
                 __element: 'p',
                 __attributes: {
@@ -68,9 +65,6 @@ export const __children = {
                 }
             },
             projects: {
-                __element: 'ul',
-                __children: { }
+                __element: 'ul'
             }
-        }
     }
-}

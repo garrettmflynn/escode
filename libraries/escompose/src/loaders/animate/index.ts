@@ -47,8 +47,11 @@ export default function animate(esc) {
             }
             // Set Interval
             else {
-                runFuncs() // run initially
-                info.id = setInterval(() => runFuncs(), 1000/interval)
+                startFunction = () => {
+                    runFuncs() // run initially
+                    info.id = setInterval(() => runFuncs(), 1000/interval)
+                }
+
                 animations[interval].stop = () => clearInterval(info.id)
             } 
         } 

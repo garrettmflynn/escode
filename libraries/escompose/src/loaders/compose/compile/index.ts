@@ -99,18 +99,16 @@ export default function compile(o, opts: Options) {
 function createErrorComponent (message) {
     return {
         [specialKeys.element]: 'p',
-        [specialKeys.hierarchy]: {
-            b: {
-                [specialKeys.element]: 'b',
-                [specialKeys.attributes]: {
-                    innerText: 'Error: '
-                }
-            },
-            span: {
-                [specialKeys.element]: 'span',
-                [specialKeys.attributes]: {
-                    innerText: message
-                }
+        b: {
+            [specialKeys.element]: 'b',
+            [specialKeys.attributes]: {
+                innerText: 'Error: '
+            }
+        },
+        span: {
+            [specialKeys.element]: 'span',
+            [specialKeys.attributes]: {
+                innerText: message
             }
         }
     }

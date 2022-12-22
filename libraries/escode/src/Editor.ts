@@ -9,11 +9,11 @@ import { Tab, Panel, Tree, CodeEditor, ObjectEditor, GraphEditor, Modal, global,
 import { GraphEdge } from '../../drafts/visualscript/src/components/graph/Edge';
 
 // ESCompose and ESMonitor Dependencies
-import createComponent from '../../escompose/src/index'
+import * as escompose from '../../escompose/src/index'
 
 // Default ES Component Pool for Plugins
 import * as components from '../../../components/index.js'
-import { __source } from '../../esc/esc';
+import { ESComponent, __source } from '../../esc';
 import { isListenerPort } from '../../drafts/visualscript/src/components/graph/utils/check';
 import { Console } from './Console';
 import { specialKeys } from '../../esc/standards';
@@ -366,7 +366,7 @@ export class Editor extends LitElement {
 
     createComponent = (esc, nestedInfo: any = undefined) => {
       // Create an active ES Component from a .esc file
-      return createComponent(esc, { nested: nestedInfo  })
+      return escompose.create(esc, { nested: nestedInfo  })
     }
 
 
@@ -427,7 +427,7 @@ export class Editor extends LitElement {
     // TODO: Assign ES Component types
     setComponent = (esc: any = {}, ui = !this.bind) => {
 
-      const component = (esc.hasOwnProperty('__path')) ? esc : this.createComponent(esc) 
+      const component = ((esc.hasOwnProperty(specialKeys.isGraphScript)) ? esc : this.createComponent(esc)) as ESComponent
       const attachedToThis = esc.__editorAttached === this
 
       this.config.original = this.config.esc = component
@@ -445,18 +445,17 @@ export class Editor extends LitElement {
         const local = {}
 
         // Grabbing components from the current object
-        for (let key in component.__children) {
-          const esc = await component.__children[key].__childresolved ?? component.__children[key]
-          local[key] = esc[specialKeys.isGraphScript].original
-        }
-
+        const entries = component.__.components.entries()
+        await escompose.resolve(Array.from(entries).map(async ([key, component]) => {
+          local[key] = component.__.original
+        }))
 
         const npm = {}
         res.objects.forEach(o => npm[o.package.name] = o.package)
 
         this.setPlugins({
           ['Local']: {
-            'This Component': component[specialKeys.isGraphScript].original,
+            'This Component': component.__.original,
             ...local
           },
           ['NPM']: {
@@ -476,7 +475,7 @@ export class Editor extends LitElement {
       if (toSet) {
 
         const graph = {
-          nodes: component.__children,
+          nodes: component.__.components,
           edges: component.__listeners
         }
 

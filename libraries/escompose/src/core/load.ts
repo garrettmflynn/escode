@@ -1,4 +1,4 @@
-import create from "."
+import create from "./index"
 import { resolve } from '../utils/index'
 import { all } from "../../../common/properties"
 import { defaultProperties, keySeparator, specialKeys } from "../../../esc/standards"
@@ -6,8 +6,10 @@ import parse from "./parse"
 import { ApplyOptions, Loaders, SortedLoaders } from "../types"
 import pathLoader from "./loaders/path"
 import { toReturn } from "./symbols"
-import { ESComponent } from "../../../esc/esc"
+import { ESComponent } from "../../../esc"
+import FlowManager from "../../../drafts/edgelord/index"
 
+import * as components from "./components"
 
 // Use a function composition technique run the loaders in order
 const runLoaders = (loaders: Loaders | SortedLoaders, inputs: {
@@ -104,15 +106,14 @@ const filterLoaders = (esc, loaders: Loaders, beenLoaded: Loaders =[]) => {
     return usedLoaders
 }
 
-function addCallback(callback, priority?: boolean) {
-    const { callbacks, priorityCallbacks } = this
-    if (priority) priorityCallbacks.push(callback)
-    else callbacks.push(callback)
+function addCallback(callback, priority: 'before' | 'after' | 'main' = 'main') {
+    const { callbacks } = this
+    callbacks[priority].push(callback)
     return true
 }
 
 async function runRecursive(resolved) {
-    const { callbacks, priorityCallbacks, name } = this
+    const { callbacks, name } = this
     
 
     if (!this.value) {
@@ -126,14 +127,12 @@ async function runRecursive(resolved) {
 
         if (!isStop) configuration.stop.value = false
 
-        const toCall = (callback && !isStop) ? [...priorityCallbacks, callback, ...callbacks] : [...priorityCallbacks, ...callbacks]
+        const toCall = (callback && !isStop) ? [...callbacks.before, callback, ...callbacks.main] : [...callbacks.before, ...callbacks.main]
 
-        for (const callback of toCall) {
-            await callback.call(resolved, resolved)
-        }
+        for (const callback of toCall) await callback.call(resolved, resolved)
 
-        const hierarchy = Object.entries(resolved[specialKeys.hierarchy] ?? {}) as [string, ESComponent][]
-
+        const hierarchy = Array.from(resolved[specialKeys.isGraphScript].components.entries()) as [string, ESComponent][]
+        
         // Initialize Nested Components (and wait for them to be done)
         await resolve(hierarchy.map(async ([tag, component]) => {
             const promise = component[specialKeys.promise]
@@ -141,6 +140,9 @@ async function runRecursive(resolved) {
 
             return await component[specialKeys.isGraphScript][name].run() // Run the component start / stop function
         }))
+
+        // After All Components Resolved
+        for (const callback of callbacks.after)  await callback.call(resolved, resolved)
 
         // Call Final Function or Return
         if (isStop) {
@@ -173,7 +175,7 @@ async function runRecursive(resolved) {
 }
 
 
-export default function load(esc, loaders: Loaders = [], options: ApplyOptions) {
+export default function load(esc, loaders: Loaders = [], options: ApplyOptions): ESComponent {
     
 const parent = options.parent // Don't proxy the window...
     const {
@@ -184,7 +186,6 @@ const parent = options.parent // Don't proxy the window...
         opts = {},
         name = Symbol('root'), // Create symbol to identify the root instance
     } = options as ApplyOptions
-
 
     const original = esc
     esc = parse(esc, toApply, opts) // Parse the configuration object into a final configuration object (required)
@@ -218,6 +219,8 @@ const parent = options.parent // Don't proxy the window...
         states: {
             connected: false,
         },
+        components: new Map(),
+        flow: new FlowManager(),
         create: equivalentCreateFunction,
 
         // Temporary Path Property
@@ -227,8 +230,11 @@ const parent = options.parent // Don't proxy the window...
             name: 'stop',
             value: false,
             add: addCallback,
-            callbacks: [],
-            priorityCallbacks: []
+            callbacks: {
+                before: [],
+                main: [],
+                after: [],
+            },
         },
 
         // Trigger start sequence
@@ -236,8 +242,11 @@ const parent = options.parent // Don't proxy the window...
             name: 'start',
             value: false,
             add: addCallback,
-            callbacks: [],
-            priorityCallbacks: []
+            callbacks: {
+                before: [],
+                main: [],
+                after: [],
+            },
         }
     } as ESComponent['__']
 
@@ -290,8 +299,11 @@ const parent = options.parent // Don't proxy the window...
             if (callbacks.onInstanceReady) callbacks.onInstanceReady(absolutePath, esc)
         }
 
+
+        const configuration = esc[specialKeys.isGraphScript]
+
         // Apply Loaders to Nested Components
-        const nested = getNested(esc)
+        const nested = components.from(esc)
         if (nested) {
 
             // Resolve all nested components
@@ -311,7 +323,10 @@ const parent = options.parent // Don't proxy the window...
                     // Allow users to await the resolution of all children
                     Object.defineProperty(info.parent[name], specialKeys.promise, { value: resolution, writable: false, })
 
-                    return resolve(resolution)
+                    return resolve(resolution, (res) => {
+                        configuration.components.set(name, res)
+                        return res
+                    })
                 } else {
                     delete info.parent[name]
                     console.error('No reference found for nested component', info)
@@ -329,7 +344,6 @@ const parent = options.parent // Don't proxy the window...
         else isReady()
 
         // Add Stop Method
-        const configuration = esc[specialKeys.isGraphScript]
         configuration.stop.initial = resolved[specialKeys.stop]
         resolved[specialKeys.stop] = configuration.stop.run
        
@@ -355,22 +369,4 @@ const parent = options.parent // Don't proxy the window...
         return esc
     })
 
-}
-
-function getNested (o) {
-    const parent = o[specialKeys.hierarchy]
-    if (!parent) return null
-    let array = Object.entries(parent).map(([name,v]) => {
-       return {
-            ref: v,
-            parent,
-            name
-        } as {
-            name: string,
-            ref: any,
-            parent: any
-        }
-    })
-    
-    return array
 }

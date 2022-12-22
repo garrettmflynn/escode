@@ -1,5 +1,5 @@
-import * as test from '../../../../components/tests/basic/index.js'
-import * as button from '../../../../components/ui/button.js'
+import * as testComponent from '../../../../components/tests/basic/index.js'
+import * as buttonComponent from '../../../../components/ui/button.js'
 
 
 const testURL = '../../../../components/tests/basic/index.js'
@@ -7,12 +7,12 @@ const buttonURL = '../../../../components/ui/button.js'
 
 const testInfo = {
     url: testURL,
-    reference: test
+    reference: testComponent
 }
 
 const buttonInfo = {
     url: buttonURL,
-    reference: button
+    reference: buttonComponent
 }
 
 const id = 'test'
@@ -24,65 +24,58 @@ export const __attributes = {
     }
 }
 
-export const __children = {
-
-    // INTERNAL NOT WORKING
-    [id]: {
-        __compose: testInfo.reference, // test
-        __listeners: {
-            'imports.passedWithListener': {
-                'imports.nExecution': true
-            },
-            ['ARBITRARY']: {
-                'imports.passedWithListener': (...args) =>  console.log('Passed with Listener!', args),
-                'imports.later': (...args) =>  console.log('Added Later!', args)
-            },
-        }
-    }, 
-    container: {
-        componentToMove: buttonComponentId,
-        __compose: {
-            __element: 'div'
+export const test = {
+    __compose: testInfo.reference, // test
+    __listeners: {
+        'imports.passedWithListener': {
+            'imports.nExecution': true
         },
-        __children: {
-            p: {
-                __element: 'p',
-                __children: {
-                    b: {
-                        __element: 'b',
-                        __attributes: {
-                            innerText: 'Clicks: '
-                        }
-                    },
-                    span: {
-                        __element: 'span',
-                        __attributes: {
-                            innerText: '0'
-                        }
-                    },
-                }
-            },
-            [buttonComponentId]: {
-                __element: 'button',
-                __compose: [
-
-                    // Additional onmousedown Function
-                    // TODO: Figure out how to include something like this...
-                    {
-                        __attributes: {
-                            onmousedown: () => {
-                                console.log('Calling me too!')
-                            }
-                        }
-                    },
-
-                    // Primary Button Component
-                    buttonInfo.reference // button
-                ],
-                __trigger: {value: true, __internal: true}
-            },
+        ['ARBITRARY']: {
+            'imports.passedWithListener': (...args) =>  console.log('Passed with Listener!', args),
+            'imports.later': (...args) =>  console.log('Added Later!', args)
         },
     }
+}
+
+export const container = {
+    componentToMove: buttonComponentId,
+    __compose: {
+        __element: 'div'
+    },
+        p: {
+            __element: 'p',
+            b: {
+                __element: 'b',
+                __attributes: {
+                    innerText: 'Clicks: '
+                }
+            },
+            span: {
+                __element: 'span',
+                __attributes: {
+                    innerText: '0'
+                }
+            },
+        },
+        [buttonComponentId]: {
+            __element: 'button',
+            __compose: [
+
+                // Additional onmousedown Function
+                // TODO: Figure out how to include something like this...
+                {
+                    __attributes: {
+                        onmousedown: () => {
+                            console.log('Calling me too!')
+                        }
+                    }
+                },
+
+                // Primary Button Component
+                buttonInfo.reference // button
+            ],
+            __trigger: {value: true, __internal: true}
+        },
 }
 
 

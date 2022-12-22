@@ -1,10 +1,9 @@
 import * as base from './base.esc.js'
 import * as thirdPartyDecoder from "device-decoder.third-party"
-import * as preprocess from '../extensions/preprocess.esc.js'
+import * as preprocessComponent from '../extensions/preprocess.esc.js'
 
-import * as devices from "./dist/index.esm.js"
+// import * as devices from "./dist/index.esm.js"
 
-console.log('thirdPartyDecoder', thirdPartyDecoder, devices)
 export const __compose = base
 
 export const __attributes = {
@@ -17,8 +16,7 @@ export const __attributes = {
     }
 }
 
-export const __children = {
-       connectmode: {
+    export const connectmode = {
         options: [
             {
                 value: "OTHER",
@@ -37,8 +35,9 @@ export const __children = {
                 show: "selectBLEOther"
             }
         ]
-    },
-    selectUSB: {
+    }
+
+    export const selectUSB = {
         options: {
             cyton:"Open BCI Cyton",
             cyton_daisy:"Open BCI Cyton x2 (daisy chain mode)",
@@ -47,35 +46,37 @@ export const __children = {
             freeeeg128: "FreeEEG128",
             nrf5x: "nRF5x board"
         },
-    },
-    selectBLE: {
+    }
+
+    export const selectBLE = {
         options: {
             nrf5x: "nRF5x board"
         },
-    },
-    selectBLEOther: {
+    }
+
+    export const selectBLEOther = {
         options: {
             muse: "Muse",
             ganglion: "Ganglion"
         },
-    },
-    selectOther: {
+    }
+
+    export const selectOther = {
         options: {
             simulator: "Simulator"
         },
-    },
+    }
 
     // Add Third Party Decoders
-    connect: {
+   export const connect = {
         thirdPartyDecoder,
         // workerUrl: {
         //     __compose: "./scripts/workers/stream.big.worker.js",
         // },
-    },
+    }
 
     // Add Preprocessing Step
-    preprocess: preprocess
-}
+    export const preprocess = preprocessComponent
 
 export const __listeners = {
 

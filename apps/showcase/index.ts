@@ -221,23 +221,23 @@ async function start (demo = "basic", mode="direct") {
 
                 const graphDemo = esc
     
-                graphDemo.__children.nodeB.x += 1; //should trigger nodeA listener
+                graphDemo.nodeB.x += 1; //should trigger nodeA listener
     
-                graphDemo.__children.nodeB.__children.nodeC.default(4); //should trigger nodeA listener
+                graphDemo.nodeB.nodeC.default(4); //should trigger nodeA listener
             
-                graphDemo.__children.nodeA.jump();
+                graphDemo.nodeA.jump();
                         
-                const popped = graphDemo.__children.nodeB.__ondisconnected()
+                const popped = graphDemo.nodeB.__ondisconnected()
     
                 graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
     
                 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
             
-                graphDemo.__children.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
+                graphDemo.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
     
                 setTimeout(()=>{ 
                     if (graphDemo === active) {
-                        graphDemo.__children.nodeE.__ondisconnected()  
+                        graphDemo.nodeE.__ondisconnected()  
                         graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
                     }
                 }, 5500)

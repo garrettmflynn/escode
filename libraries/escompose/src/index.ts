@@ -35,6 +35,7 @@ export const monitor = core.monitor // Monitor any object for changes
 export const resolve = core.resolve // Apply a callback to promises and direct references
 export const clone = core.clone // Deep clone an object without creating an ES Component
 export const merge = core.merge // Merge two objects together without creating an ES Component 
+export const find = core.find // Find components on an object
 
 // Exports Modified from Core
 export const create = (config: ConfigInput, toApply?: any, options: Partial<Options> = {}) => {

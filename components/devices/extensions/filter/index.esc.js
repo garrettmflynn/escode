@@ -1,9 +1,7 @@
 // Note: Merge at the SAME LEVEL as the preprocessing and connect objects (to avoid enforcing with a specific name)
-import * as filter from "../../../filter/index.esc.js"
+import * as filterComponent from "../../../filter/index.esc.js"
 
-export const __children = {
-    filter
-}
+export const filter = filterComponent
 
 export const __listeners = {
     'filter.settings.sps': {
@@ -25,22 +23,16 @@ export const __listeners = {
 
 // // USAGE WHEN NESTED
 // const filterOverride = {
-//     __children: {
 //         devices: filter
-//     }
 // }
 
 // export const __compose = [filterOverride, signal]
 
-// export const __children = {
-//     devices: {
-//         __children: {
+//    export const devices = {
 //             filter: {
 //                 settings: {
 //                     // useBandpass: true,
 //                     // useDCBlock: true,
 //                 },
 //             }
-//         }
 //     },
-// }

@@ -1,4 +1,4 @@
-import { ESComponent } from "../../../../esc/esc"
+import { ESComponent } from "../../../../esc"
 import { esSourceKey, specialKeys } from "../../../../esc/standards"
 
 export const name = 'start'
@@ -16,7 +16,6 @@ export const properties = {
         specialKeys.parent,
         specialKeys.proxy,
         specialKeys.connected,
-        specialKeys.hierarchy,
         specialKeys.promise,
         specialKeys.resolved,
     ],

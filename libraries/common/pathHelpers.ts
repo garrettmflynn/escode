@@ -45,17 +45,6 @@ export const getFromPath = (baseObject, path, opts: any = {}) => {
         if (ref) {
 
             const str = path[i]
-            // Try Inside ES Components
-            if (!hasKey(str, ref) && '__children' in ref) {
-                for (let i in fallbackKeys) {
-                    const key = fallbackKeys[i]
-                    if (hasKey(key, ref)) {
-                        ref = ref[key]
-                        chain.push(ref)
-                        break
-                    }
-                }
-            }
             
             // Try Standard Path
             exists = hasKey(str, ref)
@@ -86,8 +75,6 @@ export const setFromPath = (path: PathFormat, value: any, ref:any, opts: SetValu
     const copy = [...path]
     const last = copy.pop() as string | symbol
 
-    if (ref.__children) ref = ref.__children 
-
     for (let i = 0; i < copy.length; i++) {
         const str = copy[i]  
         let has = hasKey(str, ref)
@@ -100,9 +87,6 @@ export const setFromPath = (path: PathFormat, value: any, ref:any, opts: SetValu
 
         // Swap reference
         if (has) ref = ref[str]
-
-        // Transfer to ESComponents automatically (if not second-to-last key...)
-        if (ref.__children) ref = ref.__children 
     }
 
     ref[last] = value

@@ -1,6 +1,6 @@
 import { Options } from "../../../../common/types";
 import { EditorProps } from "../../../../escode/src";
-import { ESComponent, ESDefineInfo, ESElementInfo } from "../../../../esc/esc";
+import { ESComponent, ESDefineInfo, ESElementInfo } from "../../../../esc";
 import { resolve } from "../../utils";
 import { specialKeys } from "../../../../esc/standards";
 
@@ -43,15 +43,14 @@ function checkESCompose (__compose) {
 
 function checkForInternalElements(node){
     if (node.__element || checkESCompose(node.__compose)) return true
-    else if (node.__children) return check(node.__children)
+    else if (node.__) return check(node.__.components)
 }
 
-function check (target) {
-    for (let key in target) {
-        const node = target[key]
-        let res = checkForInternalElements(node)
+function check (components) {
+    components.forEach(component => {
+        let res = checkForInternalElements(component)
         if (res) return true
-    }
+    })
 }
 
 
@@ -83,7 +82,6 @@ export const properties = {
         specialKeys.connected, 
     ],
     dependencies: [
-        specialKeys.hierarchy, 
         specialKeys.parent, 
         specialKeys.isGraphScript, 
         specialKeys.proxy, 
@@ -262,9 +260,11 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
                 finalStates.element = v
 
                 // Trigger __parent Setter on Nested Components
-                if (esm[specialKeys.isGraphScript]) {
-                    for (let name in esm[specialKeys.hierarchy]) {
-                        const component = esm[specialKeys.hierarchy][name] as ESComponent | Promise<ESComponent>; // TODO: Update these types since resolution order is different
+                const configuration = esm[specialKeys.isGraphScript]
+                if (configuration) {
+                    const components = configuration.components
+                    for (let name in components) {
+                        const component = components[name] as ESComponent | Promise<ESComponent>; // TODO: Update these types since resolution order is different
                         if (component && component[specialKeys.isGraphScript]){
                             resolve(component, (res) => res[specialKeys.parent] = v)
                         }
@@ -327,10 +327,16 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
                         // Resolved After Siblings Have Been Added
 
-                        if (desiredPosition !== undefined && desiredPosition < nextPosition) v.children[desiredPosition].insertAdjacentElement('beforebegin', ref)
-                    
-                        // Resolved Immediately or Before Siblings
-                        else v.appendChild(ref);
+                        const toMove = desiredPosition !== undefined && desiredPosition < nextPosition
+                        const length = v.children.length
+                        const before = (length && desiredPosition !== undefined) ? v.children[desiredPosition] ?? v.children[length - 1] : undefined
+                        if (before) {
+                            const beforeComponent = before[specialKeys.component]
+                            const beforedDesiredPosition = beforeComponent[specialKeys.childPosition]
+                            const location = (beforedDesiredPosition < desiredPosition) ? 'afterend' : 'beforebegin'
+                            before.insertAdjacentElement(location, ref)
+                        } else v.appendChild(ref);
+
 
                         // ------------------ Visualize with ESCode -----------------
                         if (__editor) __editor.setComponent(esm); // Set the target component
@@ -340,10 +346,6 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
                 // Set Child Parent Nodes to This
                 else {
                     console.error('No element was created for this Component...', esm)
-                    // for (let name in esm.__children) {
-                    //     const component = esm.__children[name]
-                    //     component.__parent = v
-                    // }
                 }
             }
 
@@ -410,7 +412,7 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
                 bound.split('/').forEach(str => {
                     if (str === '..') boundESM = boundESM[specialKeys.isGraphScript].states.parentNode[specialKeys.component] // Move to parent
                     else if (str === '.') return // Do nothing
-                    else boundESM = boundESM[specialKeys.hierarchy][str] // Move to child
+                    else boundESM = boundESM[str] // Move to child
                 }) 
 
                 const key = boundEditorKey
@@ -432,7 +434,7 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
     configuration.start.add(() =>{
         esm[specialKeys.resize] = finalStates.onresize
         if (finalStates.parentNode) esm[specialKeys.parent] = finalStates.parentNode
-    }, true)
+    }, 'before')
 
     configuration.stop.add(() => {
         esm[specialKeys.element].remove();

@@ -1,7 +1,7 @@
-import * as nodeA from './components/nodeA.esc.js'
-import * as nodeB from './components/nodeB.esc.js'
-import * as nodeC from './components/nodeC.esc.js'
-import * as nodeD from './components/nodeD.esc.js'
+import * as nodeAComponent from './components/nodeA.esc.js'
+import * as nodeBComponent from './components/nodeB.esc.js'
+import * as nodeCComponent from './components/nodeC.esc.js'
+import * as nodeDComponent from './components/nodeD.esc.js'
 
 import * as utils from './utils/index.js'
 
@@ -11,39 +11,35 @@ const escxgsId = 'escXgs'
 export const __element = 'div'
 
 
-export const __children = {
-    nodeA: {
-        __compose: nodeA,
-    },
-    nodeB: {
-        __compose: nodeB,
-        __children: {
-            nodeC: {
-                __compose: nodeC,
-                default: function(a) { 
-                    this.z += a; 
-                    const id = this._node ? escxgsId : escId
-                    const esmDiv = document.getElementById(id) ?? utils.getTopNode(this)
-                    if (esmDiv) esmDiv.insertAdjacentHTML('beforeend', `<li>nodeC z prop added to</li>`)
-
-                    return this.z; 
-                }
-            }
-        }
-    },
-
-    nodeD: {
-        __compose: nodeD,
-    },
-
-    nodeE: {
-        __animate: 1,
-        default:function () {
-
+export const nodeA = {
+    __compose: nodeAComponent,
+}
+export const nodeB = {
+    __compose: nodeBComponent,
+    nodeC: {
+        __compose: nodeCComponent,
+        default: function(a) { 
+            this.z += a; 
             const id = this._node ? escxgsId : escId
             const esmDiv = document.getElementById(id) ?? utils.getTopNode(this)
-            if (esmDiv) esmDiv.insertAdjacentHTML('beforeend', `<li>looped!</li>`)
+            if (esmDiv) esmDiv.insertAdjacentHTML('beforeend', `<li>nodeC z prop added to</li>`)
+
+            return this.z; 
         }
+    }
+}
+
+export const nodeD = {
+    __compose: nodeDComponent,
+}
+
+export const nodeE = {
+    __animate: 1,
+    default:function () {
+
+        const id = this._node ? escxgsId : escId
+        const esmDiv = document.getElementById(id) ?? utils.getTopNode(this)
+        if (esmDiv) esmDiv.insertAdjacentHTML('beforeend', `<li>looped!</li>`)
     }
 }
 

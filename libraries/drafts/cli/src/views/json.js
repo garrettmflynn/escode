@@ -14,6 +14,7 @@ export function html(text, outputType='object') {
 
     const parsed = HTMLParser.parse(text)
 
+    // TODO: Remove __children from here...
     const main = {}
     let resultObject = {
         __children: {

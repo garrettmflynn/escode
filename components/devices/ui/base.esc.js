@@ -1,37 +1,41 @@
 import * as select from '../../ui/select.js'
 import * as button from '../../ui/button.js'
-import * as connect from '../connect.js'
+import * as connectComponent from '../connect.js'
 import { deep } from '../../../libraries/common/clone.js'
 
 
 export const output = false
 export const ondata = (o) => deep(o) // Avoid mutation later
 
-export const __children = {
-    connectmode: {
-        __compose: select
+export const connectmode = {
+    __compose: select
+}
+
+export const selectUSB = {
+    __compose: select
+}
+
+export const selectBLE = {
+    __compose: select
+}
+
+export const selectBLEOther = {
+    __compose: select
+}
+
+export const selectOther = {
+    __compose: select
+}
+
+export const connect = {
+    __compose: connectComponent
+}
+
+export const toConnect = {
+    __attributes: {
+        innerHTML: "Connect"
     },
-    selectUSB: {
-        __compose: select
-    },
-    selectBLE: {
-        __compose: select
-    },
-    selectBLEOther: {
-        __compose:select
-    },
-    selectOther: {
-        __compose: select
-    },
-    connect: {
-        __compose: connect
-    },
-    toConnect: {
-        __attributes: {
-            innerHTML: "Connect"
-        },
-        __compose: button
-    }
+    __compose: button
 }
 
 export const __listeners = {

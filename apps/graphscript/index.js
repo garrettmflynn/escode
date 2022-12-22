@@ -39,18 +39,16 @@ let tree = {
     nodeB:{
         x:3,
         y:4,
-        __children:{
-                nodeC:{
-                    z:4,
-                    __operator:function(a) { this.z += a; console.log('nodeC operator: nodeC z prop added to',this); return this.z; },
-                    __listeners:{
-                        'nodeA.x':function(newX) { console.log('nodeC listener: nodeA x prop updated', newX);},
-                        'nodeA.jump':function(jump) { 
-                            console.log('nodeC listener: nodeA ', jump);
-                        }
-                    }
+        nodeC:{
+            z:4,
+            __operator:function(a) { this.z += a; console.log('nodeC operator: nodeC z prop added to',this); return this.z; },
+            __listeners:{
+                'nodeA.x':function(newX) { console.log('nodeC listener: nodeA x prop updated', newX);},
+                'nodeA.jump':function(jump) { 
+                    console.log('nodeC listener: nodeA ', jump);
                 }
             }
+        }
         
     },
 
@@ -132,7 +130,7 @@ console.log('nodeB reparented to graph2',popped,graph2);
 
 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
-popped.__children.nodeC.__operator(1);
+popped.nodeC.__operator(1);
 
 graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 

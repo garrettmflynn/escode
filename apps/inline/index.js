@@ -46,23 +46,23 @@ for (let i in trees){
 
             const onConnected = (tree) => {
 
-                tree.__children.nodeB.x += 1; //should trigger nodeA listener
+                tree.nodeB.x += 1; //should trigger nodeA listener
 
-                tree.__children.nodeB.__children.nodeC.default(4); //should trigger nodeA listener
+                tree.nodeB.nodeC.default(4); //should trigger nodeA listener
             
-                tree.__children.nodeA.jump();
+                tree.nodeA.jump();
                         
-                const popped = tree.__children.nodeB.__ondisconnected()  
+                const popped = tree.nodeB.__ondisconnected()  
 
                 divs[o.id].innerHTML += '<li><b>nodeB removed!</b></li>'
 
                 popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
             
-                tree.__children.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
+                tree.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
 
                 setTimeout(()=>{ 
 
-                    tree.__children.nodeE.__ondisconnected()  
+                    tree.nodeE.__ondisconnected()  
                     divs[o.id].innerHTML += '<li><b>nodeE removed!</b></li>'
 
                 }, 5500)
@@ -145,7 +145,7 @@ for (let i in trees){
 
     popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
 
-    popped.__children.nodeC.__operator(1);
+    popped.nodeC.__operator(1);
 
     graph.get('nodeA').jump(); //this should not trigger the nodeA.jump listener on nodeC now
 

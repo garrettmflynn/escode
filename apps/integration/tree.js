@@ -15,30 +15,28 @@ const nodeAInstance = Object.assign({}, nodeA)
         __ondisconnected: () => {
             element.innerHTML += '<li><b>nodeB removed!</b></li>'
         },
-        __children:{
 
-            nodeC:{
-                z:4,
-                __operator:function(a) { 
-                    this.z += a; 
+        nodeC:{
+            z:4,
+            __operator:function(a) { 
+                this.z += a; 
 
-                    element.innerHTML += `<li>nodeC z prop added to</li>`
-                    return this.z; 
+                element.innerHTML += `<li>nodeC z prop added to</li>`
+                return this.z; 
+            },
+
+            __listeners:{
+
+                'nodeA.x': function(newX) { 
+                    element.innerHTML += `<li>nodeA x prop updated ${newX}</li>`
                 },
 
-                __listeners:{
-
-                    'nodeA.x': function(newX) { 
-                        element.innerHTML += `<li>nodeA x prop updated ${newX}</li>`
-                    },
-
-                    'nodeA.jump': function(jump) { 
-                        element.innerHTML += `<li>nodeA ${jump}</li>`
-                    },
-                }
+                'nodeA.jump': function(jump) { 
+                    element.innerHTML += `<li>nodeA ${jump}</li>`
+                },
             }
-
         }
+
     },
 
 

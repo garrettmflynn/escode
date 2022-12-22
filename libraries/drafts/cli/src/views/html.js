@@ -75,6 +75,7 @@ export function json(json) {
 
         const indents = Array.from({length: indentation}, () => '\t').join('')
 
+        // TODO: Remove __children from here...
         for (let name in object.__children) {
             const component = object.__children[name];
 

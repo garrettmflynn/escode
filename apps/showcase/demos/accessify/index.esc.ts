@@ -1,8 +1,8 @@
 import * as button from "../../../../components/ui/button";
-import * as popup from "../../../../components/ui/popup"
-import * as speak from "../../../../components/modalities/voice/speak.js"
-import * as mouse from "../../../../components/modalities/mouse/index.js"
-import * as keys from "../../../../components/basic/keyboard.js"
+import * as popupComponent from "../../../../components/ui/popup"
+import * as speakComponent from "../../../../components/modalities/voice/speak.js"
+import * as mouseComponent from "../../../../components/modalities/mouse/index.js"
+import * as keysComponent from "../../../../components/basic/keyboard.js"
 import * as switchComponent from "../../../../components/modalities/switch/index.js"
 
 const otherButton = {
@@ -12,12 +12,12 @@ const otherButton = {
 
         const res = button.default.call(this, ...args)
 
-        if (res){
+        if (res) {
             const floor = 150
             const mult = 255 - floor
-            const r = floor + mult*Math.random()
-            const g = floor + mult*Math.random()
-            const b = floor + mult*Math.random()
+            const r = floor + mult * Math.random()
+            const g = floor + mult * Math.random()
+            const b = floor + mult * Math.random()
             this.__element.style.backgroundColor = `rgb(${r}, ${g}, ${b})`
         }
     }
@@ -33,75 +33,82 @@ export const __attributes = {
     }
 }
 
-export const __children = {
+export const header = {
+    __element: 'h1',
+    __childposition: 0,
+    __attributes: {
+        innerText: 'Accessify'
+    }
+}
 
-    header: {
-        __element: 'h1',
+export const description = {
+
+    __element: 'div',
+    __childposition: 1,
+    p1: {
+        __element: 'p',
         __attributes: {
-            innerText: 'Accessify'
+            innerHTML: 'This demonstration features <b>speech recognition</b>, <b>a virtual mouse using the keyboard</b>, and a <b>popup with a selectable grid</b> for selecting an item by its ID.'
         }
     },
 
-    description: {
-        __children: {
-
-            p1: {
-                __element: 'p',
-                __attributes: {
-                    innerHTML: 'This demonstration features <b>speech recognition</b>, <b>a virtual mouse using the keyboard</b>, and a <b>popup with a selectable grid</b> for selecting an item by its ID.'
-                }
-            },
-
-            p2: {
-                __element: 'p',
-                __attributes: {
-                    innerHTML: 'You will need to <b>enable the popup and microphone access</b> to use this demonstration.'
-                }
-            }
-        }
-    },
-
-    // Voice Control
-    enableVoice: {
-        __element: 'button',
+    p2: {
+        __element: 'p',
         __attributes: {
-            innerText: 'Enable Voice Commands'
-        },
-        __compose: button
-    },
-
-    speak: {
-        // grammar,
-        __compose: speak,
-    }, 
-
-    // Mouse Control
-    keys: {
-        __compose: keys,
-    },
-
-    mouse: {
-        __compose: mouse,
-    }, 
-
-    // Switch Control
-    switch: {
-        __compose: switchComponent,
-    },
-
-    popup: {
-        url: 'apps/showcase/demos/accessify/popups/test.html',
-        name: 'thispopup',
-        __compose: popup,
-    },
+            innerHTML: 'You will need to <b>enable the popup and microphone access</b> to use this demonstration.'
+        }
+    }
 }
 
-let nButtons = 24
-for (let i = 0; i < nButtons; i++) {
-    __children[`otherButton${i}`] = otherButton
+// Voice Control
+export const enableVoice = {
+    __element: 'button',
+    __childposition: 2,
+    __attributes: {
+        innerText: 'Enable Voice Commands'
+    },
+    __compose: button
+}
+
+export const speak = {
+    // grammar,
+    __compose: speakComponent,
+}
+
+// Mouse Control
+export const keys = {
+    __compose: keysComponent,
+}
+
+export const mouse = {
+    __compose: mouseComponent,
+}
+
+// Switch Control
+export const binarySwitch = {
+    __compose: switchComponent,
+}
+
+export const popup = {
+    url: 'apps/showcase/demos/accessify/popups/test.html',
+    name: 'thispopup',
+    __compose: popupComponent,
 }
 
 
+// // TODO: Adding these buttons dynamically doesn't work. It stalls the loading...
+// export const buttons = {
+//     __element: 'div'
+// }
+
+// let nButtons = 2
+// for (let i = 0; i < nButtons; i++) {
+//     buttons[`otherButton${i}`] = otherButton
+// }
+
+export const otherButtonOne = Object.assign({__childposition: 3},  otherButton)
+export const otherButtonTwo = Object.assign({__childposition: 4},  otherButton)
+export const otherButtonThree = Object.assign({__childposition: 5},  otherButton)
 
 export const __listeners = {
 
@@ -109,13 +116,13 @@ export const __listeners = {
     'speak.start': {
         enableVoice: {
             __branch: [
-                {is: true, value: true}
+                { is: true, value: true }
             ]
         }
     },
 
     // Switch Controls
-    switch: {
+    binarySwitch: {
         speak: {
             __format: (phrase) => [phrase, 'click'] // skip focus stage
         },
@@ -133,29 +140,29 @@ export const __listeners = {
     ['mouse.click']: {
         ['keys. ']: {
             __branch: [
-                {is: true, value: true}
+                { is: true, value: true }
             ]
         }
     },
 
     ['mouse.move']: {
         ['keys.ArrowDown']: {
-            __format: () => [{y: 10}]
+            __format: () => [{ y: 10 }]
         },
         ['keys.ArrowUp']: {
-            __format: () => [{y: -10}]
+            __format: () => [{ y: -10 }]
         },
         ['keys.ArrowLeft']: {
-            __format: () => [{x: -10}]
+            __format: () => [{ x: -10 }]
         },
         ['keys.ArrowRight']: {
-            __format: () => [{x: 10}]
+            __format: () => [{ x: 10 }]
         },
     },
 
     // Popup Controls
     popup: {
-        ['switch.register']: true,
+        ['binarySwitch.register']: true,
     }
 }
 

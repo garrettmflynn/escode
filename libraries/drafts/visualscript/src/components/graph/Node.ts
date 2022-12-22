@@ -97,15 +97,15 @@ export class GraphNode extends LitElement {
     ports: Map<string, GraphPort> = new Map()
     portCategories: {
       properties: Map<string, GraphPort>,
-      children: Map<string, GraphPort>,
+      components: Map<string, GraphPort>,
       default: Map<string, GraphPort>,
     } = {
       properties: new Map(),
-      children: new Map(),
+      components: new Map(),
       default: new Map(),
     }
 
-    portOrder = ['default', 'children', 'properties']
+    portOrder = ['default', 'components', 'properties']
 
     elements = {
       main: document.createElement('div')
@@ -162,11 +162,13 @@ export class GraphNode extends LitElement {
       })
 
       // Add Port for Each Active ES Component instance (i.e. the internal graph)
-      if (info.__children) {
-          const type = 'children'
-          Object.keys(info.__children).forEach(tag => {
+      const components = info.__?.components
+      if (info.__) {
+          const components = info.__.components as Map<string, any>
+          const type = 'components'
+          Array.from(components.entries()).forEach(([tag, component]) => {
           if (this.portCategories[type].has(tag)) {
-            notify(tag, info.__children[tag])
+            notify(tag, component[tag])
             return
           }
           this.addPort({ tag, type })

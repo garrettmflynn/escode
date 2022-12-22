@@ -26,35 +26,16 @@ export const __attributes = {
 }
 
 export const __compose = [global.fillParent]
-export const __children = {
 
-    // First Sketch
-    // [`Sketch 1`]: sketchOne,
-    [`Sketch 1`]: {
-        __compose: {
-            ref: sketchOne,
-            src: './sketches/one.esc.ts'
-        },
-    }, 
+// // TODO: Have to fix source resolution
+// export const firstSketch  = {
+//     __compose: {
+//         ref: sketchOne,
+//         src: './sketches/one.esc.ts'
+//     },
+// }
 
-    // [`Sketch 1`]: {
-    //     __compose: {
-    //         __object: sketchOne,
-    //         __src: './sketches/one.esc.ts'
-    //     },
-    // }, 
-    
-    // Second Sketch
-    [`Sketch 2`]: sketchTwo
-    // [`Sketch 2`]: {
-    //     __compose: {
-    //         __object: sketchTwo,
-    //         __src: './sketches/two.esc.ts'
-    //     }
-    // }
-}
+export const firstSketch = sketchOne
 
-
-export const __listeners = {
-
-}
+// Second Sketch
+export const secondSketch = sketchTwo

@@ -120,17 +120,15 @@ for (let key in demos) {
     // if (key.includes('phaser')) demoInfo[key].__attributes.style.height = maxHeight
 }
 
-export const __children = {
 
-    h1: {
+    export const h1 = {
         __element: 'h1',
         __attributes: {
             innerHTML: "Welcome to ESCode"
         }
-    },
+    }
 
-    firstsection: {
-        __children: {
+    export const firstsection = {
             h2: {
                 __element: 'h2',
                 __attributes: {
@@ -139,104 +137,87 @@ export const __children = {
             },
 
             block1: {
-                __children: {
-                    p1: {
-                        __element: 'p',
-                        __attributes: {
-                            innerHTML: "ESCode is a rapid application development framework."
-                        }
-                    },
-                    demo1: demoInfo.basic,
-                }
+                p1: {
+                    __element: 'p',
+                    __attributes: {
+                        innerHTML: "ESCode is a rapid application development framework."
+                    }
+                },
+                demo1: demoInfo.basic,
             },
 
 
             block2: {
-                __children: {
                     p2: {
-                        __element: 'p',
-                        __attributes: {
-                            innerHTML: "It can be used to make simple animations: "
-                        },
-                        __children: {
-                            readout: {
-                                __element: 'span',
-                            },
-                        }
+                    __element: 'p',
+                    __attributes: {
+                        innerHTML: "It can be used to make simple animations: "
                     },
-                    demo2: demoInfo.animations,
-                }
+                    readout: {
+                        __element: 'span',
+                    },
+                },
+                demo2: demoInfo.animations,
             },
 
 
             block3: {
-                __children: {
-                    p3: {
-                        __element: 'p',
-                        __attributes: {
-                            innerHTML: "Or control the information flow of more complicated applications."
-                        }
-                    },
-                    demo3: demoInfo.todo,
-                }
+                p3: {
+                    __element: 'p',
+                    __attributes: {
+                        innerHTML: "Or control the information flow of more complicated applications."
+                    }
+                },
+                demo3: demoInfo.todo,
             },
 
 
             block4: {
-                __children: {
-                    p4: {
-                        __element: 'p',
-                        __attributes: {
-                            innerHTML: "You can even use it to create games!"
-                        }
-                    },
-                    demo4: demoInfo.phaser,
-                }
+                p4: {
+                    __element: 'p',
+                    __attributes: {
+                        innerHTML: "You can even use it to create games!"
+                    }
+                },
+                demo4: demoInfo.phaser,
             },
 
 
             block5: {
-                __children: {
-                    p5: {
-                        __element: 'p',
-                        __attributes: {
-                            innerHTML: "Adding another player is as simple as adding another Player component to the Game component."
-                        }
-                    },
-                    demo5: demoInfo.multiplayerPhaser,
-                }
+                p5: {
+                    __element: 'p',
+                    __attributes: {
+                        innerHTML: "Adding another player is as simple as adding another Player component to the Game component."
+                    }
+                },
+                demo5: demoInfo.multiplayerPhaser,
             },
 
 
             block6: {
-                __children: {
-                    p6: {
-                        __element: 'p',
-                        __attributes: {
-                            innerHTML: "And adding another control method—such as voice control—is as simple as adding a control source (e.g. the native Speech Recognition API) and a listener that handles the control source's output!"
-                        }
-                    },
-                    demo6: demoInfo.speakPhaser,
-                }
+                p6: {
+                    __element: 'p',
+                    __attributes: {
+                        innerHTML: "And adding another control method—such as voice control—is as simple as adding a control source (e.g. the native Speech Recognition API) and a listener that handles the control source's output!"
+                    }
+                },
+                demo6: demoInfo.speakPhaser,
             },
 
             block7: {
-                __children: {
-                    p6: {
-                        __element: 'p',
-                        __attributes: {
-                            innerHTML: "You can even use an embedded editor to edit the entire application!"
-                        }
-                    },
-                    demo7: {
-                        __editor: {...__editor, bind: '../../..'}
+                p6: {
+                    __element: 'p',
+                    __attributes: {
+                        innerHTML: "You can even use an embedded editor to edit the entire application!"
                     }
+                },
+                demo7: {
+                    __editor: {...__editor, bind: '../../..'}
                 }
             }
-        }
-        },
-        secondsection: {
-            __children: {
+    }
+
+        export const secondsection = {
                 h2: {
                     __element: 'h2',
                     __attributes: {
@@ -245,7 +226,6 @@ export const __children = {
                 },
 
                 block1: {
-                    __children: {
                         p1: {
                             __element: 'p',
                             __attributes: {
@@ -253,12 +233,10 @@ export const __children = {
                             }
                         },
                         demo1: demoInfo.signal,
-                    }
                 },
 
 
                 block2: {
-                    __children: {
                         p2: {
                             __element: 'p',
                             __attributes: {
@@ -266,12 +244,10 @@ export const __children = {
                             }
                         },
                         demo2: demoInfo.noisySignal,
-                    }
                 },
 
 
                 block3: {
-                    __children: {
                         p3: {
                             __element: 'p',
                             __attributes: {
@@ -280,7 +256,6 @@ export const __children = {
                         },
                         demo3: {
                             __compose: demoInfo.devicePhaser,
-                            __children: {
                                 devices: {
                                     __attributes: {
                                         style: {
@@ -288,14 +263,11 @@ export const __children = {
                                         }
                                     }
                                 }
-                            }
                         },
-                    }
                 },
 
 
                 block4: {
-                    __children: {
                         p4: {
                             __element: 'p',
                             __attributes: {
@@ -306,25 +278,19 @@ export const __children = {
                             __compose: demoInfo.filteredSignal,
 
                             // Apply Demo-Specific Filter Bank
-                            __children: {
                                 devices: {
-                                    __children: {
                                         filter: {
                                             settings: {
                                                 useNotch50: false,
                                                 useNotch60: false,
                                             },
                                         }
-                                    }
                                 },
-                            }
                         }
-                    }
                 },
 
 
                 block5: {
-                    __children: {
                         p5: {
                             __element: 'p',
                             __attributes: {
@@ -334,12 +300,10 @@ export const __children = {
                         demo5: {
                             __compose: demoInfo.filteredSignal,
                         }
-                    }
                 },
 
 
                 block6: {
-                    __children: {
                         p6: {
                             __element: 'p',
                             __attributes: {
@@ -348,21 +312,16 @@ export const __children = {
                         },
                         demo6: {
                             __compose: demoInfo.devicePhaser,
-                            __children: {
                                 devices: {
                                     __attributes: {
                                         style: {
                                             display:'none'
                                         }
                                     }
-                                }
                             }
                         },
-                    }
-                }
             }
     }
-}
 
 
 const listeners = {

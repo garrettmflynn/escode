@@ -109,16 +109,14 @@ export function __onconnected() {
                 else this[o.key] = value
             })
 
-            const children = this.__children;
-            if (children)
-            for (let name in children) {
+            this.__.components.forEach(c => {
                 try {
-                    const object = children[name]
-                    object.default(this)
+                    c.default(this)
                 } catch(e) {
                     console.error(e)
-                }
-            }
+                }                
+            })
+               
         }
 
       };
