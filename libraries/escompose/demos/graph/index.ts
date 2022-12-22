@@ -142,10 +142,10 @@ export const operations = [
         }
     },
     {
-        header: 'Reparent Node B',
+        header: 'Reparent Node B to Second Component',
         ignore: false,
         function: () => {
-            popped.__parent = component
+            popped.__parent = secondComponent
         }
     },
     {

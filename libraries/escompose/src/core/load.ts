@@ -239,6 +239,11 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
 
     let resolved; // Will resolve to the final object
 
+    // Specify the current path of the object
+    const parentId = parent?.[specialKeys.isGraphScript].path
+    const path = (parentId) ? [parentId, name] : ((typeof name === 'string') ? [name] : [])
+    const absolutePath = path.join(opts.keySeparator ?? keySeparator)
+
     const __ = {
         name,
         symbol: Symbol('isGraphScript'), // A unique value to compare against
@@ -252,8 +257,7 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
         flow: new FlowManager(),
         create: equivalentCreateFunction,
 
-        // Temporary Path Property
-        path: '',
+        path: absolutePath, // Temporary Path Property
 
         stop: {
             name: 'stop',

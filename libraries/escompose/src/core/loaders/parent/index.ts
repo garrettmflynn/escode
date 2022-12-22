@@ -1,6 +1,6 @@
 import { ESComponent } from "../../../../../esc"
 import { specialKeys } from "../../../../../esc/standards"
-import pathLoader from "../path"
+import pathLoader from "./path"
 
 export const name = 'parent'
 
