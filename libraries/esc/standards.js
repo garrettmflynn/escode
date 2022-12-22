@@ -11,7 +11,6 @@ export const defaultProperties = {
     hierarchy: '__children',
     parent: '__parent',
     promise: '__childresolved',
-    flow: '__manager',
 
     component: '__component',
     proxy: '__proxy' // Handled by ESMonitor for Listeners

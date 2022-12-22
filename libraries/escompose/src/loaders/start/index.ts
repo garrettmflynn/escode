@@ -1,10 +1,6 @@
 import { ESComponent } from "../../../../esc/esc"
 import { esSourceKey, specialKeys } from "../../../../esc/standards"
 
-// TODO: Move animate out to its own independent loader
-import * as animate from "../animate/index"
-
-
 export const name = 'start'
 
 export const required = true
@@ -12,7 +8,6 @@ export const required = true
 export const properties = {
     dependents: [
         specialKeys.source, // Activates this from the composition
-        ...animate.properties.dependents
     ],
     dependencies: [
         esSourceKey,
@@ -28,16 +23,14 @@ export const properties = {
 }
 
 export default (esc) => {
-    esc[specialKeys.isGraphScript].start.add(() => {
-        start(esc, [ animate.default ])  // Add the start function with additiobnal loaders
-    })
+    esc[specialKeys.isGraphScript].start.add(() => start(esc))
 }
 
 const set = (esm, value) => esm[specialKeys.isGraphScript].start.value = value
 
 function start (
     esc: ESComponent, 
-    callbacks, 
+    callbacks: Function[] = [],
     asyncCallback?: Function
 ) {
 

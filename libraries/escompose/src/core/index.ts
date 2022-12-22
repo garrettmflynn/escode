@@ -6,7 +6,7 @@ import * as utils from "../utils"
 import FlowManager from "../../../drafts/edgelord/index"
 
 import { parseOptions } from "./parse"
-import { ConfigInput, Loaders } from "../types"
+import { ConfigInput } from "../types"
 import load from "./load"
 
 // Use a global monitor instance to listen to an object property without creating an ES Component 
@@ -42,12 +42,7 @@ export const create = (
                     esc[specialKeys.listeners.value] = to // Replace with listeners assigned (in case of unassigned)
 
                     
-                    // Declaring manager
-                    Object.defineProperty(esc, specialKeys.flow, {
-                        value: manager,
-                        enumerable: false,
-                        writable: false
-                    })
+                    esc[specialKeys.isGraphScript].flow = manager
 
                     // -------- Trigger Execution when Ready --------
                     if (specialKeys.trigger in esc) {
@@ -60,7 +55,7 @@ export const create = (
             },
 
             // Activate listeners when instance is ready
-            onInstanceReady: (absolutePath) => listeners[absolutePath].start()
+            onInstanceReady: (absolutePath) => listeners[absolutePath].start(),
         }
 
         const loaders = fullOptions.loaders

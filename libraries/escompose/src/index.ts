@@ -6,7 +6,8 @@ import * as compose from "./loaders/compose"
 import * as element from "./loaders/element"
 import * as define from "./loaders/define"
 import * as start from "./loaders/start"
-import * as stop from "./loaders/stop"
+import * as animate from "./loaders/animate"
+
 import { isNode } from './globals'
 import { ConfigInput, Loaders } from './types'
 import { Options } from '../../common/types'
@@ -21,7 +22,10 @@ standardLoaders.push(compose)
 if (!isNode) standardLoaders.push(element, define)
 
 // Lifecycle Functions
-standardLoaders.push(start, stop)
+standardLoaders.push(start)
+
+// Additional Default Loaders
+standardLoaders.push(animate)
 
 // Allow editing core loaders
 export const loaders = standardLoaders

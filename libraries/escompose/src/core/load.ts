@@ -4,7 +4,7 @@ import { all } from "../../../common/properties"
 import { defaultProperties, keySeparator, specialKeys } from "../../../esc/standards"
 import parse from "./parse"
 import { ApplyOptions, Loaders, SortedLoaders } from "../types"
-import pathLoader from "../loaders/path"
+import pathLoader from "./loaders/path"
 import { toReturn } from "./symbols"
 import { ESComponent } from "../../../esc/esc"
 
@@ -145,6 +145,26 @@ async function runRecursive(resolved) {
         // Call Final Function or Return
         if (isStop) {
             if (callback) callback.call(resolved, resolved) // Run general stop function last
+
+            // Clear all listeners below esc node
+            configuration.flow.clear()
+
+            // Clear all listeners above the Component that reference it
+            const path = resolved[specialKeys.isGraphScript].path
+            let target = resolved
+            while (target[specialKeys.parent][specialKeys.isGraphScript] !== undefined) {
+                const res = target[specialKeys.element][specialKeys.parent] // parent is a component
+                if (res) {
+                    target = res
+                    if (target){
+                        const configuration = target[specialKeys.isGraphScript]
+                        if (configuration) configuration.flow.clear(path)
+                    }
+                } else break
+            }
+
+
+
             configuration.start.value = false // Can be restarted
         }
 

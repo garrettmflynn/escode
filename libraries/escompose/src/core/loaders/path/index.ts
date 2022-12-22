@@ -1,6 +1,6 @@
-import { Options } from "../../../../common/types"
-import { specialKeys } from "../../../../esc/standards"
-import { isNode } from "../../globals"
+import { Options } from "../../../../../common/types"
+import { specialKeys } from "../../../../../esc/standards"
+import { isNode } from "../../../globals"
 
 export const name = 'path'
 

@@ -5,7 +5,7 @@ import { resolve } from "../../utils";
 import { specialKeys } from "../../../../esc/standards";
 
 // Other Loaders
-import pathLoader from "../path/index"; // TODO: Fully separate this out...
+import pathLoader from "../../core/loaders/path/index"; // TODO: Fully separate this out...
 import * as component from "../define/index"; // TODO: Fully separate this out...
 
 
@@ -433,6 +433,15 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
         esm[specialKeys.resize] = finalStates.onresize
         if (finalStates.parentNode) esm[specialKeys.parent] = finalStates.parentNode
     }, true)
+
+    configuration.stop.add(() => {
+        esm[specialKeys.element].remove();
+
+        // Remove code editor
+        const privateEditorKey = `${specialKeys.editor}Attached` // TODO: Ensure esc key is standard
+        if (esm[privateEditorKey]) esm[privateEditorKey].remove() 
+
+    })
 
     return esm;
 }

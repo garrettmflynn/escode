@@ -1,3 +1,4 @@
+import Edgelord from "../drafts/edgelord"
 import { Editor, EditorProps } from "../escode/src"
 import Bundle from "../esmpile/src/Bundle"
 
@@ -26,6 +27,9 @@ export type GeneralElementType = baseESElement | ESElementInfo | ESDefineInfo
 export type ESComponent<ElementType = GeneralElementType>  = {
 
     __: {
+        flow: Edgelord,
+        path: string,
+        symbol: symbol,
         [x:string]: any
     } // Replaces __node from graphscript
     
