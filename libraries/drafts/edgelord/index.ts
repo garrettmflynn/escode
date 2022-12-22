@@ -1,5 +1,6 @@
 // import { Graph } from "../../../Graph2"
 
+import '../../escompose/src/globals'
 
 // Special Key Definition
 const defaultPath = 'default'
@@ -231,6 +232,8 @@ class Edgelord {
 
     add = (from, to, value: any = true, subscription?) => {
 
+        const tic = performance.now()
+
         if (!value) return // Any non-truthy value is not accepted
 
         const fromInfo = this.#getPathInfo(from)
@@ -289,6 +292,9 @@ class Edgelord {
 
         this.addToGlobalLog(absPath)
 
+        const toc = performance.now()
+
+        globalThis.escomposePerformance.listeners.create.push(toc - tic)
 
         return info
     }
@@ -367,6 +373,7 @@ class Edgelord {
     // ----------------- Global Flow Activation Management -----------------
     activate = (from, update) => {
 
+
     const listenerGroups = [{
         info: this.get(from, this.globals.active),
         name
@@ -380,6 +387,8 @@ class Edgelord {
 
             if (info[listenerObject]) {
 
+                const tic = performance.now()
+
                 this.pass(from, {
                     value: info.value,
                     parent: this.active,
@@ -387,7 +396,14 @@ class Edgelord {
                     subscription: info.subscription,
                     __value: true
                 }, update)
+
+                const toc = performance.now()
+                globalThis.escomposePerformance.listeners.resolve.push(toc - tic)
+
             } else if (typeof info === 'object') {
+
+                const tic = performance.now()
+
                 for (let key in info) {
                     this.pass(from, {
                         parent: info,
@@ -395,10 +411,16 @@ class Edgelord {
                         subscription: info[key].subscription,
                         value: info[key].value,
                     }, update)
+
+                    const toc = performance.now()
+
+                    globalThis.escomposePerformance.listeners.resolve.push(toc - tic)
+
                 }
             } else console.error('Improperly Formatted Listener', info)
         }
     })
+    
 }
 
 pass = (from, target, update) => {

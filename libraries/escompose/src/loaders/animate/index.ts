@@ -12,8 +12,10 @@ export const properties = {
 }
 
 export default function animate(esc) {
+
     
     if (esc[key]) {
+
         let original = esc[key]
 
         const id = Math.random()

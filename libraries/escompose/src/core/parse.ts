@@ -19,10 +19,12 @@ export default function parse(config: ConfigInput, toApply: any = {}, options: P
         if (config instanceof NodeList) config = Array.from(config)  // DOM NodeList Support (e.g. from querySelectorAll): Converts to an array of configurations
     }
 
+
     if ( typeof config === 'string') config =  { [specialKeys.apply]: config } // String Support: Transform string so that it is compiled from source
 
     // Function Support: Transform function so that it becomes an object
     else if ( typeof config === 'function') {
+        delete (config as any).__ // remove the __ property from the function
         if (isNativeClass(config)) config = new (config as AnyClass)(toApply, options) // Create a class
         else config = { [specialKeys.default]: config } // Apply as a default function
     }
@@ -66,11 +68,14 @@ export default function parse(config: ConfigInput, toApply: any = {}, options: P
     else if (Array.isArray(config)) return config // return array to be handled
 
     // Failed Resolution
-    else if ( typeof config !== 'object') throw new Error(`Invalid configuration type: ${ typeof config }. Expected object or string.`)   
+    else if ( typeof config === 'object') {
+        config = (options.clone !== false ? deepClone(config) : config)
+    }
+
+    else throw new Error(`Invalid configuration type: ${ typeof config }. Expected object or string.`)   
     
     // -------------- Assign Standard Properties to the Component Object --------------         
-    let finalConfig = ((options.clone) ? deepClone(config) : config) as FinalConfig
-    return finalConfig
+    return config as FinalConfig
 }
 
 

@@ -1,4 +1,5 @@
 import * as listComponent from "../../../../components/ui/ul.js"
+
 import * as inputComponent from "../../../../components/ui/input.js"
 import * as removableComponent from "../../../../components/ui/behaviors/removable.js"
 
@@ -8,6 +9,8 @@ import * as loadComponent from "../../../../components/storage/local/get.js"
 import * as removeComponent from "../../../../components/storage/local/remove.js"
 
 import * as onSubmit from "./components/onSubmit.esc.js"
+
+import * as thisList from "./components/listObject.esc"
 
 
 export const __attributes = {
@@ -26,12 +29,7 @@ export const __define = {
     }
 }
 
-export const list = {
-    itemType: 'es-removable-list-item',
-    __element: 'ul',
-    __childposition: 0,
-    __compose: listComponent
-}
+export const list = thisList // listComponent
 
 export const form = {
     __element: 'form',

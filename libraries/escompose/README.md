@@ -81,13 +81,35 @@ component.__element.click()
 ## GraphScript Properties
 See the [ES Components] specification for a full list of properties.
 
-### Loaders
+Active components are recognized by the presence of the `__` property on them. This provides access to utilities such as `run` and `subscribe`—as well as retains a record of read-only properties maintained by the library itself.
+
+All other `__` properties are considered GraphScript properties, and are used to program the behavior of the Component. 
+
+## Component Instancing
+Components are created using the `create` factory function, which accepts any object (e.g. Object, Array, or Class) and outputs an analogous object.
+
+**Unlike graphscript, we do not return a standard class from the `create` function.** Instead, the Component is returned based on the type of the input object.
+
+### Objects
+Objects are extensively instanced and treated as templates. This means that **all properties attached to the object itself are independent across instantiations**. 
+
+### Classes
+Classes are instanced using the `new` keyword. The resulting instancing behavior is assumed to be appropriate for the Component. This allows for minimal performance overhead when using classes.
+
+### Arrays
+Arrays are iterated over and each item is passed to the factory function. The resulting array is returned.
+
+## Loaders
 Additional properties can be added using the loaders argument for escompose: 
 ```js
 const component = escompose.create(esc, {__parent: document.body}, {
     loaders: [ myLoader ]
 })
 ```
+
+## Listeners
+ES Component listeners are implemented using the [esmonitor] library, which is a **simple plain-text subscription interface for arbitrary object properties**.
+
 
 ## Acknowledgments
 [Brains@Play] is managed by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
@@ -162,4 +184,5 @@ const component = escompose.create(esc, {__parent: document.body}, {
 <a href="https://opencollective.com/brainsatplay/sponsor/29/website" target="_blank"><img src="https://opencollective.com/brainsatplay/sponsor/29/avatar.svg"></a>
 
 [ES Components]: https://github.com/brainsatplay/escomponent
-[Brains@Play]:https://github.com/brainsatplay
+[Brains@Play]: https://github.com/brainsatplay
+[esmonitor]: ../esmonitor/README.md

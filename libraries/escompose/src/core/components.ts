@@ -9,9 +9,14 @@ type NestedRecord = {
 // Get all nested components in an object by looking for graphscript properties
 export function from (o) {
     const parent = o
-    if (!parent || typeof parent !== 'object') return null
+
+    if (!parent || typeof o !== 'object') return null
+
     let array = Object.entries(parent).map(([name,v]) => {
-        const hasGraphScriptProperties = !name.includes(specialKeys.isGraphScript) && (v && typeof v === 'object') ? Object.keys(v).find((key) => key.includes(specialKeys.isGraphScript)) : false
+
+        const mayBeComponent = typeof parent === 'object' || typeof parent === 'function'
+
+        const hasGraphScriptProperties = !name.includes(specialKeys.isGraphScript) && (v && mayBeComponent) ? Object.keys(v).find((key) => key.includes(specialKeys.isGraphScript) || key === 'default') : false
         if (hasGraphScriptProperties) {
             return {
                 ref: v,

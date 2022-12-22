@@ -92,7 +92,7 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
     const configuration = esm[specialKeys.isGraphScript]
     let states = configuration.states
-    let id = configuration.path.split(options.keySeparator).slice(-1)[0]
+    let id = configuration.name
 
     const parent = esm[specialKeys.parent] // Grab temporary parent
 
@@ -114,7 +114,6 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
             const esDefineInfo = element as ESDefineInfo
             const config = esm[specialKeys.element]
             component.define(config, esm)
-            console.log('Defining a custom element', esDefineInfo.name, esDefineInfo.extends)
             esm[specialKeys.element] = element = esDefineInfo.name // create a custom element
         }
         
@@ -280,88 +279,71 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
         },
     })
 
-    // Hijack existing parent node properties
-    Object.defineProperty(esm, specialKeys.parent, {
-        get:function () { 
-            const parentNode = esm[specialKeys.element].parentNode // Grab parent from DOM
+    const ogGet = configuration.parent.get
+    configuration.parent.get = () => {
 
-            // Return parent component
-            if (parentNode && parentNode.hasAttribute(specialKeys.attribute)) return parentNode[specialKeys.component]
-            
-            // Else return a mock parent component
-            else return { [specialKeys.element]: parentNode }
-        },
-        set:(v) => { 
+        const fallback = ogGet()
 
-            // Get Parent Node from User String
-            if (typeof v === 'string') {
-                const newValue = document.querySelector(v);
-                if (newValue) v = newValue
-                else v = document.getElementById(v);
-            }
+        const parentNode = esm[specialKeys.element].parentNode // Grab parent from DOM
 
-            if (v?.__node?.ref) v = v.__node.ref
-
-            // Set Parent Node on Element
-            if (v?.[specialKeys.element] instanceof Element) v = v[specialKeys.element]
-
-
-            const current = esm[specialKeys.element].parentNode
-
-            if (current !== v){
-                if (esm[specialKeys.element] instanceof Element) {
-                    if(current) esm[specialKeys.element].remove()
-
-                    if (v instanceof Element) {
-
-                        // --------------------------- Place inside ESCode Instance (if created) ---------------------------
-
-                        const desiredPosition = esm[specialKeys.childPosition]
-                        const nextPosition = v.children.length
-
-                        let ref = esm[specialKeys.element]
-
-                        const __editor = esm[`__${specialKeys.editor}`]
-
-                        if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
-
-                        // Resolved After Siblings Have Been Added
-
-                        const toMove = desiredPosition !== undefined && desiredPosition < nextPosition
-                        const length = v.children.length
-                        const before = (length && desiredPosition !== undefined) ? v.children[desiredPosition] ?? v.children[length - 1] : undefined
-                        if (before) {
-                            const beforeComponent = before[specialKeys.component]
-                            const beforedDesiredPosition = beforeComponent[specialKeys.childPosition]
-                            const location = (beforedDesiredPosition < desiredPosition) ? 'afterend' : 'beforebegin'
-                            before.insertAdjacentElement(location, ref)
-                        } else v.appendChild(ref);
-
-
-                        // ------------------ Visualize with ESCode -----------------
-                        if (__editor) __editor.setComponent(esm); // Set the target component
-                    }
-                } 
-                
-                // Set Child Parent Nodes to This
-                else {
-                    console.error('No element was created for this Component...', esm)
-                }
-            }
-
-
-            if (v instanceof HTMLElement) {
-                pathLoader(esm, {[specialKeys.parent]: v, [specialKeys.isGraphScript]:  {path: id}}, options) // update path
+        if (parentNode) {
+            const isComponent = parentNode.hasAttribute(specialKeys.attribute)
+            if (isComponent) return parentNode[specialKeys.component] // Actual parent component
+            else return  { [specialKeys.element]: parentNode }  // Mock parent component
+        }
         
-                // Start the component | NOTE: This is a hacky dependendy on the start loader...
-                const isConnected = esm[`__${specialKeys.connected}`]
-                const toConnect = isConnected instanceof Function
+        else return fallback // Original parent
+    }
 
-                esm[specialKeys.isGraphScript].start.run()
-                if (toConnect) isConnected()
+    configuration.parent.add(function (v) {
+
+        //  Get Parent Node from User String
+        if (typeof v === 'string') {
+            const newValue = document.querySelector(v);
+            if (newValue) v = newValue
+            else v = document.getElementById(v);
+        }
+
+        // Set Parent Node on Element
+        if (v?.[specialKeys.element] instanceof Element) v = v[specialKeys.element]
+
+        const current = this[specialKeys.element].parentNode
+
+        if (current !== v){
+            if (this[specialKeys.element] instanceof Element) {
+                if(current) this[specialKeys.element].remove()
+
+                if (v instanceof Element) {
+
+                    // --------------------------- Place inside ESCode Instance (if created) ---------------------------
+                    const desiredPosition = this[specialKeys.childPosition]
+
+                    let ref = this[specialKeys.element]
+
+                    const __editor = this[`__${specialKeys.editor}`]
+
+                    if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
+
+                    // Resolved After Siblings Have Been Added
+                    const length = v.children.length
+                    const before = (length && desiredPosition !== undefined) ? v.children[desiredPosition] ?? v.children[length - 1] : undefined
+                    if (before) {
+                        const beforeComponent = before[specialKeys.component]
+                        const beforedDesiredPosition = beforeComponent[specialKeys.childPosition]
+                        const location = (beforedDesiredPosition < desiredPosition) ? 'afterend' : 'beforebegin'
+                        before.insertAdjacentElement(location, ref)
+                    } else v.appendChild(ref);
+
+                    if (__editor) __editor.setComponent(this); // Set the target component on ESCode visualization
+                }
+            } 
+            
+            // Set Child Parent Nodes to This
+            else {
+                console.error('No element was created for this Component...', this)
             }
-        },
-    });
+        }
+    })
 
     // On Resize Function
     let onresize = esm[specialKeys.resize]

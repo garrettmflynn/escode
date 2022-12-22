@@ -2,8 +2,6 @@ import * as statement from './components/statement.esc.js'
 import * as feature from './components/feature.esc.js'
 import * as twitch from './components/twitch.esc.js'
 
-
-
 const borderStyle = {
     borderBottom: '2px solid white',
     paddingBottom: '0.5rem',
@@ -42,6 +40,7 @@ const links = [
 
 export const nav = {
     __element: 'nav',
+    __childposition: 0,
     __attributes: {
         style: {
             position: 'fixed',
@@ -64,8 +63,13 @@ export const nav = {
 
 export const content = {
 
+    __element: 'main',
+    __childposition: 0,
+
+
     hero: {
         __element: 'section',
+        __childposition: 0,
         container: {
             title: {
                 __element: 'h1',
@@ -89,6 +93,7 @@ export const content = {
     },
     about: {
         __element: 'section',
+        __childposition: 1,
         __attributes: {
             style: {
                 background: 'darkslategray'
@@ -166,6 +171,7 @@ export const content = {
     },
     ethos: {
         __element: 'section',
+        __childposition: 2,
         container: {
             title: {
                 __element: 'h2',
@@ -303,6 +309,7 @@ export const content = {
 
 export const footer = {
     __element: 'footer',
+    __childposition: 2,
     __attributes: {
         style: {
             display: 'flex',

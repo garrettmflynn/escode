@@ -4,6 +4,8 @@ import { isNode } from "../../../globals"
 
 export const name = 'path'
 
+export const required = true
+
 export const properties = {
     dependencies: [
         specialKeys.isGraphScript,
@@ -12,31 +14,37 @@ export const properties = {
     dependents: []
 }
 
-const pathLoader = ( esc, toApply={}, opts: Partial<Options>={}) => {
+const pathLoader = ( esc, _, opts: Partial<Options>={}) => {
 
+    // Specify the current path of the object        
     const configuration = esc[specialKeys.isGraphScript]
-    let parent = toApply[specialKeys.parent]
-    const id = toApply[specialKeys.isGraphScript]?.path ?? configuration.path // Use an existing path as the id
+    let parent = esc[specialKeys.parent]
+    const name = configuration.name // Grab name from the configuration
 
     parent = ( (!isNode && parent instanceof Element) ? parent?.[specialKeys.component] : parent) ?? esc[specialKeys.parent]
 
-    const isESC = {value: '', enumerable: false, writable: true} as any
+    const isESC = { value: '', writable: true } as any
 
     if (parent) {
         const parentComponentConfiguration = parent[specialKeys.isGraphScript]
             
         if (parentComponentConfiguration){
-            if (typeof id === 'string') {
-                const path = parentComponentConfiguration.path
-                if (path) isESC.value = [path, id]
-                else isESC.value = [id]
+            if (typeof name === 'string') {
+                let target = parent
+                const path: string[] = []
+                while (target && target[specialKeys.isGraphScript]) {
+                    const name = target[specialKeys.isGraphScript].name
+                    if (typeof name === 'string') path.push(name)
+                    else break;
+                    target = target[specialKeys.parent]
+                }
+                isESC.value = [...path.reverse(), name]
                 isESC.value = isESC.value.join(opts.keySeparator ?? '.')
             }
         }
     }
 
     Object.defineProperty(configuration, 'path', isESC)    
-
 }
 
 

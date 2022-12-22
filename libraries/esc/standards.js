@@ -6,7 +6,9 @@ export const esSourceKey = '__esmpileSourceBundle'
 
 
 export const defaultProperties = {
-    isGraphScript: '__',
+    isGraphScript: '__', // Includes path
+    properties: '__props',
+
     default: defaultPath,
     parent: '__parent',
     promise: '__childresolved',

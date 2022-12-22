@@ -176,7 +176,7 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookups?:
             }
 
             if (redefine) {
-                const isGraphScriptProperty = info.last.slice(0,2) === '__'
+                const isGraphScriptProperty = info.last.slice(0,2) === '__' || info.last === 'default'
                 try {
                     Object.defineProperty(parent, info.last, {
                         get: () => val,
@@ -189,7 +189,7 @@ export function setters (info: ListenerInfo, collection: ListenerPool, lookups?:
                             }
                             else val = getProxyFunction.call(thisValue, info, collection, val)
                         },
-                        enumerable: isGraphScriptProperty,
+                        enumerable: !isGraphScriptProperty,
                         configurable: true // TODO: Ensure that you are removing later...
                     })
                 } catch (e) {

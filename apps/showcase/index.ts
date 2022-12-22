@@ -118,6 +118,9 @@ resetButton.addEventListener('click', startFunction)
 
 async function start (demo = "basic", mode="direct") {
     
+
+        const tic = performance.now()
+
         try {
             // ------------------ ESCompose ------------------
             let selected = demos[demo]
@@ -179,10 +182,9 @@ async function start (demo = "basic", mode="direct") {
             //     }
             // }
 
+
             const component = escompose.create(reference, {__parent: main}, {
-                clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
                 
-                await: true, 
                 relativeTo,
 
 
@@ -214,35 +216,7 @@ async function start (demo = "basic", mode="direct") {
             const esc = await component // Promise for self is resolved
             await esc.__connected // All children promises are resolved (if await is false)
 
-
             active = esc
-
-            if (demo === 'graph') {
-
-                const graphDemo = esc
-    
-                graphDemo.nodeB.x += 1; //should trigger nodeA listener
-    
-                graphDemo.nodeB.nodeC.default(4); //should trigger nodeA listener
-            
-                graphDemo.nodeA.jump();
-                        
-                const popped = graphDemo.nodeB.__ondisconnected()
-    
-                graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
-    
-                popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
-            
-                graphDemo.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
-    
-                setTimeout(()=>{ 
-                    if (graphDemo === active) {
-                        graphDemo.nodeE.__ondisconnected()  
-                        graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
-                    }
-                }, 5500)
-    
-            }
 
         } catch (e) {
             console.error(e)
@@ -250,7 +224,9 @@ async function start (demo = "basic", mode="direct") {
             main.appendChild(errorPage)
         }
 
-        console.log('Active ES Component:', active)
+        const toc = performance.now()
+
+        console.log('Active ES Component:', active, `${toc - tic}ms`)
 
 }
 

@@ -9,7 +9,8 @@ export const header = {
     __attributes: {
         innerText: 'Header'
     }
-},
+}
+
 export const text = {
     __element: 'p',
     __attributes: {

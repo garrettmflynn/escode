@@ -117,7 +117,7 @@ export const to = (esc) => {
     }
 
 
-    const component = escompose.create(esc, undefined, {listen: false, await: false}) // synchronous response
+    const component = escompose.create(esc, undefined, {listen: false }) // synchronous response
     const tree = drill({ __children: {component} })._node.children.component._node.children
     tree._node = { listeners: listeners[''] }
 

@@ -21,7 +21,7 @@
     "start": "tinybuild --path tinybuild.demo.js",
     "start:node": "node index.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --coverage",
-    "build": "tinybuild",
+    "build": "tinybuild  path=tinybuild.config.js && tinybuild  path=tinybuild.core.js",
     "transfer": "mkdir -p src/graphscript && cp ../graphscript/Graph.ts src/graphscript && mkdir -p src/graphscript/services && cp ../graphscript/services/Service.ts src/graphscript/services && cp -r ../graphscript/services/dom src/graphscript/services && cp -r ../graphscript/services/router src/graphscript/services"
   },
   "dependencies": {

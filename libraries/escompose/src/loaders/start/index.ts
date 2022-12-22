@@ -32,25 +32,9 @@ function start (
     callbacks: Function[] = [],
     asyncCallback?: Function
 ) {
-
-    // Ensure asynchronous loading
-    let output;
-    if (esc[specialKeys.isGraphScript].options.await) {
-        output = asyncConnect.call(esc, async () => {
-            if (asyncCallback) await asyncCallback() // Callback when then entire object is ready
-            connect.call(esc, callbacks)
-            set(esc, true)
-        })
-        set(esc, output)
-    } 
-    
-    // Default to attempted synchronous loading
-    else {
-        asyncConnect.call(esc, asyncCallback)
-        output = connect.call(esc, callbacks)
-        set(esc, true)
-    }
-
+    asyncConnect.call(esc, asyncCallback)
+    let output = connect.call(esc, callbacks)
+    set(esc, true)
     return output
 }
 
@@ -68,7 +52,6 @@ async function asyncConnect (onReadyCallback) {
     this[`__${specialKeys.resolved}`]() // Tell other programs that the component is resolved
 
     if (onReadyCallback) await onReadyCallback()
-
 
     return this
 }

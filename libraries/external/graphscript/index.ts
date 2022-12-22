@@ -951,5 +951,20 @@ export function instanceObject(obj) {
 }
 
 export function isNativeClass (thing) {
-    return typeof thing === 'function' && thing.hasOwnProperty('prototype') && !thing.hasOwnProperty('arguments')
+    return isFunction(thing) === 'class'
+}
+
+
+export function isFunction(x) {
+    const res = typeof x === 'function'
+        ? x.prototype
+            ? Object.getOwnPropertyDescriptor(x, 'prototype').writable
+                ? 'function'
+                : 'class'
+        : x.constructor.name === 'AsyncFunction'
+        ? 'async'
+        : 'arrow'
+    : '';
+
+    return res
 }
