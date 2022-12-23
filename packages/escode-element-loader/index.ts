@@ -85,13 +85,13 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
     // --------------------------- Get Element ---------------------------
     let element = esm[specialKeys.element] as ESComponent['__element'] | null; // Always create div at the least
-    const attributes = esm[specialKeys.attributes]
+    const attributes = esm[specialKeys.attributes] ?? {}
 
 
     let info: undefined | ESComponent['__element'];
     if (!(element instanceof Element)) {
-        // const mustShow = (attributes && Object.keys(attributes).length) || checkForInternalElements(esm)
-        const defaultTagName = 'div' //mustShow ? 'div' : 'link'
+        const mustShow = (attributes && Object.keys(attributes).length) || checkForInternalElements(esm)
+        const defaultTagName = mustShow ? 'div' : 'span' // If unsure, use span to avoid extra space
 
         // ------------------ Register Components (children) ------------------
         const isWebComponent = element && typeof element === 'object' && (element as any).name && (element as any).extends
@@ -300,17 +300,30 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
                     if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
 
-                    // Resolved After Siblings Have Been Added
+                    // Properly sort children that have a desired position
                     const length = v.children.length
-                    const before = (length && desiredPosition !== undefined) ? v.children[desiredPosition] ?? v.children[length - 1] : undefined
-                    if (before) {
-                        const beforeComponent = before[specialKeys.component]
-                        const beforedDesiredPosition = beforeComponent[specialKeys.childPosition]
-                        const location = (beforedDesiredPosition < desiredPosition) ? 'afterend' : 'beforebegin'
-                        before.insertAdjacentElement(location, ref)
-                    } else v.appendChild(ref);
-
+                    if (!length || typeof desiredPosition !== 'number') v.appendChild(ref); // append directly
+                    else {
+                        const before = [...v.children].slice(0, desiredPosition)
+                        let toCheck, inserted
+                        while (before.length) {
+                            toCheck = before.pop()
+                            const beforeComponent = toCheck[specialKeys.component]
+                            const beforedDesiredPosition = beforeComponent[specialKeys.childPosition]
+                            if (typeof beforedDesiredPosition === 'number') {
+                                const location = (beforedDesiredPosition > desiredPosition) ? 'beforebegin' : 'afterend'
+                                toCheck.insertAdjacentElement(location, ref)
+                                inserted = true
+                                break;
+                            }
+                        }
+                        if (!inserted) v.insertAdjacentElement('afterbegin', ref); // append to top
+                    }
+                    
                     if (__editor) __editor.setComponent(this); // Set the target component on ESCode visualization
+
+                    // // Signal connection to the DOM—which is a valid parent
+                    // configuration.parent.start() // NOTE: Not functional at the moment...because tests on accessify broke the panel
                 }
             } 
             
@@ -391,10 +404,10 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
     configuration.start.add(() =>{
         esm[specialKeys.resize] = finalStates.onresize
-        if (finalStates.parentNode) esm[specialKeys.parent] = finalStates.parentNode
     }, 'before')
 
     configuration.stop.add(() => {
+
         esm[specialKeys.element].remove();
 
         // Remove code editor

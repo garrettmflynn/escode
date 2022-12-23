@@ -1,11 +1,11 @@
 import * as handlers from './handlers';
-import * as check from '../../../common/check'
-import { ArrayPath, ListenerRegistry, InspectableOptions } from '../types';
-import * as standards from '../../../../spec/standards'
-import { setFromPath } from '../../../common/pathHelpers';
-import { isProxy } from '../globals';
+import * as check from '../../common/check'
+import { ArrayPath, ListenerRegistry, InspectableOptions } from "./types";
+import * as standards from '../../../spec/standards'
+import { setFromPath } from '../../common/pathHelpers';
+import { isProxy } from "./globals";
 import define from './define';
-import { isNode } from '../../../common/globals';
+import { isNode } from '../../common/globals';
 
 export type InspectableProxy = ProxyConstructor & {
     __proxy: ProxyConstructor,

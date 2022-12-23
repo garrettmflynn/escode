@@ -24,6 +24,17 @@ const parentLoader = (esc, toApply, options) => {
         },
         get: () => {
             return parent
+        },
+        start: (force = false) => {
+            if (
+                force || 
+                parent[specialKeys.isGraphScript]?.start?.value === true
+            ) {
+                const isConnected = configuration.connected
+                const toConnect = isConnected instanceof Function    
+                esc[specialKeys.isGraphScript].start.run() // Run start if the parent already has...
+                if (toConnect) isConnected() // Signal connection to a root component
+            }
         }
     }
 
@@ -46,7 +57,8 @@ const parentLoader = (esc, toApply, options) => {
 
             parent = newParent
 
-            if (parent?.[specialKeys.isGraphScript]) {
+            const parentConfiguration = parent?.[specialKeys.isGraphScript]
+            if (parentConfiguration) {
                 const name = configuration.name
                 if (parent[name]) console.error('OVERWRITING EXISTING PROPERTY ON PARENT!')
                 parent[name] = esc // Add...
@@ -54,28 +66,14 @@ const parentLoader = (esc, toApply, options) => {
             }
 
             configuration.parent.callbacks.forEach(callback => callback.call(esc, newParent))
-
-            // Update path
+            
             pathLoader(esc, undefined, options) // update path
-
-            // if (v instanceof HTMLElement) {
             
             // Signal disconnection (which isn't simply being a root Component)
-            if (disconnecting) {
-                esc[specialKeys.isGraphScript].stop.run() // Try running start
-            }
+            if (disconnecting) esc[specialKeys.isGraphScript].stop.run() // Try stopping the node
             
-            // Signal Connection
-            else if (parent) { 
-                const isConnected = configuration.connected
-                const toConnect = isConnected instanceof Function
-                esc[specialKeys.isGraphScript].start.run() // Try running start
-                if (toConnect) isConnected() // Signal connection to the DOM
-            }
-            // }
-
-
-            // configuration.graph
+            // Attempt to Signal Connection and Start the Node
+            else if (parent) configuration.parent.start()
         }
     })    
 

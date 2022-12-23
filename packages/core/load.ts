@@ -21,8 +21,7 @@ const run = (f, context, args, x?) => resolve(x, () => f.call(context, ...args))
 
 const runSequentially = (callbacks: Function[], args: any[] = [], context?) => {
     if (callbacks.length) {
-        if (callbacks.length === 1) run(callbacks[0], context, args)
-        else return callbacks.reduce((x,f) => run(f, context, args, x))
+        return callbacks.reduce((x,f) => run(f, context, args), undefined) // Must use undefined as the second argument to trigger the first callback
     }
 
 }
@@ -133,10 +132,10 @@ function addCallback(callback, priority: 'before' | 'after' | 'main' = 'main') {
 function runRecursive(resolved) {
     const { callbacks, name } = this
 
-
     if (!this.value) {
 
         const isStop = name === 'stop'
+
         const configuration = resolved[specialKeys.isGraphScript]
 
         const callback = isStop ? configuration.stop.initial : resolved[specialKeys[name]]
@@ -278,8 +277,8 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
                 if (ref.__?.symbol) {
                     const parent = ref.__.parent
                     if (parent) console.error(`Changing parent of existing component (${ref.__.path}) from ${parent.__.path} to ${configuration.path}`)
+                    ref.__.name = name // Update the name of a component. TODO: Make sure to check for side-effects
                     ref.__parent = esc
-                    esc[specialKeys.isGraphScript].components.set(name, res)
                 } 
                 
                 // New Component Template (load)

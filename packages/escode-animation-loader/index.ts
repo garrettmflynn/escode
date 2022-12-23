@@ -3,7 +3,7 @@ import { specialKeys } from "../../spec/standards"
 const animations = {}
 
 
-export const name = 'animate'
+export const name = 'animation'
 
 const key = specialKeys.animate
 

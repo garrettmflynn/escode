@@ -114,7 +114,6 @@ class Router {
             const config = esc.clone(target)
 
             const component = esc.create(config, {__parent})
-            console.log('Loaded', resolvedPath, component)
 
             // Transfer Roots
             if (resolvedPath === '') {

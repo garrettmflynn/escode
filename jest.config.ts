@@ -1,6 +1,7 @@
 import type {Config} from 'jest';
 
 const config: Config = {
+  coverageProvider: 'v8',
   preset: 'ts-jest/presets/default-esm', // or other ESM presets
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',

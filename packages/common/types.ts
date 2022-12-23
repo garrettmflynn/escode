@@ -17,13 +17,10 @@ export type Options = {
 
     relativeTo: string,
 
-    listen?: boolean,
+    listen?: (path: string, update: any) => any,
+    
     clone?: boolean,
-
-    // TODO: Make these the same...
-    synchronous?: boolean, // TODO: Test if this really works...
-    await?: boolean, // Return a promise that resolves after the entire app is ready
-
+    
     // nested: {
     //     parent: any,
     //     name: any,

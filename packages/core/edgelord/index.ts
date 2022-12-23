@@ -373,10 +373,12 @@ class Edgelord {
     // ----------------- Global Flow Activation Management -----------------
     activate = (from, update) => {
 
+        this.context.options.listen?.(from, update) // TODO: Move this directly to the monitor
+
 
     const listenerGroups = [{
         info: this.get(from, this.globals.active),
-        name
+        name: from // TODO: Check that this is correct
     }]
 
     listenerGroups.forEach(group => {

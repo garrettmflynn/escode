@@ -1,5 +1,7 @@
 import * as nodeA from './nodes/nodeA.js'
-import { log } from '../utils'
+import * as nodeF from './nodes/nodeF.js'
+
+import { isNode, log } from '../utils'
 
 const nodeAInstance = Object.assign({}, nodeA)
 
@@ -12,9 +14,12 @@ let value = 0
 
 function defaultFunction () {
     const originalType = typeof this.__.original
-    const message = `instanced node (${this.__.name} ${originalType === 'function' ? 'class ' : originalType}) called! ${this.shared.value} ${this.mystery.value}`
+    let name = this.__.name
+    if (typeof name === 'symbol') name = 'root'
+    const message = `instanced node (${name} ${originalType === 'function' ? 'class' : originalType}) called! ${this.shared.value} ${this.unshared.value}`
     this.shared.value++
-    this.mystery.value++
+    this.unshared.value++
+    this.value++
     log.add(message)
 }
 
@@ -24,22 +29,14 @@ class nodeClass { //treated as a class to instance rather than a function to set
     
     shared = shared
 
-    mystery = {
-        value
-    }
+    unshared = { value }
+
+    value = 0
 
     default = defaultFunction
 }
 
-const objectNotClass = {
-    shared: shared,
-
-    mystery: {
-        value
-    },
-
-    default: defaultFunction
-}
+const nodeClassInstance = new nodeClass()
 
 const nodeD = (...args)=>{ return args.reduce((a,b) => a + b, 0); }
 // nodeD.__ = true
@@ -86,24 +83,11 @@ let tree = {
         },
     },
 
-    nodeF:{
-        __props: document.createElement('div'), //properties on the '__props' object will be proxied and mutatable as 'this' on the node. E.g. for representing HTML elements
-        __onconnected:function (node) { 
-            this.innerHTML = 'Test';
-            this.style.backgroundColor = 'green'; 
-            document.body.appendChild(this.__props); 
-        },
-        __ondisconnected:function(node) {
-            document.body.removeChild(this.__props);
-        }
-        
-    },
-
     nodeG: nodeClass,
 
     nodeH: nodeClass,
 
-    nodeI: objectNotClass,
+    nodeI: nodeClassInstance,
 
     // Global Listeners
     // TODO: Allow for bound implementations of global listeners
@@ -141,5 +125,8 @@ let tree = {
     }
 
 };
+
+
+if (!isNode) tree.nodeF = nodeF
 
 export default tree

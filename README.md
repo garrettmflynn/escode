@@ -61,18 +61,41 @@ If you prefer to work with classes, these will also be instanced using this func
 ```js
 import { create } from 'escode';
 
+const shared = {
+    value: 0
+}
+
 class MyButton {
-    __element: 'button',
-    __attributes: {
-        onclick: function (input) { console.log(this) }
+
+    shared = shared
+
+    __element = 'button'
+
+    __attributes = {
+        onclick: function (input) { 
+            this.value++
+            console.log(this.value)
+         }
     }
+
 }
 
 const component = create(MyButton, {__parent: document.body})
-component.__element.click()
+component.__element.click() // shared.value = 1
 ```
 
 However, **class instances are assumed to be sufficiently instanced by the user**. As such, local objects attached to the class itself will be shared across instances.
+
+```js
+const secondComponent = create(MyButton, {__parent: document.body})
+secondComponent.__element.click() // shared.value = 2
+```
+
+To avoid this, you can simply pass an **instance** of the class using the `new` keyword:
+```js
+const component = create(new MyButton(), {__parent: document.body})
+component.__element.click()
+```
 
 ### Arrays
 In specific cases, an array may be useful to apply bulk operations to independent Components:
@@ -122,7 +145,7 @@ import { create } from 'escode';
 
 const reactive = {
     fn,
-    latest,
+    latest: undefined,
     __listeners: {
         fn: 'latest'
     }

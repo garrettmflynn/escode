@@ -1,5 +1,6 @@
 import { drillSimple, abortSymbol } from "../common/drill"
 import { specialKeys } from "../../spec/standards"
+import { isNativeClass } from "../common/utils"
 
 type NestedRecord = {
     name: string,
@@ -25,8 +26,8 @@ export const has = (o) => {
         }
     }, {
 
-        // Ignore graphscript root property and parents
-        ignore: ['__', '__parent'],
+        // Ignore graphscript root property and other properties that may have nested graphscript properties
+        ignore: ['__', '__parent', '__compose', '__apply'],
 
         // Avoid drilling elements...
         condition: (_, o) => {
@@ -44,17 +45,15 @@ export function from (parent) {
 
     if (!parent || typeof parent !== 'object') return null
 
-    let array = Object.entries(parent).map(([name,v]) => {
+    let array = Object.entries(parent).map(([name,ref]) => {
         
-        const mayBeComponent = typeof parent === 'object' || typeof parent === 'function'
+        const mayBeComponent = ref && typeof ref === 'object' || typeof ref === 'function'
+        if (!mayBeComponent) return
 
-        const hasGraphScriptProperties = !name.includes(specialKeys.isGraphScript) && (v && mayBeComponent) ? Object.keys(v).find(is) : false
+        const hasGraphScriptProperties = !name.includes(specialKeys.isGraphScript) ? Object.keys(ref).find(is) : false
         if (hasGraphScriptProperties) {
-            return {
-                ref: v,
-                parent,
-                name
-            } as NestedRecord
+            if (name === 'constructor' && isNativeClass(ref)) return // Don't consider componentized classes as components on their instances...
+            return { ref, parent, name } as NestedRecord
         }
     }).filter((v) => v && v.ref) as NestedRecord[]
     

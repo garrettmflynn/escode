@@ -1,4 +1,4 @@
-import global from './global'
+import global from './globals'
 import { ActiveInfo } from './types'
 
 export const performance = async (callback, args) => {

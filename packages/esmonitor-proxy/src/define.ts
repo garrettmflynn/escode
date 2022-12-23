@@ -1,4 +1,4 @@
-import { fromInspectable, isProxy } from "../globals"
+import { fromInspectable, isProxy } from "./globals";
 
 function define(key, registerAsNewKey: boolean) {
 

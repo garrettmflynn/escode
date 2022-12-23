@@ -1,6 +1,6 @@
 
 // -------------- Import Modules --------------
-import * as esc from '../../packages/escompose/src/index'
+import * as esc from '../../packages/escode/index'
 // import ESC from "../../packages/escode/src/core/index";
 // import validate from "../../packages/escode/src/validate/index";
 import * as esm from '../../packages/esmpile/src/index'

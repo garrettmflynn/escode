@@ -61,15 +61,6 @@ export const description = {
 }
 
 // Voice Control
-export const enableVoice = {
-    __element: 'button',
-    __childposition: 2,
-    __attributes: {
-        innerText: 'Enable Voice Commands'
-    },
-    __compose: button
-}
-
 export const speak = {
     // grammar,
     __compose: speakComponent,
@@ -96,25 +87,26 @@ export const popup = {
 }
 
 
-// // TODO: Adding these buttons dynamically doesn't work. It stalls the loading...
-// export const buttons = {
-//     __element: 'div'
-// }
+export const buttons = {
+    enableVoice: {
+        __element: 'button',
+        __childposition: 1,
+        __attributes: {
+            innerText: 'Enable Voice Commands'
+        },
+        __compose: button
+    },
+    __childposition: 3
+}
 
-// let nButtons = 2
-// for (let i = 0; i < nButtons; i++) {
-//     buttons[`otherButton${i}`] = otherButton
-// }
-
-export const otherButtonOne = Object.assign({__childposition: 3},  otherButton)
-export const otherButtonTwo = Object.assign({__childposition: 4},  otherButton)
-export const otherButtonThree = Object.assign({__childposition: 5},  otherButton)
+let nButtons = 20
+for (let i = 0; i < nButtons; i++) buttons[`otherButton${i}`] = otherButton
 
 export const __listeners = {
 
     // Voice Controls
     'speak.start': {
-        enableVoice: {
+        'buttons.enableVoice': {
             __branch: [
                 { is: true, value: true }
             ]

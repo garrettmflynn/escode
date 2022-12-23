@@ -6,7 +6,7 @@ import * as compose from "../escode-compose-loader"
 import * as element from "../escode-element-loader"
 import * as define from "../escode-define-loader"
 import * as start from "../escode-start-loader"
-import * as animate from "../escode-animate-loader"
+import * as animate from "../escode-animation-loader"
 
 import { isNode } from '../common/globals'
 import { ConfigInput, Loaders } from '../core/types'

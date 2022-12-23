@@ -34,26 +34,24 @@ export const create = (
         onInstanceCreated: (absolutePath, esc) => {
 
             // Set listeners as soon as possible
-            if (fullOptions.listen !== false) {
-                const to = esc[specialKeys.listeners.value] ?? {}  // Uses to —> from syntax | Always set
+            const to = esc[specialKeys.listeners.value] ?? {}  // Uses to —> from syntax | Always set
 
-                const flow = esc[specialKeys.isGraphScript].flow
-                flow.setInitialProperties(to, absolutePath, {
-                    id: esc[specialKeys.isGraphScript].root, // NOTE: Make sure this can change with the root
-                    monitor: fullOptions.monitor,
-                    options: fullOptions
-                })
+            const flow = esc[specialKeys.isGraphScript].flow
+            flow.setInitialProperties(to, absolutePath, {
+                id: esc[specialKeys.isGraphScript].root, // NOTE: Make sure this can change with the root
+                monitor: fullOptions.monitor,
+                options: fullOptions
+            })
 
-                esc[specialKeys.listeners.value] = to // Replace with listeners assigned (in case of unassigned)
+            esc[specialKeys.listeners.value] = to // Replace with listeners assigned (in case of unassigned)
 
 
-                // -------- Trigger Execution when Ready --------
-                if (specialKeys.trigger in esc) {
-                    if (!Array.isArray(esc[specialKeys.trigger])) esc[specialKeys.trigger] = []
-                    const args = esc[specialKeys.trigger]
-                    flow.onStart(() => esc.default(...args))
-                    delete esc[specialKeys.trigger]
-                }
+            // -------- Trigger Execution when Ready --------
+            if (specialKeys.trigger in esc) {
+                if (!Array.isArray(esc[specialKeys.trigger])) esc[specialKeys.trigger] = []
+                const args = esc[specialKeys.trigger]
+                flow.onStart(() => esc.default(...args))
+                delete esc[specialKeys.trigger]
             }
         },
 

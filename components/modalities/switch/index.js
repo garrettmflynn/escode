@@ -81,7 +81,6 @@ export function register(el) {
     el.parentNode.insertBefore(div, el)
     fieldset.appendChild(el)
     this.count++
-
     return id
 }
 

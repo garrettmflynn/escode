@@ -3,15 +3,22 @@
 // import { loaders } from "../../core/loaders";
 import tree from './tree'
 import * as core from '../../packages/core/index';
-import * as animate from '../../packages/escode-animate-loader';
+import * as animate from '../../packages/escode-animation-loader';
 
 const nodeAInstance = tree.nodeA // Original value for nodeA
 
+
+export const history: {[x:string]: any} = []
+export const state = {}
+
 let component, secondComponent, popped;
 const options = {
-    loaders: [animate]
+    loaders: [animate],
+    listen: (path, update) => {
+        history.push({ path, update })
+        state[path] = update
+    }
 }
-
 
 export const model = tree
 
@@ -25,7 +32,7 @@ export function start () {
     setTimeout(()=>{ 
         component.nodeE.__parent = null // Remove from parent
         this.log.addCommand('nodeE removed!')
-    },5500)
+    }, 5500)
 }
 
 export const operations = [
@@ -47,8 +54,7 @@ export const operations = [
     {
         name: 'nodeAInstance.x = 1',
         function: () => {
-            console.log('Node Instance', nodeAInstance, tree)
-            nodeAInstance.x = 1; //should trigger nodeA.x listener on nodeC
+            nodeAInstance.x = 1; //should not trigger nodeA.x listener on nodeC, since it has been instanced
         },
     },
     {

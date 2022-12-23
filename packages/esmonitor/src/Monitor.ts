@@ -146,6 +146,7 @@ export default class Monitor {
         const subscribeAll = toMonitorInternally(ref, true)
         if (subscribeAll) {
 
+            // Simple esmonitor-inspectable integration
             if (ref.__esInspectable) ref.__esInspectable.options.globalCallback = callback
 
             drillSimple(ref, (_, __, drillInfo) => {

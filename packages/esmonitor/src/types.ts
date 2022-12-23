@@ -1,4 +1,3 @@
-import Inspectable from "./inspectable"
 import Poller from "./Poller"
 
 type onUpdateFunction = (path: string, info: ActiveInfo, ...args: any[]) => void
@@ -25,19 +24,6 @@ export type SetFromOptionsType = {
 export type SetValueOptions = {
     create?: boolean,
     keySeparator?: MonitorOptions['keySeparator']
-}
-
-export type InspectableOptions = {
-    type?: 'function' | 'object', 
-    parent?: Inspectable
-    name?:string,
-    callback?: Function,
-    keySeparator: MonitorOptions['keySeparator'],
-    pathFormat: MonitorOptions['pathFormat'], // TODO: turn to not a requirement
-    listeners?: ListenerRegistry
-    path?: (arr: ArrayPath) => ArrayPath | ArrayPath,
-    depth?: number,
-    globalCallback?: Function
 }
 
 export type pathComponent = string | symbol

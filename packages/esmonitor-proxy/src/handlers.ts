@@ -1,10 +1,10 @@
-import * as listenerUtils from "../listeners";
-import { runCallback } from "../utils";
+import * as listenerUtils from "../../esmonitor/src/listeners";
+import { runCallback } from "../../esmonitor/src/utils";
 import { 
     fromInspectable,
     isProxy 
-} from '../globals'
-import Inspectable from ".";
+} from "./globals";
+import Inspectable from "./index";
 import define from "./define";
 
 export const functions = function () {
