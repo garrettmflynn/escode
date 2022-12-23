@@ -39,6 +39,9 @@ export const operations = [
         name: 'component.run("nodeG")',
         function: () => {
             component.nodeG.default(); // Has been instantiated because of the static __ property
+            component.nodeH.default();
+            component.nodeI.default();
+            component.nodeG.default(); // Has been instantiated because of the static __ property
         },
     },
     {

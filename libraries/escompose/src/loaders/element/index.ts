@@ -26,11 +26,6 @@ export type ESComponentStates = {
     onresize: ESComponent['__onresize']
     onresizeEventCallback: EventListener,
 
-    initial: {
-        start: ESComponent['__onconnected'],
-        stop: ESComponent['__ondisconnected']
-    }
-
     __source?: ESComponent['__source']
 }
 
@@ -59,10 +54,6 @@ const createElement = (args: [string, ElementCreationOptions?], parent) => {
     else return document.createElement(...args)
 }
 
-
-const boundEditorKey = `__bound${specialKeys.editor}s`
-
-
 export const name = 'element'
 
 export const required = true
@@ -72,7 +63,6 @@ export const properties = {
         specialKeys.element, 
         specialKeys.attributes, 
         specialKeys.resize, 
-        specialKeys.resolved, 
         specialKeys.childPosition, 
         specialKeys.editor, 
         specialKeys.component, 
@@ -176,26 +166,17 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
 
     // Wait to initialize the element until it is inserted into an active DOM node
-    let isConnected, isResolved; 
+    let isConnected; 
 
     // track if ready
     Object.defineProperty(esm, `${specialKeys.connected}`, {
         value: new Promise(resolve => isConnected = async () => {
-            Object.defineProperty(esm, `__${specialKeys.connected}`, { value: true })
+            configuration.connected = true
             resolve(true)
         }),
     })
 
-    Object.defineProperty(esm, `${specialKeys.resolved}`, {
-        value: new Promise(resolve => isResolved = async () => {
-            resolve(true)
-        }),
-    })
-    
-    // trigger if ready
-    Object.defineProperty(esm, `__${specialKeys.connected}`, { value: isConnected,  writable: true })
-    Object.defineProperty(esm, `__${specialKeys.resolved}`, { value: isResolved })
-
+    configuration.connected = isConnected
 
     const isEventListener = (key, value) => key.slice(0,2) === 'on' && typeof value === 'function'
     const handleAttribute = (key, value, context) => {
@@ -320,7 +301,7 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
                     let ref = this[specialKeys.element]
 
-                    const __editor = this[`__${specialKeys.editor}`]
+                    const __editor = configuration.editor
 
                     if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
 
@@ -385,21 +366,21 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
             __editor.start() // start the editor
 
             // Attach editor to component (ui)
-            Object.defineProperty(esm, `__${specialKeys.editor}`, { value: __editor })
+            configuration.editor = __editor
 
             // Bind component to editor (graph)
             if (bound !== undefined) {
 
                 let boundESM = esm // TODO: Use graphscript to find a specific node using relative uri
+                const configuration = esm[specialKeys.isGraphScript]
                 bound.split('/').forEach(str => {
                     if (str === '..') boundESM = boundESM[specialKeys.isGraphScript].states.parentNode[specialKeys.component] // Move to parent
                     else if (str === '.') return // Do nothing
                     else boundESM = boundESM[str] // Move to child
                 }) 
-
-                const key = boundEditorKey
-                if (!boundESM[key]) Object.defineProperty(boundESM, key, { value: [__editor] })
-                else boundESM[key].push(__editor)
+                
+                if (!configuration.boundEditors) configuration.boundEditors = [__editor]
+                else configuration.boundEditors.push(__editor)
             }
         }
     }

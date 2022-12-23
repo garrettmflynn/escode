@@ -9,8 +9,6 @@ const checkInstantiationTime = async () => {
     return checkPerformance(async (i) => {
         const component = core.create(model)
         await component.__resolved
-        const res = component.nodeA.jump();
-        // console.log('Jumped!', res)
     }, nTimes).then(averageTime => {
         console.log(`Time to Construct Graphs:`, averageTime)
     }).then(() => {

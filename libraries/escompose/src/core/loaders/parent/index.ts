@@ -67,10 +67,10 @@ const parentLoader = (esc, toApply, options) => {
             
             // Signal Connection
             else if (parent) { 
-                const isConnected = esc[`__${specialKeys.connected}`]
+                const isConnected = configuration.connected
                 const toConnect = isConnected instanceof Function
                 esc[specialKeys.isGraphScript].start.run() // Try running start
-                if (toConnect) isConnected()
+                if (toConnect) isConnected() // Signal connection to the DOM
             }
             // }
 

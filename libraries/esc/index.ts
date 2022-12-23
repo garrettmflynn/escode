@@ -31,6 +31,11 @@ export type ESComponent<ElementType = GeneralElementType>  = {
         path: string,
         symbol: symbol,
         components: Map<string, ESComponent>,
+        connected: any,
+        resolved: any,
+        boundEditors?: Editor[],
+        editor?: Editor,
+        
         [x:string]: any
     } // Replaces __node from graphscript
     
@@ -51,13 +56,9 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     __source: __source // Grabbed from esmpile
     __path: string, // Path of the Component (ALL HAVE IT)
     __editor?: boolean | EditorProps | typeof Editor // Shorthand for creating the editor
-    __connected: Promise<void>  // To resolve when fully loaded
 
     // Keys to Manage Internal Things
-    ____editor: Editor
     __proxy: ProxyConstructor,
-    ____connected: Function // Trigger for ready
-    // __readyPromises: Promise<void>[]
     
     [x:string]: any | ESComponent // General components and properties
 

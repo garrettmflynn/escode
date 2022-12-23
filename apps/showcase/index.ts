@@ -214,7 +214,7 @@ async function start (demo = "basic", mode="direct") {
 
 
             const esc = await component // Promise for self is resolved
-            await esc.__connected // All children promises are resolved (if await is false)
+            await esc.__resolved // All children promises are resolved (if await is false)
 
             active = esc
 

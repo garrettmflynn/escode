@@ -210,7 +210,6 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
     const parent = options.parent // Don't proxy the window...
     const {
         parentObject,
-        waitForChildren,
         toApply = {},
         callbacks = {},
         opts = {},
@@ -262,12 +261,12 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
 
         // ---------- Loader State Tracker ----------
         // TODO: Make sure the loaders are using this so it can be tracked!
-        states: {
-            connected: false,
-        },
+        states: {},
 
         // ---------- Nested Components Map ----------
         components: new Map(),
+        connected: false,
+        resolved: false,
 
         // ---------- Listener Managers ----------
         flow: new FlowManager(),
@@ -329,6 +328,19 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
             if (isSymbol && callbacks.onRootCreated) callbacks.onRootCreated(name, esc)
             if (callbacks.onInstanceCreated) callbacks.onInstanceCreated(esc.__.path, esc)
 
+
+            const configuration = esc[specialKeys.isGraphScript]
+
+            // Allow the user to wait until all the chidren are resolved by awaiting the promise
+            let isResolved
+            const resolvePromise = new Promise(resolve => isResolved = async () => {
+                configuration.resolved = true
+                resolve(true)
+            })
+
+            Object.defineProperty(esc, `${specialKeys.resolved}`, { value: resolvePromise })
+            configuration.resolved = false // To resolve the promise
+
             // On Ready Callback
             const isReady = () => {
 
@@ -365,12 +377,10 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
                 const finalParent = esc[specialKeys.parent]
                 esc[specialKeys.parent] = finalParent
 
-
                 if (callbacks.onInstanceReady) callbacks.onInstanceReady(esc.__.path, esc)
+
+                isResolved()
             }
-
-
-            const configuration = esc[specialKeys.isGraphScript]
 
             // Apply Loaders to Nested Components
             const nested = components.from(esc)
@@ -388,15 +398,27 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
 
                     // TODO: Reinstate the ability to define child position on the node (in case it is confused...)
                     if (ref) {
-                        const resolution = load(ref, loaders, copy) // Apply loaders to nested components
 
-                        // Allow users to await the resolution of all children
-                        Object.defineProperty(info.parent[name], specialKeys.promise, { value: resolution, writable: false, })
-
-                        return resolve(resolution, (res) => {
+                        // Existing ES Component (reparent)
+                        if (ref.__?.symbol) {
+                            const parent = ref.__.parent
+                            if (parent) console.error(`Changing parent of existing component (${ref.__.path}) from ${parent.__.path} to ${configuration.path}`)
+                            ref.__parent = esc
                             configuration.components.set(name, res)
-                            return res
-                        })
+                        } 
+                        
+                        // New Component Template (load)
+                        else {
+                            const resolution = load(ref, loaders, copy) // Apply loaders to nested components
+
+                            // Allow users to await the resolution of all children
+                            Object.defineProperty(info.parent[name], specialKeys.promise, { value: resolution, writable: false, })
+
+                            return resolve(resolution, (res) => {
+                                configuration.components.set(name, res)
+                                return res
+                            })
+                        }
                     } else {
                         delete info.parent[name]
                         console.error('No reference found for nested component', info)
@@ -408,9 +430,6 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
                     isReady()
                     return resolved
                 })
-
-                // NOTE: This does not happen anymore...
-                if (waitForChildren) return resolve(res, () => esc)
 
             } else isReady()
 

@@ -77,10 +77,23 @@ const moreStuff = {
 const run = async () => {
 
     // Create ESC from string
-    await create(string)
+    const first = await create(string)
 
     // Create ESC from reference
-    await create(reference)
+    const second = await create(reference)
+
+    const combined = await create({
+        first,
+        second,
+    })
+
+    console.log('Combined:', combined)
+
+    const recombined = await create({ first }) // TODO: Shouldn't this trigger a reparenting (as well as a renaming...)
+
+
+    console.log('Recombined:', recombined)
+
 
     // Apply ESC to Elements and Components
     const elementArray = document.body.querySelectorAll('button')

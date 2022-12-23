@@ -40,17 +40,16 @@ function start (
 
 async function asyncConnect (onReadyCallback) {
 
+
+    const configuration = this[specialKeys.isGraphScript]
     await this[specialKeys.connected]
+    configuration.connected = true // Ensure the configuration shows a connection
 
-    const states = this[specialKeys.isGraphScript].states
-    states.connected = true
-
-    const boundEditorsKey = `__bound${specialKeys.editor}s`
-    const boundEditors = this[boundEditorsKey]
+    // Set resolved component on any editors
+    const boundEditors = configuration.boundEditors
     if (boundEditors) boundEditors.forEach(editor => editor.setComponent(this)) // set after all children have been set
 
-    this[`__${specialKeys.resolved}`]() // Tell other programs that the component is resolved
-
+    // Run additional callback
     if (onReadyCallback) await onReadyCallback()
 
     return this
@@ -58,11 +57,11 @@ async function asyncConnect (onReadyCallback) {
 
 function connect (callbacks: Function[] = []) {
 
-    const privateEditorKey = `__${specialKeys.editor}`
-
     // ------------------ Retroactively set __editor editor on children of the focus element -----------------
-    const __editor = this[specialKeys.parent]?.[privateEditorKey]
-    if (__editor) Object.defineProperty(this, privateEditorKey, { value: __editor })
+    const configuration = this[specialKeys.isGraphScript]
+    const parentConfiguration = this[specialKeys.parent]?.[specialKeys.isGraphScript]
+    const __editor = parentConfiguration?.editor
+    if (__editor) configuration.editor = __editor
 
     // ------------------ Register Sources (from esmpile) -----------------
     let source = this[esSourceKey]
@@ -70,7 +69,7 @@ function connect (callbacks: Function[] = []) {
         if (typeof source === 'function') source = this[specialKeys.source] = source()
         delete this[esSourceKey]
         const path = this[specialKeys.isGraphScript].path
-        if (this[privateEditorKey]) this[privateEditorKey].addFile(path, source)
+        if (configuration.editor) configuration.editor.addFile(path, source)
     }
 
     // Run Callbacks (e.g. start animations)

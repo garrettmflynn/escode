@@ -3,16 +3,43 @@ import { log } from '../utils'
 
 const nodeAInstance = Object.assign({}, nodeA)
 
+
+const shared = {
+    value: 0,
+}
+
+let value = 0
+
+function defaultFunction () {
+    const originalType = typeof this.__.original
+    const message = `instanced node (${this.__.name} ${originalType === 'function' ? 'class ' : originalType}) called! ${this.shared.value} ${this.mystery.value}`
+    this.shared.value++
+    this.mystery.value++
+    log.add(message)
+}
+
 class nodeClass { //treated as a class to instance rather than a function to set as default
     
     static __ = true
+    
+    shared = shared
 
-    default = () => {
-        const message = 'class instanced node called!'
-        log.add(message)
+    mystery = {
+        value
     }
+
+    default = defaultFunction
 }
 
+const objectNotClass = {
+    shared: shared,
+
+    mystery: {
+        value
+    },
+
+    default: defaultFunction
+}
 
 const nodeD = (...args)=>{ return args.reduce((a,b) => a + b, 0); }
 // nodeD.__ = true
@@ -74,7 +101,9 @@ let tree = {
 
     nodeG: nodeClass,
 
+    nodeH: nodeClass,
 
+    nodeI: objectNotClass,
 
     // Global Listeners
     // TODO: Allow for bound implementations of global listeners

@@ -22,6 +22,9 @@ const component = escompose.create(esc, {__parent: document.body})
 component.__element.click()
 ```
 
+These objects are deep cloned, meaning that **all properties attached to the object itself are independent across instantiations**.
+
+### Classes
 If you prefer to work with classes, these will also be instanced using this function:
 
 ```js
@@ -36,6 +39,9 @@ const component = escompose.create(MyButton, {__parent: document.body})
 component.__element.click()
 ```
 
+However, **class instances are assumed to be sufficiently instanced by the user**. As such, local objects attached to the class itself will be shared across instances.
+
+### Arrays
 In specific cases, an array may be useful to apply bulk operations to independent Components:
 ```js
 const components = escompose.create([esc, myButton, esc], {
@@ -59,12 +65,14 @@ component.__element.click()
 
 
 ### Creating Components from Functions
-A function can be passed directly as a Component, which simply makes it listenable:
+A function can be passed directly as a Component, which wraps it as the `default` function of a new component:
 ```js
 const esc = (input) => console.log(input)
 const component = escompose.create(esc, {__parent: document.body})
 component.default()
 ```
+
+If you're looking to listen to a function, you can simply add it as a property _inside_ a valid ES Component object.
 
 ### Applying Components to DOM Element
 Elements can be passed to apply Components to existing DOM elements:
@@ -79,7 +87,9 @@ component.__element.click()
 ```
 
 ## GraphScript Properties
-See the [ES Components] specification for a full list of properties.
+GraphScript properties refer to **special properties that are used to instantiate the Component**. These properties are prefixed with `__` and are recognized with **loaders** than can be used to experiment with new Component behaviors
+
+> See the [ES Components] specification for a full list of default properties. 
 
 All ES Components have at least one GraphScript property at instantiation. All other properties throughout an ES Component are listeneable by the root Component.
 

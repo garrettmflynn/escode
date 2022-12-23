@@ -471,7 +471,8 @@ export class Editor extends LitElement {
       this.graph.workspace.edgeMode = 'to'
 
       // Only set if not bound (otherwise handled externally)
-      const toSet = !this.bind || (component.__bound__editors && component.__bound__editors.includes(this))
+      const configuration = component[specialKeys.isGraphScript] ?? {}
+      const toSet = !this.bind || (configuration.boundEditors && configuration.boundEditors.includes(this))
       if (toSet) {
 
         const graph = {
