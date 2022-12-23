@@ -24,20 +24,29 @@ export type ESElementArray = [ESDefineInfo['name'], {extends: ESDefineInfo['exte
 export type __source = string | (string | Bundle)[]
 
 export type GeneralElementType = baseESElement | ESElementInfo | ESDefineInfo
+
+export type GraphScriptRoot = {
+
+    flow: Edgelord,
+    path: string,
+    symbol: symbol,
+    components: Map<string, ESComponent>,
+    connected: any,
+    resolved: any,
+    boundEditors?: Editor[],
+    editor?: Editor,
+    
+    [x:string]: any
+}
+
+export type ActiveGraphScriptRoot = {
+    ref: ESComponent // Reference to the active component
+} & GraphScriptRoot
+
+
 export type ESComponent<ElementType = GeneralElementType>  = {
 
-    __: {
-        flow: Edgelord,
-        path: string,
-        symbol: symbol,
-        components: Map<string, ESComponent>,
-        connected: any,
-        resolved: any,
-        boundEditors?: Editor[],
-        editor?: Editor,
-        
-        [x:string]: any
-    } // Replaces __node from graphscript
+    __: GraphScriptRoot | ActiveGraphScriptRoot
     
     default: Function,
     __compose: ESComponent | ESComponent[] // Is Merged into this component

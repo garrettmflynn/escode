@@ -1,6 +1,19 @@
 import { esm } from './check.js'
 
-export const drillSimple = (obj, callback, options) => {
+export const abortSymbol = Symbol('abort')
+
+
+const getObjectInfo = (obj, path = []) => {
+    return {
+        typeof: typeof obj,
+        name: obj?.constructor?.name,
+        simple: true,
+        object: obj && typeof obj === 'object',
+        path
+    }
+}
+
+export const drillSimple = (obj, callback, options = {}) => {
 
     let accumulator = options.accumulator
     if (!accumulator) accumulator = options.accumulator = {}
@@ -14,18 +27,22 @@ export const drillSimple = (obj, callback, options) => {
     
     let drill = (obj, acc={}, globalInfo) => {
 
-        for (let key in obj) {
-            if (ignore.includes(key)) continue
-            const val = obj[key]
-            const newPath = [...globalInfo.path, key]
 
-            const info = {
-                typeof: typeof val,
-                name: val?.constructor?.name,
-                simple: true,
-                object: val && typeof val === 'object',
-                path: newPath
-            }
+        const path = globalInfo.path
+        if (path.length === 0) {
+            const toPass = condition instanceof Function ? condition(undefined, obj, { ...getObjectInfo(obj, path) }) : condition
+            if (!toPass) return obj // Allow skipping top-level objects too
+        }
+
+        for (let key in obj) {
+            if (options.abort) return
+            if (ignore.includes(key)) continue
+
+            const val = obj[key]
+            const newPath = [...path, key]
+
+            const info = getObjectInfo(val, newPath)
+
             if (info.object) {
                 const name = info.name
 
@@ -41,19 +58,31 @@ export const drillSimple = (obj, callback, options) => {
                         const pass = condition instanceof Function ? condition(key, val, info) : condition
                         info.pass = pass
                         
-                        acc[key] = callback(key, val, info)
+                        const res = callback(key, val, info)
+                        if (res === abortSymbol) return abortSymbol
+                        acc[key] = res
 
                         if (pass) {
                             fromSeen.push(acc[key])
-                            acc[key] = drill(val, acc[key], {...globalInfo, path: newPath}) // Drill simple objects
+                            const res = drill(val, acc[key], {...globalInfo, path: newPath}) // Drill simple objects
+                            if (res === abortSymbol) return abortSymbol
+                            acc[key] = res
                         }
                     }
                 } 
                 else {
                     info.simple = false
-                    acc[key] = callback(key, val, info)
+                    const res =  callback(key, val, info)
+                    if (res === abortSymbol) return abortSymbol
+                    acc[key] = res
                 }
-            } else acc[key] = callback(key, val, info)
+            } else {
+                const res =  callback(key, val, info)
+                if (res === abortSymbol) return abortSymbol
+                acc[key] = res
+            }
+
+
         } 
 
         return acc

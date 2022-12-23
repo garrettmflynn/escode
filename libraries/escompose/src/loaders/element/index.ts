@@ -36,15 +36,14 @@ function checkESCompose (__compose) {
     return (isArr) ? !__compose.reduce((a,b) => a * (checkForInternalElements(b) ? 0 : 1), true) : checkForInternalElements(__compose)
 }
 
-function checkForInternalElements(node){
-    if (node.__element || checkESCompose(node.__compose)) return true
-    else if (node.__) return check(node.__.components)
+function checkForInternalElements(esc){
+    if (esc.__element || checkESCompose(esc.__compose)) return true
+    else if (esc.__) return check(esc.__.components)
 }
 
 function check (components) {
-    components.forEach(component => {
-        let res = checkForInternalElements(component)
-        if (res) return true
+    return Array.from(components.values()).find(esc => {
+        if (checkForInternalElements(esc)) return true
     })
 }
 
@@ -93,10 +92,8 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
     let info: undefined | ESComponent['__element'];
     if (!(element instanceof Element)) {
-
-
-        const mustShow = (attributes && Object.keys(attributes).length) || checkForInternalElements(esm)
-        const defaultTagName = mustShow ? 'div' : 'link'
+        // const mustShow = (attributes && Object.keys(attributes).length) || checkForInternalElements(esm)
+        const defaultTagName = 'div' //mustShow ? 'div' : 'link'
 
         // ------------------ Register Components (children) ------------------
         const isWebComponent = element && typeof element === 'object' && (element as any).name && (element as any).extends
@@ -290,7 +287,7 @@ export default function create(esm: ESComponent, _, options:Partial<Options> = {
 
         const current = this[specialKeys.element].parentNode
 
-        if (current !== v){
+        if (current !== v){ 
             if (this[specialKeys.element] instanceof Element) {
                 if(current) this[specialKeys.element].remove()
 

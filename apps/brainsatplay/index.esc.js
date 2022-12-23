@@ -302,9 +302,8 @@ export const content = {
                 __compose: feature
             },
         },
-
-        twitch,
     },
+    twitch,
 }
 
 export const footer = {

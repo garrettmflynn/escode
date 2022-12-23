@@ -220,94 +220,23 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
     const original = esc
 
 
-    esc = parse(esc, toApply, opts) // Parse the configuration object into a final configuration object (required)
+    // Parse the configuration object into a final configuration object
+    esc = parse(esc, toApply, opts)
 
-
-    if (esc[toReturn]) return esc[toReturn] // Shortcut to return the existing (updated) component
+    // Shortcut to return an existing (but updated) component
+    if (esc[toReturn]) return esc[toReturn] 
 
     // Return bulk operation requests
     if (Array.isArray(esc)) return resolve(esc.map(o => load(o, loaders, options)))
 
-    // Set __ property
-    const isSymbol = typeof name === 'symbol'
-    const equivalentCreateFunction = (esc) => {
-        if (!opts.loaders) opts.loaders = loaders // re-apply loaders to the options
-        return create(esc, undefined, opts)
-    } // Pass something to create Components in the same way to the loaders
-
-
-    let resolved; // Will resolve to the final object
-
-    // Specify the current path of the object
-    const parentId = parent?.[specialKeys.isGraphScript].path
-    const path = (parentId) ? [parentId, name] : ((typeof name === 'string') ? [name] : [])
-    const absolutePath = path.join(opts.keySeparator ?? keySeparator)
-
-    const __ = {
-
-        // ---------- Identifiers ----------
-        name,
-        symbol: Symbol('isGraphScript'), // A unique value to compare against
-
-        // ---------- Relative Position ----------
-        root: isSymbol ? name : parent[specialKeys.isGraphScript].root, // Set graph property
-        path: absolutePath, // Temporary Path Property
-
-        // ---------- Instantiation Options ----------
-        options: opts,
-
-        // ----------Original Instantiation Configuration Object ----------
-        original,
-
-        // ---------- Loader State Tracker ----------
-        // TODO: Make sure the loaders are using this so it can be tracked!
-        states: {},
-
-        // ---------- Nested Components Map ----------
-        components: new Map(),
-        connected: false,
-        resolved: false,
-
-        // ---------- Listener Managers ----------
-        flow: new FlowManager(),
-
-        // ---------- Creation Managers ----------
-        create: equivalentCreateFunction,
-
-        // ---------- Lifecycle Managers ----------
-        stop: {
-            name: 'stop',
-            value: false,
-            add: addCallback,
-            callbacks: {
-                before: [],
-                main: [],
-                after: [],
-            },
-        },
-
-        start: {
-            name: 'start',
-            value: false,
-            add: addCallback,
-            callbacks: {
-                before: [],
-                main: [],
-                after: [],
-            },
-        }
-    } as ESComponent['__']
-
-    const toRunProxy = function () { return runRecursive.call(this, resolved) }
-    __.start.run = toRunProxy.bind(__.start)
-    __.stop.run = toRunProxy.bind(__.stop)
-
-    esc[specialKeys.isGraphScript] = __ // Set __ property
+    // Create root property
+    esc[specialKeys.isGraphScript] = createGraphScriptRoot(name, options, { parent, original, loaders })
 
     const sortedLoaders = sortLoaders(loaders)
-    const loadedMystery = runLoaders(sortedLoaders, { main: esc, overrides: toApply, options: opts }, 'load') // Complete component resolution
+    const loaded = runLoaders(sortedLoaders, { main: esc, overrides: toApply, options: opts }, 'load') // Complete component resolution
 
-    const component = resolve(loadedMystery, loaded => {
+    const component = resolve(loaded, loaded => {
+
         // Parent Loader
         let toApplyParent = (!loaded[specialKeys.parent] && parent) ? { [specialKeys.parent]: parent } : {}
         const parented = runLoaders([parentLoader], { main: loaded, overrides: toApplyParent, options: opts }) // Use original parent here (in case none are specified later)
@@ -315,21 +244,64 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
         // Props Loader
         const propped = runLoaders([propsLoader], { main: parented }) // Use original parent here (in case none are specified later)
 
+
         const res = runLoaders(sortedLoaders, { main: propped, overrides: toApply, options: opts }, 'activate') // Recognize all special keys
 
         return resolve(res, (esc) => {
 
-            resolved = esc
+            esc.__.ref = esc
 
             // -------- Set Resolved Component --------
             if (parentObject) parentObject[name] = esc // setting immediately
 
             // On Creation Callbacks
-            if (isSymbol && callbacks.onRootCreated) callbacks.onRootCreated(name, esc)
+            if (typeof name === 'symbol' && callbacks.onRootCreated) callbacks.onRootCreated(name, esc)
             if (callbacks.onInstanceCreated) callbacks.onInstanceCreated(esc.__.path, esc)
 
-
             const configuration = esc[specialKeys.isGraphScript]
+
+            // Resolve Nested Components
+        const nested = components.from(propped)
+
+        const promises = (nested) ? nested.map((info) => {
+            const copy = Object.assign({}, options)
+            const name = copy.name = info.name
+            delete copy.toApply // Only apply to the root node
+            copy.parentObject = info.parent
+            copy.parent = esc
+
+            const ref = info.ref
+
+            // TODO: Reinstate the ability to define child position on the node (in case it is confused...)
+            if (ref) {
+
+                // Existing ES Component (reparent)
+                if (ref.__?.symbol) {
+                    const parent = ref.__.parent
+                    if (parent) console.error(`Changing parent of existing component (${ref.__.path}) from ${parent.__.path} to ${configuration.path}`)
+                    ref.__parent = esc
+                    esc[specialKeys.isGraphScript].components.set(name, res)
+                } 
+                
+                // New Component Template (load)
+                else {
+                    const resolution = load(ref, loaders, copy) // Apply loaders to nested components
+
+                    // Allow users to await the resolution of all children
+                    Object.defineProperty(info.parent[name], specialKeys.promise, { value: resolution, writable: false, })
+
+                    const promise = resolve(resolution, (res) => {
+                        configuration.components.set(name, res)
+                        return res
+                    })
+
+                    configuration.components.set(name, promise)
+                }
+            } else {
+                delete info.parent[name]
+                console.error('No reference found for nested component', info)
+            }
+        }) : []
 
             // Allow the user to wait until all the chidren are resolved by awaiting the promise
             let isResolved
@@ -341,97 +313,8 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
             Object.defineProperty(esc, `${specialKeys.resolved}`, { value: resolvePromise })
             configuration.resolved = false // To resolve the promise
 
-            // On Ready Callback
-            const isReady = () => {
-
-                // -------- Bind Functions to Node --------
-                for (let key in esc) {
-                    const og = esc[key]
-                    if (typeof og === 'function' && !isNativeClass(og)) {
-                        const context = esc[specialKeys.proxy] ?? esc
-                        // const og = esc[key]
-                        esc[key] = og.bind(context)
-                    }
-                }
-
-                // Add Stop Method
-                configuration.stop.initial = resolved[specialKeys.stop]
-                resolved[specialKeys.stop] = configuration.stop.run
-
-
-                // Ensure all GraphScript properties are non-enumerable
-                // And bind all functions to the node
-                const keys = all(esc)
-
-                for (let key of keys) {
-                    const isGraphScriptProperty = key.includes(specialKeys.isGraphScript) || key === 'default'
-                    if (isGraphScriptProperty) {
-                        const desc = Object.getOwnPropertyDescriptor(esc, key)
-                        if (desc?.enumerable) Object.defineProperty(esc, key, { ...desc, enumerable: false })
-                    }
-
-                    // if (typeof esc[key] === 'function') esc[key] = esc[key].bind(esc) // ensure all functions are bound to the node
-                }
-
-                // Trigger Parent / Path Loader
-                const finalParent = esc[specialKeys.parent]
-                esc[specialKeys.parent] = finalParent
-
-                if (callbacks.onInstanceReady) callbacks.onInstanceReady(esc.__.path, esc)
-
-                isResolved()
-            }
-
-            // Apply Loaders to Nested Components
-            const nested = components.from(esc)
-            if (nested) {
-
-                // Resolve all nested components
-                const promises = nested.map((info) => {
-                    const copy = Object.assign({}, options)
-                    const name = copy.name = info.name
-                    delete copy.toApply // Only apply to the root node
-                    copy.parentObject = info.parent
-                    copy.parent = esc
-
-                    const ref = info.ref
-
-                    // TODO: Reinstate the ability to define child position on the node (in case it is confused...)
-                    if (ref) {
-
-                        // Existing ES Component (reparent)
-                        if (ref.__?.symbol) {
-                            const parent = ref.__.parent
-                            if (parent) console.error(`Changing parent of existing component (${ref.__.path}) from ${parent.__.path} to ${configuration.path}`)
-                            ref.__parent = esc
-                            configuration.components.set(name, res)
-                        } 
-                        
-                        // New Component Template (load)
-                        else {
-                            const resolution = load(ref, loaders, copy) // Apply loaders to nested components
-
-                            // Allow users to await the resolution of all children
-                            Object.defineProperty(info.parent[name], specialKeys.promise, { value: resolution, writable: false, })
-
-                            return resolve(resolution, (res) => {
-                                configuration.components.set(name, res)
-                                return res
-                            })
-                        }
-                    } else {
-                        delete info.parent[name]
-                        console.error('No reference found for nested component', info)
-                    }
-                })
-
-                // When All Children are Initialized
-                const res = resolve(promises, (resolved) => {
-                    isReady()
-                    return resolved
-                })
-
-            } else isReady()
+            // Signal that the component is ready
+            resolve(promises, () => isReady(esc, callbacks, isResolved))
 
             // Return the esc object
             return esc
@@ -460,3 +343,123 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
     // Return the resolved component
     return component
 }
+
+function createGraphScriptRoot(name, options, additionalInfo: any = {}) {
+
+    const { parent, original, loaders } = additionalInfo
+
+    const isSymbol = typeof name === 'symbol'
+
+    // Specify the current path of the object
+    const parentId = parent?.[specialKeys.isGraphScript].path
+    const path = (parentId) ? [parentId, name] : ((typeof name === 'string') ? [name] : [])
+    const absolutePath = path.join(options.keySeparator ?? keySeparator)
+
+        
+    const __ = {
+
+        // ---------- Identifiers ----------
+        name,
+        symbol: Symbol('isGraphScript'), // A unique value to compare against
+
+        // ---------- Relative Position ----------
+        root: isSymbol ? name : parent[specialKeys.isGraphScript].root, // Set graph property
+        path: absolutePath, // Temporary Path Property
+
+        // ---------- Instantiation Options ----------
+        options,
+
+        // ----------Original Instantiation Configuration Object ----------
+        original,
+
+        // ---------- Loader State Tracker ----------
+        // TODO: Make sure the loaders are using this so it can be tracked!
+        states: {},
+
+        // ---------- Nested Components Map ----------
+        components: new Map(),
+        connected: false,
+        resolved: false,
+
+        // ---------- Listener Managers ----------
+        flow: new FlowManager(),
+
+        // ---------- Creation Managers ----------
+        create: (esc) => {
+            if (!options.loaders) options.loaders = loaders // re-apply loaders to the options
+            return create(esc, undefined, options)
+        },
+
+        // ---------- Lifecycle Managers ----------
+        stop: {
+            name: 'stop',
+            value: false,
+            add: addCallback,
+            callbacks: {
+                before: [],
+                main: [],
+                after: [],
+            },
+        },
+
+        start: {
+            name: 'start',
+            value: false,
+            add: addCallback,
+            callbacks: {
+                before: [],
+                main: [],
+                after: [],
+            },
+        },
+
+    } as ESComponent['__']
+
+    const toRunProxy = function () { return runRecursive.call(this, __.ref) }
+    __.start.run = toRunProxy.bind(__.start)
+    __.stop.run = toRunProxy.bind(__.stop)
+
+    return __
+}
+
+    // On Ready Callback
+    function isReady (esc, callbacks, isResolved) {
+
+        const configuration = esc[specialKeys.isGraphScript]
+
+        // -------- Bind Functions to Node --------
+        for (let key in esc) {
+            const og = esc[key]
+            if (typeof og === 'function' && !isNativeClass(og)) {
+                const context = esc[specialKeys.proxy] ?? esc
+                // const og = esc[key]
+                esc[key] = og.bind(context)
+            }
+        }
+
+        // Add Stop Method
+        configuration.stop.initial = esc[specialKeys.stop]
+        esc[specialKeys.stop] = configuration.stop.run
+
+
+        // Ensure all GraphScript properties are non-enumerable
+        // And bind all functions to the node
+        const keys = all(esc)
+
+        for (let key of keys) {
+            if (components.is(key)) {
+                const desc = Object.getOwnPropertyDescriptor(esc, key)
+                if (desc?.enumerable) Object.defineProperty(esc, key, { ...desc, enumerable: false })
+            }
+
+            // if (typeof esc[key] === 'function') esc[key] = esc[key].bind(esc) // ensure all functions are bound to the node
+        }
+
+        // Trigger Parent / Path Loader
+        const finalParent = esc[specialKeys.parent]
+        esc[specialKeys.parent] = finalParent
+
+        if (callbacks.onInstanceReady) callbacks.onInstanceReady(esc.__.path, esc)
+
+        isResolved()
+    }

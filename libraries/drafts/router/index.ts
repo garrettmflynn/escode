@@ -114,6 +114,7 @@ class Router {
             const config = escompose.clone(target)
 
             const component = escompose.create(config, {__parent})
+            console.log('Loaded', resolvedPath, component)
 
             // Transfer Roots
             if (resolvedPath === '') {
