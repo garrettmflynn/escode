@@ -1,16 +1,12 @@
+import { specialKeys } from "../../../../spec/standards"
 import { all } from "../../../common/properties"
 import { isNativeClass } from "../../../common/utils"
 
 export const name = 'props'
 
-export const required = true
-
 export const properties = {
-    dependents: ['__props']
+    dependents: [specialKeys.properties]
 }
-
-
-let originalPropKeys: string[]
 
 const proxy = (target, source, props?, globalProxy = source) => {
 
@@ -39,11 +35,16 @@ const proxy = (target, source, props?, globalProxy = source) => {
 
 const propsLoader = ( esc ) => {
 
-    const val = esc.__props
+    const root =  esc[specialKeys.isGraphScript]
+    const val = esc[specialKeys.properties]
+
+    root.props = {
+        original: [] as string[]
+    }
 
     let propsAdded: undefined | Object = undefined
 
-    Object.defineProperty(esc, '__props', {
+    Object.defineProperty(esc, specialKeys.properties, {
         get: () => {
             return propsAdded
         },
@@ -56,14 +57,14 @@ const propsLoader = ( esc ) => {
                 // Just set new properties as the props object
                 if (!propsAdded) {
                     propsAdded = newProps
-                    originalPropKeys = props
+                    root.props.original = props
                 }
 
                 // Create a proxy props object if set multiple times
                 else {
                     const ogProps = propsAdded
                     propsAdded = {}
-                    proxy(propsAdded, ogProps, originalPropKeys)
+                    proxy(propsAdded, ogProps, root.props.original)
                 }
 
                 proxy(esc, newProps, props, propsAdded)
@@ -73,7 +74,7 @@ const propsLoader = ( esc ) => {
         configurable: false
     })    
 
-    if (val) esc.__props = val
+    if (val) esc[specialKeys.properties] = val
 
     return esc
 }

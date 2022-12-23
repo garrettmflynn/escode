@@ -1,5 +1,6 @@
 // import { Graph } from "../../../Graph2"
 
+import { keySeparator } from '../../../spec/standards'
 import '../globals'
 
 // Special Key Definition
@@ -36,6 +37,7 @@ const globalFrom = {} as any
 const globalTo = {} as any
 const globalActive = {}
 
+
 class Edgelord {
 
     original = {};
@@ -61,8 +63,6 @@ class Edgelord {
 
         Object.assign(this.context, context)
         if (root) this.rootPath = root
-
-        if (!this.context.options.keySeparator) this.context.options.keySeparator = this.context.monitor.options.keySeparator
         
         this.original = listeners
 
@@ -80,7 +80,7 @@ class Edgelord {
         
             // Check if a higher-level listener is sending information from this root context
             let target = (mode === 'to') ? this.globals.to : this.globals.from
-            this.rootPath.split(this.context.options.keySeparator).forEach((key) => {
+            this.rootPath.split(keySeparator).forEach((key) => {
                 if (!target[key]) target[key] = {}
                 target = target[key]
             })
@@ -168,12 +168,11 @@ class Edgelord {
     }
 
     #getAbsolutePath = (name) => {
-        const sep = this.context.monitor.options.keySeparator
         return (
             !name 
             || !this.rootPath 
-            || (this.rootPath === name.slice(0, this.rootPath.length) && name[this.rootPath.length] === sep)
-        ) ? name : [this.rootPath, name].join(sep)
+            || (this.rootPath === name.slice(0, this.rootPath.length) && name[this.rootPath.length] === keySeparator)
+        ) ? name : [this.rootPath, name].join(keySeparator)
     }
 
     #getPathInfo = (path) => {
@@ -186,9 +185,9 @@ class Edgelord {
         // Transform name to absolute 
         path =  this.#getAbsolutePath(path)
         let rel = this.rootPath ? path.replace(`${this.rootPath}.`, '') : path
-        const baseArr = path.split(this.context.options.keySeparator)
+        const baseArr = path.split(keySeparator)
         output.absolute.array = [this.context.id, ...baseArr]
-        output.relative.array = rel.split(this.context.options.keySeparator)
+        output.relative.array = rel.split(keySeparator)
 
         let obj = this.context.monitor.get(
             output.absolute.array,  // For General Use
@@ -208,7 +207,7 @@ class Edgelord {
             
             // Assume you are targeting the global graph
             else if (!obj) {
-                const rel = output.relative.array.join(this.context.options.keySeparator)
+                const rel = output.relative.array.join(keySeparator)
                 obj = this.context.graph.get(rel)
             }
         }
@@ -224,8 +223,8 @@ class Edgelord {
             output.relative.array.push(extraPath)
         }
 
-        output.absolute.value = output.absolute.array.slice(1).join(this.context.options.keySeparator) // update path
-        output.relative.value = output.relative.array.join(this.context.options.keySeparator) // update path
+        output.absolute.value = output.absolute.array.slice(1).join(keySeparator) // update path
+        output.relative.value = output.relative.array.join(keySeparator) // update path
         
         return output
     }
@@ -253,7 +252,7 @@ class Edgelord {
         }
 
         // Use updated string value if modified
-        if (typeof value == 'string') value = toInfo.absolute.array.slice(1).join(this.context.options.keySeparator)
+        if (typeof value == 'string') value = toInfo.absolute.array.slice(1).join(keySeparator)
 
         const info = {
             value,
@@ -305,7 +304,7 @@ class Edgelord {
 
         // Register in global registry
         let target = (mode === 'to') ? this.globals.to : this.globals.from
-        const globalPath = absolutePath.split(this.context.options.keySeparator)
+        const globalPath = absolutePath.split(keySeparator)
         globalPath.forEach((key) => {
             if (!target[key]) target[key] = {}
             target = target[key]
@@ -433,7 +432,7 @@ pass = (from, target, update) => {
     let to = target.key
 
 
-    // const rootArr = root.split(this.context.options.keySeparator)
+    // const rootArr = root.split(keySeparator)
     const info = target.parent[to]
     target = info.value
 
@@ -465,7 +464,7 @@ pass = (from, target, update) => {
     const transform = (willSet?) => {
         const fullPath = [id]
         // if (root) fullPath.push(...rootArr) // correcting for relative string
-        fullPath.push(...to.split(this.context.options.keySeparator))
+        fullPath.push(...to.split(keySeparator))
         return checkIfSetter(fullPath, willSet)
     }
 
@@ -475,8 +474,8 @@ pass = (from, target, update) => {
     const getPathArray = (latest) => {
         const path = [id]
         const topPath: any[] = []
-        if (this.rootPath) topPath.push(...this.rootPath.split(this.context.options.keySeparator)) // correcting for relative string
-        topPath.push(...latest.split(this.context.options.keySeparator))
+        if (this.rootPath) topPath.push(...this.rootPath.split(keySeparator)) // correcting for relative string
+        topPath.push(...latest.split(keySeparator))
         path.push(...topPath)
         return path
     }
@@ -535,7 +534,7 @@ pass = (from, target, update) => {
             const path = getPathArray(config[bindKey].original ?? config[bindKey])
             if (typeof config[bindKey] === 'string') {
                 const res = this.context.monitor.get(path)
-                if (!res)  target = `because ${path.slice(1).join(this.context.options.keySeparator)} does not point correctly to an existing component.`
+                if (!res)  target = `because ${path.slice(1).join(keySeparator)} does not point correctly to an existing component.`
                 else {
                     config[bindKey] = {
                         value: res,
@@ -598,11 +597,11 @@ pass = (from, target, update) => {
         if (target === toSet) {
             const parentPath = [id]
             // if (root) parentPath.push(...rootArr) // TODO: Check if this needs fixing
-            parentPath.push(...to.split(this.context.options.keySeparator))
+            parentPath.push(...to.split(keySeparator))
             const idx = parentPath.pop()
             const info = this.context.monitor.get(parentPath, 'info')
             if (info.value) info.value[idx] = update
-            else console.error(`Cannot set value on ${parentPath.filter(str => typeof str !== 'symbol').join(this.context.options.keySeparator)} from ${from}`)
+            else console.error(`Cannot set value on ${parentPath.filter(str => typeof str !== 'symbol').join(keySeparator)} from ${from}`)
         }
 
         // Direct Object with Default Function

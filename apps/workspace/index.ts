@@ -17,15 +17,15 @@ import * as graph from '../../demos/graph/index'
 import { OperationsManager } from '../../demos/utils'
 
 
-const useRule = false
+const useRule = true
 
 const string = './index.esc.js'
 
-const create = async (config, toApply: any = {}) => {
+const create = async (config, overrides: any = {}) => {
 
-    toApply = Object.assign({__parent: document.body}, toApply)
+    overrides = Object.assign({__parent: document.body}, overrides)
 
-    const returned = esc.create(config, toApply, {
+    const returned = esc.create(config, overrides, {
 
         // For Editor Creation + Source Text Loading
         utilities: {

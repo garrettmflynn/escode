@@ -7,8 +7,10 @@ import { Loaders } from "../core/types";
 
 
 export type Options = {
+    
     keySeparator: MonitorOptions['keySeparator'],
-    monitor: Monitor | Partial<MonitorOptions>
+    monitor?: Monitor | Partial<MonitorOptions>
+    
     listeners?: {
         static?: boolean
     },

@@ -27,7 +27,6 @@ export type GeneralElementType = baseESElement | ESElementInfo | ESDefineInfo
 
 export type GraphScriptRoot = {
 
-    flow: Edgelord,
     path: string,
     symbol: symbol,
     components: Map<string, ESComponent>,
@@ -51,6 +50,7 @@ export type ESComponent<ElementType = GeneralElementType>  = {
     default: Function,
     __compose: ESComponent | ESComponent[] // Is Merged into this component
 
+    __listeners: Edgelord
     __parent?: ComponentElement,
 
     __onconnected: Function

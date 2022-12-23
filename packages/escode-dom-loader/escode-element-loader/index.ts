@@ -1,8 +1,8 @@
-import { Options } from "../../packages/common/types";
-import { EditorProps } from "../../packages/escompose/src/index";
-import { ESComponent, ESDefineInfo, ESElementInfo } from "../../spec/index";
-import { resolve } from "../common/utils";
-import { specialKeys } from "../../spec/standards";
+import { Options } from "../../common/types";
+import { EditorProps } from "escompose/src";
+import { ESComponent, ESDefineInfo, ESElementInfo } from "../../../spec/index";
+import { resolve } from "../../common/utils";
+import { specialKeys } from "../../../spec/standards";
 
 // Other Loaders
 import * as component from "../escode-define-loader/index"; // TODO: Fully separate this out...
@@ -75,7 +75,7 @@ export const properties = {
     ],
 }
 
-export default function create(esm: ESComponent, _, options:Partial<Options> = {}) {
+export default function create(esm: ESComponent, options:Partial<Options> = {}) {
 
     const configuration = esm[specialKeys.isGraphScript]
     let states = configuration.states

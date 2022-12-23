@@ -1,6 +1,6 @@
-import { specialKeys } from "../../spec/standards"
-import { deep } from '../../packages/common/clone'
-import { isNode } from "../common/globals"
+import { specialKeys } from "../../../spec/standards"
+import { deep } from '../../../packages/common/clone'
+import { isNode } from "../../common/globals"
 
 export const name = 'define'
 

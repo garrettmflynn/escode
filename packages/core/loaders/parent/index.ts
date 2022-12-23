@@ -13,7 +13,7 @@ export const properties = {
     dependents: [] // Creates path
 }
 
-const parentLoader = (esc, toApply, options) => {
+const parentLoader = (esc, options) => {
 
     const configuration = esc[specialKeys.isGraphScript]
 
@@ -38,7 +38,7 @@ const parentLoader = (esc, toApply, options) => {
         }
     }
 
-    const existingParent = esc[specialKeys.parent] ?? toApply[specialKeys.parent]
+    const existingParent = esc[specialKeys.parent] //?? overrides[specialKeys.parent]
 
     let parent = existingParent as ESComponent
     Object.defineProperty(esc, specialKeys.parent, {
@@ -66,8 +66,8 @@ const parentLoader = (esc, toApply, options) => {
             }
 
             configuration.parent.callbacks.forEach(callback => callback.call(esc, newParent))
-            
-            pathLoader(esc, undefined, options) // update path
+
+            pathLoader(esc, options) // update path
             
             // Signal disconnection (which isn't simply being a root Component)
             if (disconnecting) esc[specialKeys.isGraphScript].stop.run() // Try stopping the node
@@ -77,7 +77,7 @@ const parentLoader = (esc, toApply, options) => {
         }
     })    
 
-    pathLoader(esc, undefined, options) // update path
+    pathLoader(esc, options) // update path
 
 }
 

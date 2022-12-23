@@ -33,10 +33,8 @@ const isPathString = (value) => typeof value === 'string' && (value.includes('/'
 // ------------ Composition Loader Function ------------
 // This function is used to load the __compose property of an object
 // -----------------------------------------------------
-function compose(o, toApply, opts, updateOriginal=false) {
+function compose(o, opts, updateOriginal=false) {
     
-    o = basicMerge(o, toApply, updateOriginal); // basic merge
-
     o = compileAndMerge(o, o[localSpecialKeys.compose], opts, true, updateOriginal) // Basic Composition Support
 
     return resolve(o, (o) => {

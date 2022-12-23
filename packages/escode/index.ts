@@ -3,13 +3,12 @@ import * as core from '../core/index'
 
 // Loaders
 import * as compose from "../escode-compose-loader"
-import * as element from "../escode-element-loader"
-import * as define from "../escode-define-loader"
+import * as dom from "../escode-dom-loader/index"
 import * as start from "../escode-start-loader"
 import * as animate from "../escode-animation-loader"
 
 import { isNode } from '../common/globals'
-import { ConfigInput, Loaders } from '../core/types'
+import { ConfigInput, ConfigObject, Loaders } from '../core/types'
 import { Options } from '../common/types'
 
 // --------- Specifying Loaders ---------
@@ -19,7 +18,7 @@ const standardLoaders: Loaders = []
 standardLoaders.push(compose)
 
 // DOM Elements
-if (!isNode) standardLoaders.push(element, define)
+if (!isNode) standardLoaders.push(dom)
 
 // Lifecycle Functions
 standardLoaders.push(start)
@@ -38,13 +37,13 @@ export const merge = core.merge // Merge two objects together without creating a
 export const find = core.find // Find components on an object
 
 // Exports Modified from Core
-export const create = (config: ConfigInput, toApply?: any, options: Partial<Options> = {}) => {
+export const create = (config: ConfigInput, overrides?: ConfigObject, options: Partial<Options> = {}) => {
 
     // Merge Default Loaders
     if (options.loaders) options.loaders = Array.from(new Set([...options.loaders, ...standardLoaders]))
     else options.loaders = standardLoaders
 
     // Create the Component
-    return core.create(config, toApply, options)
+    return core.create(config, overrides, options)
 }
 export default create

@@ -74,7 +74,7 @@ export const operations = [
         header: `Clear All Listeners`,
         ignore: true,
         function: () => {
-            component.__.flow.clear() // NEW FEATURE: Clear all listeners
+            component.__listeners.clear() // NEW FEATURE: Clear all listeners
         }
     },
     {
@@ -102,8 +102,8 @@ export const operations = [
         ignore: true,
         function: () => {
             // NEW FEATURE: Clearing nodeC listener from nodeA.jump
-            component.__.flow.unsubscribe('nodeB.nodeC', 'nodeA.jump')
-            component.__.flow.clear('nodeA.jump') // Equivalent   
+            component.__listeners.unsubscribe('nodeB.nodeC', 'nodeA.jump')
+            component.__listeners.clear('nodeA.jump') // Equivalent   
         }
     },
 
@@ -119,7 +119,7 @@ export const operations = [
         header: `Resubscribe nodeB.nodeC from nodeA.jump`,
         ignore: true,
         function: () => {
-            component.__.flow.subscribe('nodeB.nodeC', 'nodeA.jump')
+            component.__listeners.subscribe('nodeB.nodeC', 'nodeA.jump')
         }
     },
 

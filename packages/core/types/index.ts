@@ -8,7 +8,7 @@ export type ConfigObject = NodeList | string | Function | AnyClass | Element | F
 export type ConfigInput = ConfigObject | ConfigObject[]
 
 export type ApplyOptions = {
-    toApply: any, 
+    overrides: any, 
 
     parent?, // Component parent
     parentObject?, // Object parent
@@ -21,7 +21,7 @@ export type ApplyOptions = {
     waitForChildren: boolean
 }
 
-export type LoaderFunction = (o: ESComponent, toApply: any, options: Partial<Options>) => any
+export type LoaderFunction = (o: ESComponent, options: Partial<Options>) => any
 
 
 export type LoaderBehaviorType = 'load' | 'activate' | 'start' | 'stop'

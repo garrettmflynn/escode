@@ -1,18 +1,16 @@
 import { Options } from "../common/types"
-import { keySeparator, specialKeys } from "../../spec/standards"
-import Monitor from "../esmonitor/src"
+import { specialKeys } from "../../spec/standards"
 import { deep as deepClone } from "../common/clone"
-import { AnyClass, ConfigInput, FinalConfig } from "./types"
+import { AnyClass, ConfigInput, FinalConfig, Loaders } from "./types"
 
-// TODO: Completely separate here...
-import compose from "../escode-compose-loader"
 import { toReturn } from "./symbols"
 import { isNode } from "../common/globals"
+import { merge } from "../common/utils"
 
 const isNativeClass= (o) => typeof o === 'function' && o.hasOwnProperty('prototype') && !o.hasOwnProperty('arguments')
 
 // This function accepts pre-parsed configuration objects and returns a final configuration object
-export default function parse(config: ConfigInput, toApply: any = {}, options: Partial<Options> = {}) {
+export default function parse(config: ConfigInput, overrides: any = {}, options: Partial<Options> = {}) {
 
     if (!isNode) {
         if (config instanceof NodeList) config = Array.from(config)  // DOM NodeList Support (e.g. from querySelectorAll): Converts to an array of configurations
@@ -23,7 +21,7 @@ export default function parse(config: ConfigInput, toApply: any = {}, options: P
 
     // Function Support: Transform function so that it becomes an object
     else if ( typeof config === 'function') {
-        if (isNativeClass(config)) config = new (config as AnyClass)(toApply, options) // Create a class
+        if (isNativeClass(config)) config = new (config as AnyClass)(overrides, options) // Create a class
         else {
             delete (config as any).__ // remove a triggering __ property from the function
             config = { [specialKeys.default]: config } // Apply as a default function
@@ -37,27 +35,26 @@ export default function parse(config: ConfigInput, toApply: any = {}, options: P
         // Directly Merge into existing element + component pairs (TO FINISH)
         if (component) {
 
-            toApply = deepClone(toApply) // Clone the applied object to prevent mutation
+            overrides = deepClone(overrides) // Clone the applied object to prevent mutation
 
             // We cannot handle the compose and apply keywords the same way—so we will approximate here.
-            const shouldHaveComposed = toApply.__compose
-            const shouldHaveApplied = toApply.__apply
-            delete toApply.__compose
-            delete toApply.__apply
+            const shouldHaveComposed = overrides.__compose
+            const shouldHaveApplied = overrides.__apply
+            delete overrides.__compose
+            delete overrides.__apply
 
             if (shouldHaveComposed) {
                 console.warn('Cannot compose a component onto an element that already has a component. Merging with the base object instead...')
-                toApply = Object.assign(shouldHaveComposed, toApply)
+                overrides = Object.assign(shouldHaveComposed, overrides)
             }
 
             if (shouldHaveApplied) {
                 console.warn('Cannot apply a component onto an element that already has a component. Applying to the base object instead...')
-                toApply = Object.assign(toApply, shouldHaveApplied)
+                overrides = Object.assign(overrides, shouldHaveApplied)
             }
 
-            compose(component, toApply, options, true)  // Complete a reverse composition to apply to an existing component
-
-            return {[toReturn]: component} // shortcut to stop and return the existing component
+            const merged = merge(component, overrides, true); // Basic reverse merge
+            return {[toReturn]: merged} // Return immediately
         }
         // Create new component with element as the base
         else {
@@ -77,24 +74,4 @@ export default function parse(config: ConfigInput, toApply: any = {}, options: P
     
     // -------------- Assign Standard Properties to the Component Object --------------         
     return config as FinalConfig
-}
-
-
- // -------------- Create Complete Options Object --------------         
-export const parseOptions = (options: Partial<Options>) => {
- const copy = deepClone(options)
- let monitor;
- if (copy.monitor instanceof Monitor) {
-     monitor = copy.monitor
-     copy.keySeparator = monitor.keySeparator // Inherit key separator
- } else {
-     if (!copy.monitor) copy.monitor = {}
-     if (!copy.monitor.keySeparator) {
-         if (!copy.keySeparator) copy.keySeparator = keySeparator // Ensure key separator is defined
-         copy.monitor.keySeparator = copy.keySeparator
-     }
-     copy.monitor = new Monitor(copy.monitor)
- }
-
- return copy as Options
 }

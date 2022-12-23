@@ -10,6 +10,17 @@ export const defaultProperties = {
     properties: '__props',
 
     default: defaultPath,
+    children: '__children',
+    listeners: {
+        value: '__listeners', // Main property
+
+        // Root Properties
+        branch: 'branch',
+        bind: 'bind',
+        trigger: 'trigger',
+        format: 'format',
+    },
+
     parent: '__parent',
     promise: '__childresolved',
 
@@ -30,14 +41,6 @@ export const specialKeys = {
     element: '__element',
     webcomponents: '__define',
     attributes: '__attributes',
-
-    listeners: {
-        value: '__listeners',
-        branch: '__branch',
-        bind: '__bind',
-        trigger: '__trigger',
-        format: '__format',
-    },
 
     trigger: '__trigger',
     compose: '__compose',

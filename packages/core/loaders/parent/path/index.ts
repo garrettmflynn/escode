@@ -14,7 +14,7 @@ export const properties = {
     dependents: []
 }
 
-const pathLoader = ( esc, _, opts: Partial<Options>={}) => {
+const pathLoader = ( esc, opts: Partial<Options>={}) => {
 
     // Specify the current path of the object        
     const configuration = esc[specialKeys.isGraphScript]
