@@ -1,0 +1,30 @@
+{
+  "name": "esc",
+  "version": "0.0.20",
+  "description": "The specification for loading ESCode files.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "repository": "https://github.com/brainsatplay/escompile",
+  "author": "Garrett Flynn <garrettmflynn@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "start:browser": "tinybuild --path tinybuild.demo.js",
+    "build": "tinybuild",
+    "types": "node types.js"
+  },
+  "devDependencies": {
+    "escode": "*",
+    "esmpile": "*"
+  },
+  "dependencies": {
+    "node-fetch": "^3.2.10"
+  }
+}

@@ -2,12 +2,7 @@ node_modules
 
 components/**/dist
 
-libraries/escode/**/dist
-libraries/escompose/**/dist
-libraries/escomposer/**/dist
-libraries/esmpile/**/dist
-libraries/old/**/dist
-
+**/dist
 libraries/**/build
 
 .DS_Store

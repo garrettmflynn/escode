@@ -5,7 +5,7 @@ import { DOMService, SubprocessWorkerInfo } from '../../../index'//'../../index'
 
 // plugins
 import * as plugins from '../../../plugins/index.js'
-const soundDropdown =plugins.escompose.instance(plugins.output.sound.dropdown, { 
+const soundDropdown = plugins.escompose.instance(plugins.output.sound.dropdown, { 
     soundFilePaths = [
         {
             "label": "Kalimba",

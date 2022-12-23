@@ -28,8 +28,8 @@ A subset of UI elements to manage devices
 #### audio
 A subset of UI elements to manage audio playback
 
-### escompose
-A set of components that augment ESCompose's foundational capabilities
+### escode
+A set of components that augment ESCode's foundational capabilities
 
 
 > You can add a `.nojekyll` file to this repository to allow node_modules to be served—though this might overload GitHub Pages if you have a lot of packages.

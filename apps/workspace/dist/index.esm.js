@@ -9,7 +9,7 @@ var __publicField = (obj, key2, value2) => {
   return value2;
 };
 
-// ../../libraries/common/check.js
+// ../../packages/common/check.js
 var moduleStringTag = "[object Module]";
 var esm = (object) => {
   const res = object && (!!Object.keys(object).reduce((a, b) => {
@@ -20,7 +20,7 @@ var esm = (object) => {
   return !!res;
 };
 
-// ../../libraries/esmonitor/src/utils.ts
+// ../../packages/esmonitor/src/utils.ts
 var isSame = (a, b) => {
   if (a && typeof a === "object" && b && typeof b === "object") {
     const jA = JSON.stringify(a);
@@ -64,7 +64,7 @@ var runCallback = (callback, path, info2, output, setGlobal = true) => {
   }
 };
 
-// ../../libraries/esmonitor/src/Poller.ts
+// ../../packages/esmonitor/src/Poller.ts
 var defaultSamplingRate = 60;
 var Poller = class {
   constructor(listeners2, sps) {
@@ -106,13 +106,13 @@ var Poller = class {
       if (!this.sps)
         this.sps = defaultSamplingRate;
       else if (!this.#pollingId) {
-        console.warn("[escode]: Starting Polling!");
+        console.warn("[esmonitor]: Starting Polling!");
         this.#pollingId = setInterval(() => this.poll(listeners2), 1e3 / this.sps);
       }
     };
     this.stop = () => {
       if (this.#pollingId) {
-        console.warn("[escode]: Stopped Polling!");
+        console.warn("[esmonitor]: Stopped Polling!");
         clearInterval(this.#pollingId);
         this.#pollingId = void 0;
       }
@@ -138,7 +138,7 @@ var Poller = class {
   }
 };
 
-// ../../libraries/esmonitor/src/listeners.ts
+// ../../packages/esmonitor/src/listeners.ts
 var listeners_exports = {};
 __export(listeners_exports, {
   functionExecution: () => functionExecution,
@@ -151,7 +151,7 @@ __export(listeners_exports, {
   setters: () => setters
 });
 
-// ../../libraries/esmonitor/src/global.ts
+// ../../packages/esmonitor/src/global.ts
 globalThis.ESMonitorState = {
   state: {},
   callback: void 0,
@@ -159,7 +159,7 @@ globalThis.ESMonitorState = {
 };
 var global_default = globalThis.ESMonitorState;
 
-// ../../libraries/esmonitor/src/info.ts
+// ../../packages/esmonitor/src/info.ts
 var performance2 = async (callback, args) => {
   const tic = globalThis.performance.now();
   const output = await callback(...args);
@@ -192,12 +192,12 @@ var get = (func, args, info2) => {
   return result;
 };
 
-// ../../libraries/esmonitor/src/globals.ts
+// ../../packages/esmonitor/src/globals.ts
 var isProxy = Symbol("isProxy");
 var fromInspectable = Symbol("fromInspectable");
 var fromInspectableHandler = Symbol("fromInspectableHandler");
 
-// ../../libraries/esc/standards.js
+// ../../spec/standards.js
 var keySeparator = ".";
 var defaultPath = "default";
 var esSourceKey = "__esmpileSourceBundle";
@@ -244,7 +244,7 @@ var specialKeys = {
   resize: "__onresize"
 };
 
-// ../../libraries/common/pathHelpers.ts
+// ../../packages/common/pathHelpers.ts
 var hasKey = (key2, obj) => key2 in obj;
 var getShortcut = (path, shortcuts, keySeparator2) => {
   const sc = shortcuts[path[0]];
@@ -317,14 +317,14 @@ var setFromPath = (path, value2, ref, opts = {}) => {
   return true;
 };
 
-// ../../libraries/esmonitor/src/inspectable/handlers.ts
+// ../../packages/esmonitor/src/inspectable/handlers.ts
 var handlers_exports = {};
 __export(handlers_exports, {
   functions: () => functions,
   objects: () => objects
 });
 
-// ../../libraries/esmonitor/src/inspectable/define.ts
+// ../../packages/esmonitor/src/inspectable/define.ts
 function define(key2, registerAsNewKey) {
   const inspectable = this;
   const target = this.target;
@@ -350,7 +350,7 @@ function define(key2, registerAsNewKey) {
 }
 var define_default = define;
 
-// ../../libraries/esmonitor/src/inspectable/handlers.ts
+// ../../packages/esmonitor/src/inspectable/handlers.ts
 var functions = function() {
   const inspectable = this;
   return {
@@ -430,10 +430,10 @@ var objects = function() {
   };
 };
 
-// ../../libraries/escompose/src/globals.ts
+// ../../packages/common/globals.ts
 var isNode = typeof process === "object";
 
-// ../../libraries/esmonitor/src/inspectable/index.ts
+// ../../packages/esmonitor/src/inspectable/index.ts
 var canCreate = (parent, key2, val) => {
   try {
     if (val === void 0)
@@ -550,7 +550,7 @@ var Inspectable = class {
   }
 };
 
-// ../../libraries/esmonitor/src/optionsHelpers.ts
+// ../../packages/esmonitor/src/optionsHelpers.ts
 var setFromOptions = (path, value2, baseOptions, opts) => {
   const ref = opts.reference;
   const id = Array.isArray(path) ? path[0] : typeof path === "string" ? path.split(baseOptions.keySeparator)[0] : path;
@@ -572,7 +572,7 @@ var setFromOptions = (path, value2, baseOptions, opts) => {
   return value2;
 };
 
-// ../../libraries/esmonitor/src/listeners.ts
+// ../../packages/esmonitor/src/listeners.ts
 var info = (id, callback, path, originalValue, base, listeners2, options, refShortcut = {}) => {
   if (typeof path === "string")
     path = path.split(options.keySeparator);
@@ -759,7 +759,7 @@ function functions2(info2, collection, lookups) {
   }, lookups);
 }
 
-// ../../libraries/common/drill.js
+// ../../packages/common/drill.js
 var abortSymbol = Symbol("abort");
 var getObjectInfo = (obj, path = []) => {
   return {
@@ -837,7 +837,7 @@ var drillSimple = (obj, callback, options = {}) => {
   return drill(obj, accumulator, { path });
 };
 
-// ../../libraries/esmonitor/src/Monitor.ts
+// ../../packages/esmonitor/src/Monitor.ts
 var createLookup = () => {
   return { symbol: {}, name: {} };
 };
@@ -1052,10 +1052,10 @@ var Monitor = class {
   }
 };
 
-// ../../libraries/esmonitor/src/index.ts
+// ../../packages/esmonitor/src/index.ts
 var src_default = Monitor;
 
-// ../../libraries/common/properties.ts
+// ../../packages/common/properties.ts
 var rawProperties = {};
 var globalObjects = ["Object", "Array", "Map", "Set"];
 function all(obj) {
@@ -1079,7 +1079,7 @@ function all(obj) {
   return props;
 }
 
-// ../../libraries/common/clone.js
+// ../../packages/common/clone.js
 var shallow = (obj, opts = {}) => {
   if (typeof obj === "object") {
     if (Array.isArray(obj)) {
@@ -1109,7 +1109,7 @@ var deep = (obj, opts = {}) => {
   return opts.accumulator;
 };
 
-// ../../libraries/escompose/src/utils/index.ts
+// ../../packages/common/utils/index.ts
 var isPromise = (o) => typeof o === "object" && typeof o.then === "function";
 var resolve = (object, callback) => {
   if (typeof object === "object" && Array.isArray(object) && object.find((v) => isPromise(v)))
@@ -1190,8 +1190,15 @@ var merge = (main, override, updateOriginal = false, flipPrecedence = false, com
   }
   return copy;
 };
+function isNativeClass(thing) {
+  return isFunction(thing) === "class";
+}
+function isFunction(x2) {
+  const res = typeof x2 === "function" ? x2.prototype ? Object.getOwnPropertyDescriptor(x2, "prototype").writable ? "function" : "class" : x2.constructor.name === "AsyncFunction" ? "async" : "arrow" : "";
+  return res;
+}
 
-// ../../libraries/escompose/src/loaders/compose/compile/wasm.ts
+// ../../packages/escode-compose-loader/compile/wasm.ts
 var fetchAndInstantiateTask = async (uri, importObject) => {
   const wasmArrayBuffer = await fetch(uri).then((response) => response.arrayBuffer());
   return WebAssembly.instantiate(wasmArrayBuffer, importObject);
@@ -1206,10 +1213,10 @@ var load = async (uri, importObject) => {
 };
 var wasm_default = load;
 
-// ../../libraries/escompose/src/loaders/compose/compile/index.ts
+// ../../packages/escode-compose-loader/compile/index.ts
 var catchError = (o, e) => {
   if (o[specialKeys.reference]) {
-    console.warn("[escompose]: Falling back to ES Component reference...", e);
+    console.warn("[escode]: Falling back to ES Component reference...", e);
     return o[specialKeys.reference];
   } else
     return createErrorComponent(e.message);
@@ -1295,7 +1302,7 @@ function createErrorComponent(message) {
   };
 }
 
-// ../../libraries/escompose/src/loaders/compose/index.ts
+// ../../packages/escode-compose-loader/index.ts
 var localSpecialKeys = {
   compose: specialKeys.compose,
   apply: specialKeys.apply,
@@ -1315,7 +1322,7 @@ function compose(o, toApply, opts, updateOriginal = false) {
     return resolve(o2);
   });
 }
-var compose_default = compose;
+var escode_compose_loader_default = compose;
 function compileAndMerge(properties6, composition = {}, opts = {}, flipPrecedence = false, updateOriginal = false) {
   if (!Array.isArray(composition))
     composition = [composition];
@@ -1344,11 +1351,11 @@ function compileAndMerge(properties6, composition = {}, opts = {}, flipPrecedenc
   });
 }
 
-// ../../libraries/escompose/src/core/symbols.ts
+// ../../packages/core/symbols.ts
 var toReturn = Symbol("return");
 
-// ../../libraries/escompose/src/core/parse.ts
-var isNativeClass = (o) => typeof o === "function" && o.hasOwnProperty("prototype") && !o.hasOwnProperty("arguments");
+// ../../packages/core/parse.ts
+var isNativeClass2 = (o) => typeof o === "function" && o.hasOwnProperty("prototype") && !o.hasOwnProperty("arguments");
 function parse(config, toApply = {}, options = {}) {
   if (!isNode) {
     if (config instanceof NodeList)
@@ -1357,7 +1364,7 @@ function parse(config, toApply = {}, options = {}) {
   if (typeof config === "string")
     config = { [specialKeys.apply]: config };
   else if (typeof config === "function") {
-    if (isNativeClass(config))
+    if (isNativeClass2(config))
       config = new config(toApply, options);
     else {
       delete config.__;
@@ -1379,7 +1386,7 @@ function parse(config, toApply = {}, options = {}) {
         console.warn("Cannot apply a component onto an element that already has a component. Applying to the base object instead...");
         toApply = Object.assign(toApply, shouldHaveApplied);
       }
-      compose_default(component, toApply, options, true);
+      escode_compose_loader_default(component, toApply, options, true);
       return { [toReturn]: component };
     } else {
       config = { [specialKeys.element]: config };
@@ -1411,7 +1418,38 @@ var parseOptions = (options) => {
   return copy;
 };
 
-// ../../libraries/drafts/edgelord/index.ts
+// ../../packages/core/globals.ts
+globalThis.escomposePerformance = {
+  create: [],
+  resolve: [],
+  resolveAll: [],
+  listeners: {
+    create: [],
+    resolve: []
+  },
+  averages: function() {
+    const averages = {
+      create: 0,
+      resolve: 0,
+      resolveAll: 0,
+      listeners: {
+        create: 0,
+        resolve: 0
+      }
+    };
+    for (const key2 in averages) {
+      if (typeof this[key2] === "object" && !Array.isArray(this[key2])) {
+        for (const subKey in this[key2]) {
+          averages[key2][subKey] = this[key2][subKey].reduce((a, b) => a + b, 0) / this[key2][subKey].length;
+        }
+      } else
+        averages[key2] = this[key2].reduce((a, b) => a + b, 0) / this[key2].length;
+    }
+    return averages;
+  }
+};
+
+// ../../packages/core/edgelord/index.ts
 var defaultPath2 = "default";
 var operatorPath = "__operator";
 var specialKeys2 = {
@@ -1864,7 +1902,7 @@ var Edgelord = class {
 };
 var edgelord_default = Edgelord;
 
-// ../../libraries/escompose/src/core/components.ts
+// ../../packages/core/components.ts
 var is = (key2) => {
   return key2.includes(specialKeys.isGraphScript) || key2 === "default";
 };
@@ -1880,7 +1918,7 @@ var has = (o) => {
       }
     }
   }, {
-    ignore: ["__"],
+    ignore: ["__", "__parent"],
     condition: (_, o2) => {
       const thisName = o2?.constructor?.name;
       const propName = o2?.__props?.constructor?.name;
@@ -1928,89 +1966,7 @@ function from(parent) {
     return null;
 }
 
-// ../../libraries/external/graphscript/services/EventHandler.ts
-var EventHandler = class {
-  constructor(data) {
-    this.pushToState = {};
-    this.data = {};
-    this.triggers = {};
-    this.setState = (updateObj) => {
-      console.log("Setting state", updateObj);
-      Object.assign(this.data, updateObj);
-      for (const prop of Object.getOwnPropertyNames(updateObj)) {
-        if (this.triggers[prop])
-          this.triggers[prop].forEach((obj) => obj.onchange(this.data[prop]));
-      }
-      return this.data;
-    };
-    this.setValue = (key2, value2) => {
-      console.log("Setting value", key2, value2, this.triggers);
-      this.data[key2] = value2;
-      if (this.triggers[key2])
-        this.triggers[key2].forEach((obj) => obj.onchange(this.data[key2]));
-    };
-    this.subscribeTrigger = (key2, onchange) => {
-      if (key2) {
-        if (!this.triggers[key2]) {
-          this.triggers[key2] = [];
-        }
-        let l = this.triggers[key2].length;
-        this.triggers[key2].push({ sub: l, onchange });
-        return this.triggers[key2].length - 1;
-      } else
-        return void 0;
-    };
-    this.unsubscribeTrigger = (key2, sub) => {
-      let triggers = this.triggers[key2];
-      if (triggers) {
-        if (!sub)
-          delete this.triggers[key2];
-        else {
-          let sub2 = void 0;
-          let obj = triggers.find((o, i) => {
-            if (o.sub === sub2) {
-              sub2 = i;
-              return true;
-            }
-          });
-          if (obj)
-            triggers.splice(sub2, 1);
-          if (this.onRemoved)
-            this.onRemoved(obj);
-          return true;
-        }
-      }
-    };
-    this.subscribeTriggerOnce = (key2, onchange) => {
-      let sub;
-      let changed = (value2) => {
-        onchange(value2);
-        this.unsubscribeTrigger(key2, sub);
-      };
-      sub = this.subscribeTrigger(key2, changed);
-    };
-    this.getTrigger = (key2, sub) => {
-      for (const s in this.triggers[key2]) {
-        if (this.triggers[key2][s].sub === sub)
-          return this.triggers[key2][s];
-      }
-    };
-    if (typeof data === "object")
-      this.data = data;
-  }
-};
-
-// ../../libraries/external/graphscript/index.ts
-var state = new EventHandler();
-function isNativeClass2(thing) {
-  return isFunction(thing) === "class";
-}
-function isFunction(x2) {
-  const res = typeof x2 === "function" ? x2.prototype ? Object.getOwnPropertyDescriptor(x2, "prototype").writable ? "function" : "class" : x2.constructor.name === "AsyncFunction" ? "async" : "arrow" : "";
-  return res;
-}
-
-// ../../libraries/escompose/src/core/loaders/props/index.ts
+// ../../packages/core/loaders/props/index.ts
 var props_exports = {};
 __export(props_exports, {
   default: () => props_default,
@@ -2053,7 +2009,7 @@ var propsLoader = (esc) => {
       return propsAdded;
     },
     set: (newProps) => {
-      if (typeof newProps !== "object" && !isNativeClass2(newProps))
+      if (typeof newProps !== "object" && !isNativeClass(newProps))
         console.warn("Props must be an object");
       else {
         const props = all(newProps);
@@ -2077,7 +2033,7 @@ var propsLoader = (esc) => {
 };
 var props_default = propsLoader;
 
-// ../../libraries/escompose/src/core/loaders/parent/index.ts
+// ../../packages/core/loaders/parent/index.ts
 var parent_exports = {};
 __export(parent_exports, {
   default: () => parent_default,
@@ -2086,7 +2042,7 @@ __export(parent_exports, {
   required: () => required2
 });
 
-// ../../libraries/escompose/src/core/loaders/parent/path/index.ts
+// ../../packages/core/loaders/parent/path/index.ts
 var properties3 = {
   dependencies: [
     specialKeys.isGraphScript,
@@ -2128,7 +2084,7 @@ var pathLoader = (esc, _, opts = {}) => {
 };
 var path_default = pathLoader;
 
-// ../../libraries/escompose/src/core/loaders/parent/index.ts
+// ../../packages/core/loaders/parent/index.ts
 var name3 = "parent";
 var required2 = true;
 var properties4 = {
@@ -2186,7 +2142,7 @@ var parentLoader = (esc, toApply, options) => {
 };
 var parent_default = parentLoader;
 
-// ../../libraries/escompose/src/core/load.ts
+// ../../packages/core/load.ts
 var run = (f, context, args, x2) => resolve(x2, () => f.call(context, ...args));
 var runSequentially = (callbacks, args = [], context) => {
   if (callbacks.length) {
@@ -2470,7 +2426,7 @@ function isReady(esc, callbacks, isResolved) {
   const configuration = esc[specialKeys.isGraphScript];
   for (let key2 in esc) {
     const og = esc[key2];
-    if (typeof og === "function" && !isNativeClass2(og)) {
+    if (typeof og === "function" && !isNativeClass(og)) {
       const context = esc[specialKeys.proxy] ?? esc;
       esc[key2] = og.bind(context);
     }
@@ -2492,38 +2448,7 @@ function isReady(esc, callbacks, isResolved) {
   isResolved();
 }
 
-// ../../libraries/escompose/src/core/globals.ts
-globalThis.escomposePerformance = {
-  create: [],
-  resolve: [],
-  resolveAll: [],
-  listeners: {
-    create: [],
-    resolve: []
-  },
-  averages: function() {
-    const averages = {
-      create: 0,
-      resolve: 0,
-      resolveAll: 0,
-      listeners: {
-        create: 0,
-        resolve: 0
-      }
-    };
-    for (const key2 in averages) {
-      if (typeof this[key2] === "object" && !Array.isArray(this[key2])) {
-        for (const subKey in this[key2]) {
-          averages[key2][subKey] = this[key2][subKey].reduce((a, b) => a + b, 0) / this[key2][subKey].length;
-        }
-      } else
-        averages[key2] = this[key2].reduce((a, b) => a + b, 0) / this[key2].length;
-    }
-    return averages;
-  }
-};
-
-// ../../libraries/escompose/src/core/index.ts
+// ../../packages/core/index.ts
 var monitor = new src_default();
 var create = (config, toApply = {}, options = {}) => {
   const fullOptions = parseOptions(options);
@@ -2580,7 +2505,7 @@ var create = (config, toApply = {}, options = {}) => {
 var core_default = create;
 var resolve2 = resolve;
 
-// ../../libraries/escompose/demos/graph/nodes/nodeA.js
+// ../../demos/graph/nodes/nodeA.js
 var nodeA_exports = {};
 __export(nodeA_exports, {
   __: () => __,
@@ -2589,7 +2514,7 @@ __export(nodeA_exports, {
   y: () => y
 });
 
-// ../../libraries/escompose/demos/utils.ts
+// ../../demos/utils.ts
 var isNode3 = typeof process === "object";
 var elId = `escomposeOperationsManagerLog`;
 if (!isNode3) {
@@ -2646,7 +2571,7 @@ var log = {
   }
 };
 
-// ../../libraries/escompose/demos/graph/nodes/nodeA.js
+// ../../demos/graph/nodes/nodeA.js
 var __ = true;
 var x = 5;
 var y = 2;
@@ -2656,7 +2581,7 @@ var jump = () => {
   return "jumped!";
 };
 
-// ../../libraries/escompose/demos/graph/tree.js
+// ../../demos/graph/tree.js
 var nodeAInstance = Object.assign({}, nodeA_exports);
 var shared = {
   value: 0
@@ -2753,17 +2678,17 @@ var tree = {
 };
 var tree_default = tree;
 
-// ../../libraries/escompose/src/loaders/animate/index.ts
+// ../../packages/escode-animate-loader/index.ts
 var key = specialKeys.animate;
 var properties5 = {
   dependents: [specialKeys.animate]
 };
 
-// ../../libraries/escompose/demos/graph/index.ts
+// ../../demos/graph/index.ts
 var nodeAInstance2 = tree_default.nodeA;
 var model = tree_default;
 
-// ../../libraries/common/benchmark.ts
+// ../../packages/common/benchmark.ts
 var checkPerformance = async (callback, times = 1, cleanupCallback) => {
   const callbacks = Array.from({ length: times }).map(() => callback);
   const timesArr = [];
@@ -2781,7 +2706,7 @@ var checkPerformance = async (callback, times = 1, cleanupCallback) => {
   return timesArr.reduce((acc, item) => acc + item, 0) / timesArr.length;
 };
 
-// ../../libraries/escompose/demos/graph/benchmark.ts
+// ../../demos/graph/benchmark.ts
 var nTimes = 1e3;
 var checkInstantiationTime = async () => {
   return checkPerformance(async (i) => {

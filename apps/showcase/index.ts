@@ -1,10 +1,10 @@
 
 // -------------- Import Modules --------------
-import * as escompose from '../../libraries/escompose/src/index'
-// import ESC from "../../libraries/escode/src/core/index";
-// import validate from "../../libraries/escode/src/validate/index";
-import * as esm from '../../libraries/esmpile/src/index'
-import * as escode from '../../libraries/escode/src/index'
+import * as esc from '../../packages/escompose/src/index'
+// import ESC from "../../packages/escode/src/core/index";
+// import validate from "../../packages/escode/src/validate/index";
+import * as esm from '../../packages/esmpile/src/index'
+import * as compose from '../../packages/escompose/src/index'
 
 // import canvasWorker from '../../components/ui/plot/utils/canvas.worker'
 // import * as plotUtils from '../../components/ui/plot/utils/index'
@@ -47,7 +47,7 @@ async function init () {
 
     // ---------------- ESMpile ----------------
    if (!asyncLoads) {
-    await esm.load.script('./libraries/esmpile/extensions/typescriptServices.min.js');
+    await esm.load.script('./packages/esmpile/extensions/typescriptServices.min.js');
     asyncLoads = true
    }
 
@@ -122,7 +122,7 @@ async function start (demo = "basic", mode="direct") {
         const tic = performance.now()
 
         try {
-            // ------------------ ESCompose ------------------
+            // ------------------ ESCode ------------------
             let selected = demos[demo]
         
         
@@ -183,7 +183,7 @@ async function start (demo = "basic", mode="direct") {
             // }
 
 
-            const component = escompose.create(reference, {__parent: main}, {
+            const returned = esc.create(reference, {__parent: main}, {
                 
                 relativeTo,
 
@@ -191,7 +191,7 @@ async function start (demo = "basic", mode="direct") {
                 // For Editor Creation + Source Text Loading
                 utilities: {
                     code: {
-                        class: escode.Editor,
+                        class: compose.Editor,
                         options: {}
                     },
                     bundle: {
@@ -213,10 +213,10 @@ async function start (demo = "basic", mode="direct") {
             })
 
 
-            const esc = await component // Promise for self is resolved
-            await esc.__resolved // All children promises are resolved (if await is false)
+            const component = await returned // Promise for self is resolved
+            await component.__resolved // All children promises are resolved (if await is false)
 
-            active = esc
+            active = component
 
         } catch (e) {
             console.error(e)

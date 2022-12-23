@@ -1,7 +1,7 @@
 import * as select from '../../ui/select.js'
 import * as button from '../../ui/button.js'
 import * as connectComponent from '../connect.js'
-import { deep } from '../../../libraries/common/clone.js'
+import { deep } from '../../../packages/common/clone.js'
 
 
 export const output = false

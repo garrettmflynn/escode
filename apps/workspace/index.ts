@@ -1,20 +1,20 @@
 
-import '../../libraries/escompose/demos/graph/benchmark'
+import '../../demos/graph/benchmark'
 
 // // -------------- Import Modules --------------
-// import * as escompose from '../../libraries/escompose/src/index'
+// import * as esc from '../../packages/escode/index'
 
-// // import ESC from "../../libraries/escode/src/core/index";
-// // import validate from "../../libraries/escode/src/validate/index";
-// import * as esm from '../../libraries/esmpile/src/index'
-// import * as escode from '../../libraries/escode/src/index'
+// // import ESC from "../../packages/escode/src/core/index";
+// // import validate from "../../packages/escode/src/validate/index";
+// import * as esm from '../../packages/esmpile/src/index'
+// // import * as compose from '../../packages/escode/src/index'
 
 // import * as reference from './index.esc.js'
-// import { Rule } from '../../libraries/drafts/rules/Rule'
+// import { Rule } from '../../packages/drafts/rules/Rule'
 
-// import * as objects from 'escompose/demos/objects/index'
-// import * as graph from 'escompose/demos/graph/index'
-// import { OperationsManager } from 'escompose/demos/utils'
+// import * as objects from '../../demos/objects/index'
+// import * as graph from '../../demos/graph/index'
+// import { OperationsManager } from '../../demos/utils'
 
 
 // const useRule = true
@@ -25,14 +25,10 @@ import '../../libraries/escompose/demos/graph/benchmark'
 
 //     toApply = Object.assign({__parent: document.body}, toApply)
 
-//     const component = escompose.create(config, toApply, {
+//     const returned = esc.create(config, toApply, {
 
 //         // For Editor Creation + Source Text Loading
 //         utilities: {
-//             code: {
-//                 class: escode.Editor,
-//                 options: {}
-//             },
 //             bundle: {
 //                 function: esm.bundle.get,
 //                 options: {
@@ -51,12 +47,12 @@ import '../../libraries/escompose/demos/graph/benchmark'
 //         }
 //     })
 
-//     const esc = await component
+//     const component = await returned
 //     await component.__resolved
 
-//     console.log('Resolved:', esc)
+//     console.log('Resolved:', component)
 
-//     return esc
+//     return component
 // }
 
 

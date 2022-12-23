@@ -1,4 +1,4 @@
-import * as testComponent from '../../../../components/tests/basic/index.js'
+import * as testComponent from '../../../../components/drafts/basic/index.js'
 import * as buttonComponent from '../../../../components/ui/button.js'
 
 
