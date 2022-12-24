@@ -123,12 +123,14 @@ for (let key in demos) {
 
     export const h1 = {
         __element: 'h1',
+        __childposition: 0,
         __attributes: {
             innerHTML: "Welcome to ESCode"
         }
     }
 
     export const firstsection = {
+        __childposition: 1,
             h2: {
                 __element: 'h2',
                 __attributes: {
@@ -137,6 +139,7 @@ for (let key in demos) {
             },
 
             block1: {
+                __: true,
                 p1: {
                     __element: 'p',
                     __attributes: {
@@ -148,6 +151,7 @@ for (let key in demos) {
 
 
             block2: {
+                __: true,
                     p2: {
                     __element: 'p',
                     __attributes: {
@@ -162,6 +166,7 @@ for (let key in demos) {
 
 
             block3: {
+                __: true,
                 p3: {
                     __element: 'p',
                     __attributes: {
@@ -173,6 +178,7 @@ for (let key in demos) {
 
 
             block4: {
+                __: true,
                 p4: {
                     __element: 'p',
                     __attributes: {
@@ -184,6 +190,7 @@ for (let key in demos) {
 
 
             block5: {
+                __: true,
                 p5: {
                     __element: 'p',
                     __attributes: {
@@ -195,6 +202,7 @@ for (let key in demos) {
 
 
             block6: {
+                __: true,
                 p6: {
                     __element: 'p',
                     __attributes: {
@@ -205,6 +213,7 @@ for (let key in demos) {
             },
 
             block7: {
+                __: true,
                 p6: {
                     __element: 'p',
                     __attributes: {
@@ -218,7 +227,8 @@ for (let key in demos) {
     }
 
         export const secondsection = {
-                h2: {
+            __childposition: 2,
+            h2: {
                     __element: 'h2',
                     __attributes: {
                         innerHTML: "What are Signals?"
@@ -226,6 +236,7 @@ for (let key in demos) {
                 },
 
                 block1: {
+                    __: true,
                         p1: {
                             __element: 'p',
                             __attributes: {
@@ -237,6 +248,7 @@ for (let key in demos) {
 
 
                 block2: {
+                    __: true,
                         p2: {
                             __element: 'p',
                             __attributes: {
@@ -248,6 +260,7 @@ for (let key in demos) {
 
 
                 block3: {
+                    __: true,
                         p3: {
                             __element: 'p',
                             __attributes: {
@@ -268,6 +281,7 @@ for (let key in demos) {
 
 
                 block4: {
+                    __: true,
                         p4: {
                             __element: 'p',
                             __attributes: {
@@ -291,6 +305,7 @@ for (let key in demos) {
 
 
                 block5: {
+                    __: true,
                         p5: {
                             __element: 'p',
                             __attributes: {
@@ -304,6 +319,7 @@ for (let key in demos) {
 
 
                 block6: {
+                    __: true,
                         p6: {
                             __element: 'p',
                             __attributes: {

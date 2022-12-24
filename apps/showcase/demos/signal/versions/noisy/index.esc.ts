@@ -1,5 +1,5 @@
 import * as signal from '../../index.esc'
-import * as noise from '../../../../../../components/devices/extensions/noise/index.esc.js'
+import * as noise from '../../../../../../js/components/devices/extensions/noise/index.esc.js'
 
 const power = [50, 60]
 const movement = [1]

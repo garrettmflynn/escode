@@ -1,10 +1,10 @@
 
 import * as phaser from '../../index.esc'
-import * as averageComponent from "../../../../../../components/basic/average.js"
-import * as thresholdComponent from "../../../../../../components/basic/threshold.js"
+import * as averageComponent from "../../../../../../js/components/basic/average.js"
+import * as thresholdComponent from "../../../../../../js/components/basic/threshold.js"
 import * as signalComponent from "../../../signal/index.esc"
-import * as devicesComponent from "../../../../../../components/devices/ui/index.esc.js"
-import * as filter from "../../../../../../components/devices/extensions/filter/index.esc.js"
+import * as devicesComponent from "../../../../../../js/components/devices/ui/index.esc.js"
+import * as filter from "../../../../../../js/components/devices/extensions/filter/index.esc.js"
 
 // ----------------------------- Base Component -----------------------------
 export const __compose = phaser

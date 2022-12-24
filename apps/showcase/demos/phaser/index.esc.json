@@ -1,7 +1,7 @@
 {
     "__children": {
         "game": {
-            "__compose": "../../../components/phaser/game/index.js",
+            "__compose": "../../../js/components/phaser/game/index.js",
             "preload": {
                 "setBaseURL": "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/assets",
                 "tilemapTiledJSON": [
@@ -52,10 +52,10 @@
             },
             "__children": {
                 "cursors": {
-                    "__compose": "../../../components/phaser/cursors.js"
+                    "__compose": "../../../js/components/phaser/cursors.js"
                 },
                 "player": {
-                    "__compose": "../../../components/phaser/player.js",
+                    "__compose": "../../../js/components/phaser/player.js",
                     "position": {
                         "x": 200,
                         "y": 200

@@ -1,14 +1,14 @@
 
 // -------------- Import Modules --------------
-import * as esc from '../../packages/escode/index'
-// import ESC from "../../packages/escode/src/core/index";
-// import validate from "../../packages/escode/src/validate/index";
-import * as esm from '../../packages/esmpile/src/index'
-import * as compose from '../../packages/escompose/src/index'
+import * as esc from '../../js/index'
+// import ESC from "../../js/escode/src/core/index";
+// import validate from "../../js/escode/src/validate/index";
+import * as esm from '../../js/packages/esmpile/src/index'
+import * as compose from '../../js/packages/escode-ide/src/index'
 
-// import canvasWorker from '../../components/ui/plot/utils/canvas.worker'
-// import * as plotUtils from '../../components/ui/plot/utils/index'
-// import * as timeseriesComponent from '../../components/ui/plot/timeseries'
+// import canvasWorker from '../../js/components/ui/plot/utils/canvas.worker'
+// import * as plotUtils from '../../js/components/ui/plot/utils/index'
+// import * as timeseriesComponent from '../../js/components/ui/plot/timeseries'
 // import * as signalComponent from './demos/signal/index.esc'
 
 import demos from './demos' // All demos in one file
@@ -47,7 +47,7 @@ async function init () {
 
     // ---------------- ESMpile ----------------
    if (!asyncLoads) {
-    await esm.load.script('./packages/esmpile/extensions/typescriptServices.min.js');
+    await esm.load.script('./js/packages/esmpile/extensions/typescriptServices.min.js');
     asyncLoads = true
    }
 

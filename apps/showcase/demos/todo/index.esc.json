@@ -12,7 +12,7 @@
                 "name": "es-removable-list-item",
                 "extends": "li"
             },
-            "__compose": "../../../components/ui/behaviors/removable.js"
+            "__compose": "../../../js/components/ui/behaviors/removable.js"
         }
     },
 
@@ -20,7 +20,7 @@
 
         "list": {
             "itemType": "es-removable-list-item",
-            "__compose": "../../../components/ui/ul.js"
+            "__compose": "../../../js/components/ui/ul.js"
         },
         
         "form": {
@@ -31,14 +31,14 @@
                     "__attributes": {
                         "placeholder": "Write your todo here"
                     },
-                    "__compose": "../../../components/ui/input.js"
+                    "__compose": "../../../js/components/ui/input.js"
                 },
                 "button": {
                     "__attributes": {
                         "type": "submit",
                         "innerHTML": "Add Todo"
                     },
-                    "__compose": "../../../components/ui/button.js"
+                    "__compose": "../../../js/components/ui/button.js"
                 }
             }
         },
@@ -50,14 +50,14 @@
             "__compose": "button"
         },
         "store": {
-            "__compose": "../../../components/storage/local/set.js"
+            "__compose": "../../../js/components/storage/local/set.js"
         },
         "remove": {
-            "__compose": "../../../components/storage/local/remove.js"
+            "__compose": "../../../js/components/storage/local/remove.js"
         },
         "load": {
             "__trigger": "todos",
-            "__compose": "../../../components/storage/local/get.js"
+            "__compose": "../../../js/components/storage/local/get.js"
         }
     },
     

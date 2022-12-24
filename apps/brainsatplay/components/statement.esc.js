@@ -5,6 +5,7 @@ export function __onconnected () {
 
 
 export const container = {
+    __: Symbol('container'),
     header: {
         __element: 'h3',
         __attributes: {

@@ -9,7 +9,7 @@ var __publicField = (obj, key3, value2) => {
   return value2;
 };
 
-// ../../packages/common/check.js
+// ../../js/packages/common/check.js
 var moduleStringTag = "[object Module]";
 var esm = (object) => {
   const res = object && (!!Object.keys(object).reduce((a, b) => {
@@ -20,7 +20,7 @@ var esm = (object) => {
   return !!res;
 };
 
-// ../../packages/esmonitor/src/utils.ts
+// ../../js/packages/esmonitor/src/utils.ts
 var isSame = (a, b) => {
   if (a && typeof a === "object" && b && typeof b === "object") {
     const jA = JSON.stringify(a);
@@ -64,7 +64,7 @@ var runCallback = (callback, path2, info2, output, setGlobal = true) => {
   }
 };
 
-// ../../packages/esmonitor/src/Poller.ts
+// ../../js/packages/esmonitor/src/Poller.ts
 var defaultSamplingRate = 60;
 var Poller = class {
   constructor(listeners2, sps) {
@@ -138,7 +138,7 @@ var Poller = class {
   }
 };
 
-// ../../packages/esmonitor/src/listeners.ts
+// ../../js/packages/esmonitor/src/listeners.ts
 var listeners_exports = {};
 __export(listeners_exports, {
   functionExecution: () => functionExecution,
@@ -151,7 +151,7 @@ __export(listeners_exports, {
   setters: () => setters
 });
 
-// ../../packages/esmonitor/src/globals.ts
+// ../../js/packages/esmonitor/src/globals.ts
 var isProxy = Symbol("isProxy");
 globalThis.ESMonitorState = {
   state: {},
@@ -160,7 +160,7 @@ globalThis.ESMonitorState = {
 };
 var globals_default = globalThis.ESMonitorState;
 
-// ../../packages/esmonitor/src/info.ts
+// ../../js/packages/esmonitor/src/info.ts
 var performance2 = async (callback, args) => {
   const tic = globalThis.performance.now();
   const output = await callback(...args);
@@ -193,21 +193,22 @@ var get = (func, args, info2) => {
   return result;
 };
 
-// ../../spec/standards.js
+// ../../spec/properties.js
 var keySeparator = ".";
 var defaultPath = "default";
 var esSourceKey = "__esmpileSourceBundle";
 var defaultProperties = {
-  isGraphScript: "__",
+  root: "__",
   properties: "__props",
   default: defaultPath,
+  operator: "__operator",
   children: "__children",
   listeners: {
     value: "__listeners",
-    branch: "branch",
-    bind: "bind",
-    trigger: "trigger",
-    format: "format"
+    branch: "__branch",
+    bind: "__bind",
+    trigger: "__trigger",
+    format: "__format"
   },
   parent: "__parent",
   promise: "__childresolved",
@@ -241,7 +242,7 @@ var specialKeys = {
   resize: "__onresize"
 };
 
-// ../../packages/common/pathHelpers.ts
+// ../../js/packages/common/pathHelpers.ts
 var hasKey = (key3, obj) => key3 in obj;
 var getShortcut = (path2, shortcuts, keySeparator2) => {
   const sc = shortcuts[path2[0]];
@@ -302,31 +303,31 @@ var setFromPath = (path2, value2, ref, opts = {}) => {
   const last = copy.pop();
   for (let i = 0; i < copy.length; i++) {
     const str = copy[i];
-    let has2 = hasKey(str, ref);
-    if (create7 && !has2) {
+    let has = hasKey(str, ref);
+    if (create7 && !has) {
       ref[str] = {};
-      has2 = true;
+      has = true;
     }
-    if (has2)
+    if (has)
       ref = ref[str];
   }
   ref[last] = value2;
   return true;
 };
 
-// ../../packages/esmonitor-proxy/src/handlers.ts
+// ../../js/packages/esmonitor-proxy/src/handlers.ts
 var handlers_exports = {};
 __export(handlers_exports, {
   functions: () => functions,
   objects: () => objects
 });
 
-// ../../packages/esmonitor-proxy/src/globals.ts
+// ../../js/packages/esmonitor-proxy/src/globals.ts
 var isProxy2 = isProxy;
 var fromInspectable = Symbol("fromInspectable");
 var fromInspectableHandler = Symbol("fromInspectableHandler");
 
-// ../../packages/esmonitor-proxy/src/define.ts
+// ../../js/packages/esmonitor-proxy/src/define.ts
 function define(key3, registerAsNewKey) {
   const inspectable = this;
   const target = this.target;
@@ -352,7 +353,7 @@ function define(key3, registerAsNewKey) {
 }
 var define_default = define;
 
-// ../../packages/esmonitor-proxy/src/handlers.ts
+// ../../js/packages/esmonitor-proxy/src/handlers.ts
 var functions = function() {
   const inspectable = this;
   return {
@@ -405,9 +406,9 @@ var objects = function() {
       const createListener = desc && !desc.get && !desc.set;
       if (createListener) {
         if (typeof inspectable.options.globalCallback === "function") {
-          const id = inspectable.path[0];
+          const id2 = inspectable.path[0];
           define_default.call(inspectable, prop, true);
-          set("setters", pathStr, newVal, inspectable.options.globalCallback, { [id]: inspectable.root }, inspectable.listeners, inspectable.options);
+          set("setters", pathStr, newVal, inspectable.options.globalCallback, { [id2]: inspectable.root }, inspectable.listeners, inspectable.options);
         }
       }
       if (newVal || typeof newVal === "function") {
@@ -432,10 +433,10 @@ var objects = function() {
   };
 };
 
-// ../../packages/common/globals.ts
+// ../../js/packages/common/globals.ts
 var isNode = typeof process === "object";
 
-// ../../packages/esmonitor-proxy/src/index.ts
+// ../../js/packages/esmonitor-proxy/src/index.ts
 var canCreate = (parent, key3, val) => {
   try {
     if (val === void 0)
@@ -452,7 +453,7 @@ var canCreate = (parent, key3, val) => {
   const notObjOrFunc = !val || !(isObject || isFunction2);
   if (notObjOrFunc)
     return false;
-  if (!isNode && val instanceof Element)
+  if (!isNode && val instanceof globalThis.Element)
     return false;
   if (val instanceof EventTarget)
     return false;
@@ -552,11 +553,11 @@ var Inspectable = class {
   }
 };
 
-// ../../packages/esmonitor/src/optionsHelpers.ts
+// ../../js/packages/esmonitor/src/optionsHelpers.ts
 var ranError = false;
 var setFromOptions = (path2, value2, baseOptions, opts) => {
   const ref = opts.reference;
-  const id = Array.isArray(path2) ? path2[0] : typeof path2 === "string" ? path2.split(baseOptions.keySeparator)[0] : path2;
+  const id2 = Array.isArray(path2) ? path2[0] : typeof path2 === "string" ? path2.split(baseOptions.keySeparator)[0] : path2;
   let isDynamic = opts.hasOwnProperty("static") ? !opts.static : false;
   if (isDynamic && !globalThis.Proxy) {
     isDynamic = false;
@@ -571,15 +572,15 @@ var setFromOptions = (path2, value2, baseOptions, opts) => {
       keySeparator: baseOptions.keySeparator,
       listeners: opts.listeners,
       path: (path3) => path3.filter((str) => !baseOptions.fallbacks || !baseOptions.fallbacks.includes(str))
-    }, id);
+    }, id2);
   }
   let options2 = { keySeparator: baseOptions.keySeparator, ...opts };
   setFromPath(path2, value2, ref, options2);
   return value2;
 };
 
-// ../../packages/esmonitor/src/listeners.ts
-var info = (id, callback, path2, originalValue, base2, listeners2, options2, refShortcut = {}) => {
+// ../../js/packages/esmonitor/src/listeners.ts
+var info = (id2, callback, path2, originalValue, base2, listeners2, options2, refShortcut = {}) => {
   if (typeof path2 === "string")
     path2 = path2.split(options2.keySeparator);
   const relativePath = path2.join(options2.keySeparator);
@@ -607,7 +608,7 @@ var info = (id, callback, path2, originalValue, base2, listeners2, options2, ref
     infoToOutput = onUpdate.info ?? {};
     onUpdate = onUpdate.callback;
   }
-  const absolute2 = [id, ...path2];
+  const absolute2 = [id2, ...path2];
   let pathInfo = {
     absolute: absolute2,
     relative: relativePath.split(options2.keySeparator),
@@ -616,7 +617,7 @@ var info = (id, callback, path2, originalValue, base2, listeners2, options2, ref
   pathInfo.output = pathInfo[options2.pathFormat];
   const completePathInfo = pathInfo;
   const info2 = {
-    id,
+    id: id2,
     path: completePathInfo,
     keySeparator: options2.keySeparator,
     infoToOutput,
@@ -632,14 +633,12 @@ var info = (id, callback, path2, originalValue, base2, listeners2, options2, ref
     set current(val) {
       set3(shortcutPath ?? info2.path.absolute, val);
     },
-    get parent() {
-      return get12(shortcutPath ? shortcutPath?.slice(0, -1) : info2.path.parent);
-    },
+    parent: get12(shortcutPath ? shortcutPath?.slice(0, -1) : completePathInfo.parent),
     get reference() {
-      return refs[id];
+      return refs[id2];
     },
     set reference(val) {
-      refs[id] = val;
+      refs[id2] = val;
     },
     original: originalValue,
     history: typeof originalValue === "object" ? Object.assign({}, originalValue) : originalValue,
@@ -648,24 +647,26 @@ var info = (id, callback, path2, originalValue, base2, listeners2, options2, ref
   };
   return info2;
 };
-var registerInLookup = (name9, sub, lookups) => {
+var registerInLookup = (id2, name9, sub, lookups) => {
   if (lookups) {
-    const id = Math.random();
     lookups.symbol[sub] = {
       name: name9,
-      id
+      id: id2
     };
     if (!lookups.name[name9])
       lookups.name[name9] = {};
-    lookups.name[name9][id] = sub;
+    lookups.name[name9][id2] = sub;
   }
 };
 var register = (info2, collection, lookups) => {
-  const absolute2 = getPath("absolute", info2);
-  if (!collection[absolute2])
-    collection[absolute2] = {};
-  collection[absolute2][info2.sub] = info2;
-  registerInLookup(absolute2, info2.sub, lookups);
+  const relative = getPath("relative", info2);
+  if (!collection[info2.id])
+    collection[info2.id] = {};
+  const thisCollection = collection[info2.id];
+  if (!thisCollection[relative])
+    thisCollection[relative] = {};
+  thisCollection[relative][info2.sub] = info2;
+  registerInLookup(info2.id, relative, info2.sub, lookups);
   return true;
 };
 var listeners = {
@@ -673,15 +674,17 @@ var listeners = {
   setters
 };
 var set = (type, absPath, value2, callback, base2, allListeners, options2) => {
-  const { id, path: path2 } = getPathInfo(absPath, options2);
-  const fullInfo = info(id, callback, path2, value2, base2, listeners, options2);
+  const { id: id2, path: path2 } = getPathInfo(absPath, options2);
+  const fullInfo = info(id2, callback, path2, value2, base2, listeners, options2);
   if (listeners[type])
     listeners[type](fullInfo, allListeners, allListeners.lookup);
   else {
-    const path3 = getPath("absolute", fullInfo);
-    allListeners[type][path3][fullInfo.sub] = fullInfo;
+    if (!allListeners[type][id2])
+      allListeners[type][id2] = {};
+    const thisListeners = allListeners[type][id2];
+    thisListeners[fullInfo.path.relative.join(options2.keySeparator)][fullInfo.sub] = fullInfo;
     if (allListeners.lookup)
-      registerInLookup(path3, fullInfo.sub, allListeners.lookup);
+      registerInLookup(id2, path2, fullInfo.sub, allListeners.lookup);
   }
 };
 var get2 = (info2, collection) => collection[getPath("absolute", info2)];
@@ -697,7 +700,7 @@ var handler = (info2, collection, subscribeCallback, lookups) => {
 var setterExecution = (listeners2, value2) => {
   return iterateSymbols(listeners2, (_, o) => {
     const path2 = getPath("output", o);
-    runCallback(o.callback, path2, {}, value2);
+    runCallback(o.callback, path2, { id: o.id }, value2);
   });
 };
 function setters(info2, collection, lookups) {
@@ -723,7 +726,7 @@ function setters(info2, collection, lookups) {
               const isFunction2 = typeof val === "function";
               val = v;
               if (!isFunction2) {
-                const listeners2 = Object.assign({}, collection["setters"][getPath("absolute", info2)]);
+                const listeners2 = Object.assign({}, collection["setters"][info2.id][getPath("relative", info2)]);
                 setterExecution(listeners2, v);
               } else
                 val = getProxyFunction.call(thisValue, info2, collection, val);
@@ -740,7 +743,7 @@ function setters(info2, collection, lookups) {
 }
 function getProxyFunction(info2, collection, fn) {
   return function(...args) {
-    const listeners2 = collection["functions"][getPath("absolute", info2)];
+    const listeners2 = collection["functions"][info2.id][getPath("relative", info2)];
     const res = functionExecution(this, listeners2, fn ?? info2.original, args);
     return res.output;
   };
@@ -752,7 +755,9 @@ var functionExecution = (context, listeners2, func, args) => {
   const executionInfo = get((...args2) => func.call(context, ...args2), args, infoTemplate.infoToOutput);
   iterateSymbols(listeners2, (_, o) => {
     const path2 = getPath("output", o);
-    runCallback(o.callback, path2, executionInfo.value, executionInfo.output);
+    const info2 = executionInfo.value;
+    info2.id = o.id;
+    runCallback(o.callback, path2, info2, executionInfo.output);
   });
   return executionInfo;
 };
@@ -765,7 +770,7 @@ function functions2(info2, collection, lookups) {
   }, lookups);
 }
 
-// ../../packages/common/drill.js
+// ../../js/packages/common/drill.js
 var abortSymbol = Symbol("abort");
 var getObjectInfo = (obj, path2 = []) => {
   return {
@@ -843,7 +848,7 @@ var drillSimple = (obj, callback, options2 = {}) => {
   return drill(obj, accumulator, { path: path2 });
 };
 
-// ../../packages/esmonitor/src/Monitor.ts
+// ../../js/packages/esmonitor/src/Monitor.ts
 var createLookup = () => {
   return { symbol: {}, name: {} };
 };
@@ -884,27 +889,27 @@ var Monitor = class {
     };
     this.getInfo = (label, callback, path2, original) => {
       const info2 = info(label, callback, path2, original, this.references, this.listeners, this.options);
-      const id = Math.random();
+      const id2 = Math.random();
       const lookups = this.listeners.lookup;
       const name9 = getPath("absolute", info2);
       lookups.symbol[info2.sub] = {
         name: name9,
-        id
+        id: id2
       };
       if (!lookups.name[name9])
         lookups.name[name9] = {};
-      lookups.name[name9][id] = info2.sub;
+      lookups.name[name9][id2] = info2.sub;
       return info2;
     };
-    this.listen = (id, callback, path2 = [], __internal = {}) => {
+    this.listen = (id2, callback, path2 = [], __internal = {}) => {
       if (typeof path2 === "string")
         path2 = path2.split(this.options.keySeparator);
       else if (typeof path2 === "symbol")
         path2 = [path2];
       const arrayPath = path2;
-      let baseRef = this.get(id);
+      let baseRef = this.get(id2);
       if (!baseRef) {
-        console.error(`Reference does not exist.`, id);
+        console.error(`Reference does not exist.`, id2);
         return;
       }
       if (!__internal.poll)
@@ -912,14 +917,14 @@ var Monitor = class {
       if (!__internal.seen)
         __internal.seen = [];
       const __internalComplete = __internal;
-      const thisPath = [id, ...arrayPath];
+      const thisPath = [id2, ...arrayPath];
       const ref = this.get(thisPath);
       const toMonitorInternally = (val, allowArrays = false) => {
         const first = val && typeof val === "object";
         if (!first)
           return false;
         if (!isNode2) {
-          const isEl = val instanceof Element;
+          const isEl = val instanceof globalThis.Element;
           if (isEl)
             return false;
         }
@@ -939,7 +944,7 @@ var Monitor = class {
             return;
           else {
             const fullPath = [...arrayPath, ...drillInfo.path];
-            const internalSubs = this.listen(id, callback, fullPath, __internalComplete);
+            const internalSubs = this.listen(id2, callback, fullPath, __internalComplete);
             Object.assign(subs, internalSubs);
           }
         }, {
@@ -949,7 +954,7 @@ var Monitor = class {
       }
       let info2;
       try {
-        info2 = this.getInfo(id, callback, arrayPath, ref);
+        info2 = this.getInfo(id2, callback, arrayPath, ref);
         if (info2 && !success) {
           if (__internalComplete.poll)
             success = this.poller.add(info2);
@@ -968,6 +973,7 @@ var Monitor = class {
         subs[getPath("absolute", info2)] = info2.sub;
         if (this.options.onInit instanceof Function) {
           const executionInfo = {};
+          executionInfo.id = id2;
           for (let key3 in info2.infoToOutput)
             executionInfo[key3] = void 0;
           this.options.onInit(getPath("output", info2), executionInfo);
@@ -986,7 +992,7 @@ var Monitor = class {
         return true;
       }
     };
-    this.remove = (subs) => {
+    this.remove = (subs, id2) => {
       if (!subs) {
         subs = {
           ...this.listeners.functions,
@@ -999,7 +1005,7 @@ var Monitor = class {
       for (let key3 in subs) {
         let innerSub = subs[key3];
         const handleUnsubscribe = (sub) => {
-          const res = this.unsubscribe(sub);
+          const res = this.unsubscribe(sub, id2);
           if (res === false)
             console.warn(`Subscription for ${key3} does not exist.`, sub);
         };
@@ -1010,13 +1016,13 @@ var Monitor = class {
       }
       return true;
     };
-    this.unsubscribe = (sub) => {
+    this.unsubscribe = (sub, subscriberId) => {
       const info2 = this.listeners.lookup.symbol[sub];
       const absPath = info2.name;
       const polling = this.poller.get(sub);
-      const funcs = this.listeners.functions[absPath];
+      const funcs = this.listeners.functions?.[subscriberId]?.[absPath];
       const func = funcs?.[sub];
-      const setters2 = this.listeners.setters[absPath];
+      const setters2 = this.listeners.setters?.[subscriberId]?.[absPath];
       const setter = setters2?.[sub];
       if (polling)
         this.poller.remove(sub);
@@ -1058,10 +1064,10 @@ var Monitor = class {
   }
 };
 
-// ../../packages/esmonitor/src/index.ts
+// ../../js/packages/esmonitor/src/index.ts
 var src_default = Monitor;
 
-// ../../packages/common/properties.ts
+// ../../js/packages/common/properties.ts
 var rawProperties = {};
 var globalObjects = ["Object", "Array", "Map", "Set"];
 function all(obj) {
@@ -1085,7 +1091,7 @@ function all(obj) {
   return props;
 }
 
-// ../../packages/common/clone.js
+// ../../js/packages/common/clone.js
 var shallow = (obj, opts = {}) => {
   if (typeof obj === "object") {
     if (Array.isArray(obj)) {
@@ -1115,7 +1121,7 @@ var deep = (obj, opts = {}) => {
   return opts.accumulator;
 };
 
-// ../../packages/common/utils/index.ts
+// ../../js/packages/common/utils/index.ts
 var isPromise = (o) => typeof o === "object" && typeof o.then === "function";
 var resolve = (object, callback) => {
   if (typeof object === "object" && Array.isArray(object) && object.find((v) => isPromise(v)))
@@ -1204,14 +1210,14 @@ function isFunction(x2) {
   return res;
 }
 
-// ../../packages/core/symbols.ts
+// ../../js/packages/core/symbols.ts
 var toReturn = Symbol("return");
 
-// ../../packages/core/parse.ts
+// ../../js/packages/core/parse.ts
 var isNativeClass2 = (o) => typeof o === "function" && o.hasOwnProperty("prototype") && !o.hasOwnProperty("arguments");
 function parse(config, overrides = {}, options2 = {}) {
   if (!isNode) {
-    if (config instanceof NodeList)
+    if (config instanceof globalThis.NodeList)
       config = Array.from(config);
   }
   if (typeof config === "string")
@@ -1223,7 +1229,7 @@ function parse(config, overrides = {}, options2 = {}) {
       delete config.__;
       config = { [specialKeys.default]: config };
     }
-  } else if (!isNode && config instanceof Element) {
+  } else if (!isNode && config instanceof globalThis.Element) {
     const component2 = config[specialKeys.component];
     if (component2) {
       overrides = deep(overrides);
@@ -1253,7 +1259,7 @@ function parse(config, overrides = {}, options2 = {}) {
   return config;
 }
 
-// ../../packages/core/utils/loaders.ts
+// ../../js/packages/core/utils/loaders.ts
 var compose = (callbacks, start4, otherArgs = [], toIgnore) => {
   return callbacks.reduce((x2, f) => resolve(x2, (res) => {
     let func = typeof f === "function" ? f : f.default;
@@ -1270,7 +1276,7 @@ var runLoaders = (loaders, inputs, which) => {
     const sorted = loaders;
     loaders = sorted[which] ?? [];
     switch (which) {
-      case "activate":
+      case "load":
         preloaded = [...sorted.load ?? []];
         break;
       case "start":
@@ -1290,7 +1296,7 @@ var runLoaders = (loaders, inputs, which) => {
 var sortLoaders = (loaders) => {
   const sorted = {};
   loaders.forEach((o) => {
-    const behavior2 = typeof o === "function" ? "activate" : o.behavior ?? "activate";
+    const behavior2 = typeof o === "function" ? "load" : o.behavior ?? "load";
     const theseLoaders = sorted[behavior2] = sorted[behavior2] ?? [];
     theseLoaders.push(o);
   });
@@ -1354,74 +1360,10 @@ var combineLoaders = (original = [], additional) => {
   }, void 0);
 };
 
-// ../../packages/core/components.ts
-var is = (key3) => {
-  return key3.includes(specialKeys.isGraphScript) || key3 === "default";
-};
-var basicObjects = ["Object", "Array"];
-var has = (o) => {
-  let has2 = false;
-  drillSimple(o, (key3, val, info2) => {
-    if (info2.path.length > 1) {
-      const found = info2.path.find((str) => str === "__");
-      if (!found && is(key3)) {
-        has2 = info2.path;
-        return abortSymbol;
-      }
-    }
-  }, {
-    ignore: ["__", "__parent", "__compose", "__apply"],
-    condition: (_, o2) => {
-      const thisName = o2?.constructor?.name;
-      const propName = o2?.__props?.constructor?.name;
-      return !basicObjects.includes(thisName) && !!globalThis[thisName] || !!globalThis[propName] ? false : true;
-    }
-  });
-  return has2;
-};
-function from(parent) {
-  if (!parent || typeof parent !== "object")
-    return null;
-  let array = Object.entries(parent).map(([name9, ref]) => {
-    const mayBeComponent = ref && typeof ref === "object" || typeof ref === "function";
-    if (!mayBeComponent)
-      return;
-    const hasGraphScriptProperties = !name9.includes(specialKeys.isGraphScript) ? Object.keys(ref).find(is) : false;
-    if (hasGraphScriptProperties) {
-      if (name9 === "constructor" && isNativeClass(ref))
-        return;
-      return { ref, parent, name: name9 };
-    }
-  }).filter((v) => v && v.ref);
-  let hasProperties = array.length > 0;
-  if (!hasProperties) {
-    const found = has(parent);
-    if (found) {
-      const sliced = found.slice(0, -2);
-      let target = parent;
-      sliced.forEach((str) => {
-        target = target[str];
-        target.__ = true;
-      });
-      const name9 = found[0];
-      array = [{
-        ref: parent[name9],
-        parent,
-        name: name9
-      }];
-      hasProperties = true;
-    }
-  }
-  if (hasProperties)
-    return array;
-  else
-    return null;
-}
-
-// ../../packages/core/loaders/props/index.ts
-var props_exports = {};
-__export(props_exports, {
-  default: () => props_default,
+// ../../js/packages/core/escode-props-loader/index.ts
+var escode_props_loader_exports = {};
+__export(escode_props_loader_exports, {
+  default: () => escode_props_loader_default,
   name: () => name,
   properties: () => properties
 });
@@ -1451,7 +1393,7 @@ var proxy = (target, source, props, globalProxy = source) => {
   });
 };
 var propsLoader = (esc) => {
-  const root = esc[specialKeys.isGraphScript];
+  const root = esc[specialKeys.root];
   const val = esc[specialKeys.properties];
   root.props = {
     original: []
@@ -1484,39 +1426,40 @@ var propsLoader = (esc) => {
     esc[specialKeys.properties] = val;
   return esc;
 };
-var props_default = propsLoader;
+var escode_props_loader_default = propsLoader;
 
-// ../../packages/core/loaders/parent/index.ts
-var parent_exports = {};
-__export(parent_exports, {
-  default: () => parent_default,
+// ../../js/packages/core/escode-parent-loader/index.ts
+var escode_parent_loader_exports = {};
+__export(escode_parent_loader_exports, {
+  default: () => escode_parent_loader_default,
   name: () => name2,
   properties: () => properties3,
   required: () => required
 });
 
-// ../../packages/core/loaders/parent/path/index.ts
+// ../../js/packages/core/escode-parent-loader/path/index.ts
 var properties2 = {
   dependencies: [
-    specialKeys.isGraphScript,
+    specialKeys.root,
     specialKeys.parent
   ],
   dependents: []
 };
-var pathLoader = (esc, opts = {}) => {
-  const configuration = esc[specialKeys.isGraphScript];
+var Element = globalThis.Element;
+var pathLoader = (esc) => {
+  const configuration = esc[specialKeys.root];
   let parent = esc[specialKeys.parent];
   const name9 = configuration.name;
-  parent = (!isNode && parent instanceof Element ? parent?.[specialKeys.component] : parent) ?? esc[specialKeys.parent];
+  parent = (!isNode && parent instanceof globalThis.Element ? parent?.[specialKeys.component] : parent) ?? esc[specialKeys.parent];
   const isESC = { value: "", writable: true };
   if (parent) {
-    const parentComponentConfiguration = parent[specialKeys.isGraphScript];
+    const parentComponentConfiguration = parent[specialKeys.root];
     if (parentComponentConfiguration) {
       if (typeof name9 === "string") {
         let target = parent;
         const path2 = [];
-        while (target && target[specialKeys.isGraphScript]) {
-          const parentName = target[specialKeys.isGraphScript].name;
+        while (target && target[specialKeys.root]) {
+          const parentName = target[specialKeys.root].name;
           if (typeof parentName === "string")
             path2.push(parentName);
           else {
@@ -1529,7 +1472,7 @@ var pathLoader = (esc, opts = {}) => {
           target = target[specialKeys.parent];
         }
         isESC.value = [...path2.reverse(), name9];
-        isESC.value = isESC.value.join(opts.keySeparator ?? ".");
+        isESC.value = isESC.value.join(keySeparator);
       }
     }
   }
@@ -1537,17 +1480,17 @@ var pathLoader = (esc, opts = {}) => {
 };
 var path_default = pathLoader;
 
-// ../../packages/core/loaders/parent/index.ts
+// ../../js/packages/core/escode-parent-loader/index.ts
 var name2 = "parent";
 var required = true;
 var properties3 = {
   dependencies: [
-    specialKeys.isGraphScript
+    specialKeys.root
   ],
   dependents: []
 };
 var parentLoader = (esc, options2) => {
-  const configuration = esc[specialKeys.isGraphScript];
+  const configuration = esc[specialKeys.root];
   configuration.parent = {
     callbacks: [],
     add: function(callback) {
@@ -1557,10 +1500,10 @@ var parentLoader = (esc, options2) => {
       return parent;
     },
     start: (force = false) => {
-      if (force || parent[specialKeys.isGraphScript]?.start?.value === true) {
+      if (force || parent[specialKeys.root]?.start?.value === true) {
         const isConnected = configuration.connected;
         const toConnect = isConnected instanceof Function;
-        esc[specialKeys.isGraphScript].start.run();
+        esc[specialKeys.root].start.run();
         if (toConnect)
           isConnected();
       }
@@ -1574,13 +1517,13 @@ var parentLoader = (esc, options2) => {
     },
     set: (newParent) => {
       const disconnecting = parent && !newParent;
-      if (parent?.[specialKeys.isGraphScript]) {
+      if (parent?.[specialKeys.root]) {
         const name9 = configuration.name;
         delete parent[name9];
         parent.__.components.delete(name9);
       }
       parent = newParent;
-      const parentConfiguration = parent?.[specialKeys.isGraphScript];
+      const parentConfiguration = parent?.[specialKeys.root];
       if (parentConfiguration) {
         const name9 = configuration.name;
         if (parent[name9])
@@ -1589,81 +1532,170 @@ var parentLoader = (esc, options2) => {
         parent.__.components.set(name9, esc);
       }
       configuration.parent.callbacks.forEach((callback) => callback.call(esc, newParent));
-      path_default(esc, options2);
+      path_default(esc);
       if (disconnecting)
-        esc[specialKeys.isGraphScript].stop.run();
+        esc[specialKeys.root].stop.run();
       else if (parent)
         configuration.parent.start();
     }
   });
-  path_default(esc, options2);
+  path_default(esc);
 };
-var parent_default = parentLoader;
+var escode_parent_loader_default = parentLoader;
 
-// ../../packages/core/loaders/drafts/root/index.ts
-var properties4 = {
-  dependents: [specialKeys.isGraphScript]
+// ../../js/packages/core/components.ts
+var is = (key3) => {
+  return key3.includes(specialKeys.root) || key3 === "default";
 };
-function rootLoader(esc, options2, additionalInfo) {
-  const val = createGraphScriptRoot(additionalInfo.name, options2, additionalInfo);
-  Object.defineProperty(esc, specialKeys.isGraphScript, {
-    value: val,
-    enumerable: false,
-    configurable: false,
-    writable: false
-  });
-  return esc;
+function from(parent) {
+  if (!parent || typeof parent !== "object")
+    return null;
+  let array = Object.entries(parent).map(([name9, ref]) => {
+    const mayBeComponent = ref && typeof ref === "object" || typeof ref === "function";
+    if (!mayBeComponent)
+      return;
+    const hasGraphScriptProperties = !name9.includes(specialKeys.root) ? Object.keys(ref).find(is) : false;
+    if (hasGraphScriptProperties) {
+      if (name9 === "constructor" && isNativeClass(ref))
+        return;
+      return { ref, parent, name: name9 };
+    }
+  }).filter((v) => v && v.ref);
+  let hasProperties = array.length > 0;
+  if (hasProperties)
+    return array;
+  else
+    return null;
 }
-var root_default = rootLoader;
-function createGraphScriptRoot(name9, options2, additionalInfo) {
-  const { parent, original, loaders } = additionalInfo;
-  const isSymbol = typeof name9 === "symbol";
-  const parentId = parent?.[specialKeys.isGraphScript].path;
-  const path2 = parentId ? [parentId, name9] : typeof name9 === "string" ? [name9] : [];
-  const absolutePath = path2.join(keySeparator);
-  const __2 = {
-    name: name9,
-    symbol: Symbol("isGraphScript"),
-    root: isSymbol ? name9 : parent[specialKeys.isGraphScript].root,
-    path: absolutePath,
-    options: options2,
-    original,
-    states: {},
-    components: /* @__PURE__ */ new Map(),
-    connected: false,
-    resolved: false,
-    create: (esc) => {
-      if (!options2.loaders)
-        options2.loaders = loaders;
-      return core_default(esc, void 0, options2);
-    },
-    stop: {
+
+// ../../js/packages/core/Root.ts
+var Root = class {
+  constructor(esc, info2, options2) {
+    this.loaders = {
+      available: []
+    };
+    this.components = /* @__PURE__ */ new Map();
+    this.connected = false;
+    this.resolved = false;
+    this.create = function(esc) {
+      return core_default(esc, void 0, this.loaders.available);
+    };
+    this.stop = {
       name: "stop",
       value: false,
       add: addCallback,
+      run: () => runRecursive.call(this.stop, this.loaded.value),
       callbacks: {
         before: [],
         main: [],
         after: []
       }
-    },
-    start: {
+    };
+    this.start = {
       name: "start",
       value: false,
       add: addCallback,
+      run: () => runRecursive.call(this.start, this.loaded.value),
       callbacks: {
         before: [],
         main: [],
         after: []
       }
+    };
+    this.loaded = {
+      value: false,
+      callbacks: [],
+      add: function(callback) {
+        this.callbacks.push(callback);
+        return true;
+      },
+      run: function(resolved) {
+        if (resolved)
+          this.value = resolved;
+        runSequentially(this.callbacks, [this.value]);
+      }
+    };
+    const { parent, original, name: name9 = Symbol("root"), loaders } = info2;
+    const parentId = parent?.[specialKeys.root].path;
+    const path2 = parentId ? [parentId, name9] : typeof name9 === "string" ? [name9] : [];
+    const absolutePath = path2.join(keySeparator);
+    const ogRoot = esc[specialKeys.root];
+    const ogSymbol = typeof ogRoot === "symbol";
+    const isSymbol = typeof name9 === "symbol";
+    const symbol = ogSymbol ? ogRoot : isSymbol ? name9 : Symbol("root");
+    this.name = isSymbol && ogSymbol ? ogRoot : name9;
+    this.symbol = symbol;
+    this.root = isSymbol ? name9 : parent[specialKeys.root].root;
+    this.path = absolutePath;
+    this.options = options2;
+    this.original = original;
+    this.states = {};
+    this.loaders.available = loaders;
+    this.loaded.add(loadNestedComponents);
+    Object.defineProperty(esc, specialKeys.root, {
+      value: this,
+      enumerable: false,
+      configurable: false,
+      writable: false
+    });
+  }
+};
+function loadNestedComponents(esc) {
+  const configuration = esc[specialKeys.root];
+  const nested = from(esc);
+  const promises = nested ? nested.map((info2) => {
+    const copy = Object.assign({}, configuration.options);
+    const name9 = copy.name = info2.name;
+    delete copy.overrides;
+    copy.parentObject = info2.parent;
+    copy.parent = esc;
+    const ref = info2.ref;
+    if (ref) {
+      if (ref.__?.symbol) {
+        console.error("Has an existing component", ref.__.path);
+        const parent = ref.__.parent;
+        if (parent)
+          console.error(`Changing parent of existing component (${ref.__.path}) from ${parent.__.path} to ${configuration.path}`);
+        ref.__.name = name9;
+        ref.__parent = esc;
+      } else {
+        const resolution = load(ref, configuration.loaders.available, copy);
+        Object.defineProperty(info2.parent[name9], specialKeys.promise, { value: resolution, writable: false });
+        const promise = resolve2(resolution, (res) => {
+          configuration.components.set(name9, res);
+          return res;
+        });
+        configuration.components.set(name9, promise);
+      }
+    } else {
+      delete info2.parent[name9];
+      console.error("No reference found for nested component", info2);
     }
-  };
-  const toRunProxy = function() {
-    return runRecursive.call(this, __2.ref);
-  };
-  __2.start.run = toRunProxy.bind(__2.start);
-  __2.stop.run = toRunProxy.bind(__2.stop);
-  return __2;
+  }) : [];
+  let isResolved;
+  const resolvePromise = new Promise((resolve4) => isResolved = async () => {
+    configuration.resolved = true;
+    resolve4(true);
+  });
+  Object.defineProperty(esc, `${specialKeys.resolved}`, { value: resolvePromise });
+  configuration.resolved = false;
+  resolve2(promises, () => isReady(esc, isResolved));
+}
+function isReady(esc, isResolved) {
+  const configuration = esc[specialKeys.root];
+  configuration.stop.initial = esc[specialKeys.stop];
+  esc[specialKeys.stop] = configuration.stop.run;
+  const keys = all(esc);
+  for (let key3 of keys) {
+    if (is(key3)) {
+      const desc = Object.getOwnPropertyDescriptor(esc, key3);
+      if (desc?.enumerable)
+        Object.defineProperty(esc, key3, { ...desc, enumerable: false });
+    }
+  }
+  const finalParent = esc[specialKeys.parent];
+  esc[specialKeys.parent] = finalParent;
+  isResolved();
 }
 var run = (f, context, args, x2) => resolve2(x2, () => f.call(context, ...args));
 var runSequentially = (callbacks, args = [], context) => {
@@ -1680,7 +1712,7 @@ function runRecursive(resolved) {
   const { callbacks, name: name9 } = this;
   if (!this.value) {
     const isStop = name9 === "stop";
-    const configuration = resolved[specialKeys.isGraphScript];
+    const configuration = resolved[specialKeys.root];
     const callback = isStop ? configuration.stop.initial : resolved[specialKeys[name9]];
     this.value = true;
     if (!isStop)
@@ -1688,12 +1720,12 @@ function runRecursive(resolved) {
     const toCall = callback && !isStop ? [...callbacks.before, callback, ...callbacks.main] : [...callbacks.before, ...callbacks.main];
     const result = runSequentially(toCall, [resolved], resolved);
     return resolve2(result, () => {
-      const hierarchy = Array.from(resolved[specialKeys.isGraphScript].components.entries());
+      const hierarchy = Array.from(resolved[specialKeys.root].components.entries());
       const ranOnChildren = resolve2(hierarchy.map(async ([tag, component2]) => {
         const promise = component2[specialKeys.promise];
         if (promise && typeof promise.then === "function")
           component2 = hierarchy[tag] = await promise;
-        return await component2[specialKeys.isGraphScript][name9].run();
+        return await component2[specialKeys.root][name9].run();
       }));
       return resolve2(ranOnChildren, () => {
         const result2 = runSequentially(callbacks.after, [resolved], resolved);
@@ -1701,22 +1733,6 @@ function runRecursive(resolved) {
           if (isStop) {
             if (callback)
               callback.call(resolved, resolved);
-            resolved[specialKeys.listeners.value].clear();
-            const path2 = resolved[specialKeys.isGraphScript].path;
-            let target = resolved;
-            const parent = target[specialKeys.parent];
-            while (parent && parent[specialKeys.isGraphScript] !== void 0) {
-              const res = target[specialKeys.parent];
-              if (res) {
-                target = res;
-                if (target) {
-                  const configuration2 = target[specialKeys.isGraphScript];
-                  if (configuration2)
-                    target[specialKeys.listeners.value].clear(path2);
-                }
-              } else
-                break;
-            }
             configuration.start.value = false;
           }
           return true;
@@ -1726,16 +1742,15 @@ function runRecursive(resolved) {
   }
 }
 
-// ../../packages/core/load.ts
+// ../../js/packages/core/load.ts
 function load(esc, loaders = [], options2) {
   const tic = performance.now();
   const parent = options2.parent;
   const {
     parentObject,
     overrides = {},
-    callbacks = {},
     opts = {},
-    name: name9 = Symbol("root")
+    name: name9
   } = options2;
   const original = esc;
   esc = parse(esc, overrides, opts);
@@ -1743,220 +1758,80 @@ function load(esc, loaders = [], options2) {
     return esc[toReturn];
   if (Array.isArray(esc))
     return resolve(esc.map((o) => load(o, loaders, options2)));
-  esc = root_default(esc, options2, { name: name9, parent, original, loaders });
+  const info2 = { name: name9, parent, original, loaders };
+  const root = new Root(esc, info2, opts);
   esc = merge(esc, overrides);
   const sortedLoaders = sortLoaders(loaders);
-  const loaded = runLoaders(sortedLoaders, { main: esc, overrides, options: opts }, "load");
+  const loaded = runLoaders(sortedLoaders, { main: esc, overrides, options: opts }, "init");
   const component2 = resolve(loaded, (loaded2) => {
     if (!loaded2[specialKeys.parent] && parent)
       loaded2[specialKeys.parent] = parent;
-    const parented = runLoaders([parent_exports], { main: loaded2, options: opts });
-    const propped = runLoaders([props_exports], { main: parented });
-    const res = runLoaders(sortedLoaders, { main: propped, options: opts }, "activate");
+    const parented = runLoaders([escode_parent_loader_exports], { main: loaded2, options: opts });
+    const propped = runLoaders([escode_props_loader_exports], { main: parented });
+    const res = runLoaders(sortedLoaders, { main: propped, options: opts }, "load");
+    for (let key3 in esc) {
+      const og = esc[key3];
+      if (is(key3) && typeof og === "function") {
+        const context = esc[specialKeys.proxy] ?? esc;
+        esc[key3] = og.bind(context);
+      }
+    }
     return resolve(res, (esc2) => {
-      esc2.__.ref = esc2;
       if (parentObject)
         parentObject[name9] = esc2;
-      if (typeof name9 === "symbol" && callbacks.onRootCreated)
-        callbacks.onRootCreated(name9, esc2);
-      if (callbacks.onInstanceCreated)
-        callbacks.onInstanceCreated(esc2.__.path, esc2);
-      const configuration = esc2[specialKeys.isGraphScript];
-      const nested = from(propped);
-      const promises = nested ? nested.map((info2) => {
-        const copy = Object.assign({}, options2);
-        const name10 = copy.name = info2.name;
-        delete copy.overrides;
-        copy.parentObject = info2.parent;
-        copy.parent = esc2;
-        const ref = info2.ref;
-        if (ref) {
-          if (ref.__?.symbol) {
-            const parent2 = ref.__.parent;
-            if (parent2)
-              console.error(`Changing parent of existing component (${ref.__.path}) from ${parent2.__.path} to ${configuration.path}`);
-            ref.__.name = name10;
-            ref.__parent = esc2;
-          } else {
-            const resolution = load(ref, loaders, copy);
-            Object.defineProperty(info2.parent[name10], specialKeys.promise, { value: resolution, writable: false });
-            const promise = resolve(resolution, (res2) => {
-              configuration.components.set(name10, res2);
-              return res2;
-            });
-            configuration.components.set(name10, promise);
-          }
-        } else {
-          delete info2.parent[name10];
-          console.error("No reference found for nested component", info2);
-        }
-      }) : [];
-      let isResolved;
-      const resolvePromise = new Promise((resolve4) => isResolved = async () => {
-        configuration.resolved = true;
-        resolve4(true);
-      });
-      Object.defineProperty(esc2, `${specialKeys.resolved}`, { value: resolvePromise });
-      configuration.resolved = false;
-      resolve(promises, () => isReady(esc2, callbacks, isResolved));
+      root.loaded.run(esc2);
       return esc2;
     });
   });
-  const creationToc = performance.now();
-  const toCreateTime = creationToc - tic;
-  resolve(component2, (esc2) => {
-    if (!Array.isArray(esc2)) {
-      const resolveToc = performance.now();
-      const resolveTime = resolveToc - tic;
-      resolve(esc2.__resolved, () => {
-        const toc = performance.now();
-        const resolveAllTime = toc - tic;
-        globalThis.escomposePerformance.resolve.push(resolveTime);
-        globalThis.escomposePerformance.resolveAll.push(resolveAllTime);
-        globalThis.escomposePerformance.create.push(toCreateTime);
-      });
-    }
-  });
   return component2;
 }
-function isReady(esc, callbacks, isResolved) {
-  const configuration = esc[specialKeys.isGraphScript];
-  for (let key3 in esc) {
-    const og = esc[key3];
-    if (typeof og === "function" && !isNativeClass(og)) {
-      const context = esc[specialKeys.proxy] ?? esc;
-      esc[key3] = og.bind(context);
-    }
-  }
-  configuration.stop.initial = esc[specialKeys.stop];
-  esc[specialKeys.stop] = configuration.stop.run;
-  const keys = all(esc);
-  for (let key3 of keys) {
-    if (is(key3)) {
-      const desc = Object.getOwnPropertyDescriptor(esc, key3);
-      if (desc?.enumerable)
-        Object.defineProperty(esc, key3, { ...desc, enumerable: false });
-    }
-  }
-  const finalParent = esc[specialKeys.parent];
-  esc[specialKeys.parent] = finalParent;
-  if (callbacks.onInstanceReady)
-    callbacks.onInstanceReady(esc.__.path, esc);
-  isResolved();
-}
 
-// ../../packages/core/globals.ts
-globalThis.escomposePerformance = {
-  create: [],
-  resolve: [],
-  resolveAll: [],
-  listeners: {
-    create: [],
-    resolve: []
-  },
-  averages: function() {
-    const averages = {
-      create: 0,
-      resolve: 0,
-      resolveAll: 0,
-      listeners: {
-        create: 0,
-        resolve: 0
-      }
-    };
-    for (const key3 in averages) {
-      if (typeof this[key3] === "object" && !Array.isArray(this[key3])) {
-        for (const subKey in this[key3]) {
-          averages[key3][subKey] = this[key3][subKey].reduce((a, b) => a + b, 0) / this[key3][subKey].length;
-        }
-      } else
-        averages[key3] = this[key3].reduce((a, b) => a + b, 0) / this[key3].length;
-    }
-    return averages;
-  }
-};
-
-// ../../packages/core/loaders/listeners/index.ts
-var listeners_exports2 = {};
-__export(listeners_exports2, {
-  default: () => listeners_default,
+// ../../js/packages/core/escode-listeners-loader/index.ts
+var escode_listeners_loader_exports = {};
+__export(escode_listeners_loader_exports, {
+  default: () => escode_listeners_loader_default,
   name: () => name3,
-  properties: () => properties5,
+  properties: () => properties4,
   required: () => required2
 });
 
-// ../../packages/core/edgelord/index.ts
-var defaultPath2 = "default";
-var operatorPath = "__operator";
-var specialKeys2 = {
-  path: "__path",
-  isGraphScript: "__",
-  listeners: {
-    value: "__listeners",
-    branch: "__branch",
-    bind: "__bind",
-    trigger: "__trigger",
-    format: "__format"
-  }
-};
+// ../../js/packages/core/escode-listeners-loader/edgelord/index.ts
+var defaultPath2 = specialKeys.default;
+var operatorPath = specialKeys.operator;
 var listenerObject = Symbol("listenerObject");
 var toSet = Symbol("toSet");
 var subscriptionKey = Symbol("subscriptionKey");
 var configKey = Symbol("configKey");
-var toResolveWithKey = Symbol("toResolveWithKey");
-var isConfigObject = (o) => specialKeys2.listeners.format in o || specialKeys2.listeners.branch in o || specialKeys2.listeners.trigger in o || specialKeys2.listeners.bind in o;
-var initializedStatus = "INITIALIZED";
-var registeredStatus = "REGISTERED";
-var globalFrom = {};
-var globalTo = {};
-var globalActive = {};
+var isConfigObject = (o) => specialKeys.listeners.format in o || specialKeys.listeners.branch in o || specialKeys.listeners.trigger in o || specialKeys.listeners.bind in o;
 var Edgelord = class {
-  constructor(listeners2, root, context) {
-    this.original = {};
-    this.active = {};
-    this.globals = {};
-    this.context = {
-      options: {}
+  constructor(listeners2, rootPath) {
+    this.monitor = new src_default();
+    this.#contexts = {};
+    this.getContext = (id2) => {
+      if (!this.#contexts[id2])
+        this.#contexts[id2] = {
+          started: false,
+          queue: [],
+          active: {},
+          callbacks: [],
+          update: function(...args) {
+            this.callbacks.forEach((f) => f(...args));
+          }
+        };
+      return this.#contexts[id2];
     };
-    this.rootPath = "";
-    this.status = "";
-    this.#triggers = [];
-    this.#queue = [];
-    this.setInitialProperties = (listeners2 = {}, root, context = {}) => {
-      Object.assign(this.context, context);
-      if (root)
-        this.rootPath = root;
-      this.original = listeners2;
-      const globals = [{ name: "active", ref: globalActive }, { name: "from", ref: globalFrom }, { name: "to", ref: globalTo }];
-      globals.forEach((o) => {
-        if (!o.ref[this.context.id])
-          o.ref[this.context.id] = {};
-        this.globals[o.name] = o.ref[this.context.id];
-      });
-      this.#toResolveWith = this.getManager();
-      this.runEachListener(listeners2, this.addToGlobalLog);
+    this.onStart = (f, id2) => {
+      const context = this.getContext(id2);
+      if (context.started)
+        f();
+      else
+        context.queue.push(f);
     };
-    this.getManager = (mode = "from") => {
-      let target = mode === "to" ? this.globals.to : this.globals.from;
-      this.rootPath.split(keySeparator).forEach((key3) => {
-        if (!target[key3])
-          target[key3] = {};
-        target = target[key3];
-      });
-      return target[toResolveWithKey] ?? this;
+    this.onUpdate = (f, id2) => {
+      const context = this.getContext(id2);
+      context.callbacks.push(f);
     };
-    this.onStart = (f) => {
-      const res = this.#toResolveWith;
-      const isSame2 = res === this;
-      if (isSame2) {
-        if (this.status === initializedStatus)
-          f();
-        else
-          this.#queue.push(f);
-      } else
-        res.onStart(f);
-    };
-    this.runEachListener = (listeners2, callback) => {
+    this.runEachListener = (listeners2, callback, rootPath) => {
       if (!callback)
         return;
       for (const first in listeners2) {
@@ -1969,73 +1844,42 @@ var Edgelord = class {
           const from2 = second;
           const to = first;
           for (let fromPath in from2) {
-            callback(fromPath, to, from2[fromPath]);
+            callback(fromPath, to, from2[fromPath], rootPath);
           }
         } else {
           const from2 = first;
           const to = second;
           const typeOf = typeof to;
           if (typeOf === "function")
-            callback(from2, "", to);
+            callback(from2, "", to, rootPath);
           else if (typeOf === "string")
-            callback(from2, to, to);
+            callback(from2, to, to, rootPath);
           else
-            console.error("Improperly Formatted Listener", to);
+            console.error("Improperly Formatted Listener", to, rootPath);
         }
       }
     };
-    this.register = (listeners2 = this.original) => {
-      this.runEachListener(listeners2, this.add);
-      this.status = registeredStatus;
+    this.register = (listeners2, rootPath) => this.runEachListener(listeners2, this.add, rootPath);
+    this.start = (listeners2, rootPath) => {
+      const id2 = rootPath[0];
+      const context = this.getContext(id2);
+      this.register(listeners2, rootPath);
+      context.started = true;
+      context.queue.forEach((f) => f());
     };
-    this.#initialize = (o) => {
-      const res = this.context.monitor.get(o.path, "info");
-      if (typeof res.value === "function") {
-        const args = Array.isArray(o.args) ? o.args : [o.args];
-        res.value(...args);
-      } else
-        console.error("Cannot yet trigger values...", o);
+    this.#getAbsolutePath = (name9, rootPath) => {
+      const split = name9.split(keySeparator);
+      return [...rootPath, ...split];
     };
-    this.initialize = (o) => {
-      if (!this.status)
-        this.#triggers.push(o);
-      else if (this.status === registeredStatus) {
-        this.status = initializedStatus;
-        this.#triggers.forEach(this.#initialize);
-        this.#queue.forEach((f) => f());
-        this.#queue = [];
-        this.#triggers = [];
-      } else
-        this.#initialize(o);
-    };
-    this.start = () => {
-      this.register();
-      this.initialize();
-    };
-    this.#getAbsolutePath = (name9) => {
-      return !name9 || !this.rootPath || this.rootPath === name9.slice(0, this.rootPath.length) && name9[this.rootPath.length] === keySeparator ? name9 : [this.rootPath, name9].join(keySeparator);
-    };
-    this.#getPathInfo = (path2) => {
+    this.#getPathInfo = (path2, rootPath) => {
       const output = {
         absolute: {},
         relative: {}
       };
-      path2 = this.#getAbsolutePath(path2);
-      let rel = this.rootPath ? path2.replace(`${this.rootPath}.`, "") : path2;
-      const baseArr = path2.split(keySeparator);
-      output.absolute.array = [this.context.id, ...baseArr];
-      output.relative.array = rel.split(keySeparator);
-      let obj = this.context.monitor.get(output.absolute.array, void 0);
-      if (this.context.graph) {
-        if (obj && this.context.bound) {
-          output.absolute.array = [this.context.id, this.context.bound, ...output.absolute.array.slice(1)];
-          output.relative.array.unshift(this.context.bound);
-        } else if (!obj) {
-          const rel2 = output.relative.array.join(keySeparator);
-          obj = this.context.graph.get(rel2);
-        }
-      }
-      const isGraphScript = obj && typeof obj === "object" && specialKeys2.isGraphScript in obj;
+      output.absolute.array = this.#getAbsolutePath(path2, rootPath);
+      output.relative.array = output.absolute.array.slice(1);
+      let obj = this.monitor.get(output.absolute.array, void 0);
+      const isGraphScript = obj && typeof obj === "object" && specialKeys.root in obj;
       const useOperator = obj && isGraphScript && obj[operatorPath];
       const useDefault = obj && obj[defaultPath2];
       const extraPath = useOperator ? operatorPath : useDefault ? defaultPath2 : void 0;
@@ -2047,81 +1891,67 @@ var Edgelord = class {
       output.relative.value = output.relative.array.join(keySeparator);
       return output;
     };
-    this.add = (from2, to, value2 = true, subscription) => {
-      const tic = performance.now();
+    this.add = (from2, to, value2 = true, rootPath, subscription) => {
+      if (!Array.isArray(rootPath))
+        rootPath = [rootPath];
+      const id2 = rootPath[0];
       if (!value2)
         return;
-      const fromInfo = this.#getPathInfo(from2);
-      const toInfo = this.#getPathInfo(to);
+      const fromInfo = this.#getPathInfo(from2, rootPath);
+      const toInfo = this.#getPathInfo(to, rootPath);
       const absPath = fromInfo.absolute.value;
+      const context = this.getContext(id2);
       if (!subscription)
-        subscription = this.globals.active[absPath]?.[subscriptionKey];
+        subscription = context.active[absPath]?.[subscriptionKey];
       if (!subscription) {
-        subscription = this.context.monitor.on(fromInfo.absolute.array, (path2, _, update) => this.activate(path2, update), {
-          ref: this.context.instance,
-          path: fromInfo.relative.array
+        subscription = this.monitor.on(fromInfo.absolute.array, (path2, info3, update) => {
+          this.update(path2, update, info3.id);
         });
       }
       if (typeof value2 == "string")
         value2 = toInfo.absolute.array.slice(1).join(keySeparator);
+      const parent = this.monitor.get(toInfo.absolute.array.slice(0, -1));
       const info2 = {
         value: value2,
+        bound: parent,
         [listenerObject]: true
       };
-      const refs = [this.active, this.globals.active];
-      refs.forEach((ref) => {
-        if (!ref[absPath])
-          ref[absPath] = {};
-        const base2 = ref[absPath];
-        if (!base2[subscriptionKey]) {
-          Object.defineProperty(base2, subscriptionKey, {
-            value: subscription,
-            configurable: true
-          });
-        }
-        base2[toInfo.absolute.value] = info2;
-      });
-      const args = value2[specialKeys2.listeners.trigger];
-      if (args)
-        this.#toResolveWith.initialize({
-          path: fromInfo.absolute.array,
-          args
+      if (!context.active[absPath])
+        context.active[absPath] = {};
+      const base2 = context.active[absPath];
+      if (!base2[subscriptionKey]) {
+        Object.defineProperty(base2, subscriptionKey, {
+          value: subscription,
+          configurable: true
         });
-      this.addToGlobalLog(absPath);
-      const toc = performance.now();
-      globalThis.escomposePerformance.listeners.create.push(toc - tic);
+      }
+      base2[toInfo.absolute.value] = info2;
       return info2;
     };
-    this.addToGlobalLog = (path2, mode = "from") => {
-      const absolutePath = this.#getAbsolutePath(path2);
-      let target = mode === "to" ? this.globals.to : this.globals.from;
-      const globalPath = absolutePath.split(keySeparator);
-      globalPath.forEach((key3) => {
-        if (!target[key3])
-          target[key3] = {};
-        target = target[key3];
-        if (!target[toResolveWithKey])
-          target[toResolveWithKey] = this;
-      });
-    };
-    this.remove = (from2, to) => {
-      const fromInfo = this.#getPathInfo(from2);
-      const toInfo = this.#getPathInfo(to);
+    this.remove = (from2, to, rootPath) => {
+      if (!Array.isArray(rootPath))
+        rootPath = [rootPath];
+      const id2 = rootPath[0];
+      const fromInfo = this.#getPathInfo(from2, rootPath);
+      const toInfo = this.#getPathInfo(to, rootPath);
       const path2 = [fromInfo.absolute.value, toInfo.absolute.value];
+      const context = this.getContext(id2).active;
       const toRemove = [
-        { ref: this.active, path: path2 },
-        { ref: this.globals.active, path: path2, unlisten: true }
+        { ref: context, path: path2 }
       ];
       toRemove.forEach((o) => {
-        const { ref, path: path3, unlisten } = o;
+        const {
+          ref,
+          path: path3
+        } = o;
         let base2 = ref[path3[0]];
         if (typeof base2 === "object") {
           delete base2[path3[1]];
           if (Object.keys(base2).length === 0) {
             delete ref[path3[0]];
             const sub = base2[subscriptionKey];
-            if (unlisten && sub) {
-              this.context.monitor.remove(sub);
+            if (sub) {
+              this.monitor.remove(sub, id2);
             }
             delete base2[subscriptionKey];
           }
@@ -2129,66 +1959,78 @@ var Edgelord = class {
           delete ref[path3[0]];
       });
     };
-    this.clear = (name9) => {
-      const value2 = this.#getAbsolutePath(name9);
-      Object.keys(this.active).forEach((from2) => {
-        Object.keys(this.active[from2]).forEach((to) => {
+    this.clear = (name9 = "", rootPath = []) => {
+      if (!Array.isArray(rootPath))
+        rootPath = [rootPath];
+      const id2 = rootPath[0];
+      const value2 = [...name9.split(keySeparator), ...rootPath.filter((s) => typeof s !== "symbol")].filter((s) => s !== "").join(".");
+      const context = this.getContext(id2).active;
+      Object.keys(context).forEach((from2) => {
+        Object.keys(context[from2]).forEach((to) => {
           if (!value2 || from2.slice(0, value2.length) === value2 || to.slice(0, value2.length) === value2)
-            this.remove(from2, to);
+            this.remove(from2, to, id2);
         });
       });
     };
-    this.has = (from2, ref = this.active) => !!ref[from2];
-    this.get = (from2, ref = this.active) => ref[from2];
-    this.activate = (from2, update) => {
-      this.context.options.listen?.(from2, update);
+    this.has = (from2, id2) => !!this.getContext(id2).active[from2];
+    this.get = (from2, id2) => {
+      const context = this.getContext(id2).active;
+      if (typeof from2 === "object") {
+        const symbol = from2[specialKeys.root]?.symbol;
+        if (symbol)
+          from2 = symbol;
+        else
+          return false;
+      }
+      return context[from2];
+    };
+    this.update = (from2, update, id2) => {
+      const context = this.#contexts[id2];
+      context.update(from2, update);
+      const active = this.get(from2, id2);
       const listenerGroups = [{
-        info: this.get(from2, this.globals.active),
+        info: active,
         name: from2
       }];
       listenerGroups.forEach((group) => {
         const info2 = group.info;
         if (info2) {
           if (info2[listenerObject]) {
-            const tic = performance.now();
-            this.pass(from2, {
+            this.#send(from2, update, {
+              id: id2,
               value: info2.value,
-              parent: this.active,
+              parent: context.active,
               key: group.name,
               subscription: info2.subscription,
               __value: true
-            }, update);
-            const toc = performance.now();
-            globalThis.escomposePerformance.listeners.resolve.push(toc - tic);
+            });
           } else if (typeof info2 === "object") {
-            const tic = performance.now();
             for (let key3 in info2) {
-              this.pass(from2, {
+              this.#send(from2, update, {
+                id: id2,
                 parent: info2,
                 key: key3,
                 subscription: info2[key3].subscription,
                 value: info2[key3].value
-              }, update);
-              const toc = performance.now();
-              globalThis.escomposePerformance.listeners.resolve.push(toc - tic);
+              });
             }
           } else
             console.error("Improperly Formatted Listener", info2);
         }
       });
     };
-    this.pass = (from2, target, update) => {
-      const id = this.context.id;
-      const isValue = target?.__value;
-      let parent = target.parent;
-      let to = target.key;
-      const info2 = target.parent[to];
-      target = info2.value;
+    this.#send = (from2, update, fullInfo) => {
+      const isValue = fullInfo?.__value;
+      let parent = fullInfo.parent;
+      let to = fullInfo.key;
+      const id2 = fullInfo.id;
+      const info2 = fullInfo.parent[to];
+      let target = info2.value;
       let config = info2?.[configKey];
       let ogValue = target;
       const type = typeof target;
       const checkIfSetter = (path2, willSet) => {
-        const info3 = this.context.monitor.get(path2, "info");
+        const info3 = this.monitor.get(path2, "info");
         if (info3.exists) {
           const val = info3.value;
           const noDefault = typeof val !== "function" && !val?.default;
@@ -2203,15 +2045,13 @@ var Edgelord = class {
           return { value: void 0 };
       };
       const transform = (willSet) => {
-        const fullPath = [id];
+        const fullPath = [id2];
         fullPath.push(...to.split(keySeparator));
         return checkIfSetter(fullPath, willSet);
       };
       const getPathArray = (latest) => {
-        const path2 = [id];
+        const path2 = [id2];
         const topPath = [];
-        if (this.rootPath)
-          topPath.push(...this.rootPath.split(keySeparator));
         topPath.push(...latest.split(keySeparator));
         path2.push(...topPath);
         return path2;
@@ -2220,7 +2060,7 @@ var Edgelord = class {
         if (!isValue)
           transform(true);
         else
-          console.error(`Cannot use a boolean for ${specialKeys2.listeners.value}...`);
+          console.error(`Cannot use a boolean for ${specialKeys.listeners.value}...`);
       } else if (type === "string") {
         const path2 = getPathArray(ogValue);
         checkIfSetter(path2, true);
@@ -2232,27 +2072,24 @@ var Edgelord = class {
         const isConfig = isConfigObject(ogValue);
         if (isConfig) {
           if ("value" in ogValue) {
-            if (isValue) {
+            if (isValue)
               target = parent[to] = ogValue.value;
-            } else {
+            else
               target = parent[to].value = ogValue.value;
-            }
           } else
             transform(true);
-          if (ogValue) {
-            if (ogValue)
-              config = ogValue;
-          }
+          if (ogValue)
+            config = ogValue;
           Object.defineProperty(parent[to], configKey, { value: config });
         }
       }
       let isValidInput = true;
       if (config) {
-        const bindKey = specialKeys2.listeners.value;
+        const bindKey = specialKeys.listeners.bind;
         if (bindKey in config) {
-          const path2 = getPathArray(config[bindKey].original ?? config[bindKey]);
           if (typeof config[bindKey] === "string") {
-            const res = this.context.monitor.get(path2);
+            const path2 = getPathArray(config[bindKey]);
+            const res = this.monitor.get(path2);
             if (!res)
               target = `because ${path2.slice(1).join(keySeparator)} does not point correctly to an existing component.`;
             else {
@@ -2262,11 +2099,11 @@ var Edgelord = class {
               };
             }
           } else if (!config[bindKey].value.__parent) {
-            target = `because ${config[bindKey].original ?? id.toString()} has become unparented.`;
+            target = `because ${config[bindKey].original ?? id2.toString()} has become unparented.`;
           }
         } else {
-          const branchKey = specialKeys2.listeners.branch;
-          const formatKey = specialKeys2.listeners.format;
+          const branchKey = specialKeys.listeners.branch;
+          const formatKey = specialKeys.listeners.format;
           if (branchKey in config) {
             const isValid = config[branchKey].find((o) => {
               let localValid = [];
@@ -2298,10 +2135,10 @@ var Edgelord = class {
       if (isValidInput && update !== void 0) {
         const arrayUpdate = Array.isArray(update) ? update : [update];
         if (target === toSet) {
-          const parentPath = [id];
+          const parentPath = [id2];
           parentPath.push(...to.split(keySeparator));
           const idx = parentPath.pop();
-          const info3 = this.context.monitor.get(parentPath, "info");
+          const info3 = this.monitor.get(parentPath, "info");
           if (info3.value)
             info3.value[idx] = update;
           else
@@ -2309,7 +2146,8 @@ var Edgelord = class {
         } else if (target?.default) {
           target.default.call(target, ...arrayUpdate);
         } else if (typeof target === "function") {
-          const boundTo = config?.[specialKeys2.listeners.bind]?.value ?? info2.bound ?? this.context.instance;
+          const isBound = config?.[specialKeys.listeners.bind]?.value;
+          const boundTo = isBound ?? info2.bound;
           if (boundTo)
             target.call(boundTo, ...arrayUpdate);
           else
@@ -2324,96 +2162,92 @@ var Edgelord = class {
         }
       }
     };
-    if (listeners2 || root || context)
-      this.setInitialProperties(listeners2, root, context);
+    if (listeners2)
+      this.register(listeners2, rootPath);
   }
-  #triggers;
-  #queue;
-  #toResolveWith;
-  #initialize;
+  #contexts;
+  setReference(id2, ref) {
+    this.monitor.set(id2, ref);
+  }
   #getAbsolutePath;
   #getPathInfo;
+  #send;
 };
 var edgelord_default = Edgelord;
 
-// ../../packages/core/loaders/listeners/index.ts
+// ../../js/packages/core/escode-listeners-loader/index.ts
 var name3 = "listeners";
-var required2 = false;
-var properties5 = {
+var required2 = true;
+var properties4 = {
   dependents: [specialKeys.listeners.value]
 };
+var manager = new edgelord_default();
 var listenerLoader = (esc, options2) => {
-  if (!options2.monitor)
-    options2.monitor = new src_default(options2);
-  const configuration = esc[specialKeys.isGraphScript];
-  const manager = new edgelord_default();
+  const root = esc[specialKeys.root];
   const listeners2 = esc[specialKeys.listeners.value];
-  manager.setInitialProperties(listeners2, configuration.path, {
-    id: configuration.root,
-    monitor: options2.monitor,
-    options: options2
-  });
   Object.defineProperty(esc, specialKeys.listeners.value, {
     value: manager,
     enumerable: false,
     configurable: false,
     writable: false
   });
-  return esc;
-};
-var listeners_default = listenerLoader;
-
-// ../../packages/core/loaders/children/index.ts
-var children_exports = {};
-__export(children_exports, {
-  default: () => children_default,
-  name: () => name4,
-  properties: () => properties6,
-  required: () => required3
-});
-var name4 = "children";
-var required3 = false;
-var key = specialKeys.children;
-var properties6 = {
-  dependents: [key]
-};
-var childrenLoader = (esc) => {
-  const val = esc[key];
-  console.error("Add children loader!", val);
-  Object.defineProperty(esc, key, {
-    value: val,
-    enumerable: false,
-    configurable: false,
-    writable: false
+  let absPath;
+  root.start.add((resolved) => {
+    absPath = [root.root, ...root.path.split(".")].filter((str) => str !== "");
+    manager.setReference(root.symbol, resolved);
+    manager[root.symbol === root.root ? "start" : "register"](listeners2, absPath);
   });
+  root.stop.add(() => {
+    root.listeners.clear();
+  });
+  root.listeners = {
+    clear: (from2) => manager.clear(from2, absPath),
+    remove: (from2, to) => manager.remove(from2, to, absPath)
+  };
   return esc;
 };
-var children_default = childrenLoader;
+var escode_listeners_loader_default = listenerLoader;
 
-// ../../packages/core/index.ts
+// ../../js/packages/core/escode-trigger-loader/index.ts
+var escode_trigger_loader_exports = {};
+__export(escode_trigger_loader_exports, {
+  default: () => escode_trigger_loader_default,
+  name: () => name4,
+  properties: () => properties5
+});
+var name4 = "trigger";
+var key = specialKeys.trigger;
+var properties5 = {
+  dependents: [key],
+  dependencies: [specialKeys.listeners.value]
+};
+var triggerLoader = (esc) => {
+  let val = esc[key];
+  const hasKey2 = key in esc;
+  if (hasKey2) {
+    Object.defineProperty(esc, key, {
+      value: val,
+      enumerable: false,
+      configurable: false,
+      writable: false
+    });
+    if (!Array.isArray(val))
+      val = [val];
+    esc[specialKeys.listeners.value].onStart(() => esc.default(...val), esc[specialKeys.root].root);
+    return esc;
+  }
+};
+var escode_trigger_loader_default = triggerLoader;
+
+// ../../js/packages/core/index.ts
 var monitor = new src_default();
 var create = (config, overrides = {}, options2 = {}) => {
   const copy = deep(options2);
-  copy.loaders = combineLoaders(copy.loaders, [listeners_exports2, children_exports]);
+  copy.loaders = combineLoaders(copy.loaders, [escode_listeners_loader_exports, escode_trigger_loader_exports]);
   const fullOptions = copy;
-  const callbacks = {
-    onRootCreated: (id, esc) => fullOptions.monitor.set(id, esc, fullOptions.listeners),
-    onInstanceCreated: (absolutePath, esc) => {
-      if (specialKeys.trigger in esc) {
-        if (!Array.isArray(esc[specialKeys.trigger]))
-          esc[specialKeys.trigger] = [];
-        const args = esc[specialKeys.trigger];
-        console.error("MUST TRIGGER");
-        esc[specialKeys.listeners.value].onStart(() => esc.default(...args));
-        delete esc[specialKeys.trigger];
-      }
-    },
-    onInstanceReady: (absolutePath, esc) => esc[specialKeys.listeners.value].start()
-  };
   const component2 = load(config, fullOptions.loaders, {
     overrides,
     opts: fullOptions,
-    callbacks,
     waitForChildren: false
   });
   return resolve(component2, (esc) => {
@@ -2421,7 +2255,7 @@ var create = (config, overrides = {}, options2 = {}) => {
     let arr = !isArray ? [esc] : esc;
     arr.map((esc2) => {
       if (esc2[specialKeys.parent] || esc2.__.path === "") {
-        const configuration = esc2[specialKeys.isGraphScript];
+        const configuration = esc2[specialKeys.root];
         const hasStarted = configuration.start.value;
         if (hasStarted === false) {
           const onRun = configuration.start.run();
@@ -2444,16 +2278,16 @@ var merge2 = (objects2, updateOriginal) => {
   return base2;
 };
 
-// ../../packages/escode-compose-loader/index.ts
+// ../../js/packages/escode-compose-loader/index.ts
 var escode_compose_loader_exports = {};
 __export(escode_compose_loader_exports, {
   behavior: () => behavior,
   default: () => escode_compose_loader_default,
   name: () => name5,
-  properties: () => properties7
+  properties: () => properties6
 });
 
-// ../../packages/escode-compose-loader/compile/wasm.ts
+// ../../js/packages/escode-compose-loader/compile/wasm.ts
 var fetchAndInstantiateTask = async (uri, importObject) => {
   const wasmArrayBuffer = await fetch(uri).then((response) => response.arrayBuffer());
   return WebAssembly.instantiate(wasmArrayBuffer, importObject);
@@ -2468,7 +2302,7 @@ var load2 = async (uri, importObject) => {
 };
 var wasm_default = load2;
 
-// ../../packages/escode-compose-loader/compile/index.ts
+// ../../js/packages/escode-compose-loader/compile/index.ts
 var catchError = (o, e) => {
   if (o[specialKeys.reference]) {
     console.warn("[escode]: Falling back to ES Component reference...", e);
@@ -2557,15 +2391,15 @@ function createErrorComponent(message) {
   };
 }
 
-// ../../packages/escode-compose-loader/index.ts
+// ../../js/packages/escode-compose-loader/index.ts
 var name5 = "compose";
 var localSpecialKeys = {
   compose: specialKeys.compose,
   apply: specialKeys.apply,
   bundle: esSourceKey
 };
-var behavior = "load";
-var properties7 = {
+var behavior = "init";
+var properties6 = {
   dependents: Object.values(localSpecialKeys)
 };
 var isPathString = (value2) => typeof value2 === "string" && (value2.includes("/") || value2.includes("."));
@@ -2579,7 +2413,7 @@ function compose2(o, opts, updateOriginal = false) {
   });
 }
 var escode_compose_loader_default = compose2;
-function compileAndMerge(properties13, composition = {}, opts = {}, flipPrecedence = false, updateOriginal = false) {
+function compileAndMerge(properties12, composition = {}, opts = {}, flipPrecedence = false, updateOriginal = false) {
   if (!Array.isArray(composition))
     composition = [composition];
   let promise = resolve(composition.map((o) => {
@@ -2603,21 +2437,21 @@ function compileAndMerge(properties13, composition = {}, opts = {}, flipPreceden
     const flat = composition2.flat();
     let composed = {};
     flat.forEach((toCompose) => composed = merge(composed, toCompose, false, false));
-    return merge(properties13, composed, updateOriginal, flipPrecedence);
+    return merge(properties12, composed, updateOriginal, flipPrecedence);
   });
 }
 
-// ../../packages/escode-dom-loader/index.ts
-var escode_dom_loader_exports = {};
-__export(escode_dom_loader_exports, {
+// ../../js/packages/escode-dom/loader/index.ts
+var loader_exports = {};
+__export(loader_exports, {
   default: () => create3,
   name: () => name6,
-  properties: () => properties10,
-  required: () => required4
+  properties: () => properties9,
+  required: () => required3
 });
 
-// ../../packages/escode-dom-loader/escode-define-loader/index.ts
-var properties8 = {
+// ../../js/packages/escode-dom/loader/escode-define-loader/index.ts
+var properties7 = {
   dependents: [specialKeys.webcomponents],
   dependencies: [specialKeys.element, specialKeys.component, specialKeys.parent]
 };
@@ -2667,10 +2501,10 @@ var define2 = (config, esc, model2 = esc) => {
 
         `)();
     class ESComponent extends BaseClass {
-      constructor(properties13) {
-        super(properties13);
+      constructor(properties12) {
+        super(properties12);
         copy[specialKeys.element] = this;
-        esc[specialKeys.isGraphScript].create(copy);
+        esc[specialKeys.root].create(copy);
       }
       connectedCallback() {
         const component2 = this[specialKeys.component];
@@ -2702,8 +2536,8 @@ var define2 = (config, esc, model2 = esc) => {
   }
 };
 
-// ../../packages/escode-dom-loader/escode-element-loader/index.ts
-var createSVG = (name9 = "svg", options2) => document.createElementNS("http://www.w3.org/2000/svg", name9, options2);
+// ../../js/packages/escode-dom/loader/escode-element-loader/index.ts
+var createSVG = (name9 = "svg", options2) => document2.createElementNS("http://www.w3.org/2000/svg", name9, options2);
 function checkESCompose(__compose) {
   if (!__compose)
     return false;
@@ -2726,9 +2560,9 @@ var createElement = (args, parent) => {
   if (args[0] === "svg" || parent && parent.__element instanceof SVGElement)
     return createSVG(...args);
   else
-    return document.createElement(...args);
+    return document2.createElement(...args);
 };
-var properties9 = {
+var properties8 = {
   dependents: [
     specialKeys.element,
     specialKeys.attributes,
@@ -2741,19 +2575,22 @@ var properties9 = {
   ],
   dependencies: [
     specialKeys.parent,
-    specialKeys.isGraphScript,
+    specialKeys.root,
     specialKeys.proxy
   ]
 };
+var document2 = globalThis.document;
+var addEventListener = globalThis.addEventListener;
+var removeEventListener = globalThis.removeEventListener;
 function create2(esm2, options2 = {}) {
-  const configuration = esm2[specialKeys.isGraphScript];
+  const configuration = esm2[specialKeys.root];
   let states = configuration.states;
-  let id = configuration.name;
+  let id2 = configuration.name;
   const parent = esm2[specialKeys.parent];
   let element = esm2[specialKeys.element];
   const attributes = esm2[specialKeys.attributes] ?? {};
   let info2;
-  if (!(element instanceof Element)) {
+  if (!(element instanceof globalThis.Element)) {
     const mustShow = attributes && Object.keys(attributes).length || checkForInternalElements(esm2);
     const defaultTagName = mustShow ? "div" : "span";
     const isWebComponent = element && typeof element === "object" && element.name && element.extends;
@@ -2770,9 +2607,9 @@ function create2(esm2, options2 = {}) {
     else if (typeof element === "object") {
       info2 = element;
       if (info2.selectors)
-        element = document.querySelector(info2.selectors);
+        element = document2.querySelector(info2.selectors);
       else if (info2.id)
-        element = document.getElementById(info2.id);
+        element = document2.getElementById(info2.id);
       else
         element = defaultTagName;
     }
@@ -2787,22 +2624,22 @@ function create2(esm2, options2 = {}) {
       };
     }
   }
-  if (!(element instanceof Element))
-    throw new Error("Element not created for " + id);
+  if (!(element instanceof globalThis.Element))
+    throw new Error("Element not created for " + id2);
   let intermediateStates = states || {};
   intermediateStates.element = element;
   intermediateStates.attributes = attributes;
-  if (parent instanceof Element)
+  if (parent instanceof globalThis.Element)
     intermediateStates.parentNode = parent;
   else
-    intermediateStates.parentNode = parent?.[specialKeys.element] instanceof Element ? parent[specialKeys.element] : element.parentNode;
+    intermediateStates.parentNode = parent?.[specialKeys.element] instanceof globalThis.Element ? parent[specialKeys.element] : element.parentNode;
   intermediateStates.onresize = esm2[specialKeys.resize];
   intermediateStates.onresizeEventCallback = void 0;
   const finalStates = intermediateStates;
-  if (typeof id !== "string")
-    id = `${element.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
+  if (typeof id2 !== "string")
+    id2 = `${element.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
   if (!element.id)
-    element.id = id;
+    element.id = id2;
   let isConnected;
   Object.defineProperty(esm2, `${specialKeys.connected}`, {
     value: new Promise((resolve4) => isConnected = async () => {
@@ -2819,7 +2656,7 @@ function create2(esm2, options2 = {}) {
       return value2;
   };
   const setAttributes = (attributes2) => {
-    if (esm2[specialKeys.element] instanceof Element) {
+    if (esm2[specialKeys.element] instanceof globalThis.Element) {
       for (let key3 in attributes2) {
         if (key3 === "style") {
           for (let styleKey in attributes2.style)
@@ -2855,22 +2692,22 @@ function create2(esm2, options2 = {}) {
   });
   Object.defineProperty(esm2, specialKeys.element, {
     get: function() {
-      if (finalStates.element instanceof Element)
+      if (finalStates.element instanceof globalThis.Element)
         return finalStates.element;
     },
     set: function(v) {
-      if (v instanceof HTMLElement) {
+      if (v instanceof globalThis.HTMLElement) {
         if (finalStates.element !== v) {
           finalStates.element.insertAdjacentElement("afterend", v);
           finalStates.element.remove();
         }
         finalStates.element = v;
-        const configuration2 = esm2[specialKeys.isGraphScript];
+        const configuration2 = esm2[specialKeys.root];
         if (configuration2) {
           const components = configuration2.components;
           for (let name9 in components) {
             const component2 = components[name9];
-            if (component2 && component2[specialKeys.isGraphScript]) {
+            if (component2 && component2[specialKeys.root]) {
               resolve(component2, (res) => res[specialKeys.parent] = v);
             }
           }
@@ -2894,20 +2731,20 @@ function create2(esm2, options2 = {}) {
   };
   configuration.parent.add(function(v) {
     if (typeof v === "string") {
-      const newValue = document.querySelector(v);
+      const newValue = document2.querySelector(v);
       if (newValue)
         v = newValue;
       else
-        v = document.getElementById(v);
+        v = document2.getElementById(v);
     }
-    if (v?.[specialKeys.element] instanceof Element)
+    if (v?.[specialKeys.element] instanceof globalThis.Element)
       v = v[specialKeys.element];
     const current = this[specialKeys.element].parentNode;
     if (current !== v) {
-      if (this[specialKeys.element] instanceof Element) {
+      if (this[specialKeys.element] instanceof globalThis.Element) {
         if (current)
           this[specialKeys.element].remove();
-        if (v instanceof Element) {
+        if (v instanceof globalThis.Element) {
           const desiredPosition = this[specialKeys.childPosition];
           let ref = this[specialKeys.element];
           const __editor = configuration.editor;
@@ -2949,15 +2786,15 @@ function create2(esm2, options2 = {}) {
     set: function(foo) {
       finalStates.onresize = foo;
       if (finalStates.onresizeEventCallback)
-        window.removeEventListener("resize", finalStates.onresizeEventCallback);
+        removeEventListener("resize", finalStates.onresizeEventCallback);
       if (finalStates.onresize) {
         finalStates.onresizeEventCallback = (ev) => {
-          if (finalStates.onresize && esm2[specialKeys.element] instanceof Element) {
+          if (finalStates.onresize && esm2[specialKeys.element] instanceof globalThis.Element) {
             const context = esm2[specialKeys.proxy] ?? esm2;
             return foo.call(context, ev);
           }
         };
-        window.addEventListener("resize", finalStates.onresizeEventCallback);
+        addEventListener("resize", finalStates.onresizeEventCallback);
       }
     }
   });
@@ -2980,10 +2817,10 @@ function create2(esm2, options2 = {}) {
       configuration.editor = __editor;
       if (bound !== void 0) {
         let boundESM = esm2;
-        const configuration2 = esm2[specialKeys.isGraphScript];
+        const configuration2 = esm2[specialKeys.root];
         bound.split("/").forEach((str) => {
           if (str === "..")
-            boundESM = boundESM[specialKeys.isGraphScript].states.parentNode[specialKeys.component];
+            boundESM = boundESM[specialKeys.root].states.parentNode[specialKeys.component];
           else if (str === ".")
             return;
           else
@@ -3011,19 +2848,19 @@ function create2(esm2, options2 = {}) {
   return esm2;
 }
 
-// ../../packages/escode-dom-loader/index.ts
+// ../../js/packages/escode-dom/loader/index.ts
 var name6 = "dom";
-var required4 = true;
+var required3 = true;
 var dependents = /* @__PURE__ */ new Set([
-  ...properties9.dependents,
-  ...properties8.dependents
+  ...properties8.dependents,
+  ...properties7.dependents
 ]);
 var dependencies = /* @__PURE__ */ new Set([
-  ...properties9.dependencies,
-  ...properties8.dependencies
+  ...properties8.dependencies,
+  ...properties7.dependencies
 ]);
 dependencies.delete(specialKeys.element);
-var properties10 = {
+var properties9 = {
   dependents: Array.from(dependents),
   dependencies: Array.from(dependencies)
 };
@@ -3033,23 +2870,23 @@ function create3(esm2, options2 = {}) {
   return defined;
 }
 
-// ../../packages/escode-start-loader/index.ts
+// ../../js/packages/escode-start-loader/index.ts
 var escode_start_loader_exports = {};
 __export(escode_start_loader_exports, {
   default: () => escode_start_loader_default,
   name: () => name7,
-  properties: () => properties11,
-  required: () => required5
+  properties: () => properties10,
+  required: () => required4
 });
 var name7 = "start";
-var required5 = true;
-var properties11 = {
+var required4 = true;
+var properties10 = {
   dependents: [
     specialKeys.source
   ],
   dependencies: [
     esSourceKey,
-    specialKeys.isGraphScript,
+    specialKeys.root,
     specialKeys.editor,
     specialKeys.parent,
     specialKeys.proxy,
@@ -3059,9 +2896,9 @@ var properties11 = {
   ]
 };
 var escode_start_loader_default = (esc) => {
-  esc[specialKeys.isGraphScript].start.add(() => start(esc));
+  esc[specialKeys.root].start.add(() => start(esc));
 };
-var set2 = (esm2, value2) => esm2[specialKeys.isGraphScript].start.value = value2;
+var set2 = (esm2, value2) => esm2[specialKeys.root].start.value = value2;
 function start(esc, callbacks = [], asyncCallback) {
   asyncConnect.call(esc, asyncCallback);
   let output = connect.call(esc, callbacks);
@@ -3069,7 +2906,7 @@ function start(esc, callbacks = [], asyncCallback) {
   return output;
 }
 async function asyncConnect(onReadyCallback) {
-  const configuration = this[specialKeys.isGraphScript];
+  const configuration = this[specialKeys.root];
   await this[specialKeys.connected];
   configuration.connected = true;
   const boundEditors = configuration.boundEditors;
@@ -3080,8 +2917,8 @@ async function asyncConnect(onReadyCallback) {
   return this;
 }
 function connect(callbacks = []) {
-  const configuration = this[specialKeys.isGraphScript];
-  const parentConfiguration = this[specialKeys.parent]?.[specialKeys.isGraphScript];
+  const configuration = this[specialKeys.root];
+  const parentConfiguration = this[specialKeys.parent]?.[specialKeys.root];
   const __editor = parentConfiguration?.editor;
   if (__editor)
     configuration.editor = __editor;
@@ -3090,7 +2927,7 @@ function connect(callbacks = []) {
     if (typeof source === "function")
       source = this[specialKeys.source] = source();
     delete this[esSourceKey];
-    const path2 = this[specialKeys.isGraphScript].path;
+    const path2 = this[specialKeys.root].path;
     if (configuration.editor)
       configuration.editor.addFile(path2, source);
   }
@@ -3098,27 +2935,27 @@ function connect(callbacks = []) {
   return this;
 }
 
-// ../../packages/escode-animation-loader/index.ts
+// ../../js/packages/escode-animation-loader/index.ts
 var escode_animation_loader_exports = {};
 __export(escode_animation_loader_exports, {
   default: () => animate,
   name: () => name8,
-  properties: () => properties12
+  properties: () => properties11
 });
 var animations = {};
 var name8 = "animation";
 var key2 = specialKeys.animate;
-var properties12 = {
+var properties11 = {
   dependents: [specialKeys.animate]
 };
 function animate(esc) {
   if (esc[key2]) {
     let original = esc[key2];
-    const id = Math.random();
-    const interval = typeof original === "number" ? original : "global";
+    const id2 = Math.random();
+    const interval = typeof original === "number" ? original : isNode ? 60 : "global";
     let startFunction;
     if (!animations[interval]) {
-      const info2 = animations[interval] = { objects: { [id]: esc } };
+      const info2 = animations[interval] = { objects: { [id2]: esc } };
       const objects2 = info2.objects;
       const runFuncs = () => {
         for (let key3 in objects2)
@@ -3127,11 +2964,11 @@ function animate(esc) {
       if (interval === "global") {
         const callback = () => {
           runFuncs();
-          info2.id = window.requestAnimationFrame(callback);
+          info2.id = globalThis.requestAnimationFrame(callback);
         };
         startFunction = callback;
         animations[interval].stop = () => {
-          window.cancelAnimationFrame(info2.id);
+          globalThis.cancelAnimationFrame(info2.id);
           info2.cancel = true;
         };
       } else {
@@ -3144,12 +2981,12 @@ function animate(esc) {
     } else {
       startFunction = () => {
         esc.default();
-        animations[interval].objects[id] = esc;
+        animations[interval].objects[id2] = esc;
       };
     }
-    esc[specialKeys.isGraphScript].start.add(startFunction);
-    esc[specialKeys.isGraphScript].stop.add(() => {
-      delete animations[interval].objects[id];
+    esc[specialKeys.root].start.add(startFunction);
+    esc[specialKeys.root].stop.add(() => {
+      delete animations[interval].objects[id2];
       esc[key2] = original;
       if (Object.keys(animations[interval].objects).length === 0) {
         animations[interval].stop();
@@ -3159,11 +2996,11 @@ function animate(esc) {
   }
 }
 
-// ../../packages/escode/index.ts
+// ../../js/index.ts
 var standardLoaders = [];
 standardLoaders.push(escode_compose_loader_exports);
 if (!isNode)
-  standardLoaders.push(escode_dom_loader_exports);
+  standardLoaders.push(loader_exports);
 standardLoaders.push(escode_start_loader_exports);
 standardLoaders.push(escode_animation_loader_exports);
 var create4 = (config, overrides, options2 = {}) => {
@@ -3173,9 +3010,9 @@ var create4 = (config, overrides, options2 = {}) => {
     options2.loaders = standardLoaders;
   return create(config, overrides, options2);
 };
-var escode_default = create4;
+var js_default = create4;
 
-// ../../packages/esmpile/src/utils/mimeTypes.js
+// ../../js/packages/esmpile/src/utils/mimeTypes.js
 var js = "application/javascript";
 var isJS = (type) => !type || type === "application/javascript";
 var map = {
@@ -3201,7 +3038,7 @@ var map = {
 };
 var get3 = (extension2) => map[extension2];
 
-// ../../packages/esmpile/src/utils/defaults.js
+// ../../js/packages/esmpile/src/utils/defaults.js
 var defaults_default = {
   nodeModules: {
     nodeModules: "node_modules",
@@ -3209,7 +3046,7 @@ var defaults_default = {
   }
 };
 
-// ../../packages/esmpile/src/utils/path.js
+// ../../js/packages/esmpile/src/utils/path.js
 var urlSep = "://";
 var get4 = (path2, rel = "", keepRelativeImports = false, isDirectory = false) => {
   if (url(path2))
@@ -3296,7 +3133,7 @@ var noBase = (path2, opts, removeNode) => {
 };
 var pathId = (path2, opts) => get4(noBase(path2, opts));
 
-// ../../packages/esmpile/src/utils/nodeModules.js
+// ../../js/packages/esmpile/src/utils/nodeModules.js
 var path = (opts) => {
   const nodeModules = opts.nodeModules ?? defaults_default.nodeModules.nodeModules;
   const relativeTo = opts.relativeTo ?? defaults_default.nodeModules.relativeTo;
@@ -3337,7 +3174,7 @@ var transformation = {
   handler: resolve3
 };
 
-// ../../packages/esmpile/src/utils/transformations.js
+// ../../js/packages/esmpile/src/utils/transformations.js
 var extensionTransformations = ["ts", "js"];
 var allTransformations = [null, ...extensionTransformations, transformation];
 var get5 = (uri) => {
@@ -3365,11 +3202,11 @@ var get5 = (uri) => {
     return [];
 };
 
-// ../../packages/esmpile/src/utils/errors.js
+// ../../js/packages/esmpile/src/utils/errors.js
 var middle = "was not resolved locally. You can provide a direct reference to use in";
 var create5 = (uri, key3 = uri) => new Error(`${uri} ${middle} options.filesystem._fallbacks['${key3}'].`);
 
-// ../../packages/esmpile/src/utils/handlers.js
+// ../../js/packages/esmpile/src/utils/handlers.js
 var noExtension = (path2, repExt = "js") => {
   const absolutePath = absolute(path2);
   const split = path2.split("/");
@@ -3395,7 +3232,7 @@ var transformation2 = async (path2, transformation3, opts, force) => {
   }
 };
 
-// ../../packages/esmpile/src/utils/request.js
+// ../../js/packages/esmpile/src/utils/request.js
 var getURL = (path2) => {
   let url2;
   try {
@@ -3481,7 +3318,7 @@ var fetchRemote = async (url2, options2 = {}, additionalArgs) => {
   return output;
 };
 
-// ../../packages/esmpile/src/utils/response.js
+// ../../js/packages/esmpile/src/utils/response.js
 var enc = new TextDecoder("utf-8");
 var get6 = async (uri, opts, expectedType) => {
   const info2 = { uri, text: { original: "", updated: "" }, buffer: null };
@@ -3545,7 +3382,7 @@ var findModule = async (uri, opts) => {
 };
 var findText = async (uri, opts) => await find2(uri, opts, get6);
 
-// ../../packages/esmpile/src/utils/sourceMap.js
+// ../../js/packages/esmpile/src/utils/sourceMap.js
 var sourceReg = /\/\/# sourceMappingURL=(.*\.map)/;
 var get7 = async (uri, opts, text, evaluate = true) => {
   if (!text) {
@@ -3572,7 +3409,7 @@ var get7 = async (uri, opts, text, evaluate = true) => {
   }
 };
 
-// ../../packages/esmpile/src/utils/load.js
+// ../../js/packages/esmpile/src/utils/load.js
 var script = async (uri, names = []) => {
   return await new Promise((resolve4, reject) => {
     const script2 = document.createElement("script");
@@ -3590,21 +3427,21 @@ var script = async (uri, names = []) => {
   });
 };
 
-// ../../packages/esmpile/src/Bundle.js
+// ../../js/packages/esmpile/src/Bundle.js
 var Bundle_exports = {};
 __export(Bundle_exports, {
   default: () => Bundle,
   get: () => get11
 });
 
-// ../../packages/esmpile/src/utils/encode/index.js
+// ../../js/packages/esmpile/src/utils/encode/index.js
 var encode_exports = {};
 __export(encode_exports, {
   datauri: () => datauri,
   objecturl: () => objecturl
 });
 
-// ../../packages/esmpile/src/utils/encode/datauri.js
+// ../../js/packages/esmpile/src/utils/encode/datauri.js
 function _arrayBufferToBase64(buffer) {
   let binary = "";
   const bytes = new Uint8Array(buffer);
@@ -3620,7 +3457,7 @@ var get8 = (o, mimeType = js, safe = false) => {
   return `data:${mimeType};base64,` + base64;
 };
 
-// ../../packages/esmpile/src/utils/encode/objecturl.js
+// ../../js/packages/esmpile/src/utils/encode/objecturl.js
 function get9(input, mimeType = js) {
   if (typeof input === "string")
     input = new TextEncoder().encode(input);
@@ -3628,7 +3465,7 @@ function get9(input, mimeType = js) {
   return URL.createObjectURL(blob);
 }
 
-// ../../packages/esmpile/src/utils/encode/index.js
+// ../../js/packages/esmpile/src/utils/encode/index.js
 var datauri = async (...args) => await get10(get8, ...args);
 var objecturl = async (...args) => await get10(get9, ...args);
 var importEncoded = async (uri, isJSON) => await (isJSON ? import(uri, { assert: { type: "json" } }) : import(uri)).catch((e) => {
@@ -3689,7 +3526,7 @@ async function catchFailedModule(uri, e, names) {
     throw e;
 }
 
-// ../../packages/esmpile/src/utils/compile.js
+// ../../js/packages/esmpile/src/utils/compile.js
 var tsconfig = {
   compilerOptions: {
     "target": "ES2015",
@@ -3711,7 +3548,7 @@ var typescript = (response, type = "text") => {
     throw new Error("Must load TypeScript extension to compile TypeScript files using remoteESM.load.script(...);");
 };
 
-// ../../packages/esmpile/src/utils/polyfills.js
+// ../../js/packages/esmpile/src/utils/polyfills.js
 var fetch2;
 var fs;
 var Blob2;
@@ -3739,7 +3576,7 @@ var isReady2 = new Promise(async (resolve4, reject) => {
 });
 var ready = isReady2;
 
-// ../../packages/esmpile/src/Bundle.js
+// ../../js/packages/esmpile/src/Bundle.js
 if (!globalThis.REMOTEESM_BUNDLES)
   globalThis.REMOTEESM_BUNDLES = { global: {} };
 var global = globalThis.REMOTEESM_BUNDLES.global;
@@ -3975,7 +3812,7 @@ var Bundle = class {
         }
       } catch (e) {
         this.imports = {};
-        const imports = [];
+        const imports2 = [];
         const matches = Array.from(this.info.text.updated.matchAll(re));
         matches.forEach(([original, prefix, command, delimiters, path2]) => {
           if (path2) {
@@ -4002,12 +3839,12 @@ var Bundle = class {
             if (!this.imports[name9])
               this.imports[name9] = [];
             this.imports[name9].push(info3);
-            imports.push(info3);
+            imports2.push(info3);
           }
         });
         this.derived.dependencies.resolved = 0;
         this.derived.dependencies.n = this.imports.length;
-        const promises = imports.map(async (info3, i) => {
+        const promises = imports2.map(async (info3, i) => {
           await this.setImport(info3, i);
           this.derived.dependencies.resolved++;
         });
@@ -4294,7 +4131,7 @@ var span = {
   __element: "span"
 };
 
-// ../../packages/drafts/rules/Rule.ts
+// ../../js/packages/escode-rules/Rule.ts
 var Rule = class {
   constructor(component2 = {}, elements) {
     this.component = {};
@@ -4310,7 +4147,7 @@ var Rule = class {
         arrayOfElements = [elements];
       else if (elements instanceof NodeList)
         arrayOfElements = Array.from(elements);
-      escode_default(arrayOfElements, this.component);
+      js_default(arrayOfElements, this.component);
       arrayOfElements.forEach((el) => this.appliedTo.add(el));
     };
     this.remove = () => {
@@ -4325,7 +4162,7 @@ var Rule = class {
   }
 };
 
-// ../../demos/objects/index.ts
+// ../../js/demos/objects/index.ts
 var objects_exports = {};
 __export(objects_exports, {
   functions: () => functions3,
@@ -4380,7 +4217,7 @@ var operations = [
   () => merge2([proxy2, three], true)
 ];
 
-// ../../demos/graph/index.ts
+// ../../js/demos/graph/index.ts
 var graph_exports = {};
 __export(graph_exports, {
   history: () => history2,
@@ -4390,7 +4227,7 @@ __export(graph_exports, {
   state: () => state2
 });
 
-// ../../demos/graph/nodes/nodeA.js
+// ../../js/demos/graph/nodes/nodeA.js
 var nodeA_exports = {};
 __export(nodeA_exports, {
   __: () => __,
@@ -4399,14 +4236,16 @@ __export(nodeA_exports, {
   y: () => y
 });
 
-// ../../demos/utils.ts
+// ../../js/demos/utils.ts
 var isNode3 = typeof process === "object";
 var elId = `escomposeOperationsManagerLog`;
+var document3 = globalThis.document;
+globalThis.escodeDemoLog = true;
 if (!isNode3) {
-  const ol = document.createElement("ol");
+  const ol = document3.createElement("ol");
   ol.id = elId;
-  document.body.appendChild(ol);
-  const style = document.createElement("style");
+  document3.body.appendChild(ol);
+  const style = document3.createElement("style");
   style.innerText = `
         ol {
             position: absolute;
@@ -4425,31 +4264,33 @@ if (!isNode3) {
             margin-left: 25px;
         }
     `;
-  document.body.appendChild(style);
+  document3.body.appendChild(style);
 }
 var log = {
-  element: isNode3 ? void 0 : document.getElementById(elId),
+  element: isNode3 ? void 0 : document3.getElementById(elId),
   add: function(message) {
     if (this.element) {
-      var li = document.createElement("li");
+      var li = document3.createElement("li");
       li.innerText = message;
       this.element.appendChild(li);
-    } else
+    } else if (globalThis.escodeDemoLog)
       console.log(message);
   },
   addCommand: function(message) {
-    console.log(`--------- ${message} ---------`);
+    if (globalThis.escodeDemoLog)
+      console.log(`--------- ${message} ---------`);
     if (this.element) {
-      var li = document.createElement("div");
+      var li = document3.createElement("div");
       li.innerText = message;
       li.style.fontWeight = "bold";
       this.element.appendChild(li);
     }
   },
   addHeader: function(message) {
-    console.log(`********* ${message} *********`);
+    if (globalThis.escodeDemoLog)
+      console.log(`********* ${message} *********`);
     if (this.element) {
-      var li = document.createElement("h3");
+      var li = document3.createElement("h3");
       li.innerText = message;
       this.element.appendChild(li);
     }
@@ -4534,17 +4375,19 @@ var OperationsManager = class {
   }
 };
 
-// ../../demos/graph/nodes/nodeA.js
+// ../../js/demos/graph/nodes/nodeA.js
 var __ = true;
 var x = 5;
 var y = 2;
 var jump = () => {
-  const message = `jump!`;
-  log.add(message);
+  if (escodeDemoLog !== false) {
+    const message = `jump!`;
+    log.add(message);
+  }
   return "jumped!";
 };
 
-// ../../demos/graph/nodes/nodeF.js
+// ../../js/demos/graph/nodes/nodeF.js
 var nodeF_exports = {};
 __export(nodeF_exports, {
   __onconnected: () => __onconnected,
@@ -4563,7 +4406,7 @@ var __ondisconnected = function(node) {
 if (!isNode3)
   __props = document.createElement("div");
 
-// ../../demos/graph/tree.js
+// ../../js/demos/graph/tree.js
 var nodeAInstance = Object.assign({}, nodeA_exports);
 var shared = {
   value: 0
@@ -4632,14 +4475,23 @@ var tree = {
       const message = "nodeA listener: nodeC z prop changed:";
       log.add(message);
     },
+    "nodeA.x": function() {
+      const message = "nodeC listener: nodeA x prop updated";
+      log.add(message);
+    },
     "nodeA.jump": {
       "nodeE": true,
       "nodeB.x": true
     },
     "": {
-      "nodeA.jump": function() {
-        const message = "nodeC listener: nodeA ";
-        log.add(message);
+      "nodeA.jump": {
+        value: function() {
+          if (escodeDemoLog !== false) {
+            const message = "nodeC listener: nodeA ";
+            log.add(message);
+          }
+        },
+        __bind: "nodeB.nodeC"
       }
     }
   }
@@ -4648,7 +4500,7 @@ if (!isNode3)
   tree.nodeF = nodeF_exports;
 var tree_default = tree;
 
-// ../../demos/graph/index.ts
+// ../../js/demos/graph/index.ts
 var nodeAInstance2 = tree_default.nodeA;
 var history2 = [];
 var state2 = {};
@@ -4710,7 +4562,7 @@ var operations2 = [
     header: `Clear All Listeners`,
     ignore: true,
     function: () => {
-      component.__listeners.clear();
+      component.__.listeners.clear();
     }
   },
   {
@@ -4735,8 +4587,8 @@ var operations2 = [
     header: `Unsubscribe nodeB.nodeC from nodeA.jump`,
     ignore: true,
     function: () => {
-      component.__listeners.unsubscribe("nodeB.nodeC", "nodeA.jump");
-      component.__listeners.clear("nodeA.jump");
+      component.__.listeners.unsubscribe("nodeB.nodeC", "nodeA.jump");
+      component.__.listeners.clear("nodeA.jump");
     }
   },
   {
@@ -4809,6 +4661,174 @@ var operations2 = [
   }
 ];
 
+// ../showcase/demos/basic/index.esc.ts
+var index_esc_exports2 = {};
+__export(index_esc_exports2, {
+  __attributes: () => __attributes3,
+  __listeners: () => __listeners,
+  container: () => container,
+  test: () => test
+});
+
+// ../../js/components/drafts/basic/index.js
+var basic_exports = {};
+__export(basic_exports, {
+  imports: () => imports
+});
+
+// ../../js/components/drafts/basic/update.js
+var update_exports = {};
+__export(update_exports, {
+  default: () => update_default,
+  esmOnly: () => esmOnly,
+  nExecution: () => nExecution,
+  passedWithListener: () => passedWithListener
+});
+var nExecution = 0;
+var esmOnly = 0;
+var passedWithListener = void 0;
+function update_default() {
+  console.log("Getting", this);
+  if (this.delayId)
+    clearTimeout(this.delayId);
+  this.nExecution++;
+  setTimeout(() => {
+    this.later = true;
+  }, 1e3);
+  this.delayId = setTimeout(() => esmOnly = this.nExecution, 500);
+}
+
+// ../../js/components/drafts/basic/index.js
+var imports = update_exports;
+
+// ../../js/components/ui/button.js
+var button_exports = {};
+__export(button_exports, {
+  __attributes: () => __attributes2,
+  __element: () => __element2,
+  __useclick: () => __useclick,
+  cache: () => cache,
+  default: () => button_default,
+  pressed: () => pressed
+});
+var __useclick = true;
+var pressed = false;
+var cache = null;
+var __element2 = "button";
+var __attributes2 = {
+  innerHTML: "Click Me",
+  onclick: function() {
+    if (this.__useclick) {
+      this.default({ value: true, __internal: true });
+      this.default({ value: false, __internal: true });
+    }
+  },
+  onmousedown: function() {
+    this.__useclick = false;
+    this.default({ value: true, __internal: true });
+    const onMouseUp = () => {
+      this.default({ value: false, __internal: true });
+      globalThis.removeEventListener("mouseup", onMouseUp);
+      setTimeout(() => this.__useclick = true, 10);
+    };
+    globalThis.addEventListener("mouseup", onMouseUp);
+  }
+};
+function button_default(input) {
+  let res;
+  const value2 = input?.value ?? input;
+  const isInternal = input?.__internal;
+  if (isInternal) {
+    this.pressed = value2;
+    if (this.cache) {
+      if (value2)
+        res = this.cache;
+    } else
+      res = value2;
+  } else if (value2 !== void 0)
+    this.cache = value2;
+  return res;
+}
+
+// ../showcase/demos/basic/index.esc.ts
+var testURL = "../../../../js/components/tests/basic/index.js";
+var buttonURL = "../../../../js/components/ui/button.js";
+var testInfo = {
+  url: testURL,
+  reference: basic_exports
+};
+var buttonInfo = {
+  url: buttonURL,
+  reference: button_exports
+};
+var id = "test";
+var buttonComponentId = "button";
+var __attributes3 = {
+  style: {
+    margin: "25px"
+  }
+};
+var test = {
+  __compose: testInfo.reference,
+  __listeners: {
+    "imports.passedWithListener": {
+      "imports.nExecution": true
+    },
+    ["ARBITRARY"]: {
+      "imports.passedWithListener": (...args) => console.log("Passed with Listener!", args),
+      "imports.later": (...args) => console.log("Added Later!", args)
+    }
+  }
+};
+var container = {
+  componentToMove: buttonComponentId,
+  __compose: {
+    __element: "div"
+  },
+  p: {
+    __element: "p",
+    b: {
+      __element: "b",
+      __attributes: {
+        innerText: "Clicks: "
+      }
+    },
+    span: {
+      __element: "span",
+      __attributes: {
+        innerText: "0"
+      }
+    }
+  },
+  [buttonComponentId]: {
+    __element: "button",
+    __compose: [
+      {
+        __attributes: {
+          onmousedown: () => {
+            console.log("Calling me too!");
+          }
+        }
+      },
+      buttonInfo.reference
+    ],
+    __trigger: { value: true, __internal: true }
+  }
+};
+var branchConfig = {
+  __branch: [
+    { is: false, value: true }
+  ]
+};
+var __listeners = {
+  [`${id}.imports`]: {
+    [`container.${buttonComponentId}`]: branchConfig
+  },
+  [`container.p.span`]: {
+    [`${id}.imports.nExecution`]: true
+  }
+};
+
 // index.ts
 var useRule = true;
 var string = "./index.esc.js";
@@ -4856,28 +4876,17 @@ var run2 = async () => {
   console.log("Combined:", combined);
   const recombined = await create6({ first });
   console.log("Recombined:", recombined);
+  const basic1 = await create6(index_esc_exports2);
+  const basic2 = await create6(index_esc_exports2);
   const isStatic = false;
-  const manager = new OperationsManager();
-  manager.set(objects_exports);
-  manager.start(isStatic);
-  manager.runAll();
+  const manager2 = new OperationsManager();
+  manager2.set(objects_exports);
+  manager2.start(isStatic);
+  manager2.runAll();
   const secondManager = new OperationsManager();
   secondManager.set(graph_exports);
   secondManager.start();
   secondManager.runAll();
-};
-window.onkeypress = () => {
-  console.log(`---------------- results ----------------`);
-  const results = globalThis.escomposePerformance.averages();
-  for (let key3 in results) {
-    const val = results[key3];
-    if (typeof val !== "object")
-      console.log("Result", key3, val);
-    else {
-      for (let k in val)
-        console.log("Result", key3, k, val[k]);
-    }
-  }
 };
 run2();
 //# sourceMappingURL=index.esm.js.map

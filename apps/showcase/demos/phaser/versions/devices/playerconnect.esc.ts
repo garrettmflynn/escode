@@ -1,8 +1,8 @@
-import * as buttonComponent from "../../../../../../components/ui/button.js"
-import * as startComponent from "../../../../../../components/drafts/old/datastreams/components/start.js"
-import * as averageComponent from "../../../../../../components/basic/average.js"
-import * as thresholdComponent from "../../../../../../components/basic/threshold.js"
-import * as museComponent from "../../../../../../components/drafts/old/devices/muse/index.js"
+import * as buttonComponent from "../../../../../../js/components/ui/button.js"
+import * as startComponent from "../../../../../../js/components/drafts/old/datastreams/components/start.js"
+import * as averageComponent from "../../../../../../js/components/basic/average.js"
+import * as thresholdComponent from "../../../../../../js/components/basic/threshold.js"
+import * as museComponent from "../../../../../../js/components/drafts/old/devices/muse/index.js"
 
 export const __listeners = {
     average: 'threshold',

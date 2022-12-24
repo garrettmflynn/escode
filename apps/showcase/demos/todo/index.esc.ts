@@ -1,12 +1,12 @@
-import * as listComponent from "../../../../components/ui/ul.js"
+import * as listComponent from "../../../../js/components/ui/ul.js"
 
-import * as inputComponent from "../../../../components/ui/input.js"
-import * as removableComponent from "../../../../components/ui/behaviors/removable.js"
+import * as inputComponent from "../../../../js/components/ui/input.js"
+import * as removableComponent from "../../../../js/components/ui/behaviors/removable.js"
 
-import * as buttonComponent from "../../../../components/ui/button.js"
-import * as storeComponent from "../../../../components/storage/local/set.js"
-import * as loadComponent from "../../../../components/storage/local/get.js"
-import * as removeComponent from "../../../../components/storage/local/remove.js"
+import * as buttonComponent from "../../../../js/components/ui/button.js"
+import * as storeComponent from "../../../../js/components/storage/local/set.js"
+import * as loadComponent from "../../../../js/components/storage/local/get.js"
+import * as removeComponent from "../../../../js/components/storage/local/remove.js"
 
 import * as onSubmit from "./components/onSubmit.esc.js"
 

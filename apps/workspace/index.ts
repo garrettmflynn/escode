@@ -1,21 +1,21 @@
-
-// import '../../demos/graph/benchmark'
+// import '../../js/benchmarks/index'
 
 // -------------- Import Modules --------------
-import * as esc from '../../packages/escode/index'
+import * as esc from '../../js/index'
 
-// import ESC from "../../packages/escode/src/core/index";
-// import validate from "../../packages/escode/src/validate/index";
-import * as esm from '../../packages/esmpile/src/index'
-// import * as compose from '../../packages/escode/src/index'
+// import ESC from "../../js/escode/src/core/index";
+// import validate from "../../js/escode/src/validate/index";
+import * as esm from '../../js/packages/esmpile/src/index'
+// import * as compose from '../../js/escode/src/index'
 
 import * as reference from './index.esc.js'
-import { Rule } from '../../packages/drafts/rules/Rule'
+import { Rule } from '../../js/packages/escode-rules/Rule'
 
-import * as objects from '../../demos/objects/index'
-import * as graph from '../../demos/graph/index'
-import { OperationsManager } from '../../demos/utils'
+import * as objects from '../../js/demos/objects/index'
+import * as graph from '../../js/demos/graph/index'
+import { OperationsManager } from '../../js/demos/utils'
 
+import * as basic from '../showcase/demos/basic/index.esc'
 
 const useRule = true
 
@@ -102,6 +102,11 @@ const run = async () => {
     console.log('Recombined:', recombined)
 
 
+
+    // Create two independent buttons
+    const basic1 = await create(basic)
+    const basic2 = await create(basic)
+
     // -------------- Test Suite #1: Core Merge and Listen --------------
    const isStatic = false
    const manager = new OperationsManager()
@@ -114,20 +119,7 @@ const run = async () => {
    secondManager.set(graph)
    secondManager.start()
    secondManager.runAll()
-}   
-
-window.onkeypress = () => {
-    console.log(`---------------- results ----------------`)
-    const results = globalThis.escomposePerformance.averages()
-    for (let key in results) {
-        const val = results[key]
-        if (typeof val !== 'object') console.log('Result', key, val)
-        else {
-            for (let k in val) console.log('Result', key, k, val[k])
-        }
-    }
 }
-
 
 
 run()

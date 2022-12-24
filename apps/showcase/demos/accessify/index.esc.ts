@@ -1,9 +1,9 @@
-import * as button from "../../../../components/ui/button";
-import * as popupComponent from "../../../../components/ui/popup"
-import * as speakComponent from "../../../../components/modalities/voice/speak.js"
-import * as mouseComponent from "../../../../components/modalities/mouse/index.js"
-import * as keysComponent from "../../../../components/basic/keyboard.js"
-import * as switchComponent from "../../../../components/modalities/switch/index.js"
+import * as button from "../../../../js/components/ui/button";
+import * as popupComponent from "../../../../js/components/ui/popup"
+import * as speakComponent from "../../../../js/components/modalities/voice/speak.js"
+import * as mouseComponent from "../../../../js/components/modalities/mouse/index.js"
+import * as keysComponent from "../../../../js/components/basic/keyboard.js"
+import * as switchComponent from "../../../../js/components/modalities/switch/index.js"
 
 const otherButton = {
     __element: 'button',

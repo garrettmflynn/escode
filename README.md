@@ -14,7 +14,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-The [Brains@Play] **ESCode** project is a collection of ECMAScript libraries intended to further the Web as a **Universal Development Engine** by allowing you to create and share Web Components that naturally compose into larger applications.
+The [Brains@Play] **ESCode** project is a collection of ECMAScript libraries intended to further the Web as a **Universal Development Engine** by allowing you to program and share composable web applications using [any WebAssembly-supported language](https://www.fermyon.com/wasm-languages/webassembly-language-support).
 
 **escode** implements the [ES Components] specification to allow you to define special properties on a hierarchy of reactive objects.
 
@@ -28,13 +28,13 @@ The [esmpile] library allows you to compile ESM code from their text sources. Th
 The [esmonitor] library allows you to receive notification about changes to objects and their values via a _simple plain-text subscription interface for arbitrary object properties_.
 
 ### [escode]
-The [escode] library allows you to transform ESM into Web Components that send messages to each other using the [ECMAScript Components (ESC)](./packages/escode/README.md#the-specification) specification.
-
-### [escomposer]
-The [escomposer] library allows you to convert between JS, JSON, and HTML declarations of ESC.
+The [escode] library allows you to transform ESM into Web Components that send messages to each other using the [ECMAScript Components (ESC)](./js/escode/README.md#the-specification) specification.
 
 ### [escompose]
-The [escompose] library is a visual programming system to visualize and edit ESC files.
+The [escompose] library allows you to convert between JS, JSON, and HTML declarations of ESC.
+
+### [escode-ide]
+The [escode-ide] library is a visual programming system to visualize and edit ESC files.
 
 ## Getting Started
 To create a component, pass an object to the `create` function:
@@ -160,7 +160,11 @@ Elements can be passed to apply Components to existing DOM elements:
 ```js
 import { create } from 'escode';
 
-const button = document.querySelector('button')
+const button = document.createElement('button')
+button.innerText = 'I will respond to clicks using ESCode'
+document.body.appendChild(button)
+
+
 const component = create(button, {
     __attributes: {
         onclick: function (input) { console.log(this) }
@@ -213,6 +217,65 @@ const component = create(input, undefined, {
 | Instantiation Time | 3.15ms | — |
 | Instantiation w/ Explicit Children | 2.7963ms | 3.15ms |
 | Listener Reaction Time | 0.026ms | 0.015ms |
+
+## Future Work
+### Composers
+Generally, we would like to introduce **composers** to provide additional ways to load and instantiate Components. This would allow for more complex behaviors to be added to the library, such as:
+
+#### Exporting + Loading JSON Objects
+After creating a component, you can serialize it to a JSON object:
+```js
+const json = component.toJSON()
+```
+
+```json
+{
+    "value": 0,
+    "fn": "function(){this.value++}",
+    "__listeners": {
+        "fn": "value"
+    }
+}
+```
+
+This can be used to reconstruct the component:
+```js
+import { create } from 'escode';
+const component = create(json)
+component.fn()
+```
+
+#### Exporting HTML + Page Hydration
+After creating a component, you can export it to HTML text:
+```js
+const htmlString = component.toHTML()
+```
+
+This can be used to reconstruct the component:
+```js
+import { create } from 'escode';
+const component = create(htmlString)
+```
+
+Additionally, you can load the HTML text as a file and hydrate your components:
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="module">
+            import { create } from 'https://cdn.jsdelivr.net/npm/escode';
+            const component = create()
+            component.fn()
+        </script>
+    </head>
+    <body>
+        <div .value=0 .fn="function(){this.value++}" __listeners.fn="value" escomponent>
+    </body>
+</html>
+```
+
+#### Adding ESMpile Support
+Both of the aforementioned methods could additionally from knowing where accompanying source files actually sit. When exporting a component, you could optionally use [esmpile] to reference source files rather than exhaustively enumerating all of your properties in JSON or HTML.
 
 ## Contributors
 
@@ -307,11 +370,11 @@ Our work at [Brains@Play] is sustained by a wide range of contract work and the 
 
 
 [graphscript]: https://github.com/brainsatplay/graphscript
-[escompose]: ./packages/escompose/README.md
+[escode-ide]: ./js/packages/escode-ide/README.md
 [Brains@Play]: https://github.com/brainsatplay
 
-[esmpile]: ./packages/esmpile/README.md
-[esmonitor]: ./packages/esmonitor/README.md
-[escomposer]: ./packages/escomposer/README.md
-[escode]: ./packages/escode/README.md
-[ES Components]: https://github.com/brainsatplay/escomponent
+[esmpile]: ./js/packages/esmpile/README.md
+[esmonitor]: ./js/packages/esmonitor/README.md
+[escompose]: ./js/packages/escompose/README.md
+[escode]: ./js/README.md
+[ES Components]: ./spec

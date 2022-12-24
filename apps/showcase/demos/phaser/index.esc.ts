@@ -1,9 +1,9 @@
-import * as gameComponent from "../../../../components/phaser/game/index.js"
-import * as player from "../../../../components/phaser/player.js"
+import * as gameComponent from "../../../../js/components/phaser/game/index.js"
+import * as player from "../../../../js/components/phaser/player.js"
 import createMain from "./scripts/player/create/main.js"
 import update from "./scripts/player/update.js"
 import create from "./scripts/create.js"
-import * as keysComponent from "../../../../components/basic/keyboard.js"
+import * as keysComponent from "../../../../js/components/basic/keyboard.js"
 
 export const __attributes = {
     style: {

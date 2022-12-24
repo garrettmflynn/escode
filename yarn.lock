@@ -13096,7 +13096,7 @@ tinybuild@0.3.186:
     esbuild "~0.14.49"
     ws "^8.5.0"
 
-tinybuild@^0.3.141, tinybuild@^0.3.147, tinybuild@^0.3.149:
+tinybuild@0.3.190, tinybuild@^0.3.141, tinybuild@^0.3.147, tinybuild@^0.3.149:
   version "0.3.190"
   resolved "https://registry.yarnpkg.com/tinybuild/-/tinybuild-0.3.190.tgz#6d775f23e2332896f89e5b70a85c872c47301a34"
   integrity sha512-waBAqaEBUQ7yxFTBAdepAdkUFQwUvtmFb85TU6m/m0oHt4e7bB+ajzPRtF7rKF7tc1C4cirjSbsWI8H9YKCTeA==

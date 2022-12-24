@@ -1,6 +1,6 @@
 
 import * as signal from '../noisy/index.esc'
-import * as filter from '../../../../../../components/devices/extensions/filter/index.esc.js'
+import * as filter from '../../../../../../js/components/devices/extensions/filter/index.esc.js'
 
 
 const filterOverride = {

@@ -71,6 +71,7 @@ export const content = {
         __element: 'section',
         __childposition: 0,
         container: {
+            __: Symbol('container'),
             title: {
                 __element: 'h1',
                 __attributes: {
@@ -100,7 +101,9 @@ export const content = {
             }
         },
         container: {
+            __: Symbol('container'),
             title: {
+                __: Symbol('title'),
                 text: {
                     __element: 'h2',
                     __attributes: {
@@ -137,6 +140,7 @@ export const content = {
                 }
             },
             statements: {
+                __: Symbol('statements'),
                 __attributes: {
                     style: {
                         display: 'flex',
@@ -173,6 +177,7 @@ export const content = {
         __element: 'section',
         __childposition: 2,
         container: {
+            __: Symbol('container'),
             title: {
                 __element: 'h2',
                 __attributes: {

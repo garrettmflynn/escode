@@ -1,6 +1,6 @@
 import bci from 'bcijs/browser.js'
-import * as devices from "../../../../../../components/devices/ui/index.esc.js"
-// import * as filter from "../../../../../../components/devices/extensions/filter/index.esc.js"
+import * as devices from "../../../../../../js/components/devices/ui/index.esc.js"
+// import * as filter from "../../../../../../js/components/devices/extensions/filter/index.esc.js"
 
 const sum = (a,b) => a + b
 

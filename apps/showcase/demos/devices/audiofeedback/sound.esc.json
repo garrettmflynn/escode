@@ -2,7 +2,7 @@
     "tagName": "div",
     "__children": {
         "sounds": {
-            "__compose": "../../../../components/ui/select.js",
+            "__compose": "../../../../js/components/ui/select.js",
             "options": [
                 {
                     "label": "Kalimba",
@@ -25,11 +25,11 @@
             ]
         },
         "button": {
-            "__compose": "../../../../components/ui/button.js",
+            "__compose": "../../../../js/components/ui/button.js",
             "innerText": "Play"
         },
         "toggle": {
-            "__compose": "../../../../components/audio/toggle.js"
+            "__compose": "../../../../js/components/audio/toggle.js"
         }
     },
     "listeners": {

@@ -1,6 +1,6 @@
-import * as bci2000Component from "../../../../components/devices/modalities/bci2000/index.js"
-import * as button from "../../../../components/ui/button.js"
-import * as select from "../../../../components/ui/select.js"
+import * as bci2000Component from "../../../../js/components/devices/modalities/bci2000/index.js"
+import * as button from "../../../../js/components/ui/button.js"
+import * as select from "../../../../js/components/ui/select.js"
 import * as signalComponent from "../signal/index.esc"
 
 export const __attributes = {

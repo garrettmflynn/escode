@@ -1,8 +1,8 @@
 
-import * as timeseries from "../../../../components/ui/plot/timeseries/index.esc";
-import * as devicesComponent from "../../../../components/devices/ui/index.esc.js"
+import * as timeseries from "../../../../js/components/ui/plot/timeseries/index.esc";
+import * as devicesComponent from "../../../../js/components/devices/ui/index.esc.js"
 
-// import * as data from '../../../../components/devices/synthetic.js'
+// import * as data from '../../../../js/components/devices/synthetic.js'
 // const numSeconds = 3
 // const sampleCt = 1
 // const animationRate = 256

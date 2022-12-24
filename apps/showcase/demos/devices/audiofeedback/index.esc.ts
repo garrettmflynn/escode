@@ -3,17 +3,17 @@ const kalimba = "./apps/showcase/demos/devices/assets/kalimba.wav"
 const phonk = "./apps/showcase/demos/devices/assets/phonk.wav"
 const synthflute = "./apps/showcase/demos/devices/assets/synthflute.wav"
 
-import * as devices from "../../../../../components/devices/ui/index.esc"
+import * as devices from "../../../../../js/components/devices/ui/index.esc"
 import subprocesses from "./scripts/connect/subprocesses.js"
 import onconnect from "./scripts/connect/onConnect.js"
-import * as preprocess from "../../../../../components/devices/modalities/heg/preprocess.js"
+import * as preprocess from "../../../../../js/components/devices/modalities/heg/preprocess.js"
 
-import * as audio from "../../../../../components/ui/audio/index.esc"
-import button from "../../../../../components/ui/button"
+import * as audio from "../../../../../js/components/ui/audio/index.esc"
+import button from "../../../../../js/components/ui/button"
 
-import * as stats from "../../../../../components/ui/devices/stats/index.js"
+import * as stats from "../../../../../js/components/ui/devices/stats/index.js"
 
-import * as waveformComponent from "../../../../../components/ui/devices/heg/waveform.js"
+import * as waveformComponent from "../../../../../js/components/ui/devices/heg/waveform.js"
 
 // Local Components
 import * as csvMenu from "../components/csvMenu.js"

@@ -1,4 +1,4 @@
-import * as draggableComponent from '../../../../components/ui/behaviors/draggable.js'
+import * as draggableComponent from '../../../../js/components/ui/behaviors/draggable.js'
 export const __attributes = {
     style: {
         margin: '25px'

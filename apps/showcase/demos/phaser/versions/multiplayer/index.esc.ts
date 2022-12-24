@@ -1,4 +1,4 @@
-import * as player from "../../../../../../components/phaser/player.js"
+import * as player from "../../../../../../js/components/phaser/player.js"
 import update from "../../scripts/player/update.js"
 import createCompanion from "../../scripts/player/create/companion.js"
 

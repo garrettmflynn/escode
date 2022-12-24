@@ -41,6 +41,7 @@ export const __attributes = {
 }
 
     export const container = {
+        __: Symbol('container'),
             number: {
                 __element: 'p',
                 __attributes: {

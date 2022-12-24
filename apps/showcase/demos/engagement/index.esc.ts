@@ -1,5 +1,5 @@
 
-import * as timeseries from "../../../../components/ui/plot/timeseries/index.esc";
+import * as timeseries from "../../../../js/components/ui/plot/timeseries/index.esc";
 // import * as metrics from './components/engagement/dist/index.esm.js'
 import * as metricsComponent from './components/engagement/index.esc'
 

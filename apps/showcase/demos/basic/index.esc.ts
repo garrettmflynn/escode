@@ -1,9 +1,9 @@
-import * as testComponent from '../../../../components/drafts/basic/index.js'
-import * as buttonComponent from '../../../../components/ui/button.js'
+import * as testComponent from '../../../../js/components/drafts/basic/index.js'
+import * as buttonComponent from '../../../../js/components/ui/button.js'
 
 
-const testURL = '../../../../components/tests/basic/index.js'
-const buttonURL = '../../../../components/ui/button.js'
+const testURL = '../../../../js/components/tests/basic/index.js'
+const buttonURL = '../../../../js/components/ui/button.js'
 
 const testInfo = {
     url: testURL,

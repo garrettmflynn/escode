@@ -1,7 +1,7 @@
 
 import * as multiplayer from '../multiplayer/index.esc'
-import * as button from "../../../../../../components/ui/button.js"
-import * as speakComponent from "../../../../../../components/modalities/voice/speak.js"
+import * as button from "../../../../../../js/components/ui/button.js"
+import * as speakComponent from "../../../../../../js/components/modalities/voice/speak.js"
 
 
 // ----------------------------- Base Component -----------------------------

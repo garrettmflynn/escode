@@ -1,0 +1,14 @@
+{
+  "name": "escompose",
+  "version": "0.2.0",
+  "description": "Conversion tools for ESCode",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/src/index.d.ts",
+  "type": "module",
+  "author": "Garrett Flynn",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "escode": "*"
+  }
+}

@@ -7,6 +7,8 @@
   "type": "module",
   "scripts": {
     "start": "tinybuild",
+    "bench": "cd js/benchmarks && ts-node index.ts",
+    "which": "which tinybuild",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --coverage"
   },
   "dependencies": {

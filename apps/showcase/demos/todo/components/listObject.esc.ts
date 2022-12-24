@@ -1,5 +1,5 @@
 
-import * as listComponent from "../../../../../components/ui/ul.js"
+import * as listComponent from "../../../../../js/components/ui/ul.js"
 
 export const itemType = 'es-removable-list-item'
 export const  __element = 'ul' 
