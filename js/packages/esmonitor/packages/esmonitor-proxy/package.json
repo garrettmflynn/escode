@@ -1,0 +1,13 @@
+{
+  "name": "esmonitor-proxy",
+  "version": "0.0.0",
+  "description": "Monitor ESM objects for changes using the native Proxy API",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "type": "module",
+  "author": "Garrett Flynn <garrettmflynn@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "esmonitor": "*"
+  }
+}

@@ -13,7 +13,7 @@
             "__children": {
                 "devices": {
                     "tagName": "div",
-                    "__compose": "../../../../components/devices/ui/index.esc.json",
+                    "__compose": "../../../../js/components/devices/ui/index.esc.json",
                     "connectmode": {
                         "options": [
                             {
@@ -43,26 +43,26 @@
                             "freeeeg128": "FreeEEG128",
                             "nrf5x": "nRF5x board"
                         },
-                        "__compose": "../../../../components/ui/select.js"
+                        "__compose": "../../../../js/components/ui/select.js"
                     },
                     "selectBLE": {
                         "options": {
                             "nrf5x": "nRF5x board"
                         },
-                        "__compose": "../../../../components/ui/select.js"
+                        "__compose": "../../../../js/components/ui/select.js"
                     },
                     "selectBLEOther": {
                         "options": {
                             "muse": "Muse",
                             "ganglion": "Ganglion"
                         },
-                        "__compose": "../../../../components/ui/select.js"
+                        "__compose": "../../../../js/components/ui/select.js"
                     },
                     "selectOther": {
                         "options": {
                             "simulator": "Simulator"
                         },
-                        "__compose": "../../../../components/ui/select.js"
+                        "__compose": "../../../../js/components/ui/select.js"
                     },
                     "connect": {
                         "thirdPartyDecoder": {
@@ -80,14 +80,14 @@
                         }
                     },
                     "preprocess": {
-                        "__compose": "../../../../components/devices/eeg/preprocess.js"
+                        "__compose": "../../../../js/components/devices/eeg/preprocess.js"
                     }
                 },
                 "output": {
                     "tagName": "div",
                     "__children": {
                         "audio": {
-                            "__compose": "../../../../components/ui/audio/index.esc.json",
+                            "__compose": "../../../../js/components/ui/audio/index.esc.json",
                             "sounds": {
                                 "options": [
                                     {
@@ -115,10 +115,10 @@
                             "tagName": "div",
                             "__children": {
                                 "stats": {
-                                    "__compose": "../../../../components/ui/devices/stats/index.js"
+                                    "__compose": "../../../../js/components/ui/devices/stats/index.js"
                                 },
                                 "csvmenu": {
-                                    "__compose": "../../../../components/drafts/output/csv/menu.js"
+                                    "__compose": "../../../../js/components/drafts/output/csv/menu.js"
                                 }
                             }
                         },

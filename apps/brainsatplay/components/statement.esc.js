@@ -1,9 +1,11 @@
 export function __onconnected () {
-    if (this.header !== undefined) this.__children.header.__element.innerText = this.header
-    if (this.text !== undefined) this.__children.text.__element.innerHTML = this.text
+    if (this.header !== undefined) this.container.header.__element.innerText = this.header
+    if (this.text !== undefined) this.container.text.__element.innerHTML = this.text
 }
 
-export const __children = {
+
+export const container = {
+    __: Symbol('container'),
     header: {
         __element: 'h3',
         __attributes: {

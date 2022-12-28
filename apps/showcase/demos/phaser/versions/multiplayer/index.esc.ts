@@ -1,4 +1,4 @@
-import * as player from "../../../../../../components/phaser/player.js"
+import * as player from "../../../../../../js/components/phaser/player.js"
 import update from "../../scripts/player/update.js"
 import createCompanion from "../../scripts/player/create/companion.js"
 
@@ -29,25 +29,21 @@ export const __listeners = {
     }
 }
 
-export const __children = {
-    game: {
-        __children: {
-            companion: {
-                __compose: player,
-                position: {
-                    x: 100,
-                    y: 200
-                },
-                size: {
-                    offset: {
-                        height: -8
-                    }
-                },
-                bounce: 0.2,
-                collideWorldBounds: false,
-                create: createCompanion,
-                update
+export const game = {
+    companion: {
+        __compose: player,
+        position: {
+            x: 100,
+            y: 200
+        },
+        size: {
+            offset: {
+                height: -8
             }
-        }
+        },
+        bounce: 0.2,
+        collideWorldBounds: false,
+        create: createCompanion,
+        update
     }
 }

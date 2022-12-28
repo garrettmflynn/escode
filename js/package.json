@@ -1,0 +1,31 @@
+{
+  "name": "escode",
+  "version": "0.2.0",
+  "description": "A standard for transforming ES Modules into linked Web Components",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brainsatplay/escode.git"
+  },
+  "author": "Garrett Flynn <garrettmflynn@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "start": "tinybuild",
+    "build": "tinybuild build"
+  },
+  "dependencies": {
+    "escode-core": "*"
+  },
+  "peerDependencies": {
+    "escompose": "*",
+    "esmpile": "*"
+  }
+}

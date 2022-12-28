@@ -1,14 +1,14 @@
 
 // -------------- Import Modules --------------
-import * as escompose from '../../libraries/escompose/src/index'
-// import ESC from "../../libraries/escode/src/core/index";
-// import validate from "../../libraries/escode/src/validate/index";
-import * as esm from '../../libraries/esmpile/src/index'
-import * as escode from '../../libraries/escode/src/index'
+import * as esc from '../../js/index'
+// import ESC from "../../js/escode/src/core/index";
+// import validate from "../../js/escode/src/validate/index";
+import * as esm from '../../js/packages/esmpile/src/index'
+import * as compose from '../../js/packages/escode-ide/src/index'
 
-// import canvasWorker from '../../components/ui/plot/utils/canvas.worker'
-// import * as plotUtils from '../../components/ui/plot/utils/index'
-// import * as timeseriesComponent from '../../components/ui/plot/timeseries'
+// import canvasWorker from '../../js/components/ui/plot/utils/canvas.worker'
+// import * as plotUtils from '../../js/components/ui/plot/utils/index'
+// import * as timeseriesComponent from '../../js/components/ui/plot/timeseries'
 // import * as signalComponent from './demos/signal/index.esc'
 
 import demos from './demos' // All demos in one file
@@ -47,7 +47,7 @@ async function init () {
 
     // ---------------- ESMpile ----------------
    if (!asyncLoads) {
-    await esm.load.script('./libraries/esmpile/extensions/typescriptServices.min.js');
+    await esm.load.script('./js/packages/esmpile/extensions/typescriptServices.min.js');
     asyncLoads = true
    }
 
@@ -118,8 +118,11 @@ resetButton.addEventListener('click', startFunction)
 
 async function start (demo = "basic", mode="direct") {
     
+
+        const tic = performance.now()
+
         try {
-            // ------------------ ESCompose ------------------
+            // ------------------ ESCode ------------------
             let selected = demos[demo]
         
         
@@ -179,22 +182,22 @@ async function start (demo = "basic", mode="direct") {
             //     }
             // }
 
-            const component = escompose.create(reference, {__parent: main}, {
-                clone: true, // NOTE: If this doesn't happen, the reference will be modified by the create function
+
+            const returned = esc.create(reference, {__parent: main}, {
                 
-                await: true, 
-                relativeTo,
+                // relativeTo,
 
 
                 // For Editor Creation + Source Text Loading
                 utilities: {
                     code: {
-                        class: escode.Editor,
+                        class: compose.Editor,
                         options: {}
                     },
                     bundle: {
                         function: esm.bundle.get,
                         options: {
+                            relativeTo,
                             nodeModules,
                             // filesystem
                         }
@@ -211,38 +214,10 @@ async function start (demo = "basic", mode="direct") {
             })
 
 
-            const esc = await component // Promise for self is resolved
-            await esc.__connected // All children promises are resolved (if await is false)
+            const component = await returned // Promise for self is resolved
+            await component.__resolved // All children promises are resolved (if await is false)
 
-
-            active = esc
-
-            if (demo === 'graph') {
-
-                const graphDemo = esc
-    
-                graphDemo.__children.nodeB.x += 1; //should trigger nodeA listener
-    
-                graphDemo.__children.nodeB.__children.nodeC.default(4); //should trigger nodeA listener
-            
-                graphDemo.__children.nodeA.jump();
-                        
-                const popped = graphDemo.__children.nodeB.__ondisconnected()
-    
-                graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeB popped!</b></li>')
-    
-                popped.x += 1; //should no longer trigger nodeA.x listener on nodeC, but will still trigger the nodeB.x listener on nodeA
-            
-                graphDemo.__children.nodeA.jump(); //this should not trigger the nodeA.jump listener on nodeC now
-    
-                setTimeout(()=>{ 
-                    if (graphDemo === active) {
-                        graphDemo.__children.nodeE.__ondisconnected()  
-                        graphDemo.__element.insertAdjacentHTML('beforeend', '<li><b>nodeE popped!</b></li>')
-                    }
-                }, 5500)
-    
-            }
+            active = component
 
         } catch (e) {
             console.error(e)
@@ -250,7 +225,9 @@ async function start (demo = "basic", mode="direct") {
             main.appendChild(errorPage)
         }
 
-        console.log('Active ES Component:', active)
+        const toc = performance.now()
+
+        console.log('Active ES Component:', active, `${toc - tic}ms`)
 
 }
 

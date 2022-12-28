@@ -4,11 +4,11 @@ import * as escFallbacks from './basic/fallbacks'
 const escJSON = './/demos/basic/index.esc.json'
 const escJS = './demos/basic/index.esc.ts'
 
-// Basic Graph Demo
-import * as graphFile from './graph/index.esc'
-import * as graphFallbacks from './graph/fallbacks'
-const graphJSON = './/demos/graph/index.esc.json'
-const graphJS = './demos/graph/index.esc.ts'
+// // Basic Graph Demo
+// import * as graphFile from './graph/index.esc'
+// import * as graphFallbacks from './graph/fallbacks'
+// const graphJSON = './/demos/graph/index.esc.json'
+// const graphJS = './demos/graph/index.esc.ts'
 
 // Phaser Demo
 import * as phaserFile from './phaser/index.esc'
@@ -16,11 +16,11 @@ import phaserFallbacks from './phaser/versions/devices/fallbacks'
 const phaserJSON = './demos/phaser/index.esc.json'
 const phaserJS = './demos/phaser/index.esc.ts'
 
-// Engagement Demo
-import * as engagementFile from './engagement/index.esc'
-import engagementFallbacks from './engagement/fallbacks'
-const engagementJSON = './demos/engagement/index.esc.json'
-const engagementJS = './demos/engagement/index.esc.ts'
+// // Engagement Demo
+// import * as engagementFile from './engagement/index.esc'
+// import engagementFallbacks from './engagement/fallbacks'
+// const engagementJSON = './demos/engagement/index.esc.json'
+// const engagementJS = './demos/engagement/index.esc.ts'
 
 // Animations Demo
 import * as animationsFile from './animations/index.esc'
@@ -47,11 +47,11 @@ const speakPhaserJSON = './demos/phaser/versions/speak/index.esc.json'
 const speakPhaserJS = './demos/phaser/versions/speak/index.esc.ts'
 
 
-// Device Phaser Demo
-import * as devicePhaserFile from './phaser/versions/devices/index.esc'
-import devicePhaserFallbacks from './phaser/versions/devices/fallbacks'
-const devicePhaserJSON = './demos/phaser/versions/devices/index.esc.json'
-const devicePhaserJS = './demos/phaser/versions/devices/index.esc.ts'
+// // Device Phaser Demo
+// import * as devicePhaserFile from './phaser/versions/devices/index.esc'
+// import devicePhaserFallbacks from './phaser/versions/devices/fallbacks'
+// const devicePhaserJSON = './demos/phaser/versions/devices/index.esc.json'
+// const devicePhaserJS = './demos/phaser/versions/devices/index.esc.ts'
 
 // Todo Demo
 import * as todoFile from './todo/index.esc'
@@ -157,14 +157,14 @@ const animationsPackage = {
     relativeTo: 'apps/showcase/demos/animations'
 }
 
-const engagementPackage = {
-    name: 'Engagement',
-    json: engagementJSON,
-    fallbacks: engagementFallbacks,
-    reference: engagementFile,
-    js: engagementJS
+// const engagementPackage = {
+//     name: 'Engagement',
+//     json: engagementJSON,
+//     fallbacks: engagementFallbacks,
+//     reference: engagementFile,
+//     js: engagementJS
 
-}
+// }
 
 const todoPackage = {
     name: 'Todo',
@@ -198,13 +198,13 @@ const speakPackage = {
     js: speakPhaserJS
 }
 
-const devicePackage = {
-    name: 'EMG-Controlled Game',
-    json: devicePhaserJSON,
-    fallbacks: devicePhaserFallbacks,
-    reference: devicePhaserFile,
-    js: devicePhaserJS
-}
+// const devicePackage = {
+//     name: 'EMG-Controlled Game',
+//     json: devicePhaserJSON,
+//     fallbacks: devicePhaserFallbacks,
+//     reference: devicePhaserFile,
+//     js: devicePhaserJS
+// }
 
 const tutorialPackage = {
     name: 'ESCode Tutorial',
@@ -224,29 +224,30 @@ const accessifyPackage = {
     js: accessifyJS
 }
 
-const signalPackage = {
-    name: 'Signal',
-    json: signalJSON,
-    fallbacks: signalFallbacks,
-    reference: signalFile,
-    js: signalJS
-}
+// const signalPackage = {
+//     name: 'Signal',
+//     json: signalJSON,
+//     fallbacks: signalFallbacks,
+//     reference: signalFile,
+//     js: signalJS
+// }
 
-const noisySignalPackage = {
-    name: 'Noisy Signal',
-    json: noisySignalJSON,
-    fallbacks: noisySignalFallbacks,
-    reference: noisySignalFile,
-    js: noisySignalJS
-}
+// const noisySignalPackage = {
+//     name: 'Noisy Signal',
+//     json: noisySignalJSON,
+//     fallbacks: noisySignalFallbacks,
+//     reference: noisySignalFile,
+//     js: noisySignalJS
+// }
 
-const filteredSignalPackage = {
-    name: 'Filtered Signal',
-    json: filteredSignalJSON,
-    fallbacks: filteredSignalFallbacks,
-    reference: filteredSignalFile,
-    js: filteredSignalJS
-}
+// const filteredSignalPackage = {
+//     name: 'Filtered Signal',
+//     json: filteredSignalJSON,
+//     fallbacks: filteredSignalFallbacks,
+//     reference: filteredSignalFile,
+//     js: filteredSignalJS
+// }
+
 const audiofeedbackPackage = {
     name: 'HEG Audiofeedback',
     json: audiofeedbackJSON,
@@ -291,7 +292,7 @@ const demos = {
     basic: basicPackage,
     animations: animationsPackage,
     draggable: draggablePackage,
-    engagement: engagementPackage,
+    // engagement: engagementPackage,
     wasm: wasmPackage,
 
 
@@ -300,11 +301,11 @@ const demos = {
     multiplayer: multiplayerPackage,
     speak: speakPackage,
 
-    // Physiological Demos
-    signal: signalPackage,
-    noisy: noisySignalPackage,
-    filtered: filteredSignalPackage,
-    device: devicePackage,
+    // // Physiological Demos
+    // signal: signalPackage,
+    // noisy: noisySignalPackage,
+    // filtered: filteredSignalPackage,
+    // device: devicePackage,
 
     audiofeedback: audiofeedbackPackage,
     bci2000: bci2000Package,

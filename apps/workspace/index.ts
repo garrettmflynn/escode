@@ -1,29 +1,34 @@
+// import '../../js/benchmarks/index'
 
 // -------------- Import Modules --------------
-import * as escompose from '../../libraries/escompose/src/index'
-// import ESC from "../../libraries/escode/src/core/index";
-// import validate from "../../libraries/escode/src/validate/index";
-import * as esm from '../../libraries/esmpile/src/index'
-import * as escode from '../../libraries/escode/src/index'
+import * as esc from '../../js/index'
+
+// import ESC from "../../js/escode/src/core/index";
+// import validate from "../../js/escode/src/validate/index";
+import * as esm from '../../js/packages/esmpile/src/index'
+// import * as compose from '../../js/escode/src/index'
 
 import * as reference from './index.esc.js'
-import { Rule } from '../../libraries/drafts/rules/Rule'
+import { Rule } from '../../js/packages/escode-rules/Rule'
+
+import * as objects from '../../js/demos/objects/index'
+import * as graph from '../../js/demos/graph/index'
+import { OperationsManager } from '../../js/demos/utils'
+
+import * as basic from '../showcase/demos/basic/index.esc'
+
+const useRule = true
+
 const string = './index.esc.js'
 
-const create = async (config, toApply: any = {}) => {
+const create = async (config, overrides: any = {}) => {
 
-    toApply = Object.assign({__parent: document.body}, toApply)
+    overrides = Object.assign({__parent: document.body}, overrides)
 
-    const component = escompose.create(config, toApply, {
-
-        await: true,
+    const returned = esc.create(config, overrides, {
 
         // For Editor Creation + Source Text Loading
         utilities: {
-            code: {
-                class: escode.Editor,
-                options: {}
-            },
             bundle: {
                 function: esm.bundle.get,
                 options: {
@@ -42,11 +47,12 @@ const create = async (config, toApply: any = {}) => {
         }
     })
 
+    const component = await returned
+    await component.__resolved
 
-    const esc = await component // Promise for self is resolved
-    await esc.__connected // All children promises are resolved (if await is false)
+    console.log('Resolved:', component)
 
-    console.log('ESC', esc)
+    return component
 }
 
 
@@ -67,99 +73,53 @@ const moreStuff = {
 const run = async () => {
 
     // Create ESC from string
-    await create(string)
+    const first = await create(string)
 
     // Create ESC from reference
-    await create(reference)
+    const second = await create(reference)
 
     // Apply ESC to Elements and Components
     const elementArray = document.body.querySelectorAll('button')
     await create(elementArray, {  __attributes: stuff })
 
-
-    await create(elementArray, {  __attributes: moreStuff })
-
     // Apply rule to all Components (only which exist on application though...)
-    const rule = new Rule({ __attributes: Object.assign({}, moreStuff)})
-    rule.apply()
+    if (useRule) {
+        const rule = new Rule({ __attributes: Object.assign({}, moreStuff)})
+        rule.apply()
+    } else await create(elementArray, {  __attributes: moreStuff })
 
 
-    // -------------- Lesson #2: Any Object Can Participate (`listen` and `merge`) --------------
-    const objectOne = {
-        test: 1, 
-        active: false,
-        testFunction: () => {
-            const message = 'Hi!'
-            console.log(message)
-            return message
-        }
-    }
+    // Compose Components
+    const combined = await create({
+        first,
+        second,
+    })
 
-    const o2TestFunction = () => {
-        const message = 'Failed!'
-        console.log(message)
-        return message
-    }
+    console.log('Combined:', combined)
 
-    const objectTwo = {
-        test: 2, 
-        active: true, 
-        success: false,
-        testFunction: o2TestFunction // Function merge
-    }
+    const recombined = await create({ first }) // TODO: Shouldn't this trigger a reparenting (as well as a renaming...)
 
-
-    const o3TestFunction = () => {
-        const message = 'Succeeded!'
-        console.log(message)
-        return message
-    }
-
-    o3TestFunction.__compose = true
-
-    const objectThree = {
-        test: 3, 
-        active: true, 
-        success: true,
-        testFunction: o3TestFunction // Function merge
-    }
-
-     // Use listen for listening to an object
-     const objectOneProxy = escompose.monitor.set(
-        'objectOne', 
-        objectOne, 
-        {static: true}
-    )
-     escompose.monitor.on('objectOne', (path, _, update) => {
-        console.log('Changed!', path, update)
-     })
-
-     console.log('------------- Trying test function -------------')
-     await objectOne.testFunction()
-
-
-    // Use merge for merging objects
-    console.log('------------- Starting failed merge -------------')
-    const failedToListenToNewKey = escompose.merge([objectOne, objectTwo], true)
-    // objectOne.testFunction = o2TestFunction // Direct replacement
-    await objectOne.testFunction()
-    console.log('Failed to Listener to New Key', failedToListenToNewKey)
-
-    console.log('------------- Starting successful merge -------------')
-    const listenedToNewKey = escompose.merge([objectOneProxy, objectThree], true)
-    // objectOneProxy.testFunction = o3TestFunction // Direct replacement
-    await objectOneProxy.testFunction()
-
-    console.log('Merged + All Listeners Worked!', listenedToNewKey)
-
-    console.log(objectOneProxy, objectOne)
-    console.log(objectOneProxy.test, objectOne.test)
-    console.log(objectOneProxy.active, objectOne.active)
-    console.log(objectOneProxy.success, objectOne.success)
+    console.log('Recombined:', recombined)
 
 
 
-}   
+    // Create two independent buttons
+    const basic1 = await create(basic)
+    const basic2 = await create(basic)
+
+    // -------------- Test Suite #1: Core Merge and Listen --------------
+   const isStatic = false
+   const manager = new OperationsManager()
+   manager.set(objects)
+   manager.start(isStatic)
+   manager.runAll()
+
+    // -------------- Test Suite #2: General Graph Behaviors --------------
+   const secondManager = new OperationsManager()
+   secondManager.set(graph)
+   secondManager.start()
+   secondManager.runAll()
+}
 
 
 run()

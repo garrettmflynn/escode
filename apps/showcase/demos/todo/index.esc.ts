@@ -1,13 +1,16 @@
-import * as list from  "../../../../components/ui/ul.js"
-import * as input from "../../../../components/ui/input.js"
-import * as removable from "../../../../components/ui/behaviors/removable.js"
+import * as listComponent from "../../../../js/components/ui/ul.js"
 
-import * as button from  "../../../../components/ui/button.js"
-import * as store from  "../../../../components/storage/local/set.js"
-import * as load from  "../../../../components/storage/local/get.js"
-import * as remove from  "../../../../components/storage/local/remove.js"
+import * as inputComponent from "../../../../js/components/ui/input.js"
+import * as removableComponent from "../../../../js/components/ui/behaviors/removable.js"
 
-import * as onSubmit from  "./components/onSubmit.esc.js"
+import * as buttonComponent from "../../../../js/components/ui/button.js"
+import * as storeComponent from "../../../../js/components/storage/local/set.js"
+import * as loadComponent from "../../../../js/components/storage/local/get.js"
+import * as removeComponent from "../../../../js/components/storage/local/remove.js"
+
+import * as onSubmit from "./components/onSubmit.esc.js"
+
+import * as thisList from "./components/listObject.esc"
 
 
 export const __attributes = {
@@ -22,65 +25,62 @@ export const __define = {
             name: 'es-removable-list-item',
             extends: 'li',
         },
-        __compose: removable
+        __compose: removableComponent
     }
 }
 
-export const __children = {
+export const list = thisList // listComponent
 
-        list: {
-            itemType: 'es-removable-list-item',
-            __element: 'ul',
-            __compose: list
+export const form = {
+    __element: 'form',
+    __childposition: 1,
+    __compose: onSubmit,
+    input: {
+        __element: 'input',
+        __attributes: {
+            placeholder: 'Write your todo here'
         },
-        form: {
-            __element: 'form',
-            __compose: onSubmit,
-            __children: {
-                input: {
-                    __element: 'input',
-                    __attributes: {
-                        placeholder: 'Write your todo here'
-                    },
-                    __compose: input
-                },
-                button: {
-                    __element: 'button',
-                    __attributes: {
-                        type: 'submit',
-                        innerHTML: 'Add Todo'
-                    },
-                    __compose: button
-                }
-            }
+        __compose: inputComponent
+    },
+    button: {
+        __element: 'button',
+        __attributes: {
+            type: 'submit',
+            innerHTML: 'Add Todo'
         },
-
-        clearButton: {
-            __element: 'button',
-            __attributes: {
-                innerHTML: 'Clear List'
-            },
-            __compose: button
-        },
-
-        store: {
-            __compose: store
-        },
-        remove: {
-            __compose: remove
-        },
-        load: {
-            __trigger: ["todos"],
-            __compose: load
-        }
+        __compose: buttonComponent
     }
+}
+
+export const clearButton = {
+    __element: 'button',
+    __childposition: 2,
+    __attributes: {
+        innerHTML: 'Clear List'
+    },
+    __compose: buttonComponent
+}
+
+export const store = {
+    __compose: storeComponent
+}
+
+export const remove = {
+    __compose: removeComponent
+}
+
+export const load = {
+    __trigger: ["todos"],
+    __compose: loadComponent
+}
+
 export const __listeners = {
 
     list: {
         load: true,
         ['form.button']: {
             __branch: [
-                {if: (input) => typeof input === 'string'},
+                { if: (input) => typeof input === 'string' },
             ]
         },
         ['remove']: true
@@ -93,7 +93,7 @@ export const __listeners = {
     ['form.input']: {
         ['form.button']: {
             __branch: [
-                {if: (input) => typeof input === 'string', value: ''},
+                { if: (input) => typeof input === 'string', value: '' },
             ]
         }
     },
@@ -109,5 +109,5 @@ export const __listeners = {
             __format: (value) => [value, 'todos']
         }
     }
-    
+
 }

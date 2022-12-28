@@ -1,7 +1,7 @@
 
 import * as multiplayer from '../multiplayer/index.esc'
-import * as button from "../../../../../../components/ui/button.js"
-import * as speak from "../../../../../../components/modalities/voice/speak.js"
+import * as button from "../../../../../../js/components/ui/button.js"
+import * as speakComponent from "../../../../../../js/components/modalities/voice/speak.js"
 
 
 // ----------------------------- Base Component -----------------------------
@@ -40,10 +40,8 @@ export const __listeners = {
     
 }
 
-export const __children = {
-
     // Voice Control
-    enableVoice: {
+    export const enableVoice = {
         __element: 'button',
         __attributes: {
             innerText: 'Enable Voice Commands',
@@ -54,10 +52,9 @@ export const __children = {
             },
         },
         __compose: button
-    },
+    }
 
-    speak: {
+    export const speak = {
         // grammar,
-        __compose: speak,
-    },
-}
+        __compose: speakComponent,
+    }

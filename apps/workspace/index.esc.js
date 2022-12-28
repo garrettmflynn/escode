@@ -6,14 +6,13 @@ export const __attributes = {
     }
 }
 
-export const __children = {
-    header: {
-        __element: 'b',
-        __attributes: {
-            innerText: 'Workspace Result: '
-        }
-    },
-    span: {
-        __element: 'span',
+export const header = {
+    __element: 'b',
+    __attributes: {
+        innerText: 'Workspace Result: '
     }
+}
+
+export const span ={
+    __element: 'span',
 }

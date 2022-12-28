@@ -1,0 +1,61 @@
+{
+    "sep": ".",
+    "default": "default",
+
+    "sourceBundle": "__sourceBundle",
+
+    "root": {
+        "value": "__",
+        "states": "states",
+        "original": "original"
+    },
+
+    "properties": "__props",
+
+    "children": "__children",
+    "listeners": {
+        "value": "__listeners",
+
+        "branch": "branch",
+        "bind": "bind",
+        "trigger": "trigger",
+        "format": "format"
+    },
+
+    "parent": "__parent",
+    "promise": "__childresolved",
+
+    "component": "__component",
+    "proxy": "__proxy",
+
+    "start": "__onconnected",
+    "stop": "__ondisconnected",
+    "connected": "__connected",
+    "resolved": "__resolved",
+    "started": "__started", 
+
+    "element": "__element",
+    "webcomponents": "__define",
+    "attributes": "__attributes",
+
+    "trigger": "__trigger",
+    "compose": "__compose",
+    "apply": "__apply",
+
+    "uri": "src",
+    "reference": "ref",
+
+    "childPosition": "__childposition",
+
+    "attribute": "escomponent",
+    "options": "__options",
+
+    "source": "__source",
+    "path": "__path",
+
+    "animate": "__animate",
+
+    "editor": "__editor",
+
+    "resize": "__onresize"
+}

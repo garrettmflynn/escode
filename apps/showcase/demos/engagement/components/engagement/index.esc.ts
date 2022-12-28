@@ -1,40 +1,37 @@
 import bci from 'bcijs/browser.js'
-import * as devices from "../../../../../../components/devices/ui/index.esc.js"
-import * as filter from "../../../../../../components/devices/extensions/filter/index.esc.js"
+import * as devices from "../../../../../../js/components/devices/ui/index.esc.js"
+// import * as filter from "../../../../../../js/components/devices/extensions/filter/index.esc.js"
 
 const sum = (a,b) => a + b
 
-export const __children = {
-    device: {
+export const device = {
 
-        // __compose: [filter, devices],
-        __compose: [devices],
-    },
-
-    calculations: {
-
-
-        engagement: undefined,
-
-        default: function (signal) {
-            const bands = ['theta', 'alpha', 'beta']
-            const transposed = bci.transpose(signal)
-
-            let powers = bci.bandpower(
-                transposed,
-                this.sps,
-                bands,
-            );
-
-            const avePowers = powers.map(p => p.reduce(sum) / p.length)
-
-            const engagement = (avePowers[2] / (avePowers[1] + avePowers[0])) // engagement
-            this.engagement = engagement
-        }
-    },
-
-
+    // __compose: [filter, devices],
+    __compose: [devices],
 }
+
+export const calculations = {
+
+
+    engagement: undefined,
+
+    default: function (signal) {
+        const bands = ['theta', 'alpha', 'beta']
+        const transposed = bci.transpose(signal)
+
+        let powers = bci.bandpower(
+            transposed,
+            this.sps,
+            bands,
+        );
+
+        const avePowers = powers.map(p => p.reduce(sum) / p.length)
+
+        const engagement = (avePowers[2] / (avePowers[1] + avePowers[0])) // engagement
+        this.engagement = engagement
+    }
+}
+
 
 export const __listeners = {
     'calculations.sps': {

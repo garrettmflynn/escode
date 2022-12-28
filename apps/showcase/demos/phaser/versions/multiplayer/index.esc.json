@@ -6,7 +6,7 @@
                     "game": {
                         "__children": {
                             "companion": {
-                                "__compose": "../../../components/phaser/player.js",
+                                "__compose": "../../../js/components/phaser/player.js",
                                 "position": {
                                     "x": 100,
                                     "y": 200

@@ -3,9 +3,9 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./images/logo_with_text_dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="./images/logo_with_text_light.svg">
-    <img alt="escode: Recompose the Web" src="./images/logo_with_text_light.svg">
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo_with_text_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./assets/logo_with_text_light.svg">
+    <img alt="escode: Recompose the Web" src="./assets/logo_with_text_light.svg">
   </picture>
 </p>
 
@@ -17,51 +17,331 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-The [Brains@Play] **ESCode** project is a collection of ECMAScript libraries intended to further the Web as a **Universal Development Engine** by allowing you to create and share Web Components that naturally compose into larger applications.
+The [Brains@Play] **ESCode** project is a collection of ECMAScript libraries intended to further the Web as a **Universal Development Engine** by allowing you to program and share composable web applications using [any WebAssembly-supported language](https://www.fermyon.com/wasm-languages/webassembly-language-support).
 
-## The Libraries
-### [esmpile]
-The [esmpile] software library allows you to compile ESM code from their text sources. This allows you to track a list of active imports.
+> **Note:** As of January 2023, all development related to the ESCode project has been moved to the [graphscript] repository. All NPM packages are still available, but have not been updated since the release of [ESCode: A First Look](https://www.youtube.com/watch?v=aD4hluIhazs&ab_channel=brainsatplay) in November 2022.
 
-### [esmonitor]
-The [esmonitor] software library allows you to receive notification about changes to objects and their values.
+**escode** implements the [ES Components] specification—a variant of [graphscript]—which allows you to define special properties on a hierarchy of reactive objects.
 
-### [escompose]
-The [escompose] software library allows you to transform ESM into Web Components that send messages to each other using the [ECMAScript Components (ESC)](./libraries/escompose/README.md#the-specification) specification.
+## What's Possible with ESCode
+- **Write Software Faster:** Use existing Components to start your journey
+- **Visualize your Code:** See how your code is organized at a high level—and change it
+- **Share Code with Others:** Contribute to a growing community
+- **Move as One:** Pull updates from a wide array of other programmers
 
-### [escomposer]
-The [escomposer] software library allows you to convert between JS, JSON, and HTML declarations of ESC.
+> ### ESCode vs. Other Popular Frameworks
+> Unlike libraries that use hooks like useEffect (React) and watchEffect (Vue), ESCode monitors **arbitrary objects** for changes to their values based on specified **listeners**—meaning we don't require explicitly registering references or using returned objects.
 
-### [escode]
-The [escode] software library is a visual programming system to visualize and edit ESC files.
+## Getting Started
+To create a component, pass an object to the `create` function:
+```js
 
-## The Architecture
+import { create } from 'escode';
 
-> **Note:** We are currently in the middle of an integration effort in the [graphscript integration branch](https://github.com/brainsatplay/graphscript/tree/integration).
+const button = {
+    __element: 'button',
+    __attributes: {
+        onclick: function (input) { console.log(this) }
+    }
+}
 
-[escompose] is a simple extension of [graphscript], which uses several “graph script” properties such as __listener, __children, and __onconnected to imbue objects with special behaviors.
+const component = create(button, {__parent: document.body})
+component.__element.click()
+```
 
- In general, [escompose] simply negates a flag that limiting flow graph behaviors to simple one-by-one IO for logic trees—thereby affording a map of black boxes to be produced. Outside of this change, we are also adding a few loaaders to the graphscript.Graph constructor.
+These objects are deep cloned, meaning that **all properties attached to the object itself are independent across instantiations**.
+
+## Other Instantiation Strategies
+### Classes
+If you prefer to work with classes, these will also be instanced using this function:
 
 ```js
-import graphscript from 'graphscript'
-import elementLoader from 'graphscript-element-loader'
+import { create } from 'escode';
 
-const graph = graphscript.Graph({
-    tree: {
-        __element: 'h1',
-        __attribures: {
-            innerText: 'Hello World'
-        }
-    },
-    limitConnections: false,
-    loaders: {
-        __element: elementLoader,
+const shared = {
+    value: 0
+}
+
+class MyButton {
+
+    shared = shared
+
+    __element = 'button'
+
+    __attributes = {
+        onclick: function (input) { 
+            this.value++
+            console.log(this.value)
+         }
+    }
+
+}
+
+const component = create(MyButton, {__parent: document.body})
+component.__element.click() // shared.value = 1
+```
+
+However, **class instances are assumed to be sufficiently instanced by the user**. As such, local objects attached to the class itself will be shared across instances.
+
+```js
+const secondComponent = create(MyButton, {__parent: document.body})
+secondComponent.__element.click() // shared.value = 2
+```
+
+To avoid this, you can simply pass an **instance** of the class using the `new` keyword:
+```js
+const component = create(new MyButton(), {__parent: document.body})
+component.__element.click()
+```
+
+#### A Note on Deep and Shallow Composition
+Classes are inherently suited for shallow composition because **top-level properties that are reset on an extension are overwritten—even if they are objects with shared properties**.
+
+On the other hand, the [escode-compose-loader] allows you to compose classes deeply, meaning that **properties that are objects are merged** as well as **strings are loaded from source**.
+
+Although the [escode-compose-loader] is native to [ES Components], it's worth noting that classes already have some mechanism for loading—so, in some cases, they may be better suited to your needs.
+
+### Arrays
+In specific cases, an array may be useful to apply bulk operations to independent Components:
+```js
+import { create } from 'escode';
+
+const components = create([button, myButton, button], {
+    __parent: document.body,
+    __attributes: {
+        onclick: function (input) { console.log(this) }
     }
 })
+components.forEach(component => component.__element.click())
 ```
- 
-By using [graphscript] at the core, we can consistently visualize and manipulate the flow behaviors of [graphscript] extension. This has been achieved by funneling all listener management (including operators) through a single EventHandler instance, as well as all non-DOM reparenting through a similar management interface to retain proper DOM + reference parity
+
+### Linking Components to Source Text
+A string can be passed to grab the Component from a local JavaScript file—or, with additional utilities, compile from source text:
+```js
+import { create } from 'escode';
+import * as esm from 'esmpile'
+
+const button = './index.esc.js'
+const component = create(button)
+const component = create(button, {__parent: document.body},  { utilities: { bundle: esm.bundle.get}})
+component.__element.click()
+```
+
+
+### Creating Components from Functions
+A function can be passed directly as a Component, which wraps it as the `default` function of a new component:
+
+```js
+import { create } from 'escode';
+
+const fn = (input) => {
+    console.log(input)
+    return input
+}
+const component = create(fn)
+component.default()
+```
+
+If you're looking to listen to a function, you can simply add it as a property _inside_ a valid ES Component object.
+
+```js
+import { create } from 'escode';
+
+const reactive = {
+    fn,
+    latest: undefined,
+    __listeners: {
+        fn: 'latest'
+    }
+}
+
+const component = create(reactive)
+component.fn(1)
+```
+
+### Applying Components to DOM Element
+Elements can be passed to apply Components to existing DOM elements:
+```js
+import { create } from 'escode';
+
+const button = document.createElement('button')
+button.innerText = 'I will respond to clicks using ESCode'
+document.body.appendChild(button)
+
+
+const component = create(button, {
+    __attributes: {
+        onclick: function (input) { console.log(this) }
+    }
+})
+component.__element.click()
+```
+
+## GraphScript Properties
+GraphScript properties refer to **special properties that are used to instantiate the Component**. These properties are prefixed with `__` and are recognized with **loaders** than can be used to experiment with new Component behaviors
+
+> See the [ES Components] specification for a full list of default properties. 
+
+All ES Components have at least one GraphScript property at instantiation. All other properties throughout an ES Component are listeneable by the root Component.
+
+> **Note:** This includes classes and functions. Classes will not be instantiated without a static `__` property. On the other hand, functions will not converted to a `default` property without a `__` property set—though they will still be listenable without it.
+
+Active components are recognized by the presence of the `__` property on them. This provides access to utilities such as `run` and `subscribe`—as well as retains a record of read-only properties maintained by the library itself.
+
+All other `__` properties are considered GraphScript properties, and are used to program the behavior of the Component. 
+
+### Component Instancing
+Components are created using the `create` factory function, which accepts any object (e.g. Object, Array, or Class) and outputs an analogous object.
+
+**Unlike graphscript, we do not return a standard class from the `create` function.** Instead, the Component is returned based on the type of the input object.
+
+#### Objects
+Objects are extensively instanced and treated as templates. This means that **all properties attached to the object itself are independent across instantiations**. 
+
+#### Classes
+Classes are instanced using the `new` keyword. The resulting instancing behavior is assumed to be appropriate for the Component. This allows for minimal performance overhead when using classes.
+
+#### Arrays
+Arrays are iterated over and each item is passed to the factory function. The resulting array is returned.
+
+## Loaders
+Additional properties can be added using the loaders argument for escode: 
+```js
+import { create } from 'escode';
+const component = create(input, undefined, {
+    loaders: [ myLoader ]
+})
+```
+
+## Integrating with Existing Projects
+You can incrementally integrate ESCode into your existing projects by wrapping existing functional components and using our listener system to trigger messages between different aspects of the app: 
+    
+```js
+import { create } from 'escode';
+import * as existing from './app.js'
+
+const component = {
+    producer: existing.producer,
+    consumer: existing.consumer,
+    __listeners: {
+        'producer': 'consumer'
+    }
+}
+
+const component = create(existing, {__parent: document.body})
+
+component.producer()
+```
+
+Relatedly, you can also use ESCode more directly as an event manager: 
+    
+```js
+import { create } from 'escode';
+import * as existing from './app.js'
+
+const component = {
+    producer: existing.producer,
+    consumer: existing.consumer,
+    __listeners: {
+        'producer': (result) => {
+            const res = existing.consumer(result)
+            console.log(res)
+            return res
+        }
+    }
+}
+
+const component = create(existing, {__parent: document.body})
+
+component.producer()
+```
+
+Both of these strategies are particularly useful for integrating with published [ES Components] that you'd like to use in your project.
+
+## The Libraries
+### ECMAScript (JS)
+#### [esmpile]
+The [esmpile] library allows you to compile ESM code from their text sources. This allows you to track a list of active imports.
+
+#### [esmonitor]
+The [esmonitor] library allows you to receive notification about changes to objects and their values via a _simple plain-text subscription interface for arbitrary object properties_.
+
+#### [escode]
+The [escode] library allows you to transform ESM into Web Components that send messages to each other using the [ECMAScript Components (ESC)](./js/escode/README.md#the-specification) specification.
+
+#### [escompose]
+The [escompose] library allows you to convert between JS, JSON, and HTML declarations of ESC.
+
+#### [escode-ide]
+The [escode-ide] library is a visual programming system to visualize and edit ESC files.
+
+## Current Benchmarks
+| Metric | [escode] | [graphscript] |
+| --- | ----------- | ----------- |
+| Core Size - bundled | 86kb | 39kb |
+| Core Size - minified | 37kb | 20kb |
+| Instantiation Time | 3.15ms | — |
+| Instantiation w/ Explicit Children | 2.7963ms | 3.15ms |
+| Listener Reaction Time | 0.026ms | 0.015ms |
+
+## Future Work
+### Composers
+Generally, we would like to introduce **composers** to provide additional ways to load and instantiate Components. This would allow for more complex behaviors to be added to the library, such as:
+
+#### Exporting + Loading JSON Objects
+After creating a component, you can serialize it to a JSON object:
+```js
+const json = component.toJSON()
+```
+
+```json
+{
+    "value": 0,
+    "fn": "function(){this.value++}",
+    "__listeners": {
+        "fn": "value"
+    }
+}
+```
+
+This can be used to reconstruct the component:
+```js
+import { create } from 'escode';
+const component = create(json)
+component.fn()
+```
+
+#### Exporting HTML + Page Hydration
+After creating a component, you can export it to HTML text:
+```js
+const htmlString = component.toHTML()
+```
+
+This can be used to reconstruct the component:
+```js
+import { create } from 'escode';
+const component = create(htmlString)
+```
+
+Additionally, you can load the HTML text as a file and hydrate your components:
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="module">
+            import { create } from 'https://cdn.jsdelivr.net/npm/escode';
+            const component = create()
+            component.fn()
+        </script>
+    </head>
+    <body>
+        <div .value=0 .fn="function(){this.value++}" __listeners.fn="value" escomponent>
+    </body>
+</html>
+```
+
+#### Adding ESMpile Support
+Both of the aforementioned methods could additionally from knowing where accompanying source files actually sit. When exporting a component, you could optionally use [esmpile] to reference source files rather than exhaustively enumerating all of your properties in JSON or HTML.
 
 ## Contributors
 
@@ -97,7 +377,7 @@ In the near future, we will switch to the registration of ES Components through 
 To learn more about the publication workflow, see the [escomponent](https://github.com/brainsatplay/escomponent) template repository.
 
 ## Acknowledgments
-This monorepo is maintained by [Garrett Flynn](https://github.com/garrettmflynn) and [Joshua Brewster](https://github.com/joshbrew), who use contract work and community contributions through [Open Collective](https://opencollective.com/brainsatplay) to support themselves.
+Our work at [Brains@Play] is sustained by a wide range of contract work and the generous support of our community through [Open Collective](https://opencollective.com/brainsatplay):
 
 ### Backers
 [Support us with a monthly donation](https://opencollective.com/brainsatplay#backer) and help us continue our activities!
@@ -170,10 +450,14 @@ This monorepo is maintained by [Garrett Flynn](https://github.com/garrettmflynn)
 
 
 [graphscript]: https://github.com/brainsatplay/graphscript
-[escompose]: ./libraries/escompose/README.md
+[escode-ide]: ./js/packages/escode-ide/README.md
+
+[escode-compose-loader]: ./js/packages/escode-compose-loader/README.md
+
 [Brains@Play]: https://github.com/brainsatplay
 
-[esmpile]: ./libraries/esmpile/README.md
-[esmonitor]: ./libraries/esmonitor/README.md
-[escomposer]: ./libraries/escomposer/README.md
-[escode]: ./libraries/escode/README.md
+[esmpile]: ./js/packages/esmpile/README.md
+[esmonitor]: ./js/packages/esmonitor/README.md
+[escompose]: ./js/packages/escompose/README.md
+[escode]: ./js/README.md
+[ES Components]: ./spec/README.md

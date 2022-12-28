@@ -1,1 +1,0 @@
-export * as graphscript from './graphscript'

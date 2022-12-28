@@ -1,7 +1,7 @@
 
-import * as timeseries from "../../../../components/ui/plot/timeseries/index.esc";
+import * as timeseries from "../../../../js/components/ui/plot/timeseries/index.esc";
 // import * as metrics from './components/engagement/dist/index.esm.js'
-import * as metrics from './components/engagement/index.esc'
+import * as metricsComponent from './components/engagement/index.esc'
 
 export const __attributes = {
     style: {
@@ -20,58 +20,46 @@ const header = {
 
 
 
-export const __children = {
+export const ui = {
+    header,
 
-
-    ui: {
-        __children: {
-            header, 
-
-            now: {
-                __element: 'p',
-                __children: {
-                    label: {
-                        __element: 'b',
-                        __attributes: {
-                            innerText: 'Value: '
-                        },
-                    }, 
-                    value: {
-                        __element: 'span',
-                        __attributes: {
-                            innerText: 'N/A'
-                        },
-                    }
-                }
+    now: {
+        __element: 'p',
+        label: {
+            __element: 'b',
+            __attributes: {
+                innerText: 'Value: '
             },
-
-            average: {
-                __element: 'p',
-                __children: {
-                    label: {
-                        __element: 'b',
-                        __attributes: {
-                            innerText: 'Average: '
-                        },
-                    }, 
-                    value: {
-                        __element: 'span',
-                        __attributes: {
-                            innerText: 'N/A'
-                        },
-                    }
-                }
+        },
+        value: {
+            __element: 'span',
+            __attributes: {
+                innerText: 'N/A'
             },
-
-            // timeseries
         }
     },
 
+    average: {
+        __element: 'p',
+        label: {
+            __element: 'b',
+            __attributes: {
+                innerText: 'Average: '
+            },
+        },
+        value: {
+            __element: 'span',
+            __attributes: {
+                innerText: 'N/A'
+            },
+        }
+    },
 
-    metrics
-
-        
+    // timeseries
 }
+
+
+export const metrics = metricsComponent
 
 
 // Engagement: (Beta / (Alpha + Theta)) 
@@ -82,7 +70,7 @@ export const __children = {
 let buffer: number[] = []
 const maxBufferTime = 1
 let average = 0
-const sum = (a,b) => a + b
+const sum = (a, b) => a + b
 
 export const __listeners = {
     'ui.now.value': {
@@ -97,7 +85,7 @@ export const __listeners = {
     '': {
         'metrics.calculations.engagement': function (value) {
             buffer.push(value)
-            const maxSize = this.__children.metrics.__children.calculations.sps*maxBufferTime
+            const maxSize = this.metrics.calculations.sps * maxBufferTime
             if (buffer.length > maxSize) buffer = buffer.slice(-maxSize)
             average = buffer.reduce(sum) / buffer.length
 
