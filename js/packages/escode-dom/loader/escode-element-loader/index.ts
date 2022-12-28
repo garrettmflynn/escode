@@ -1,11 +1,12 @@
 import { Options } from "../../../common/types";
-import { EditorProps } from "../../../escode-ide/src";
+import { Editor, EditorProps } from "../../../escode-ide/src";
 import { ESComponent, ESDefineInfo, ESElementInfo } from "../../../../spec/index";
 import { resolve } from "../../../common/utils";
 import { specialKeys } from "../../../../../spec/properties";
 
 // Other Loaders
 import * as component from "../escode-define-loader/index"; // TODO: Fully separate this out...
+import { clone } from "../../../core";
 
 // Proper SVG Support
 // Incomplete SVG Support List: https://developer.mozilla.org/en-US/docs/Web/SVG/Element
@@ -263,20 +264,28 @@ export default function create(esm: ESComponent, options:Partial<Options> = {}) 
     })
 
     const ogGet = configuration.parent.get
+
+    let latestComponentParent;
+
     configuration.parent.get = () => {
 
         const fallback = ogGet()
 
-        const parentNode = esm[specialKeys.element].parentNode // Grab parent from DOM
+        let parentNode = esm[specialKeys.element].parentNode // Grab parent from DOM
 
         if (parentNode) {
             const isComponent = parentNode.hasAttribute(specialKeys.attribute)
             if (isComponent) return parentNode[specialKeys.component] // Actual parent component
-            else return  { [specialKeys.element]: parentNode }  // Mock parent component
+            else {
+                if (configuration.editor.value) return latestComponentParent[specialKeys.component]
+                else return  { [specialKeys.element]: parentNode }  // Mock parent component
+            }
         }
         
         else return fallback // Original parent
     }
+
+
 
     configuration.parent.add(function (v) {
 
@@ -290,11 +299,14 @@ export default function create(esm: ESComponent, options:Partial<Options> = {}) 
         // Set Parent Node on Element
         if (v?.[specialKeys.element] instanceof globalThis.Element) v = v[specialKeys.element]
 
+
         const current = this[specialKeys.element].parentNode
 
         if (current !== v){ 
             if (this[specialKeys.element] instanceof globalThis.Element) {
                 if(current) this[specialKeys.element].remove()
+
+                if (v.hasAttribute(specialKeys.attribute)) latestComponentParent = v
 
                 if (v instanceof globalThis.Element) {
 
@@ -303,7 +315,7 @@ export default function create(esm: ESComponent, options:Partial<Options> = {}) 
 
                     let ref = this[specialKeys.element]
 
-                    const __editor = configuration.editor
+                    const __editor = configuration.editor.value
 
                     if (__editor) ref = __editor // Set inside parent. Set focused component in __onconnected
 
@@ -363,6 +375,14 @@ export default function create(esm: ESComponent, options:Partial<Options> = {}) 
 
     // --------------------------- Spawn ESCode Instance ---------------------------
     const utilities = options?.utilities
+    configuration.editor = {
+        value: null,
+        bound: [],
+        add: function (__editor) {
+            this.bound.push(__editor)
+        }
+    }
+
     if (utilities && esm[specialKeys.editor]) {
         let config = esm[specialKeys.editor]
         let cls = utilities.code?.class
@@ -377,26 +397,30 @@ export default function create(esm: ESComponent, options:Partial<Options> = {}) 
             let options = utilities.code?.options ?? {}
             options = ((typeof config === 'boolean') ? options : {...options, ...config}) as EditorProps
             const bound = (options as any).bind
-            const __editor = new cls(options)
-            __editor.start() // start the editor
 
-            // Attach editor to component (ui)
-            configuration.editor = __editor
+                const __editor = new cls(options)
 
-            // Bind component to editor (graph)
-            if (bound !== undefined) {
+                // Attach editor to component (ui)
+                configuration.editor.value = __editor
 
-                let boundESM = esm // TODO: Use graphscript to find a specific node using relative uri
-                const configuration = esm[specialKeys.root]
-                bound.split('/').forEach(str => {
-                    if (str === '..') boundESM = boundESM[specialKeys.root].states.parentNode[specialKeys.component] // Move to parent
-                    else if (str === '.') return // Do nothing
-                    else boundESM = boundESM[str] // Move to child
-                }) 
-                
-                if (!configuration.boundEditors) configuration.boundEditors = [__editor]
-                else configuration.boundEditors.push(__editor)
-            }
+                // Bind component to editor (graph)
+                if (bound !== undefined) {
+
+                    let boundESM = esm // TODO: Use graphscript to find a specific node using relative uri
+                    bound.split('/').forEach(str => {
+                        if (str === '..') boundESM = boundESM.__parent // Move to parent
+                        else if (str === '.') return // Do nothing
+                        else boundESM = boundESM[str] // Move to child
+                    }) 
+
+                    boundESM.__.editor.add(__editor)
+                }
+
+
+                configuration.start.add(() => {
+                    __editor.start() // start the editor
+                })
+
         }
     }
     
@@ -417,10 +441,9 @@ export default function create(esm: ESComponent, options:Partial<Options> = {}) 
 
         esm[specialKeys.element].remove();
 
-        // Remove code editor
+        // Remove code editor (TODO: does this work?)
         const privateEditorKey = `${specialKeys.editor}Attached` // TODO: Ensure esc key is standard
         if (esm[privateEditorKey]) esm[privateEditorKey].remove() 
-
     })
 
     return esm;

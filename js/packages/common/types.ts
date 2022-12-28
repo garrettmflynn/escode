@@ -1,4 +1,4 @@
-import { Editor, EditorProps } from "../escompose";
+import { Editor, EditorProps } from "../../packages/escode-ide/src/index";
 import * as esm from "../esmpile/src";
 
 import { Loaders } from "../core/types";

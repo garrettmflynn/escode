@@ -18,7 +18,6 @@ export const defaultProperties = {
 
         // Root Properties
         branch: '__branch',
-        bind: '__bind',
         trigger: '__trigger',
         format: '__format',
     },

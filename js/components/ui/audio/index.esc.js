@@ -3,11 +3,13 @@ import * as buttonComponent from '../button.js';
 import * as toggleComponent from '../../audio/toggle.js';
 
 export const sounds = {
+    __childposition: 0,
     __compose: selectComponent,
     options: []
 }
 
 export const button = {
+    __childposition: 1,
     __compose: buttonComponent,
     __attributes: {
         innerText: "Play"

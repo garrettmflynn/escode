@@ -19,7 +19,7 @@ const configKey = Symbol('configKey')
 const isConfigObject = (o) => specialKeys.listeners.format in o 
                             || specialKeys.listeners.branch in o 
                             || specialKeys.listeners.trigger in o 
-                            || specialKeys.listeners.bind in o
+                            // || specialKeys.listeners.bind in o
 
 
 // Global References
@@ -118,7 +118,7 @@ class Edgelord {
 
     #getAbsolutePath = (name, rootPath) => {
         const split =  name.split(keySeparator)
-        return [...rootPath, ...split]
+        return [...rootPath, ...split].filter(str => str !== '')
     }
 
     #getPathInfo = (path, rootPath: string[]) => {
@@ -190,9 +190,7 @@ class Edgelord {
 
         // Only subscribe once
         if (!subscription) {
-            subscription =this.monitor.on(fromInfo.absolute.array, (path, info, update) => {
-                this.update(path, update, info.id)
-            })
+            subscription =this.monitor.on(fromInfo.absolute.array, (path, info, update) => this.update(path, update, info.id))
         } 
 
         // Use updated string value if modified
@@ -229,38 +227,27 @@ class Edgelord {
         const path = [fromInfo.absolute.value, toInfo.absolute.value]
 
         const context = this.getContext(id).active
-        const toRemove = [
-            { ref: context, path },
-        ]
 
+        let base = context[path[0]]
 
-        toRemove.forEach(o => {
-            const { 
-                ref, 
-                path, 
-            } = o
-
-            let base = ref[path[0]]
-
-            if (typeof base === 'object') {
-                delete base[path[1]] // complex listener
-                if (Object.keys(base).length === 0) {
-                    delete ref[path[0]]
-                    const sub = base[subscriptionKey]
-                    if (sub) {
-                        this.monitor.remove(sub, id) // Cleaning up subscriptions (active only)
-                    }
-                    delete base[subscriptionKey]
+        if (typeof base === 'object') {
+            delete base[path[1]] // complex listener
+            if (Object.keys(base).length === 0) {
+                delete context[path[0]]
+                const sub = base[subscriptionKey]
+                if (sub) {
+                    this.monitor.remove(sub, id) // Cleaning up subscriptions (active only)
                 }
+                delete base[subscriptionKey]
+            }
 
-            } else delete ref[path[0]] // simple listener
-
-        })
+        } else delete context[path[0]] // simple listener
 
     }
 
     // Local clearing
     clear = (name = '', rootPath = []) => {
+
         if (!Array.isArray(rootPath)) rootPath = [rootPath]
 
         const id = rootPath[0]
@@ -442,25 +429,25 @@ class Edgelord {
     if (config) {
 
         
-        const bindKey = specialKeys.listeners.bind
-        if (bindKey in config) {
-            if (typeof config[bindKey] === 'string') {
-                const path = getPathArray(config[bindKey])
-                const res = this.monitor.get(path)
-                if (!res)  target = `because ${path.slice(1).join(keySeparator)} does not point correctly to an existing component.`
-                else {
-                    config[bindKey] = {
-                        value: res,
-                        original: config[bindKey]
-                    }
-                }
-            } else if (!config[bindKey].value.__parent) {
-                target = `because ${config[bindKey].original ?? id.toString()} has become unparented.`
-            }
+        // const bindKey = specialKeys.listeners.bind
+        // if (bindKey in config) {
+        //     if (typeof config[bindKey] === 'string') {
+        //         const path = getPathArray(config[bindKey])
+        //         const res = this.monitor.get(path)
+        //         if (!res)  target = `because ${path.slice(1).join(keySeparator)} does not point correctly to an existing component.`
+        //         else {
+        //             config[bindKey] = {
+        //                 value: res,
+        //                 original: config[bindKey]
+        //             }
+        //         }
+        //     } else if (!config[bindKey].value.__parent) {
+        //         target = `because ${config[bindKey].original ?? id.toString()} has become unparented.`
+        //     }
 
-        } 
+        // } 
         
-        else {
+        // else {
 
             const branchKey = specialKeys.listeners.branch
             const formatKey = specialKeys.listeners.format
@@ -494,7 +481,7 @@ class Edgelord {
                 } catch (e) { console.error('Failed to format arguments', e) }
             }
 
-        }
+        // }
     }
 
 
@@ -528,10 +515,10 @@ class Edgelord {
 
             // const noContext = parent[to][listenerObject]
             // if (noContext) 
-            const isBound = config?.[specialKeys.listeners.bind]?.value
-            const boundTo = isBound ?? info.bound // TODO: Register these so they can be easily removed...
+            // const isBound = config?.[specialKeys.listeners.bind]?.value
+            // const boundTo = isBound ?? info.bound // TODO: Register these so they can be easily removed...
 
-            if (boundTo) target.call(boundTo, ...arrayUpdate) // Call with top-level context
+            if (info.bound) target.call(info.bound, ...arrayUpdate) // Call with top-level context
             else target(...arrayUpdate) // Call with default context
         }
 

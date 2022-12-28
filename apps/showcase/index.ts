@@ -185,7 +185,7 @@ async function start (demo = "basic", mode="direct") {
 
             const returned = esc.create(reference, {__parent: main}, {
                 
-                relativeTo,
+                // relativeTo,
 
 
                 // For Editor Creation + Source Text Loading
@@ -197,6 +197,7 @@ async function start (demo = "basic", mode="direct") {
                     bundle: {
                         function: esm.bundle.get,
                         options: {
+                            relativeTo,
                             nodeModules,
                             // filesystem
                         }

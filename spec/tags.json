@@ -1,0 +1,20 @@
+{
+    "required":  [
+        "graphscript",
+        "escomponent",
+        "ui",
+        "browser"
+    ],
+    "platform": [
+        "browser"
+    ],
+    "type": [
+        "ui"
+    ],
+    "loaders": [
+        "dom",
+        "compose",
+        "animation",
+        "ide"
+    ]
+}

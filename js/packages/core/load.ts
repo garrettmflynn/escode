@@ -56,17 +56,17 @@ export default function load(esc, loaders: Loaders = [], options: ApplyOptions):
         const parented = runLoaders([parentLoader], { main: loaded, options: opts }) // Use original parent here (in case none are specified later)
 
         // Load the props property
-        const propped = runLoaders([propsLoader], { main: parented }) // Use original parent here (in case none are specified later)
+        const propped = runLoaders([propsLoader], { main: parented, options: opts}) // Use original parent here (in case none are specified later)
 
         // Load all other properties
         const res = runLoaders(sortedLoaders, { main: propped, options: opts }, 'load') // Recognize all special keys
 
-        // -------- Bind Functions to Node --------
-        for (let key in esc) {
-            const og = esc[key]
-            if (is(key) && typeof og === 'function') {
-                const context = esc[specialKeys.proxy] ?? esc
-                esc[key] = og.bind(context)
+        // -------- Bind All Functions to Node --------
+        for (let key in loaded) {
+            const og = loaded[key]
+            if (typeof og === 'function') {
+                const context = loaded[specialKeys.proxy] ?? loaded
+                loaded[key] = og.bind(context)
             }
         }
 

@@ -26,7 +26,7 @@ const triggerLoader = ( esc ) => {
 
         // configuration.start.add(() => { })
         if (!Array.isArray(val)) val = [val]
-        esc[specialKeys.listeners.value].onStart(() => esc.default(...val), esc[specialKeys.root].root)
+        esc[specialKeys.root].listeners.manager.onStart(() => esc.default(...val), esc[specialKeys.root].root)
         return esc
     }
 }

@@ -2,7 +2,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Discord](https://img.shields.io/badge/community-discord-7289da.svg?sanitize=true)](https://discord.gg/CDxskSh9ZB)
 
-**ES Components (ESC)** is a standard for transforming ES Modules into standardized Web Components to simplify the process of authoring composable web applications.
+**ES Components (ESC)** is a standard format for transforming Objects into composable Web Components to simplify the creation of complex web applications.
 
 > **ESC** is a core specification of [Brains@Play].
 

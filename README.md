@@ -16,25 +16,18 @@
 
 The [Brains@Play] **ESCode** project is a collection of ECMAScript libraries intended to further the Web as a **Universal Development Engine** by allowing you to program and share composable web applications using [any WebAssembly-supported language](https://www.fermyon.com/wasm-languages/webassembly-language-support).
 
-**escode** implements the [ES Components] specification to allow you to define special properties on a hierarchy of reactive objects.
+> **Note:** As of January 2023, all development related to the ESCode project has been moved to the [graphscript] repository. All NPM packages are still available, but have not been updated since the release of [ESCode: A First Look](https://www.youtube.com/watch?v=aD4hluIhazs&ab_channel=brainsatplay) in November 2022.
 
-Unlike libraries that use hooks like useEffect (React) and watchEffect (Vue), ESCode monitors **arbitrary objects** for changes to their values based on specified **listeners**—meaning we don't require explicitly registering references or using returned objects.
+**escode** implements the [ES Components] specification—a variant of [graphscript]—which allows you to define special properties on a hierarchy of reactive objects.
 
-## The Libraries
-### [esmpile]
-The [esmpile] library allows you to compile ESM code from their text sources. This allows you to track a list of active imports.
+## What's Possible with ESCode
+- **Write Software Faster:** Use existing Components to start your journey
+- **Visualize your Code:** See how your code is organized at a high level—and change it
+- **Share Code with Others:** Contribute to a growing community
+- **Move as One:** Pull updates from a wide array of other programmers
 
-### [esmonitor]
-The [esmonitor] library allows you to receive notification about changes to objects and their values via a _simple plain-text subscription interface for arbitrary object properties_.
-
-### [escode]
-The [escode] library allows you to transform ESM into Web Components that send messages to each other using the [ECMAScript Components (ESC)](./js/escode/README.md#the-specification) specification.
-
-### [escompose]
-The [escompose] library allows you to convert between JS, JSON, and HTML declarations of ESC.
-
-### [escode-ide]
-The [escode-ide] library is a visual programming system to visualize and edit ESC files.
+> ### ESCode vs. Other Popular Frameworks
+> Unlike libraries that use hooks like useEffect (React) and watchEffect (Vue), ESCode monitors **arbitrary objects** for changes to their values based on specified **listeners**—meaning we don't require explicitly registering references or using returned objects.
 
 ## Getting Started
 To create a component, pass an object to the `create` function:
@@ -55,6 +48,7 @@ component.__element.click()
 
 These objects are deep cloned, meaning that **all properties attached to the object itself are independent across instantiations**.
 
+## Other Instantiation Strategies
 ### Classes
 If you prefer to work with classes, these will also be instanced using this function:
 
@@ -96,6 +90,13 @@ To avoid this, you can simply pass an **instance** of the class using the `new` 
 const component = create(new MyButton(), {__parent: document.body})
 component.__element.click()
 ```
+
+#### A Note on Deep and Shallow Composition
+Classes are inherently suited for shallow composition because **top-level properties that are reset on an extension are overwritten—even if they are objects with shared properties**.
+
+On the other hand, the [escode-compose-loader] allows you to compose classes deeply, meaning that **properties that are objects are merged** as well as **strings are loaded from source**.
+
+Although the [escode-compose-loader] is native to [ES Components], it's worth noting that classes already have some mechanism for loading—so, in some cases, they may be better suited to your needs.
 
 ### Arrays
 In specific cases, an array may be useful to apply bulk operations to independent Components:
@@ -208,6 +209,68 @@ const component = create(input, undefined, {
     loaders: [ myLoader ]
 })
 ```
+
+## Integrating with Existing Projects
+You can incrementally integrate ESCode into your existing projects by wrapping existing functional components and using our listener system to trigger messages between different aspects of the app: 
+    
+```js
+import { create } from 'escode';
+import * as existing from './app.js'
+
+const component = {
+    producer: existing.producer,
+    consumer: existing.consumer,
+    __listeners: {
+        'producer': 'consumer'
+    }
+}
+
+const component = create(existing, {__parent: document.body})
+
+component.producer()
+```
+
+Relatedly, you can also use ESCode more directly as an event manager: 
+    
+```js
+import { create } from 'escode';
+import * as existing from './app.js'
+
+const component = {
+    producer: existing.producer,
+    consumer: existing.consumer,
+    __listeners: {
+        'producer': (result) => {
+            const res = existing.consumer(result)
+            console.log(res)
+            return res
+        }
+    }
+}
+
+const component = create(existing, {__parent: document.body})
+
+component.producer()
+```
+
+Both of these strategies are particularly useful for integrating with published [ES Components] that you'd like to use in your project.
+
+## The Libraries
+### ECMAScript (JS)
+#### [esmpile]
+The [esmpile] library allows you to compile ESM code from their text sources. This allows you to track a list of active imports.
+
+#### [esmonitor]
+The [esmonitor] library allows you to receive notification about changes to objects and their values via a _simple plain-text subscription interface for arbitrary object properties_.
+
+#### [escode]
+The [escode] library allows you to transform ESM into Web Components that send messages to each other using the [ECMAScript Components (ESC)](./js/escode/README.md#the-specification) specification.
+
+#### [escompose]
+The [escompose] library allows you to convert between JS, JSON, and HTML declarations of ESC.
+
+#### [escode-ide]
+The [escode-ide] library is a visual programming system to visualize and edit ESC files.
 
 ## Current Benchmarks
 | Metric | [escode] | [graphscript] |
@@ -371,10 +434,13 @@ Our work at [Brains@Play] is sustained by a wide range of contract work and the 
 
 [graphscript]: https://github.com/brainsatplay/graphscript
 [escode-ide]: ./js/packages/escode-ide/README.md
+
+[escode-compose-loader]: ./js/packages/escode-compose-loader/README.md
+
 [Brains@Play]: https://github.com/brainsatplay
 
 [esmpile]: ./js/packages/esmpile/README.md
 [esmonitor]: ./js/packages/esmonitor/README.md
 [escompose]: ./js/packages/escompose/README.md
 [escode]: ./js/README.md
-[ES Components]: ./spec
+[ES Components]: ./spec/README.md

@@ -177,6 +177,7 @@ export class Editor extends LitElement {
       this.ui.appendChild(this.uiContainer)
       this.ui.setAttribute('name', 'UI')
       this.ui.id = 'ui'
+
       if (props.ui) this.setUI(props.ui)
       if (props.bind) this.bind = props.bind
 
@@ -249,7 +250,7 @@ export class Editor extends LitElement {
           edge.output.node.info.__subscribe(isFound ? edge.input.value : edge.input.node.info, key)
         } else if (this.config.esc){         
           let tags = getTags(edge)
-          this.config.esc.__manager.add(tags[0], tags[1], edge.info)
+          this.config.esc.__.listeners.add(tags[0], tags[1], edge.info)
         } else {
           console.error('New edge cannot be handled...')
         }
@@ -266,7 +267,6 @@ export class Editor extends LitElement {
           })
           activeGraph.nodes[node.tag] = component
           node.info = component
-          component.__parent = this.config.esc.__element
         } else {
           console.error('Cannot handle this edit...')
         }
@@ -280,7 +280,7 @@ export class Editor extends LitElement {
           if (this.config.gs) edge.output.node.info.__unsubscribe(edge.info.sub, edge.info.key)
           else if (this.config.esc){
             const tags = getTags(edge)
-            this.config.esc.__manager.remove(tags[0], tags[1])
+            this.config.esc.__.listeners.remove(tags[0], tags[1])
           } else {
             console.error('Edge removal cannot be handled...')
           }
@@ -473,12 +473,12 @@ export class Editor extends LitElement {
 
       // Only set if not bound (otherwise handled externally)
       const configuration = component[specialKeys.root] ?? {}
-      const toSet = !this.bind || (configuration.boundEditors && configuration.boundEditors.includes(this))
+      const toSet = !this.bind || (configuration.editor.bound.length && configuration.editor.bound.includes(this))
       if (toSet) {
 
         const graph = {
-          nodes: component.__.components,
-          edges: component.__listeners.get(component) // Get Active listeners from
+          nodes: component.__.components.value,
+          edges: component[specialKeys.listeners.value]
         }
 
         const isReady = component.__resolved

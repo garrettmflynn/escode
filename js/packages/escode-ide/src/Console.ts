@@ -99,7 +99,7 @@ export class Console extends LitElement {
       }
 
       const commands = ['log', 'warn', 'error']
-      commands.forEach(listen)
+      // commands.forEach(listen)
     }
 
     #log = (cls, ...args) => {

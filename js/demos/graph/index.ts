@@ -7,6 +7,7 @@ import * as animate from './../../packages/escode-animation-loader';
 
 const nodeAInstance = tree.nodeA // Original value for nodeA
 
+const toPop = true
 
 export const history: {[x:string]: any} = []
 export const state = {}
@@ -30,10 +31,13 @@ export function start () {
 
     // Stop animating after a few seconds
     setTimeout(()=>{ 
-        component.nodeE.__parent = null // Remove from parent
-        this.log.addCommand('nodeE removed!')
+        // if (toPop) {
+            component.nodeE.__parent = null // Remove from parent
+            this.log.addCommand('nodeE removed!')
+        // }
     }, 5500)
 }
+
 
 export const operations = [
     {
@@ -80,7 +84,14 @@ export const operations = [
     {
         name: `component.run('nodeB.nodeC', 4)`,
         function: () => {
-            component.nodeB.nodeC.default(4)
+            component.nodeB.nodeC.__operator(4)
+        },
+    },
+    {
+        name: `component.run('nodeB', 10)`,
+        // ignore: true,
+        function: () => {
+            component.nodeB.__operator(10)
         },
     },
     {
@@ -143,6 +154,7 @@ export const operations = [
     },
     {
         header: 'Remove Node B',
+        ignore: !toPop,
         function: function () {
             popped = component.nodeB
             component.nodeB.__parent = null
@@ -158,7 +170,7 @@ export const operations = [
     },
     {
         header: 'Reparent Node B to Second Component',
-        ignore: false,
+        ignore: !toPop,
         function: () => {
             popped.__parent = secondComponent
             console.log('Has Been Reparented', popped.__.root === secondComponent.__.root)
@@ -166,14 +178,16 @@ export const operations = [
     },
     {
         name: `popped.x += 1`,
+        ignore: !toPop,
         function: () => {
             popped.x += 1; //should no longer trigger nodeA.x listener on nodeC NOR the nodeB.x listener on nodeA
         }
     },
     {
         name: `popped.__children.nodeC.__operator(1)`,
+        ignore: !toPop,
         function: () => {
-            popped.nodeC.default(1);
+            popped.nodeC.__operator(1);
         }
     },
     {

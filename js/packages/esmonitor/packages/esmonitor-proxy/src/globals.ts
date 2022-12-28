@@ -1,6 +1,4 @@
-import { isProxy as isProxyFromMonitor } from '../../esmonitor/src/globals'
-
-
+import { isProxy as isProxyFromMonitor } from '../../../src/globals'
 
 export const isProxy = isProxyFromMonitor
 

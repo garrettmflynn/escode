@@ -15,7 +15,7 @@ export const properties = {
         specialKeys.editor,
         specialKeys.parent,
         specialKeys.proxy,
-        specialKeys.connected,
+        // specialKeys.connected,
         specialKeys.promise,
         specialKeys.resolved,
     ],
@@ -42,12 +42,14 @@ async function asyncConnect (onReadyCallback) {
 
 
     const configuration = this[specialKeys.root]
-    await this[specialKeys.connected]
+    // await this[specialKeys.connected] // TODO: If you want this to be supported, then the parent loader must be more reliable...
     configuration.connected = true // Ensure the configuration shows a connection
 
     // Set resolved component on any editors
-    const boundEditors = configuration.boundEditors
-    if (boundEditors) boundEditors.forEach(editor => editor.setComponent(this)) // set after all children have been set
+    const boundEditors = configuration.editor?.bound
+    if (boundEditors) {
+        boundEditors.forEach(editor => editor.setComponent(this)) // set after all children have been set
+    }
 
     // Run additional callback
     if (onReadyCallback) await onReadyCallback()
@@ -60,8 +62,8 @@ function connect (callbacks: Function[] = []) {
     // ------------------ Retroactively set __editor editor on children of the focus element -----------------
     const configuration = this[specialKeys.root]
     const parentConfiguration = this[specialKeys.parent]?.[specialKeys.root]
-    const __editor = parentConfiguration?.editor
-    if (__editor) configuration.editor = __editor
+    const __editor = parentConfiguration?.editor.value
+    if (__editor) configuration.editor.value = __editor // Set same editor on children
 
     // ------------------ Register Sources (from esmpile) -----------------
     let source = this[esSourceKey]
@@ -69,7 +71,7 @@ function connect (callbacks: Function[] = []) {
         if (typeof source === 'function') source = this[specialKeys.source] = source()
         delete this[esSourceKey]
         const path = this[specialKeys.root].path
-        if (configuration.editor) configuration.editor.addFile(path, source)
+        if (__editor) __editor.addFile(path, source)
     }
 
     // Run Callbacks (e.g. start animations)

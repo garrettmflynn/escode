@@ -43,6 +43,11 @@ export const overlay = {
     },
     devices: {
         __compose: devices,
+        __attributes: {
+            style: {
+                position: 'relative',
+            }
+        },
         connectmode: {
             options: [
                 {

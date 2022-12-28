@@ -75,7 +75,7 @@ export type ListenerInfo = {
 }
 
 export type Lookup<keyType, valueType> = {
-    [x: keyType]: valueType
+    [x: string]: valueType
 }
 
 export type ListenerLookups = {

@@ -1,10 +1,11 @@
 import * as bci2000Component from "../../../../js/components/devices/modalities/bci2000/index.js"
 import * as button from "../../../../js/components/ui/button.js"
 import * as select from "../../../../js/components/ui/select.js"
-import * as signalComponent from "../signal/index.esc"
+// import * as signalComponent from "../signal/index.esc"
 
 export const __attributes = {
     style: {
+        background: 'black',
         position: 'relative',
         overflow: 'scroll',
         height: '100%',
@@ -56,19 +57,19 @@ export const overlay = {
     },
 }
 
-// Main UI
-export const signal = {
-    __compose: signalComponent,
-    plot: {
-        options: {
-            lineWidth: undefined,
-        }
-    },
-    data: undefined, // remove data generator
-    __listeners: {
-        'plot': undefined
-    }
-}
+// // Main UI
+// export const signal = {
+//     __compose: signalComponent,
+//     plot: {
+//         options: {
+//             lineWidth: undefined,
+//         }
+//     },
+//     data: undefined, // remove data generator
+//     __listeners: {
+//         'plot': undefined
+//     }
+// }
 
 
 export const paragraphs = {}
@@ -82,9 +83,9 @@ export const __listeners = {
             __branch: [{ is: false, value: true }]
         }
     },
-    "signal.plot": {
-        "bci2000.raw": true
-    },
+    // "signal.plot": {
+    //     "bci2000.raw": true
+    // },
 
     'overlay.p.span': {
         'bci2000.status': true

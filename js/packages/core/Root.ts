@@ -16,6 +16,8 @@ type RootInfo = {
     loaders: Loaders
 }
 
+const globalRootRegistry = {}
+
 export default class Root {
 
     name: string | symbol
@@ -31,14 +33,49 @@ export default class Root {
         available: [],
     }
 
-    components = new Map()
+    get = (id) => {
+        return globalRootRegistry[id]
+    }
+
+    components = {
+        value: new Map(),
+        queue: [],
+        set: (key, value) => { 
+            if (this.start.value) this.components.addedCallbacks.forEach(f => f(value))
+            else this.components.queue.push(value)
+            this.components.value.set(key, value)
+        },
+
+        values: function () { return this.value.values()},
+        keys: function () { return this.value.keys()},
+        entries: function () { return this.value.entries()},
+        forEach: function (callback) { return this.value.forEach(callback)},
+
+        get: function (key) { return this.value.get(key)},
+        has: function (key) { return this.value.has(key)},
+        delete: function (key) { 
+            const got = this.value.get(key)
+            if (got) {
+                this.removedCallbacks.forEach(f => f(got))
+                return this.value.delete(key)
+            }
+        },
+
+        addedCallbacks: [],
+        onAdded: function (callback) { this.addedCallbacks.push(callback) },
+        
+        removedCallbacks: [],
+        onRemoved: function (callback) { this.removedCallbacks.push(callback) },
+    }
 
     connected: boolean = false
     resolved: boolean = false
 
     // ---------- Creation Managers ----------
     create = function (esc) {
-        return create(esc, undefined, this.loaders.available)
+        const options = Object.assign({}, this.options)
+        options.loaders = this.loaders.available
+        return create(esc, undefined, options)
     }
 
     // ---------- Lifecycle Managers ----------
@@ -111,6 +148,14 @@ export default class Root {
         this.loaders.available = loaders
         this.loaded.add(loadNestedComponents)
 
+        globalRootRegistry[this.symbol] = this
+
+
+        // Register children only when everything else is loaded
+        this.start.add(() => {
+            this.components.queue.forEach((o) => this.components.addedCallbacks.forEach(f => f(o)))
+        })
+
         Object.defineProperty(esc, specialKeys.root, {
             value: this,
             enumerable: false,
@@ -131,10 +176,14 @@ function loadNestedComponents(esc) {
 
     const promises = (nested) ? nested.map((info) => {
         const copy = Object.assign({}, configuration.options)
-        const name = copy.name = info.name
-        delete copy.overrides // Only apply to the root node
-        copy.parentObject = info.parent
-        copy.parent = esc
+        const applyOptions = {
+            name: info.name,
+            opts: copy,
+            parentObject: info.parent,
+            parent: esc,
+        }
+        
+        const name = applyOptions.name
         const ref = info.ref
 
         if (ref) {
@@ -151,18 +200,10 @@ function loadNestedComponents(esc) {
             // New Component Template (load)
             else {
 
-                const resolution = load(ref, configuration.loaders.available, copy) // Apply loaders to nested components
+                const resolution = load(ref, configuration.loaders.available, applyOptions) // Apply loaders to nested components
 
                 // Allow users to await the resolution of all children
                 Object.defineProperty(info.parent[name], specialKeys.promise, { value: resolution, writable: false, })
-
-                // Set components here
-                const promise = resolve(resolution, (res) => {
-                    configuration.components.set(name, res)
-                    return res
-                })
-
-                configuration.components.set(name, promise)
             }
         } else {
             delete info.parent[name]
@@ -268,22 +309,6 @@ function runRecursive(resolved) {
                     // Call Final Function or Return
                     if (isStop) {
                         if (callback) callback.call(resolved, resolved) // Run general stop function last
-
-                        // // Clear all listeners above the Component that reference it
-                        // const path = resolved[specialKeys.root].path
-                        // let target = resolved
-                        // const parent = target[specialKeys.parent]
-                        // while (parent && parent[specialKeys.root] !== undefined) {
-                        //     const res = target[specialKeys.parent] // parent is a component
-                        //     if (res) {
-                        //         target = res
-                        //         if (target) {
-                        //             const configuration = target[specialKeys.root]
-                        //             if (configuration) target[specialKeys.root].listeners.clear(path)
-                        //         }
-                        //     } else break
-                        // }
-
                         configuration.start.value = false // Can be restarted
                     }
 

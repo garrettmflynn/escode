@@ -1,9 +1,7 @@
 import { setFromPath } from "../../common/pathHelpers"
-import Inspectable from "../../esmonitor-proxy/src/index"
+import Inspectable from "../packages/esmonitor-proxy/src/index"
 import { MonitorOptions, SetFromOptionsType } from "./types"
 
-
-let ranError = false
 
 export const setFromOptions = (path, value, baseOptions: MonitorOptions, opts: SetFromOptionsType) => {
 
@@ -15,16 +13,8 @@ export const setFromOptions = (path, value, baseOptions: MonitorOptions, opts: S
         if (isDynamic && !globalThis.Proxy) {
             isDynamic = false
             console.warn('Falling back to using function interception and setters...')
-        } else if (!ranError) {
-                console.error('TODO: Finish integration of esmonitor-proxy with the core...')
-                ranError = true
         }
 
-        // if (isDynamic) {
-        //     isDynamic = false
-        //     console.warn('Falling back to using function interception and setters...')
-        //     console.error('TODO: Finish integration of esmonitor-proxy with the core...')
-        // }
 
         if (isDynamic) {
             value = new Inspectable(value, {

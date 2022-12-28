@@ -12,26 +12,23 @@ export const properties = {
 
 const manager = new FlowManager()
 
+const getAbsolutePath = (root) =>  [root.root, ...root.path.split('.')].filter(str => str !== '')
 // LOADER WITH OPTIONS: The only option use here is the options.listen callback to get updates...
 const listenerLoader = ( esc, options ) => {
 
     const root = esc[specialKeys.root]
-    const listeners = esc[specialKeys.listeners.value]
-
-    Object.defineProperty(esc, specialKeys.listeners.value, {
-        value: manager,
-        enumerable: false,
-        configurable: false,
-        writable: false
-    })    
-
 
     let absPath
 
+    manager.setReference(root.symbol, esc) // Setting listeners with each reference
+
     root.start.add((resolved) => { 
-        absPath = [root.root, ...root.path.split('.')].filter(str => str !== '')
-        manager.setReference(root.symbol, resolved) // Setting listeners with each reference
-        manager[(root.symbol === root.root) ? 'start' : 'register'](listeners, absPath)
+        const listeners = esc[specialKeys.listeners.value]
+
+        if (listeners){
+            absPath = getAbsolutePath(root)
+            manager[(root.symbol === root.root) ? 'start' : 'register'](listeners, absPath)
+        }
     })
 
     root.stop.add(() => { 
@@ -40,8 +37,15 @@ const listenerLoader = ( esc, options ) => {
 
 
     root.listeners = {
-        clear: (from) => manager.clear(from, absPath),
-        remove: (from, to) =>  manager.remove(from, to, absPath)
+        manager: manager,
+        get: (from) => {
+            from = (from) ? `${from}.${root.path}` : root.path
+            const got = manager.get(from, root.root)
+            return got
+        },
+        add: (from, to, value) => manager.add(from, to, value, getAbsolutePath(root)),
+        clear: (from) => manager.clear(from, getAbsolutePath(root)),
+        remove: (from, to) =>  manager.remove(from, to, getAbsolutePath(root))
     }
 
     return esc

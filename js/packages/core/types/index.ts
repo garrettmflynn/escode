@@ -8,14 +8,14 @@ export type ConfigObject = NodeList | string | Function | AnyClass | Element | F
 export type ConfigInput = ConfigObject | ConfigObject[]
 
 export type ApplyOptions = {
-    overrides: any, 
+    overrides?: any, 
 
     parent?, // Component parent
     parentObject?, // Object parent
 
     opts: Partial<Options>, 
     name?: string,
-    waitForChildren: boolean
+    // waitForChildren: boolean
 }
 
 export type LoaderFunction = (o: ESComponent, options: Partial<Options>) => any

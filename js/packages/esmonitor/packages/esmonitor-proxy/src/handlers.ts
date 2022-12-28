@@ -1,5 +1,5 @@
-import * as listenerUtils from "../../esmonitor/src/listeners";
-import { runCallback } from "../../esmonitor/src/utils";
+import * as listenerUtils from "../../../src/listeners";
+import { runCallback } from "../../../src/utils";
 import { 
     fromInspectable,
     isProxy 

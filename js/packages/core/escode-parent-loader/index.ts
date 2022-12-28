@@ -31,10 +31,10 @@ const parentLoader = (esc, options) => {
                 force || 
                 parent[specialKeys.root]?.start?.value === true
             ) {
-                const isConnected = configuration.connected
-                const toConnect = isConnected instanceof Function    
+                // const isConnected = configuration.connected
+                // const toConnect = isConnected instanceof Function    
                 esc[specialKeys.root].start.run() // Run start if the parent already has...
-                if (toConnect) isConnected() // Signal connection to a root component
+                // if (toConnect) isConnected() // Signal connection to a root component
             }
         }
     }

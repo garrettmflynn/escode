@@ -13,7 +13,9 @@ import ESComponent from "../../esc.spec"
 
 // Default Loaders
 import * as listenerLoader from "./escode-listeners-loader"
-import * as childrenLoader from "./escode-trigger-loader"
+import * as triggerLoader from "./escode-trigger-loader"
+import * as operatorLoader from "./escode-operator-loader"
+
 import { combineLoaders } from "./utils/loaders"
 
 // Use a global monitor instance to listen to an object property without creating an ES Component 
@@ -27,7 +29,7 @@ export const create = (
 ) => {
 
     const copy = deepClone(options) as Options // Clone the options object
-    copy.loaders = combineLoaders(copy.loaders, [listenerLoader, childrenLoader]) // Specify the loaders
+    copy.loaders = combineLoaders(copy.loaders, [listenerLoader, triggerLoader, operatorLoader]) // Specify the loaders
     const fullOptions = copy as Options // Define as a complete options object
 
     // Load the component

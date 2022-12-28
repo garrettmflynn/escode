@@ -30,7 +30,11 @@ export default function animate(esc) {
 
             const objects = info.objects
             const runFuncs = () => {
-                for (let key in objects) objects[key].default()
+                for (let key in objects) {
+                    const node = objects[key]
+                    if (node[specialKeys.operator]) node[specialKeys.operator]()
+                    else if (node[specialKeys.default]) node[specialKeys.default]()
+                }
             }
 
             // Global Animation Frames

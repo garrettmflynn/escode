@@ -49,9 +49,14 @@ let tree = {
         __: true, // Artificially trigger as a node
         x:3,
         y:4,
+        __operator: function(a) {
+            const message = 'nodeB operator called'
+            log.add(message)
+            return a
+        },
         nodeC:{
             z:4,
-            default:function(a) { 
+            __operator:function(a) { 
                 this.z += a; 
                 const message = 'nodeC operator: nodeC z prop added to'
                 log.add(message)
@@ -104,11 +109,6 @@ let tree = {
             const message = 'nodeA listener: nodeC z prop changed:'
             log.add(message)
         },
-
-        'nodeA.x': function() { 
-            const message = 'nodeC listener: nodeA x prop updated'
-            log.add(message)
-        },
     
         // ---------- Equivalent Decarations ----------
         // From —> To
@@ -122,14 +122,17 @@ let tree = {
         },
 
         '': {
-            'nodeA.jump': {
-                value: function() { 
-                    if (escodeDemoLog !== false) {
-                        const message = 'nodeC listener: nodeA '
-                        log.add(message)
-                    }
-                },
-                __bind: "nodeB.nodeC"
+
+            'nodeA.x': function() { 
+                const message = 'nodeC listener: nodeA x prop updated'
+                log.add(message)
+            },
+
+            'nodeA.jump': function() { 
+                if (escodeDemoLog !== false) {
+                    const message = 'nodeC listener: nodeA '
+                    log.add(message)
+                }
             },
         }
     }

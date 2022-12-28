@@ -22,7 +22,7 @@ export const __attributes = {
 export const ontouchstart = function (e) {dragStart.call(this, e)}
 export const ontouchend = function (e) {dragEnd.call(this, e)}
 export const ontouchmove = function (e) {drag.call(this, e)}
-export const onmousedown = function (e) { dragStart.call(this, e)}
+export const onmousedown = function (e) { dragStart.call(this, e) }
 export const onmouseup = function (e) { dragEnd.call(this, e)}
 export const onmousemove = function (e) { drag.call(this, e)}
 
