@@ -1,7 +1,4 @@
 <p align="center">
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./assets/logo_with_text_dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="./assets/logo_with_text_light.svg">
