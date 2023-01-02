@@ -1,7 +1,7 @@
 // import { Graph } from "../../../Graph2"
 
 import { keySeparator, specialKeys } from '../../../../../spec/properties'
-import Monitor from '../../../esmonitor/src'
+import Monitor from 'esmonitor/dist/index.esm.js'
 
 
 // Special Key Definition
@@ -30,9 +30,10 @@ class Edgelord {
     #contexts: { [x:symbol | string]: {
         started: boolean,
         queue: Function[],
-        callbacks: Function[],
+        // callbacks: Function[],
         active: {[x:string]: any},
         update: Function,
+        state: {[x:string]: any}
     } } = {}
 
     constructor (listeners?, rootPath?) {
@@ -48,8 +49,9 @@ class Edgelord {
             started: false, 
             queue: [], 
             active: {} , 
-            callbacks: [],
-            update: function (...args) { this.callbacks.forEach(f => f(...args)) }
+            // callbacks: [],
+            state: {},
+            update: function (path, update) {   this.state[path] = update  }
         }
         return this.#contexts[id]
     }
@@ -59,11 +61,6 @@ class Edgelord {
         const context = this.getContext(id)
         if (context.started) f()
         else context.queue.push(f)
-    }
-
-    onUpdate = (f, id) => {
-        const context = this.getContext(id)
-        context.callbacks.push(f)
     }
 
 
@@ -246,7 +243,7 @@ class Edgelord {
     }
 
     // Local clearing
-    clear = (name = '', rootPath = []) => {
+    clear = (name = '', rootPath: (string | symbol)[] = []) => {
 
         if (!Array.isArray(rootPath)) rootPath = [rootPath]
 
@@ -287,6 +284,7 @@ class Edgelord {
 
     const context = this.#contexts[id]
     context.update(from, update)
+    
 
     const active = this.get(from, id)
 

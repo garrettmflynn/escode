@@ -12,7 +12,7 @@ const isReady = new Promise(async (resolve, reject) => {
             // Fetch
             if (!fetch) {
                 globalThis.REMOTEESM_NODE = true
-                fetch = globalThis.fetch = (await import('node-fetch')).default
+                fetch = globalThis.fetch = (await import('node-fetch/src/index.js')).default
                 if (typeof globalThis.fetch !== 'function') globalThis.fetch = fetch
             }
             // FS

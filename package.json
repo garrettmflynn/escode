@@ -16,8 +16,12 @@
     "biquadjs": "^1.0.0",
     "device-decoder": "^0.2.29",
     "device-decoder.third-party": "^0.1.3",
+    "esmonitor": "^0.1.2",
     "howler": "^2.2.3",
-    "p5": "^1.5.0"
+    "lit": "^2.5.0",
+    "node-fetch": "^3.3.0",
+    "p5": "^1.5.0",
+    "resize-observer-polyfill": "^1.5.1"
   },
   "devDependencies": {
     "@jest/globals": "^29.3.1",

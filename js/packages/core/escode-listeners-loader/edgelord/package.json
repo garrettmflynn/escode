@@ -17,5 +17,8 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/brainsatplay/escode.git"
+  },
+  "dependencies": {
+    "esmonitor": "0.1.2"
   }
 }

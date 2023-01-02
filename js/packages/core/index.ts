@@ -1,4 +1,4 @@
-import Monitor from "../esmonitor/src/index"
+import Monitor from "esmonitor/dist/index.esm.js"
 import { deep as deepClone } from "../common/clone.js"
 import { Options } from "../common/types"
 import * as utils from "../common/utils"
@@ -36,7 +36,7 @@ export const create = (
     const component = load(config, fullOptions.loaders, {
         overrides,
         opts: fullOptions,
-        waitForChildren: false
+        // waitForChildren: false
     })
 
     // Start the component after it has been properly instantiated

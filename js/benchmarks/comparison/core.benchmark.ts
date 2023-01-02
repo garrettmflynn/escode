@@ -1,6 +1,6 @@
 import { checkPerformance } from '../utils/index'
 import { clone } from '../../../js/packages/core/index'
-import { Graph } from "../../../../graphscript/Graph";
+import { Graph } from "../../../../graphscript/src/core/Graph";
 import tree from '../../../../graphscript/examples/graph/tree'
 import { nTimes } from '../global';
 

@@ -6,7 +6,7 @@ const elId = `escomposeOperationsManagerLog`
 const document = globalThis.document
 
 
-globalThis.escodeDemoLog = true
+globalThis.escodeDemoLog = false
 
 if (!isNode) {
     const ol = document.createElement('ol')

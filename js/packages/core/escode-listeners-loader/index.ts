@@ -1,5 +1,4 @@
 import { specialKeys } from "../../../../spec/properties"
-import Monitor from "../../esmonitor/src"
 import FlowManager from "./edgelord/index"
 
 export const name = 'listeners'

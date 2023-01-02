@@ -9,8 +9,8 @@ export type Options = {
     loaders: Loaders    
     clone?: boolean,
     
-    // For EdgeLord
-    listen?: (path: string, update: any) => any,
+    // For Bundle
+    relativeTo: string,
 
     utilities: {
         code?: {
@@ -19,7 +19,7 @@ export type Options = {
         },
         bundle?: {
             function: typeof esm.bundle.get,
-            options: any
+            options?: any
         }
         compile?: {
             function: typeof esm.compile,

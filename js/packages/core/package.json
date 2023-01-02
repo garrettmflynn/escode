@@ -22,7 +22,7 @@
     "build": "tinybuild build"
   },
   "dependencies": {
-    "esmonitor": "*"
+    "esmonitor": "0.1.2"
   },
   "peerDependencies": {
     "escompose": "*",

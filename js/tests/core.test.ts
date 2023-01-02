@@ -1,5 +1,5 @@
-import * as core from '../js/core/index';
-import * as esm from '../js/esmpile/src/index';
+import * as core from '../packages/core/index';
+import * as esm from '../packages/esmpile/src/index';
 import * as graph from '../demos/graph/index'
 
 describe(`All ES Component input objects are accepted`, () => {
@@ -49,7 +49,7 @@ describe(`All ES Component input objects are accepted`, () => {
     const model = graph.model.nodeD
     const input = [1,2,3,4,5]
     const expected = input.reduce((a,b) => a + b, 0)
-    let component, reactive, state: {[x: string]: any} = {};
+    let component, reactive, state: {[x: string]: any};
 
 
     beforeAll(() => {
@@ -61,9 +61,8 @@ describe(`All ES Component input objects are accepted`, () => {
           }
       }
     
-      component = core.create(reactive, undefined, {listen: (path, update) => {
-        state[path] = update 
-    }})
+      component = core.create(reactive)
+      state = component.__.listeners.manager.getContext(component.__.root).state
     })
 
 
@@ -136,9 +135,7 @@ describe(`All ES Component input objects are accepted`, () => {
 
     beforeAll(() => {
       component = core.create(model)
-      fromStringComponent = core.create(fromStringModel, undefined, { utilities: { bundle: esm.bundle.get}});
-      console.log('component', component)
-      console.log('fromStringComponent', fromStringComponent)
+      fromStringComponent = core.create(fromStringModel, undefined, { utilities: { bundle: {function: esm.bundle.get}}});
     })
 
     test('the original value of the uri component is maintained', () => {

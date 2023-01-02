@@ -1,6 +1,14 @@
-import { PathFormat, SetValueOptions } from "../esmonitor/src/types"
 import * as standards from '../../../spec/properties'
-import { deep } from "./clone"
+
+type pathComponent = string | symbol
+type ArrayPath = (pathComponent)[]
+type PathFormat = pathComponent | ArrayPath
+
+type SetValueOptions = {
+    create?: boolean,
+    keySeparator?: '.' | string
+}
+
 
 const hasKey = (key, obj) =>  key in obj
 

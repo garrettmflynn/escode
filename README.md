@@ -120,7 +120,7 @@ import * as esm from 'esmpile'
 
 const button = './index.esc.js'
 const component = create(button)
-const component = create(button, {__parent: document.body},  { utilities: { bundle: esm.bundle.get}})
+const component = create(button, {__parent: document.body},  { utilities: { bundle: {function: esm.bundle.get}}})
 component.__element.click()
 ```
 
@@ -454,7 +454,7 @@ Our work at [Brains@Play] is sustained by a wide range of contract work and the 
 [Brains@Play]: https://github.com/brainsatplay
 
 [esmpile]: ./js/packages/esmpile/README.md
-[esmonitor]: ./js/packages/esmonitor/README.md
+[esmonitor]: https://github.com/garrettmflynn/esmonitor
 [escompose]: ./js/packages/escompose/README.md
 [escode]: ./js/README.md
 [ES Components]: ./spec/README.md
