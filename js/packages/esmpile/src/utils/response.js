@@ -2,6 +2,7 @@ import * as transformations from './transformations.js'
 import * as handlers from './handlers.js'
 import * as pathUtils from "./path.js";
 import { handleFetch } from "./request.js";
+import importAssert from './assertions.js';
 
 // Get ESM Module Info
 const enc = new TextDecoder("utf-8");
@@ -79,7 +80,7 @@ export const findModule = async (uri, opts) => {
     const info = {}
     await find(uri, opts, async (transformed) => {
         info.uri = transformed
-        info.result = await (isJSON ? import(transformed, { assert: { type: "json" } }) : import(transformed))
+        info.result = await (isJSON ? importAssert(transformed, { assert: { type: "json" } }) : import(transformed))
     })
 
     return info

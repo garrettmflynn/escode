@@ -1,5 +1,6 @@
 import * as pathUtils from './path.js'
 import defaults from './defaults.js'
+import importAssert from './assertions.js';
 
 export const path = (opts) => {
     const nodeModules = opts.nodeModules ?? defaults.nodeModules.nodeModules;
@@ -43,7 +44,7 @@ const getPackage = async (path, base = path, opts) => {
     const correct = isURL ? pkgPath : new URL(pkgPath, window.location.href).href
         // const correct = isURL ? pkgPath : pathUtils.get(pkgPath, opts)
 
-    return (await import(correct, { assert: { type: "json" } })).default;
+    return (await importAssert(correct, { assert: { type: "json" } })).default;
 }
 
 // Export the Related Transformation

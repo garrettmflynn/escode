@@ -4,11 +4,12 @@ import * as objecturlEncoder from './objecturl.js'
 import * as pathUtils from "../path.js";
 import * as load from "../load.js";
 import * as mimeTypes from '../mimeTypes.js'
+import importAssert from '../assertions.js';
 
 export const datauri = async (...args) => await get(datauriEncoder.get, ...args)
 export const objecturl = async (...args) => await get(objecturlEncoder.get, ...args)
 
-const importEncoded = async (uri, isJSON) => await ((isJSON) ? import(uri, { assert: { type: "json" } }) : import(uri)).catch((e) => {
+const importEncoded = async (uri, isJSON) => await ((isJSON) ? importAssert(uri, { assert: { type: "json" } }) : import(uri)).catch((e) => {
     throw e
 });
 
