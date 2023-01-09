@@ -3,7 +3,7 @@
 import * as esc from '../../js/index'
 // import ESC from "../../js/escode/src/core/index";
 // import validate from "../../js/escode/src/validate/index";
-import * as esm from '../../js/packages/esmpile/src/index'
+import * as esm from 'esmpile'
 import * as compose from '../../js/packages/escode-ide/src/index'
 
 // import canvasWorker from '../../js/components/ui/plot/utils/canvas.worker'
@@ -47,7 +47,7 @@ async function init () {
 
     // ---------------- ESMpile ----------------
    if (!asyncLoads) {
-    await esm.load.script('./js/packages/esmpile/extensions/typescriptServices.min.js');
+    await esm.load.script('esmpile/extensions/typescriptServices.min.js');
     asyncLoads = true
    }
 

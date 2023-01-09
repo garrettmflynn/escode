@@ -29,7 +29,7 @@
     "escode": "*"
   },
   "dependencies": {
-    "esmpile": "^0.1.1",
+    "esmpile": "0.1.5",
     "node-fetch": "^3.2.10"
   }
 }

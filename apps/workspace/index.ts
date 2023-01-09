@@ -5,7 +5,7 @@ import * as esc from '../../js/index'
 
 // import ESC from "../../js/escode/src/core/index";
 // import validate from "../../js/escode/src/validate/index";
-import * as esm from '../../js/packages/esmpile/src/index'
+import * as esm from 'esmpile'
 // import * as compose from '../../js/escode/src/index'
 
 import * as reference from './index.esc.js'

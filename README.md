@@ -453,7 +453,7 @@ Our work at [Brains@Play] is sustained by a wide range of contract work and the 
 
 [Brains@Play]: https://github.com/brainsatplay
 
-[esmpile]: ./js/packages/esmpile/README.md
+[esmpile]: https://github.com/garrettmflynn/esmpile
 [esmonitor]: https://github.com/garrettmflynn/esmonitor
 [escompose]: ./js/packages/escompose/README.md
 [escode]: ./js/README.md

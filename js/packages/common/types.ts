@@ -1,5 +1,5 @@
 import { Editor, EditorProps } from "../../packages/escode-ide/src/index";
-import * as esm from "../esmpile/src";
+import * as esm from "esmpile";
 
 import { Loaders } from "../core/types";
 

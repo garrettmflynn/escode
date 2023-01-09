@@ -1,2 +1,0 @@
-const middle = "was not resolved locally. You can provide a direct reference to use in";
-export const create = (uri, key = uri) => new Error(`${uri} ${middle} options.filesystem._fallbacks['${key}'].`)

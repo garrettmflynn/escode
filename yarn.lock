@@ -1257,6 +1257,13 @@ esmonitor@^0.1.2:
   resolved "https://registry.yarnpkg.com/esmonitor/-/esmonitor-0.1.2.tgz#a9662e7a3f72a2aeb5e5311421f1b66a45bd8de0"
   integrity sha512-xmxyVn2umQyRkOPfyj9QCmT7M5UIZsV4S+dOBqFgZSb3PLpBzOrYdOSEvb5O2BMBlW2mTmnqSTYxOSxIoq7UKg==
 
+esmpile@0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/esmpile/-/esmpile-0.1.5.tgz#a430d42232723171964ef9119a30f2064708120a"
+  integrity sha512-9VDidgJB8nWrK5XWfEtTGBsiGQN3fAencBpJq6GxnDtqgER/rwe5vY6nCgrvOwoVoyCljnwQrUX9cGM/RS0cAA==
+  dependencies:
+    node-fetch "^3.3.0"
+
 esprima@^4.0.0:
   version "4.0.1"
   resolved "https://registry.npmjs.org/esprima/-/esprima-4.0.1.tgz"

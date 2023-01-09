@@ -26,6 +26,6 @@
   },
   "peerDependencies": {
     "escompose": "*",
-    "esmpile": "*"
+    "esmpile": "0.1.5"
   }
 }

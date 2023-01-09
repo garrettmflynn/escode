@@ -1,5 +1,5 @@
 import * as core from '../packages/core/index';
-import * as esm from '../packages/esmpile/src/index';
+import * as esm from 'esmpile';
 import * as graph from '../demos/graph/index'
 
 describe(`All ES Component input objects are accepted`, () => {

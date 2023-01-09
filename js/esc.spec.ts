@@ -1,6 +1,6 @@
 import Edgelord from "../js/packages/core/escode-listeners-loader/edgelord/index"
 import { Editor, EditorProps } from "../js/packages/escode-ide/src"
-import Bundle from ".../js/packages/esmpile/src/Bundle"
+import Bundle from "esmpile"
 
 type ComponentElement = Element & { [x:string]: any }
 

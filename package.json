@@ -17,6 +17,7 @@
     "device-decoder": "^0.2.29",
     "device-decoder.third-party": "^0.1.3",
     "esmonitor": "^0.1.2",
+    "esmpile": "0.1.5",
     "howler": "^2.2.3",
     "lit": "^2.5.0",
     "node-fetch": "^3.3.0",
