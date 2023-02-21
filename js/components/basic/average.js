@@ -16,5 +16,6 @@ export default function (input) {
 
     if (isBuffer && buffer.length > max) buffer = buffer.splice(-max)
     const res = buffer.reduce((a,b) => a + b, 0) / buffer.length
+
     return res
 }

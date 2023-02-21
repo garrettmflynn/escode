@@ -46,6 +46,10 @@ import speakPhaserFallbacks from './phaser/versions/speak/fallbacks'
 const speakPhaserJSON = './demos/phaser/versions/speak/index.esc.json'
 const speakPhaserJS = './demos/phaser/versions/speak/index.esc.ts'
 
+// Braintroller Demo
+import * as braintrollerFile from './braintroller/index.esc'
+const braintrollerJS = './braintroller/index.esc.ts'
+
 
 // // Device Phaser Demo
 // import * as devicePhaserFile from './phaser/versions/devices/index.esc'
@@ -198,6 +202,13 @@ const speakPackage = {
     js: speakPhaserJS
 }
 
+const braintrollerPackage = {
+    name: 'Braintroller',
+    reference: braintrollerFile,
+    js: braintrollerJS
+}
+
+
 // const devicePackage = {
 //     name: 'EMG-Controlled Game',
 //     json: devicePhaserJSON,
@@ -300,6 +311,7 @@ const demos = {
     phaser: phaserPackage,
     multiplayer: multiplayerPackage,
     speak: speakPackage,
+    braintroller: braintrollerPackage,
 
     // // Physiological Demos
     // signal: signalPackage,
