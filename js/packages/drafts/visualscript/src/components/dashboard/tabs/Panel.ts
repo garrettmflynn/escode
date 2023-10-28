@@ -3,7 +3,7 @@ import { LitElement, html, css } from 'lit';
 import { Tab } from './Tab';
 import './TabToggle';
 import { TabBar } from './TabBar';
-import { lighterDarkBackgroundColor } from 'src/globals';
+import { lighterDarkBackgroundColor } from '../../../globals';
 
 export type PanelProps = {
   minTabs?: number,

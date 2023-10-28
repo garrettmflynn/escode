@@ -11,18 +11,8 @@
     "node": ">=16"
   },
   "scripts": {
-    "start": "tinybuild",
-    "docs": "cd docs && yarn && yarn run start",
-    "backend": "node builder.config.js run:nodejs",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --coverage",
-    "typecheck": "tsc --watch --preserveWatchOutput --noEmit",
-    "build": "cd docs && yarn && yarn build",
-    "killall-node": "killall node",
-    "killall-node:windows": "taskkill /F /IM node.exe",
-    "cli": "npm i -g ./src/cli",
-    "tinybuild": "npm i -g ./src/build",
-    "ui": "cd src/visualscript && yarn start",
-    "watch": "node src/watch.js"
+    "start": "vite",
+    "build": "vite build"
   },
   "repository": {
     "type": "git",

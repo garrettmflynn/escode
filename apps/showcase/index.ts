@@ -232,7 +232,7 @@ async function start (demo = "basic", mode="direct") {
 }
 
 
-init()
+// init()
 
 // // Ensuring there is a container for the app
 // component.__element = document.createElement('div')

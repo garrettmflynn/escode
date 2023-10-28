@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { darkBackgroundColor } from 'src/globals';
+import { darkBackgroundColor } from '../../globals';
 import './Button'
 
 export interface ModalProps {

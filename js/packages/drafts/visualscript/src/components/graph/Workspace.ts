@@ -6,7 +6,7 @@ import './Node';
 import drag from './utils/drag'
 import { GraphEdge } from './Edge';
 import { GraphWorkspaceProps } from './types/general';
-import { darkBackgroundColor } from 'src/globals';
+import { darkBackgroundColor } from '../../globals';
 
 export class GraphWorkspace extends LitElement {
 

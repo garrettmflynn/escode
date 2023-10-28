@@ -1,7 +1,7 @@
 
 import { LitElement, html, css } from 'lit';
 import {until} from 'lit-html/directives/until.js';
-import { darkBackgroundColor } from 'src/globals';
+import { darkBackgroundColor } from '../../globals';
 import context from '../../instances/context';
 import { TreeItem } from './TreeItem';
 

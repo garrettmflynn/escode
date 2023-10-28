@@ -4,7 +4,7 @@ import {until} from 'lit-html/directives/until.js';
 
 import { TimeSeries } from '../plots';
 import {Input} from '../input/Input'
-import { darkBackgroundColor } from 'src/globals';
+import { darkBackgroundColor } from '../../globals';
 
 type keyType = string | number | symbol
 export type ObjectEditorProps = {
