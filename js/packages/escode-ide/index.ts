@@ -7,8 +7,8 @@ import './src/index.js'
 // import * as visualscript from './external/visualscript/dist/index.esm.js'
 
 // Apps
-import * as todoFile from '../../apps/showcase/demos/todo/index.esc'
-import * as animationFile from '../../apps/showcase/demos/animations/index.esc'
+import * as todoFile from '../../apps/src/todo/index.esc'
+import * as animationFile from '../../apps/src/animations/index.esc'
 
 
 // const createPlugins = async (src) => {

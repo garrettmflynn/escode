@@ -1,0 +1,1 @@
+export default (ev) => ev.target.style.display = "none";

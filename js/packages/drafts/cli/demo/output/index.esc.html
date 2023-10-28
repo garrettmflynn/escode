@@ -1,6 +1,6 @@
 <div>
 	<link id="list" .itemType="es-removable-list-item" __compose="../../../../components/ui/ul.js" __listeners.load __listeners.__branch.0.if="(input) => typeof input === 'string'" __listeners.remove></link>
-	<form id="form" __compose="../../../../apps/showcase/demos/todo/components/onSubmit.esc.js">	
+	<form id="form" __compose="../../../../apps/src/todo/components/onSubmit.esc.js">	
 		<link id="input" placeholder="Write your todo here" __compose="../../../../components/ui/input.js" __listeners.__branch.0.if="(input) => typeof input === 'string'" __listeners.__branch.0.value=""></link>
 		<link id="button" type="submit" __compose="../../../../components/ui/button.js" __listeners.form.input>Add Todo</link></form>
 	<link id="clearButton" __compose="button">Clear List</link>

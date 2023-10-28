@@ -106,7 +106,7 @@
                 "game": {
                     "__compose": "https://raw.githubusercontent.com/brainsatplay/escode/main/components/phaser/game/index.js",
                             "preload": {
-                                "setBaseURL": "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/assets",
+                                "setBaseURL": "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/src/phaser/assets",
                                 "tilemapTiledJSON": [
                                     [
                                         "map",

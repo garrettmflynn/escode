@@ -440,7 +440,7 @@ export class Editor extends LitElement {
 
 
       // Set Plugins from NPM
-      fetch('https://registry.npmjs.org/-/v1/search?text=keywords:graphscript,escomponent').then(async r => {
+      fetch('https://registry.npmjs.org/-/v1/search?text=keywords:escomponent').then(async r => {
         const res = await r.json()
 
         const local = {}

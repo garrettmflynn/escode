@@ -1,0 +1,8 @@
+{
+    "type": "module",
+    "dependencies": {
+        "bcijs": "^1.8.0",
+        "device-decoder": "^0.2.48",
+        "device-decoder.third-party": "^0.1.19"
+    }
+}

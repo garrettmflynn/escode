@@ -1,0 +1,33 @@
+{
+    "__children": {
+            "phaser": {
+                "__compose": "../index.esc.json",
+                "overrides": {
+                    "game": {
+                        "__children": {
+                            "companion": {
+                                "__compose": "../../../js/components/phaser/player.js",
+                                "position": {
+                                    "x": 100,
+                                    "y": 200
+                                },
+                                "size": {
+                                    "offset": {
+                                        "height": -8
+                                    }
+                                },
+                                "bounce": 0.2,
+                                "collideWorldBounds": false,
+                                "create": {
+                                    "__compose": "../scripts/player/create/companion.js"
+                                },
+                                "update": {
+                                    "__compose": "../scripts/player/update.js"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+}

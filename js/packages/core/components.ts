@@ -26,7 +26,7 @@ export const has = (o) => {
         }
     }, {
 
-        // Ignore graphscript root property and other properties that may have nested graphscript properties
+        // Ignore ES root property and other properties that may have nested ES properties
         ignore: ['__', '__parent', '__compose', '__apply'],
 
         // Avoid drilling elements...
@@ -40,7 +40,7 @@ export const has = (o) => {
     return has as false | string[]
 }
 
-// Get all nested components in an object by looking for graphscript properties
+// Get all nested components in an object by looking for ES properties
 export function from (parent) {
 
     if (!parent || typeof parent !== 'object') return null
@@ -50,8 +50,8 @@ export function from (parent) {
         const mayBeComponent = ref && typeof ref === 'object' || typeof ref === 'function'
         if (!mayBeComponent) return
 
-        const hasGraphScriptProperties = !name.includes(specialKeys.root) ? Object.keys(ref).find(is) : false
-        if (hasGraphScriptProperties) {
+        const hasESProperties = !name.includes(specialKeys.root) ? Object.keys(ref).find(is) : false
+        if (hasESProperties) {
             if (name === 'constructor' && isNativeClass(ref)) return // Don't consider componentized classes as components on their instances...
             return { ref, parent, name } as NestedRecord
         }
@@ -60,7 +60,7 @@ export function from (parent) {
     let hasProperties = array.length > 0
 
     // // NOTE: This is an important feature to have if we don't keep the __children property
-    // // This makes sure that nested components have graphscript properties
+    // // This makes sure that nested components have ES properties
     // if (!hasProperties) {
     //     const found = has(parent)
     //     if (found) {

@@ -1,0 +1,1 @@
+export const fill = 255 // default to white

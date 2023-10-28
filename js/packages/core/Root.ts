@@ -237,7 +237,7 @@ function loadNestedComponents(esc) {
         esc[specialKeys.stop] = configuration.stop.run
 
 
-        // Ensure all GraphScript properties are non-enumerable
+        // Ensure all ES Properties are non-enumerable
         const keys = all(esc)
         for (let key of keys) {
             if (is(key)) {

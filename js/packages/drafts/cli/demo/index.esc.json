@@ -25,7 +25,7 @@
         
         "form": {
             "__element": "form",
-            "__compose": "../../../../apps/showcase/demos/todo/components/onSubmit.esc.js",
+            "__compose": "../../../../apps/src/todo/components/onSubmit.esc.js",
             "__children": {
                 "input": {
                     "__attributes": {

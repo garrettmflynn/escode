@@ -1,0 +1,80 @@
+{
+    "__children": {
+        "game": {
+            "__compose": "../../../js/components/phaser/game/index.js",
+            "preload": {
+                "setBaseURL": "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/src/phaser/assets",
+                "tilemapTiledJSON": [
+                    [
+                        "map",
+                        "map.json"
+                    ]
+                ],
+                "spritesheet": [
+                    [
+                        "tiles",
+                        "tiles.png",
+                        {
+                            "frameWidth": 70,
+                            "frameHeight": 70
+                        }
+                    ]
+                ],
+                "image": [
+                    [
+                        "coin",
+                        "coinGold.png"
+                    ]
+                ],
+                "atlas": [
+                    [
+                        "player",
+                        "player.png",
+                        "player.json"
+                    ]
+                ]
+            },
+            "config": {
+                "physics": {
+                    "default": "arcade",
+                    "arcade": {
+                        "gravity": {
+                            "y": 500
+                        }
+                    }
+                },
+                "scene": {
+                    "key": "main",
+                    "create": {
+                        "__compose": "./scripts/create.js"
+                    }
+                }
+            },
+            "__children": {
+                "cursors": {
+                    "__compose": "../../../js/components/phaser/cursors.js"
+                },
+                "player": {
+                    "__compose": "../../../js/components/phaser/player.js",
+                    "position": {
+                        "x": 200,
+                        "y": 200
+                    },
+                    "size": {
+                        "offset": {
+                            "height": -8
+                        }
+                    },
+                    "bounce": 0.2,
+                    "collideWorldBounds": false,
+                    "create": {
+                        "__compose": "./scripts/player/create/main.js"
+                    },
+                    "update": {
+                        "__compose": "./scripts/player/update.js"
+                    }
+                }
+            }
+        }
+    }
+}

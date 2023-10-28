@@ -1,4 +1,4 @@
-# graphscript-parent-loader
+# escode-parent-loader
 This allows you to change the parent of a node in the graph. It introduces `__parent` as a reserved keyword.
 
 When the `__parent` keyword is changed, the `__.path` and `__.root` of the node are changed according to the new value.

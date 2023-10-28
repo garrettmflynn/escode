@@ -1,0 +1,12 @@
+{
+  "name": "escode-wasm-example",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "compile": "node compile.js"
+  },
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "assemblyscript": "^0.24.1"
+  }
+}
